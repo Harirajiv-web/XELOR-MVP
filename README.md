@@ -15,8 +15,9 @@ swappable for OpenAI/Gemini/Claude by config).
 > **Scope now:** platform foundation + Identity/RBAC + W1 approval engine + the shared
 > AI spine + **Module 01 GENERAL** (company master with a duplicate-detection brain) +
 > **Module 02 ENGINEERING** (item master + Bill of Materials, reusing the shared dedup
-> brain) + **Module 03 INVENTORY** (the stock ledger + the single stock write path).
-> PURCHASE and PRODUCTION are the next modules.
+> brain) + **Module 03 INVENTORY** (the stock ledger + the single stock write path) +
+> **Module 04 PURCHASE** (vendors, POs approved through W1, GRNs posting stock through
+> Inventory). PRODUCTION is the next module.
 
 ## What's here
 
@@ -37,26 +38,28 @@ MVP_PROTOTYPE_1/
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
 │  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
 │  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
-│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory}.ts
+│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase}.ts
 │     ├─ src/{client,migrate,rls-check}.ts
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0013.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0016.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
          ├─ main.ts                 # HTTP entrypoint (the API)
          ├─ worker.ts               # WORKER entrypoint — the outbox relay ("mailman") + consumer
          ├─ eval.ts                 # ship-gate CLI — runs a feature's golden set, exits 0/1
-         ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory
+         ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory + Purchase
          ├─ common/                 # tenant middleware · RBAC guard · audit · idempotency · error filter
+         ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster
          ├─ bus/                    # the event bus: BullMQ relay + idempotent consumer
          │  └─ {connection,queue,outbox-relay,event-consumer}.ts
          ├─ ai/                     # the shared AI SPINE (see below)
          └─ modules/
             ├─ general/             # Module 01 — company master + master_dedup brain
             ├─ engineering/         # Module 02 — item master + Bill of Materials
-            ├─ inventory/           # Module 03 — stock ledger + the single stock write path
-            └─ workflow/            # W1 approval engine (WorkflowExecutor port)
+            ├─ inventory/           # Module 03 — stock ledger + the single stock write path (@Global port)
+            ├─ purchase/            # Module 04 — vendors + POs (W1 approval) + GRNs (post stock)
+            └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
 ### Schema surface (migrations 0000 → 0013)
@@ -77,6 +80,9 @@ MVP_PROTOTYPE_1/
 | 0011 | `engineering_bom` | Bill of Materials — `bom` header + `bom_line`, intra-module FKs only (§1.1) |
 | 0012 | `seed_engineering` | Centrifugal Pump **CP-50** + its components + the pump's BOM (§7) |
 | 0013 | `inventory` | `warehouse`, `stock_balance` (the contended row), append-only `stock_ledger`, `stock_entry` + line; 5 seeded Trishul warehouses; stores staff get `inventory.stock.post` |
+| 0014 | `purchase_vendor` | PURCHASE `vendor` master (GIN trigram index on name for the shared dedup brain) |
+| 0015 | `purchase_order` | `purchase_order` + `_line` (approved through W1; `workflow_instance_id` links the approval) |
+| 0016 | `purchase_grn` | `grn` + `grn_line` — goods receipts that post stock through Inventory's write path atomically |
 
 ### The conventions, made real
 
@@ -94,6 +100,7 @@ MVP_PROTOTYPE_1/
 | §4.3 hash-chained `ai_action_log` for **every** AI call (refusals included) | `apps/api/src/ai/ai-action-log.service.ts`, `migrations/0007` |
 | §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
+| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`); `@Global` Workflow + Inventory modules |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
 | §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `packages/db/src/schema/columns.ts`, `migrations/0000` |
 | §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `packages/platform/src/errors`, `.../api/pagination.ts`, `apps/api/src/common/idempotency.ts` |
@@ -216,6 +223,24 @@ other module post here, nothing touches the stock tables directly.
   is an intra-module FK. Tenant isolation holds: another tenant's admin posting into a
   Trishul warehouse gets `404` (RLS hides it).
 
+## Module 04 — PURCHASE (done)
+
+Procurement — and the first place modules compose. It reuses the shared dedup brain, the
+W1 engine, and Inventory's write path, all through app-level **ports** (no module→module
+imports, §1.1).
+
+- **Vendor master** — reuses the shared `general.master_dedup` brain (a vendor maps onto
+  `{ name, GSTIN, code }`): same `409` draft-for-approval duplicate flow as companies and
+  items, with per-domain field labels.
+- **Purchase orders** (`purchase_order` + `_line`) — a draft PO is **submitted into the
+  W1 engine** (`po_approval`: stores → admin) via the `WorkflowExecutor` port. Approve /
+  reject delegate to W1, which **enforces the correct approver per step**; the PO status
+  is synced from the workflow outcome (approved only when the final step signs off).
+- **Goods receipts** (`grn` + `grn_line`) — receiving against an approved PO **posts
+  stock through Inventory's `StockPoster` port in the SAME transaction**, so the GRN doc,
+  the PO line received-qty updates, the PO status recompute, and the stock ledger write
+  all commit **atomically**. No over-receipt; a rejected receipt writes no stock.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -236,7 +261,7 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0013 (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0016 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
@@ -310,10 +335,12 @@ from sprint 1, exactly as §1.1/§1.6 require.
    brain.~~ ✅
 6. ~~**Module 03 INVENTORY** — stock ledger + the single stock write path
    (`POST /api/stock/entries`, the only writer of stock), ledger-critical & race-safe.~~ ✅
-7. Then **PURCHASE** → **PRODUCTION** (Production never writes stock directly — it goes
-   through Inventory's single write path).
-8. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
-9. Wire a **real AI model provider** (OpenAI/Gemini/Claude) behind the router — governed,
-   budgeted, and eval-gated exactly as the stub is.
-10. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+7. ~~**Module 04 PURCHASE** — vendors + POs (approved through W1) + GRNs (posting stock
+   through Inventory), composed via app-level ports.~~ ✅
+8. **PRODUCTION** — consume components + produce finished goods, also through Inventory's
+   single write path (gated until Inventory hits its stock-accuracy target).
+9. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
+10. Wire a **real AI model provider** (OpenAI/Gemini/Claude) behind the router — governed,
+    budgeted, and eval-gated exactly as the stub is.
+11. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
