@@ -4,4 +4,5 @@ export * from "./admin.js";
 export * from "./workflow.js";
 export * from "./engineering.js";
 export * from "./inventory.js";
+export * from "./purchase.js";
 export { tenantScopedColumns } from "./columns.js";
