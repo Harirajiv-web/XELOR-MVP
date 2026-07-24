@@ -12,6 +12,7 @@ import {
   type AuditEntry,
   type CursorPage,
 } from "@ind-core/platform";
+import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 
 const { company, auditLog, outboxEvent } = schema;
 
@@ -36,7 +37,20 @@ export class GeneralService {
    *   3. the outbox event (staged in the SAME tx — never lost, never on the bus alone)
    * All three commit atomically, fenced to the current tenant by SET LOCAL + RLS.
    */
-  async createCompany(input: CreateCompanyInput): Promise<CompanyRow> {
+  /**
+   * Create a company, exactly once per Idempotency-Key. The real work runs through
+   * the no-duplicates notebook: a retried request with the same key returns the
+   * first company instead of creating a second one.
+   */
+  async createCompany(input: CreateCompanyInput, idempotencyKey: string): Promise<CompanyRow> {
+    const result = await runIdempotent(idempotencyKey, fingerprint(input), async () => ({
+      status: 201,
+      body: await this.doCreateCompany(input),
+    }));
+    return result.body;
+  }
+
+  private async doCreateCompany(input: CreateCompanyInput): Promise<CompanyRow> {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
 

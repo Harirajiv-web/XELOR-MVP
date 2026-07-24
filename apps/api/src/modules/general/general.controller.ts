@@ -37,7 +37,7 @@ export class GeneralController {
         parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
       );
     }
-    return this.general.createCompany(parsed.data);
+    return this.general.createCompany(parsed.data, idempotencyKey);
   }
 
   @Get()

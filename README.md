@@ -111,9 +111,9 @@ from sprint 1, exactly as §1.1/§1.6 require.
 ## Next increments (in order)
 
 1. ~~Keycloak realm + OIDC guard; retire the dev headers.~~ ✅ done (`feat/keycloak-oidc`).
-2. ADMINISTRATION: ~~RBAC permission engine~~ ✅ (`@RequirePermission` + tenant-fenced
-   role tables). Still to come: ABAC row/field scoping, the `WorkflowExecutor` (W1)
-   port, and the Idempotency replay store.
+2. ADMINISTRATION: ~~RBAC permission engine~~ ✅, ~~Idempotency replay store~~ ✅
+   (a retried mutation replays its first result; no duplicates). Still to come:
+   ABAC row/field scoping and the `WorkflowExecutor` (W1) port.
 3. The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.
 4. Frontend app (Next.js 15/React 19 + shadcn/ui) against `/api/v1`.
 5. Then the spine — ENGINEERING → INVENTORY → PURCHASE → PRODUCTION — per the ranking.

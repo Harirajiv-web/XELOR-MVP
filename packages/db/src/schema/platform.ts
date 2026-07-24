@@ -2,6 +2,7 @@ import {
   bigint,
   char,
   index,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -56,6 +57,24 @@ export const auditLog = pgTable(
     hash: char("hash", { length: 64 }).notNull(),
   },
   (t) => [unique("uq_audit_tenant_seq").on(t.tenantId, t.seq)],
+);
+
+// The "no-duplicates notebook" (DECISIONS-V2 §5.3 Idempotency-Key). One row per
+// (tenant, key): remembers a fingerprint of the request + the answer already given,
+// so a retried request replays that answer instead of doing the work twice.
+export const idempotencyKey = pgTable(
+  "idempotency_key",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    key: text("key").notNull(), // the client's Idempotency-Key header value
+    fingerprint: char("fingerprint", { length: 64 }).notNull(), // sha256 of the request body
+    status: text("status").notNull(), // pending | completed
+    responseStatus: integer("response_status"), // the saved HTTP status
+    responseBody: jsonb("response_body"), // the saved answer
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("uq_idem_tenant_key").on(t.tenantId, t.key)],
 );
 
 // Every AI action is logged (§4.3), even explanation calls.
