@@ -41,6 +41,6 @@ export class StockController {
         parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
       );
     }
-    return this.inventory.postStockEntry(parsed.data, idempotencyKey);
+    return this.inventory.post(parsed.data, idempotencyKey);
   }
 }

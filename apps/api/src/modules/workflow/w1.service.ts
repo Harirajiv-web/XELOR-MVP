@@ -19,7 +19,7 @@ import type {
   WorkflowExecutor,
   WorkflowInstanceView,
   WorkflowActionView,
-} from "./workflow.port.js";
+} from "../../ports/workflow.port.js";
 
 const { workflowDefinition, workflowInstance, workflowAction, userRole, role, outboxEvent } = schema;
 

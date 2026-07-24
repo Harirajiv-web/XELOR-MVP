@@ -10,38 +10,14 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import type {
+  StockPoster,
+  PostStockEntryInput,
+  PostStockEntryResult,
+  StockMovement,
+} from "../../ports/stock.port.js";
 
 const { warehouse, stockEntry, stockEntryLine, stockLedger, stockBalance } = schema;
-
-export type StockEntryType = "receipt" | "issue" | "transfer" | "adjustment";
-
-export interface StockEntryLineInput {
-  itemId: string;
-  fromWarehouseId?: string;
-  toWarehouseId?: string;
-  batch?: string;
-  qty: number;
-}
-export interface PostStockEntryInput {
-  entryType: StockEntryType;
-  reasonCode?: string;
-  remarks?: string;
-  lines: StockEntryLineInput[];
-}
-
-interface Movement {
-  itemId: string;
-  warehouseId: string;
-  batch: string;
-  delta: number;
-  balanceAfter: number;
-}
-export interface PostStockEntryResult {
-  entryId: string;
-  entryType: StockEntryType;
-  lineCount: number;
-  movements: Movement[];
-}
 
 export interface WarehouseRow {
   id: string;
@@ -65,21 +41,24 @@ export interface OnHandRow {
  * posted event is fired for side-effects only — the ledger write never rides the bus.
  */
 @Injectable()
-export class InventoryService {
+export class InventoryService implements StockPoster {
   constructor(private readonly audit: AuditLogService) {}
 
-  async postStockEntry(
+  /** Standalone post, idempotent on the key — the HTTP write path (§5.6). */
+  async post(
     input: PostStockEntryInput,
     idempotencyKey: string,
   ): Promise<PostStockEntryResult> {
     const result = await runIdempotent(idempotencyKey, fingerprint(input), async () => ({
       status: 201,
-      body: await this.doPost(input),
+      body: await withTenant((tx) => this.postInTx(tx, input)),
     }));
     return result.body;
   }
 
-  private async doPost(input: PostStockEntryInput): Promise<PostStockEntryResult> {
+  /** Post a stock entry inside the CALLER's transaction (ledger-critical, §5.5/§5.6),
+   *  so a document like a GRN and its stock movement commit atomically. */
+  async postInTx(tx: Tx, input: PostStockEntryInput): Promise<PostStockEntryResult> {
     if (input.lines.length === 0) {
       throw Errors.validation([{ field: "lines", message: "at least one line is required" }]);
     }
@@ -118,9 +97,8 @@ export class InventoryService {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
 
-    return withTenant(async (tx) => {
-      // Every referenced warehouse must exist (intra-module, so we validate directly).
-      const found = await tx
+    // Every referenced warehouse must exist (intra-module, so we validate directly).
+    const found = await tx
         .select({ id: warehouse.id })
         .from(warehouse)
         .where(inArray(warehouse.id, [...whIds]));
@@ -139,7 +117,7 @@ export class InventoryService {
         remarks: input.remarks ?? null,
       });
 
-      const movements: Movement[] = [];
+      const movements: StockMovement[] = [];
       for (const [i, l] of input.lines.entries()) {
         const batch = l.batch ?? "";
         await tx.insert(stockEntryLine).values({
@@ -188,7 +166,6 @@ export class InventoryService {
       });
 
       return { entryId, entryType: input.entryType, lineCount: input.lines.length, movements };
-    });
   }
 
   /** Lock the (item, warehouse, batch) balance FOR UPDATE, apply delta, refuse negative,

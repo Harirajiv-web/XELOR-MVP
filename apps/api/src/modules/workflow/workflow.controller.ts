@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Headers, Inject, Param, Post } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
-import { WORKFLOW_EXECUTOR, type WorkflowExecutor } from "./workflow.port.js";
+import { WORKFLOW_EXECUTOR, type WorkflowExecutor } from "../../ports/workflow.port.js";
 
 const startSchema = z.object({
   definitionCode: z.string().min(1),

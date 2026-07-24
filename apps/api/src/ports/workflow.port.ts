@@ -1,7 +1,8 @@
 /**
- * The WorkflowExecutor port (DECISIONS-V2 §1.3). Other modules depend on this
- * interface, never on the W1 implementation, so a heavier engine (Temporal) could
- * replace it behind the same contract without touching callers.
+ * The WorkflowExecutor port (DECISIONS-V2 §1.3). Lives at app level (not inside the
+ * workflow module) so ANY business module can depend on the interface without a
+ * module→module import — cross-module access via a shared service interface (§1.1).
+ * A heavier engine (Temporal) could replace W1 behind this same contract.
  */
 export const WORKFLOW_EXECUTOR = Symbol("WorkflowExecutor");
 
