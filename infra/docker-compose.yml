@@ -38,17 +38,20 @@ services:
       timeout: 3s
       retries: 10
 
-  # Keycloak 26 + Organizations (DECISIONS-V2 §1.5). Dev mode only for local.
+  # Keycloak 26 (DECISIONS-V2 §1.5). Dev mode only for local. Imports the indcore
+  # realm on boot (realm, indcore-api client, trishul/kaveri groups + demo users).
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     restart: unless-stopped
-    command: ["start-dev", "--features=organization", "--http-port=8080"]
+    command: ["start-dev", "--import-realm", "--features=organization", "--http-port=8080"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
     ports:
       - "8080:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
       postgres:
         condition: service_healthy

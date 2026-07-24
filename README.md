@@ -63,19 +63,26 @@ pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
 ```
 
-Exercise the slice (dev auth = headers; Keycloak wiring is the next increment):
+Exercise the slice. Auth is real Keycloak OIDC — get a token, then call with `Bearer`
+(the tenant comes from the verified token's group, never a header):
 
 ```bash
-TENANT=0192a8c0-0000-7000-8000-000000000001   # Trishul
-ACTOR=0192a8c0-0000-7000-8000-0000000000ff
+# a token for the Trishul user (group 'trishul' -> Trishul tenant)
+TOKEN=$(curl -s -X POST http://localhost:8080/realms/indcore/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=indcore-api -d username=poongodi -d password=demo \
+  | grep -o '"access_token":"[^"]*"' | sed 's/.*:"//;s/"$//')
 
-curl -s localhost:3000/api/v1/general/companies -H "x-tenant-id: $TENANT" -H "x-actor-id: $ACTOR"
+curl -s localhost:3000/api/v1/general/companies -H "authorization: Bearer $TOKEN"
 
 curl -s -X POST localhost:3000/api/v1/general/companies \
-  -H "x-tenant-id: $TENANT" -H "x-actor-id: $ACTOR" \
+  -H "authorization: Bearer $TOKEN" \
   -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" \
   -d '{"legalName":"Trishul — new subsidiary"}'
 ```
+
+Demo users (realm `indcore`, password `demo`): **poongodi** → Trishul, **kaveri-admin**
+→ Kaveri. No token / bad signature → `401`. Note: run these **inside WSL** — Windows
+cannot reach the container ports on `localhost`.
 
 CI aggregate: `pnpm ci` (lint → typecheck → test). Boundary + RLS gates are wired
 from sprint 1, exactly as §1.1/§1.6 require.
@@ -90,18 +97,21 @@ from sprint 1, exactly as §1.1/§1.6 require.
 - **API build (ESM + SWC)** is the single most likely thing to need a small tweak on
   first `pnpm build`: NestJS + native ESM + SWC decorator-metadata is supported but
   version-sensitive. If DI complains, the fallback is the stock CJS+tsc Nest builder.
-- **Auth is a dev stub:** tenant/actor come from `x-tenant-id`/`x-actor-id` headers so
-  the slice runs without Keycloak. These headers **must be rejected** once Keycloak
-  OIDC lands (the org claim becomes the tenant) — a proxy header must never be the
-  security boundary (§2, CVE-2025-29927). This is called out in `tenant.middleware.ts`.
+- **Auth is real Keycloak OIDC.** The tenant is derived only from a JWKS-signature-
+  verified access token (§1.5) — never a trusted header (§2, CVE-2025-29927). Token →
+  tenant uses a **group → tenant** mapping (a group per tenant); the production upgrade
+  is Keycloak **Organizations** → the tenant registry, same guard logic. The demo
+  password grant is dev-only; real clients use the auth-code flow.
 - **Idempotency-Key** is enforced as *present* on mutations; the replay/dedup store
   is ADMINISTRATION's to build next.
 - Implemented surface is intentionally just GENERAL → company + gst_registration.
 
 ## Next increments (in order)
 
-1. Keycloak realm + OIDC guard; retire the dev headers; org-claim → tenant.
+1. ~~Keycloak realm + OIDC guard; retire the dev headers.~~ ✅ done (`feat/keycloak-oidc`).
 2. ADMINISTRATION: RBAC/ABAC, the `WorkflowExecutor` (W1) port, Idempotency replay store.
 3. The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.
 4. Frontend app (Next.js 15/React 19 + shadcn/ui) against `/api/v1`.
 5. Then the spine — ENGINEERING → INVENTORY → PURCHASE → PRODUCTION — per the ranking.
+6. Upgrade auth: Keycloak Organizations → tenant (replacing the group stand-in);
+   auth-code flow for the SPA; retire the demo password grant.

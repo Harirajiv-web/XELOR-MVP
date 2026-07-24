@@ -1,0 +1,58 @@
+{
+  "realm": "indcore",
+  "enabled": true,
+  "sslRequired": "none",
+  "loginWithEmailAllowed": true,
+  "groups": [
+    { "name": "trishul" },
+    { "name": "kaveri" }
+  ],
+  "clients": [
+    {
+      "clientId": "indcore-api",
+      "name": "IND-CORE API",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "claim.name": "groups",
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "poongodi",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "stores@trishul.example",
+      "firstName": "S.",
+      "lastName": "Poongodi",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/trishul"]
+    },
+    {
+      "username": "kaveri-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@kaveri.example",
+      "firstName": "Kaveri",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/kaveri"]
+    }
+  ]
+}
