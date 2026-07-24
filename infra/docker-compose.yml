@@ -1,0 +1,65 @@
+# Local infra for the IND-CORE MVP prototype.
+# Images pinned to the DECISIONS-V2 Appendix A baseline (July-2026 versions).
+# Run:  docker compose -f infra/docker-compose.yml up -d
+name: ind-core
+
+services:
+  # PostgreSQL 17 + pgvector (DECISIONS-V2 §1.6, §2). The pgvector image tracks PG17.
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: indcore
+      # The container superuser bootstraps roles; the app never uses it.
+      POSTGRES_USER: indcore_owner
+      POSTGRES_PASSWORD: owner_pw
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # init scripts run once, in filename order, on first boot:
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indcore_owner -d indcore"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Valkey (cache + BullMQ). BSD-licensed Redis drop-in (DECISIONS-V2 §2).
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    command: ["valkey-server", "--save", "60", "1", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Keycloak 26 + Organizations (DECISIONS-V2 §1.5). Dev mode only for local.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    restart: unless-stopped
+    command: ["start-dev", "--features=organization", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Gotenberg (HTML -> PDF via headless Chromium), DECISIONS-V2 §2.
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    command: ["gotenberg", "--api-port=3001"]
+    ports:
+      - "3001:3001"
+
+volumes:
+  pgdata:
