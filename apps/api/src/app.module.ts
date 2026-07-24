@@ -8,6 +8,7 @@ import { WorkflowModule } from "./modules/workflow/workflow.module.js";
 import { EngineeringModule } from "./modules/engineering/engineering.module.js";
 import { InventoryModule } from "./modules/inventory/inventory.module.js";
 import { PurchaseModule } from "./modules/purchase/purchase.module.js";
+import { ProductionModule } from "./modules/production/production.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -29,6 +30,7 @@ import { PurchaseModule } from "./modules/purchase/purchase.module.js";
     EngineeringModule,
     InventoryModule,
     PurchaseModule,
+    ProductionModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
