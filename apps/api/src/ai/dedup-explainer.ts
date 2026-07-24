@@ -1,9 +1,8 @@
 import { Inject, Injectable, type OnModuleInit } from "@nestjs/common";
-import { AppError } from "@ind-core/platform";
-import { AI_ROUTER } from "../../ai/ai.tokens.js";
-import type { AiRouterService } from "../../ai/ai-router.service.js";
-import { StubProvider } from "../../ai/stub.provider.js";
-import type { DuplicateMatch, MasterRecord } from "./dedup.core.js";
+import { AppError, type DuplicateMatch, type MasterRecord } from "@ind-core/platform";
+import { AI_ROUTER } from "./ai.tokens.js";
+import type { AiRouterService } from "./ai-router.service.js";
+import { StubProvider } from "./stub.provider.js";
 
 export interface DuplicateExplainInput {
   candidate: MasterRecord;
@@ -25,21 +24,21 @@ function renderExplanation(input: DuplicateExplainInput): string {
 }
 
 /**
- * GENERAL's "brain" surface for general.master_dedup (AI #2, Tier-2 draft-record). It
- * owns how the OFFLINE stub answers for this feature, and turns a rules-produced set of
- * duplicate matches into a human-readable explanation via the router (governed + logged).
- * If governance refuses the call (kill switch / opt-out / budget), it degrades to the
- * same deterministic sentence — the feature's declared `deterministic_substitute` mode.
+ * The SHARED brain surface for general.master_dedup (AI #2, Tier-2 draft-record). It is
+ * part of the AI spine (not any one module) so EVERY module that owns masters — GENERAL
+ * companies, ENGINEERING items, later vendors/customers — turns its rules-produced
+ * matches into a human-readable explanation the same way: via the router (governed +
+ * logged), degrading to a deterministic sentence if governance refuses the call.
  */
 @Injectable()
-export class GeneralDedupExplainer implements OnModuleInit {
+export class DedupExplainer implements OnModuleInit {
   constructor(
     @Inject(AI_ROUTER) private readonly router: AiRouterService,
     private readonly stub: StubProvider,
   ) {}
 
   onModuleInit(): void {
-    // Register the offline responder so dev/CI runs with zero model spend.
+    // Register the offline responder once so dev/CI runs with zero model spend.
     this.stub.register("general.master_dedup", (input) =>
       ({ explanation: renderExplanation(input as DuplicateExplainInput) }),
     );
@@ -55,7 +54,6 @@ export class GeneralDedupExplainer implements OnModuleInit {
       return { text: r.output.explanation ?? renderExplanation(input), degraded: r.degraded ?? false };
     } catch (e) {
       if (e instanceof AppError && e.code === "AI_REFUSED") {
-        // Governance said no — fall back to the deterministic substitute (still useful).
         return { text: renderExplanation(input), degraded: true };
       }
       throw e;

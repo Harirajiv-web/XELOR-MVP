@@ -8,3 +8,4 @@ export * from "./tenancy/tenant-context.js";
 export * from "./audit/hash-chain.js";
 export * from "./api/pagination.js";
 export * from "./ai/index.js";
+export * from "./masterdata/dedup.js";

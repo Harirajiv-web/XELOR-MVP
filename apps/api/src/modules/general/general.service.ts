@@ -12,9 +12,9 @@ import {
   type AuditEntry,
   type CursorPage,
 } from "@ind-core/platform";
+import { detectDuplicates, type DuplicateMatch, type MasterRecord } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
-import { detectDuplicates, type DuplicateMatch, type MasterRecord } from "./dedup.core.js";
-import { GeneralDedupExplainer } from "./general.ai.js";
+import { DedupExplainer } from "../../ai/dedup-explainer.js";
 
 const { company, auditLog, outboxEvent } = schema;
 
@@ -47,7 +47,7 @@ export type CreateCompanyResult =
 
 @Injectable()
 export class GeneralService {
-  constructor(private readonly dedup: GeneralDedupExplainer) {}
+  constructor(private readonly dedup: DedupExplainer) {}
   /**
    * Create a company. This ONE transaction shows the binding platform pattern
    * (DECISIONS-V2 §5.4/§5.5/§3.3) that every module repeats:

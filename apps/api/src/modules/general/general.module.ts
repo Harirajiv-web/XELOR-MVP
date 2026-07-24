@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { GeneralController } from "./general.controller.js";
 import { GeneralService } from "./general.service.js";
-import { GeneralDedupExplainer } from "./general.ai.js";
 
 /**
  * GENERAL (HEXA) — the platform foundation + master data module. This is the first
@@ -12,7 +11,7 @@ import { GeneralDedupExplainer } from "./general.ai.js";
  */
 @Module({
   controllers: [GeneralController],
-  providers: [GeneralService, GeneralDedupExplainer],
+  providers: [GeneralService],
   exports: [GeneralService],
 })
 export class GeneralModule {}

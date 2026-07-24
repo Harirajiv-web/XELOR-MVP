@@ -5,6 +5,7 @@ import { AiActionLogService } from "./ai-action-log.service.js";
 import { AiRouterService } from "./ai-router.service.js";
 import { DbAiGovernance } from "./db.governance.js";
 import { GovernanceController } from "./governance.controller.js";
+import { DedupExplainer } from "./dedup-explainer.js";
 import { AuditLogService } from "../common/audit-log.service.js";
 
 /**
@@ -28,7 +29,16 @@ import { AuditLogService } from "../common/audit-log.service.js";
     AiActionLogService,
     AiRouterService,
     { provide: AI_ROUTER, useExisting: AiRouterService },
+    DedupExplainer,
   ],
-  exports: [AI_ROUTER, AI_PROVIDER, AI_GOVERNANCE, StubProvider, AiActionLogService, AuditLogService],
+  exports: [
+    AI_ROUTER,
+    AI_PROVIDER,
+    AI_GOVERNANCE,
+    StubProvider,
+    AiActionLogService,
+    AuditLogService,
+    DedupExplainer,
+  ],
 })
 export class AiModule {}

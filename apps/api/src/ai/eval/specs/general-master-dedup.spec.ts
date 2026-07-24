@@ -1,9 +1,10 @@
-import type { GoldenSet, GateRule } from "@ind-core/platform";
 import {
   exactIdMatch,
   hasDuplicate,
+  type GoldenSet,
+  type GateRule,
   type MasterRecord,
-} from "../../../modules/general/dedup.core.js";
+} from "@ind-core/platform";
 import { registerEvalSpec } from "../registry.js";
 
 interface DedupCase {

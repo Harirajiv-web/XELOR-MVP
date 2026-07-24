@@ -1,21 +1,23 @@
 /**
- * GENERAL's duplicate-detection core (feature `general.master_dedup`, AI #2). This is
- * the DETERMINISTIC brain — pure, DB-free, zero model spend. Per DECISIONS-V2 §4.3
- * ("AI explains; it never decides") the *decision* "is this a duplicate?" is made here
- * by rules; a model may later only EXPLAIN the rows these rules surface.
+ * Generic master-data duplicate detection (feature `general.master_dedup`, AI #2).
+ * Pure, DB-free, zero model spend — and generic over ANY master record (company,
+ * vendor, customer, item), so every module that owns masters shares one brain from the
+ * platform floor instead of re-inventing it (module boundaries forbid module→module
+ * reuse, §1.1). Per §4.3 the *decision* "is this a duplicate?" is made here by rules;
+ * a model may later only EXPLAIN the rows these rules surface.
  *
- * The registry's declared baseline is `pg_trgm_gstin_exact`: exact GSTIN/CIN match plus
- * trigram name similarity. Being pure, the exact same scorer runs in the live service
- * (against DB rows) AND in the eval harness (against golden-set rows) — so what ships is
- * what was graded.
+ * The registry's declared baseline is `pg_trgm_gstin_exact`: exact GSTIN/CIN (or code)
+ * match plus trigram name similarity. Being pure, the same scorer runs in the live
+ * service AND in the eval harness — so what ships is what was graded.
  */
 
-/** A master record we can dedup: company / vendor / customer / item all fit this shape. */
+/** A dedup-able master record. `gstin`/`cin` are exact-match id fields (companies);
+ *  items reuse `cin` for their item code, or any exact business key. */
 export interface MasterRecord {
   id?: string; // absent for a not-yet-created candidate
-  legalName: string;
-  gstin?: string | null;
-  cin?: string | null;
+  legalName: string; // the display/legal name to fuzzy-match
+  gstin?: string | null; // exact-match key (e.g. GSTIN)
+  cin?: string | null; // second exact-match key (e.g. CIN, or an item code)
 }
 
 export type DuplicateLevel = "definite" | "strong" | "possible";
@@ -88,8 +90,8 @@ function sameId(a?: string | null, b?: string | null): boolean {
 }
 
 /**
- * The DETERMINISTIC baseline: exact GSTIN or CIN match only. This is what the candidate
- * (the full detector) must beat on the golden set.
+ * The DETERMINISTIC baseline: exact GSTIN or CIN/code match only. This is what the
+ * candidate (the full detector) must beat on the golden set.
  */
 export function exactIdMatch(candidate: MasterRecord, existing: MasterRecord): boolean {
   return sameId(candidate.gstin, existing.gstin) || sameId(candidate.cin, existing.cin);
