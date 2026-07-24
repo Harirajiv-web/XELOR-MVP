@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { and, asc, eq, gt, inArray, or, sql } from "drizzle-orm";
-import { withTenant, schema } from "@ind-core/db";
+import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
+import { withTenant, schema, type Tx } from "@ind-core/db";
+import type { BomProvider, BomSpec } from "../../ports/bom.port.js";
 import {
   newId,
   currentTenant,
@@ -99,11 +100,65 @@ export interface BomView {
  * tenant-fenced transaction does the write + hash-chained audit + outbox event.
  */
 @Injectable()
-export class EngineeringService {
+export class EngineeringService implements BomProvider {
   constructor(
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
   ) {}
+
+  // ---- BomProvider port (read by PRODUCTION) ----
+
+  async getActiveBomForItem(itemId: string): Promise<BomSpec | null> {
+    return withTenant(async (tx) => {
+      const [b] = await tx
+        .select({ id: bom.id, itemId: bom.itemId, version: bom.version, outputQty: bom.outputQty, uom: bom.uom })
+        .from(bom)
+        .where(and(eq(bom.itemId, itemId), eq(bom.isActive, true)))
+        .orderBy(desc(bom.version))
+        .limit(1);
+      return b ? this.bomSpecInTx(tx, b) : null;
+    });
+  }
+
+  async getBomById(bomId: string): Promise<BomSpec | null> {
+    return withTenant(async (tx) => {
+      const [b] = await tx
+        .select({ id: bom.id, itemId: bom.itemId, version: bom.version, outputQty: bom.outputQty, uom: bom.uom })
+        .from(bom)
+        .where(eq(bom.id, bomId))
+        .limit(1);
+      return b ? this.bomSpecInTx(tx, b) : null;
+    });
+  }
+
+  private async bomSpecInTx(
+    tx: Tx,
+    b: { id: string; itemId: string; version: number; outputQty: string; uom: string },
+  ): Promise<BomSpec> {
+    const lines = await tx
+      .select({
+        componentItemId: bomLine.componentItemId,
+        qty: bomLine.qty,
+        uom: bomLine.uom,
+        scrapPct: bomLine.scrapPct,
+      })
+      .from(bomLine)
+      .where(eq(bomLine.bomId, b.id))
+      .orderBy(asc(bomLine.lineNo));
+    return {
+      bomId: b.id,
+      itemId: b.itemId,
+      version: b.version,
+      outputQty: Number(b.outputQty),
+      uom: b.uom,
+      components: lines.map((l) => ({
+        componentItemId: l.componentItemId,
+        qty: Number(l.qty),
+        uom: l.uom,
+        scrapPct: Number(l.scrapPct),
+      })),
+    };
+  }
 
   async createItem(
     input: CreateItemInput,

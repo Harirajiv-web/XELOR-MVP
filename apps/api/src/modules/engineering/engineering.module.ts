@@ -1,17 +1,18 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { EngineeringController } from "./engineering.controller.js";
 import { BomController } from "./bom.controller.js";
 import { EngineeringService } from "./engineering.service.js";
+import { BOM_PROVIDER } from "../../ports/bom.port.js";
 
 /**
- * ENGINEERING (AXLE, Module 02) — item master + BOM. The second ERP-domain module,
- * built on the same platform patterns as GENERAL and reusing the shared master-dedup
- * brain (from the AI spine) for item duplicate detection. AuditLogService and
- * DedupExplainer are provided globally by the AI spine, so nothing is redeclared here.
+ * ENGINEERING (AXLE, Module 02) — item master + BOM. Made @Global and exposes the
+ * BOM_PROVIDER port so PRODUCTION can read a BOM to explode component requirements
+ * without importing this module (§1.1). Reuses the shared master-dedup brain for items.
  */
+@Global()
 @Module({
   controllers: [EngineeringController, BomController],
-  providers: [EngineeringService],
-  exports: [EngineeringService],
+  providers: [EngineeringService, { provide: BOM_PROVIDER, useExisting: EngineeringService }],
+  exports: [EngineeringService, BOM_PROVIDER],
 })
 export class EngineeringModule {}
