@@ -25,7 +25,11 @@ MVP_PROTOTYPE_1/
 │     └─ migrations/{0000_init,0001_seed}.sql
 └─ apps/
    └─ api/                      # @ind-core/api — NestJS modular monolith
-      └─ src/{main,app.module, common/*, modules/general/*}
+      └─ src/
+         ├─ main.ts             # HTTP entrypoint (API)
+         ├─ worker.ts           # WORKER entrypoint — the outbox relay + consumers
+         ├─ app.module.ts, common/*, modules/{general,workflow}/*
+         └─ bus/                # the event bus: Valkey/BullMQ relay + idempotent consumer
 ```
 
 ### The conventions, made real
@@ -39,7 +43,7 @@ MVP_PROTOTYPE_1/
 | §3.3 append-only, hash-chained audit, **no disable switch** | `platform/audit/hash-chain.ts` + `audit_log` trigger in `0000` |
 | §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `db/schema/columns.ts`, `migrations/0000` |
 | §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `platform/errors`, `platform/api/pagination.ts`, `api/.../general.controller.ts` |
-| §5.4 versioned events via transactional outbox | `platform/events/*`, `general.service.ts` |
+| §5.4 versioned events via transactional outbox **+ the relay that ships them** | `platform/events/*`, `general.service.ts`, `apps/api/src/bus/*` (relay + consumer) |
 | §5.5 ledger-critical writes synchronous in one tx | `general.service.ts` (write + audit + outbox atomic) |
 | §7 canonical demo universe (Trishul, 2 GSTINs; Kaveri ElectroFab) | `migrations/0001_seed_demo_universe.sql` |
 
@@ -61,6 +65,11 @@ pnpm db:migrate        # apply 0000_init + 0001_seed (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
+
+# In a SECOND shell — the worker process (the outbox "mailman" + a demo consumer).
+# It drains outbox_event -> Valkey/BullMQ per tenant (never bypassing RLS) and a
+# demo subscriber records each event once (idempotent), so redeliveries are no-ops.
+pnpm --filter @ind-core/api worker
 ```
 
 Exercise the slice. Auth is real Keycloak OIDC — get a token, then call with `Bearer`
@@ -115,7 +124,10 @@ from sprint 1, exactly as §1.1/§1.6 require.
    ~~W1 approval engine~~ ✅ (`WorkflowExecutor` port: versioned templates, role/user
    approver resolution, SLA timers, hash-chained append-only action trail). Still to
    come: ABAC row/field scoping.
-3. The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.
+3. ~~The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.~~ ✅ done
+   (`apps/api/src/bus/*` + `worker.ts`: per-tenant drain under RLS, `FOR UPDATE SKIP
+   LOCKED`, BullMQ delivery keyed by event id, `event_consumption` dedup ledger →
+   at-least-once delivery + idempotent consumer = **exactly-once effect**).
 4. Frontend app (Next.js 15/React 19 + shadcn/ui) against `/api/v1`.
 5. Then the spine — ENGINEERING → INVENTORY → PURCHASE → PRODUCTION — per the ranking.
 6. Upgrade auth: Keycloak Organizations → tenant (replacing the group stand-in);

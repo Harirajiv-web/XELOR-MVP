@@ -77,6 +77,22 @@ export const idempotencyKey = pgTable(
   (t) => [unique("uq_idem_tenant_key").on(t.tenantId, t.key)],
 );
 
+// Consumer-side dedup ledger for the outbox relay (§5.4). One row per (consumer,
+// event) actually handled; the unique key turns a redelivery into a no-op, so the
+// bus's at-least-once guarantee becomes an exactly-once EFFECT. Append-only.
+export const eventConsumption = pgTable(
+  "event_consumption",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    consumer: text("consumer").notNull(), // logical subscriber name
+    eventId: uuid("event_id").notNull(), // the outbox_event id acknowledged
+    eventName: text("event_name").notNull(), // module.entity.verb.vN
+    consumedAt: timestamp("consumed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("uq_event_consumption").on(t.tenantId, t.consumer, t.eventId)],
+);
+
 // Every AI action is logged (§4.3), even explanation calls.
 export const aiActionLog = pgTable("ai_action_log", {
   id: uuid("id").primaryKey(),
