@@ -2,6 +2,7 @@ import {
   bigint,
   boolean,
   char,
+  date,
   index,
   integer,
   jsonb,
@@ -92,6 +93,51 @@ export const eventConsumption = pgTable(
     consumedAt: timestamp("consumed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("uq_event_consumption").on(t.tenantId, t.consumer, t.eventId)],
+);
+
+// ---- AI governance (§4.3), checked before every model call, all changes audited ----
+
+// The KILL SWITCH: per (tenant, feature_key); feature_key '*' kills all AI for a tenant.
+export const aiFeatureState = pgTable(
+  "ai_feature_state",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    featureKey: text("feature_key").notNull(), // a registry key, or '*'
+    killed: boolean("killed").notNull().default(false),
+    reason: text("reason"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: uuid("updated_by").notNull(),
+  },
+  (t) => [unique("uq_ai_feature_state").on(t.tenantId, t.featureKey)],
+);
+
+// DPDP OPT-OUT: a tenant declines AI processing entirely.
+export const aiOptOut = pgTable(
+  "ai_opt_out",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    optedOut: boolean("opted_out").notNull().default(false),
+    reason: text("reason"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: uuid("updated_by").notNull(),
+  },
+  (t) => [unique("uq_ai_opt_out").on(t.tenantId)],
+);
+
+// Daily TOKEN BUDGET + usage, per (tenant, day).
+export const aiTokenLedger = pgTable(
+  "ai_token_ledger",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    budgetDay: date("budget_day").notNull(),
+    usedTokens: bigint("used_tokens", { mode: "number" }).notNull().default(0),
+    dailyLimit: bigint("daily_limit", { mode: "number" }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("uq_ai_token_ledger").on(t.tenantId, t.budgetDay)],
 );
 
 // Every AI action is logged (§4.3), even explanation calls. Hash-chained per tenant
