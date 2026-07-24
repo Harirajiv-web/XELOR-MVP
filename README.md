@@ -1,59 +1,234 @@
 # IND-CORE Manufacturing ERP — MVP Prototype 1
 
-The HEXA/GENERAL bootstrap: the boundary-enforced modular monolith every module
-inherits. Built strictly to **`DECISIONS-V2.md`** (binding) — this scaffold makes
-its §1/§5 conventions *executable* rather than aspirational.
+A **boundary-enforced modular monolith** built strictly to **`DECISIONS-V2.md`**
+(binding). This scaffold makes its §1/§4/§5 conventions *executable* rather than
+aspirational: the platform foundation, an in-house RBAC + approval engine, the shared
+**AI spine** every module's "brain" plugs into, and the first two business modules
+(GENERAL, ENGINEERING) — each one done *correctly* so the remaining ~14 modules copy
+locked patterns instead of re-litigating them.
 
-> Scope of this prototype: the **platform foundation + the first vertical slice**
-> (GENERAL → company master). It is deliberately one thin slice done *correctly*,
-> not many done loosely — the point is to lock the patterns the other 15 modules copy.
+**Stack (locked, do not re-choose):** NestJS v11 / Node 22 · PostgreSQL 17 + **FORCE
+RLS** · Drizzle ORM · Valkey + BullMQ · Keycloak 26 OIDC · pgvector/pg_trgm ·
+Gotenberg · pnpm workspace. Provider-agnostic AI router (offline stub today,
+swappable for OpenAI/Gemini/Claude by config).
+
+> **Scope now:** platform foundation + Identity/RBAC + W1 approval engine + the shared
+> AI spine + **Module 01 GENERAL** (company master with a duplicate-detection brain) +
+> **Module 02 ENGINEERING** (item master + Bill of Materials, reusing the shared dedup
+> brain) + **Module 03 INVENTORY** (the stock ledger + the single stock write path).
+> PURCHASE and PRODUCTION are the next modules.
 
 ## What's here
 
 ```
 MVP_PROTOTYPE_1/
 ├─ infra/
-│  ├─ docker-compose.yml        # PG17+pgvector · Valkey · Keycloak 26 · Gotenberg
-│  └─ postgres/init/00-init.sql # app_user (NON-OWNER, NOBYPASSRLS) + extensions
+│  ├─ docker-compose.yml            # PG17+pg_trgm · Valkey · Keycloak 26 · Gotenberg
+│  ├─ keycloak/realm-indcore.json   # realm 'indcore': clients, groups→tenant, demo users
+│  └─ postgres/init/00-init.sql     # app_user (NON-OWNER, NOBYPASSRLS) + extensions
 ├─ packages/
-│  ├─ platform/                 # @ind-core/platform — the primitives §5 mandates
-│  │  └─ src/{ids,errors,events,tenancy,audit,api}
-│  └─ db/                       # @ind-core/db — Drizzle schema + RLS + migrations
-│     ├─ src/schema/{platform,general}.ts
+│  ├─ platform/                     # @ind-core/platform — the primitives §5 mandates
+│  │  └─ src/
+│  │     ├─ {ids,errors,events,tenancy,audit,api}/     # UUIDv7, error envelope, outbox
+│  │     │                                             #   events, cursor pagination …
+│  │     ├─ masterdata/dedup.ts     # the SHARED, pure dedup brain (AI #2 baseline+detector)
+│  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
+│  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
+│  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
+│  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
+│  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
+│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory}.ts
 │     ├─ src/{client,migrate,rls-check}.ts
-│     ├─ src/rls/leak-probe.test.ts        # two-tenant leak probe (§1.6)
-│     └─ migrations/{0000_init,0001_seed}.sql
+│     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
+│     └─ migrations/0000 … 0013.sql # see "Schema surface" below
 └─ apps/
-   └─ api/                      # @ind-core/api — NestJS modular monolith
+   └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
-         ├─ main.ts             # HTTP entrypoint (API)
-         ├─ worker.ts           # WORKER entrypoint — the outbox relay + consumers
-         ├─ app.module.ts, common/*, modules/{general,workflow}/*
-         └─ bus/                # the event bus: Valkey/BullMQ relay + idempotent consumer
+         ├─ main.ts                 # HTTP entrypoint (the API)
+         ├─ worker.ts               # WORKER entrypoint — the outbox relay ("mailman") + consumer
+         ├─ eval.ts                 # ship-gate CLI — runs a feature's golden set, exits 0/1
+         ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory
+         ├─ common/                 # tenant middleware · RBAC guard · audit · idempotency · error filter
+         ├─ bus/                    # the event bus: BullMQ relay + idempotent consumer
+         │  └─ {connection,queue,outbox-relay,event-consumer}.ts
+         ├─ ai/                     # the shared AI SPINE (see below)
+         └─ modules/
+            ├─ general/             # Module 01 — company master + master_dedup brain
+            ├─ engineering/         # Module 02 — item master + Bill of Materials
+            ├─ inventory/           # Module 03 — stock ledger + the single stock write path
+            └─ workflow/            # W1 approval engine (WorkflowExecutor port)
 ```
+
+### Schema surface (migrations 0000 → 0013)
+
+| # | Migration | What it adds |
+|---|---|---|
+| 0000 | `init` | platform tables + GENERAL first slice; UUIDv7, `tenant_id`, FORCE RLS, hash-chained `audit_log`, `outbox_event`, `company` + `gst_registration` |
+| 0001 | `seed_demo_universe` | §7 canonical data — Trishul Precision Components (one company, **two GSTINs**) + Kaveri ElectroFab |
+| 0002 | `admin_rbac` | in-app RBAC engine: `role`, `permission`, `role_permission`, `user_role` (tenant-owned, FORCE RLS) |
+| 0003 | `seed_rbac` | demo roles/permissions/assignments keyed to the fixed Keycloak user ids |
+| 0004 | `idempotency` | `Idempotency-Key` replay store — one row per (tenant, key) (§5.3) |
+| 0005 | `workflow` | W1 approval engine: versioned templates (`definition`) + live `instance` + tamper-proof action trail |
+| 0006 | `event_consumption` | consumer-side dedup ledger for the relay → idempotent consumer |
+| 0007 | `ai_action_log_chain` | makes `ai_action_log` genuinely hash-chained (§4.3, §5.2) |
+| 0008 | `ai_governance` | `ai_feature_state` (kill switch), `ai_opt_out` (DPDP), `ai_token_ledger` (daily budget) |
+| 0009 | `company_trgm_index` | GIN trigram index so the live dedup name-prefilter is fast at scale |
+| 0010 | `engineering_item` | ENGINEERING item master (§5.1 conventions, FORCE RLS, soft-delete) |
+| 0011 | `engineering_bom` | Bill of Materials — `bom` header + `bom_line`, intra-module FKs only (§1.1) |
+| 0012 | `seed_engineering` | Centrifugal Pump **CP-50** + its components + the pump's BOM (§7) |
+| 0013 | `inventory` | `warehouse`, `stock_balance` (the contended row), append-only `stock_ledger`, `stock_entry` + line; 5 seeded Trishul warehouses; stores staff get `inventory.stock.post` |
 
 ### The conventions, made real
 
 | DECISIONS-V2 rule | Where it lives |
 |---|---|
 | §1.1 module boundaries fail CI | `eslint.config.js` (eslint-plugin-boundaries) |
-| §1.2/§1.6 pooled shared-schema + **FORCE RLS**, non-owner `app_user`, `SET LOCAL` per tx | `infra/postgres/init`, `migrations/0000`, `packages/db/client.ts` |
+| §1.2/§1.6 pooled shared-schema + **FORCE RLS**, non-owner `app_user`, `SET LOCAL` per tx | `infra/postgres/init`, `migrations/0000`, `packages/db/src/client.ts` |
 | §1.6 **every tenant-scoped table has an RLS policy** (CI gate) | `packages/db/src/rls-check.ts` |
-| §1.6 **two-tenant leak probes on every migration** | `packages/db/src/rls/leak-probe.test.ts` |
-| §3.3 append-only, hash-chained audit, **no disable switch** | `platform/audit/hash-chain.ts` + `audit_log` trigger in `0000` |
-| §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `db/schema/columns.ts`, `migrations/0000` |
-| §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `platform/errors`, `platform/api/pagination.ts`, `api/.../general.controller.ts` |
-| §5.4 versioned events via transactional outbox **+ the relay that ships them** | `platform/events/*`, `general.service.ts`, `apps/api/src/bus/*` (relay + consumer) |
-| §5.5 ledger-critical writes synchronous in one tx | `general.service.ts` (write + audit + outbox atomic) |
-| §7 canonical demo universe (Trishul, 2 GSTINs; Kaveri ElectroFab) | `migrations/0001_seed_demo_universe.sql` |
+| §1.6 **two-tenant leak probes** | `packages/db/src/rls/leak-probe.test.ts` |
+| §1.3 W1 approval workflow behind a **WorkflowExecutor** port | `apps/api/src/modules/workflow/*`, `migrations/0005` |
+| §1.5 identity — tenant from a **verified token group**, never a header | `apps/api/src/common/tenant.middleware.ts` (Keycloak OIDC via `jose`) |
+| RBAC — `@RequirePermission` + a global `PermissionGuard` | `apps/api/src/common/permission.guard.ts`, `migrations/0002`/`0003` |
+| §1.4/§4.2 **provider-agnostic AI router**; unregistered `feature_key` rejected | `apps/api/src/ai/ai-router.service.ts` + `packages/platform/src/ai/feature-registry.ts` |
+| §4.3 AI governance (kill switch · DPDP opt-out · daily budget), checked & audited | `apps/api/src/ai/db.governance.ts`, `.../governance.controller.ts`, `migrations/0008` |
+| §4.3 hash-chained `ai_action_log` for **every** AI call (refusals included) | `apps/api/src/ai/ai-action-log.service.ts`, `migrations/0007` |
+| §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
+| the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
+| §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
+| §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `packages/db/src/schema/columns.ts`, `migrations/0000` |
+| §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `packages/platform/src/errors`, `.../api/pagination.ts`, `apps/api/src/common/idempotency.ts` |
+| §5.4 versioned events via transactional outbox **+ the relay that ships them** | `packages/platform/src/events/*`, `apps/api/src/bus/*` (relay + consumer) |
+| §5.5 ledger-critical writes synchronous in one tx (SELECT … FOR UPDATE on the contended row) | `apps/api/src/modules/inventory/inventory.service.ts` (balance locked, no negative stock) |
+| §5.6 the **single write path to stock** — nothing else writes stock | `apps/api/src/modules/inventory/stock.controller.ts` (`POST /api/v1/stock/entries`) |
+| §7 canonical demo universe | `migrations/0001` (Trishul, Kaveri) + `0003` (users/roles) + `0012` (CP-50 + BOM) |
 
-The **GENERAL create-company** path is the reference implementation of the pattern
-every module repeats: in one tenant-fenced transaction it performs the domain write,
-appends the hash-chained audit entry, and stages the outbox event — atomically.
+## The platform foundation (done, verified)
+
+- **Multi-tenancy** — pooled **shared-schema + FORCE RLS**. The app connects as a
+  non-owner `app_user` (`NOBYPASSRLS`); every transaction opens with `SET LOCAL` to
+  bind the tenant, so RLS fences every read and write. UUIDv7 PKs; composite indexes
+  lead with `tenant_id`.
+- **Hash-chained audit** — an append-only, per-tenant `audit_log` whose chain is
+  serialised by a transaction-scoped advisory lock. `app_user` has no UPDATE/DELETE
+  privilege on it: tamper-evident by construction, with no disable switch (§3.3).
+- **Transactional outbox + the relay ("mailman")** — domain write, audit entry, and
+  outbox event all commit in **one** transaction (§5.5). The worker
+  (`apps/api/src/bus/*` + `worker.ts`) drains `outbox_event` per tenant under RLS
+  (`FOR UPDATE SKIP LOCKED`), delivers to Valkey/BullMQ keyed by event id, and an
+  idempotent consumer records each event once in the `event_consumption` ledger — so
+  at-least-once delivery + an idempotent consumer = **exactly-once effect**.
+- **Idempotency-Key** replay store, canonical error envelope, and cursor-only
+  pagination — all enforced, all reused by every module.
+- **Module boundaries** are enforced in CI by `eslint-plugin-boundaries` from sprint 1;
+  cross-module reuse goes through the platform floor or the event bus, never a
+  module→module import or a cross-module FK.
+
+## Identity / RBAC (done)
+
+Auth is **real Keycloak 26 OIDC**. The tenant is derived only from a
+JWKS-signature-verified access token's **group** (a group per tenant) — never a trusted
+header (§1.5, guards against CVE-2025-29927). In-app RBAC (`role` / `role_permission` /
+`user_role`) is enforced by a global `PermissionGuard`; routes opt in with
+`@RequirePermission(...)`, unguarded routes pass. The production upgrade is Keycloak
+**Organizations** → tenant registry, same guard logic.
+
+## W1 approval workflow engine (done)
+
+Behind a **`WorkflowExecutor`** port (§1.3): versioned templates, role/user approver
+resolution, SLA timers, and a hash-chained append-only action trail. Kept to a hard
+feature budget — it is an approval engine, not a general BPM.
+
+## The shared AI spine — the "nervous system" every module's brain plugs into
+
+The AI layer is a **`@Global` module** (`apps/api/src/ai/`) so any module can inject the
+router without importing it. Governing principle: **"AI explains, never decides"** —
+draft-for-approval, evidence-grounded, human-in-control.
+
+- **One doorway** — `AiRouterService.complete(req)` is the single entry every AI call
+  passes through. It does exactly four things, in order: (1) **reject** any `feature_key`
+  not in the closed registry; (2) **ask governance** before spending a token; (3)
+  **route** to the configured provider; (4) **log** the call — refusals included.
+- **Provider-agnostic** — `AI_PROVIDER` binds to an **offline `StubProvider`** today
+  (zero model spend, deterministic answers for dev/CI). Pointing it at an
+  OpenAI/Gemini/Claude adapter is a one-line swap in `ai.module.ts`.
+- **Closed 8-feature registry** (`packages/platform/src/ai/feature-registry.ts`) — the
+  MVP portfolio is fixed at 8 features (the AI research cut ~32 to reach it). A call for
+  a key not in the table, or for a non-routable status, is a hard reject at runtime
+  (FR-AIO-001). Only `general.master_dedup` (AI #2) is `committed` and wired so far.
+- **Governance** (`db.governance.ts`, `migrations/0008`) — checked **before every call**,
+  fail-closed and ordered: tenant **DPDP opt-out** → **kill switch** (per-feature or the
+  tenant-wide `*`) → **daily token budget**. Each admin action (kill/release, opt-out,
+  set budget) requires a typed reason and appends a hash-chained audit row. Exposed via
+  `GET/POST /api/v1/ai/governance/*`, gated behind `ai.governance.manage`.
+- **Hash-chained `ai_action_log`** — every call (and every refusal) is recorded with a
+  content hash; no raw PII is stored.
+- **Golden-set eval gate** (§4.1) — a feature must **beat its deterministic baseline** on
+  the headline metric (F1) *and* regress no must-pass assertion, or it does not ship. Run
+  it with `pnpm --filter @ind-core/api eval <feature_key>`; the CLI exits **0 on PASS,
+  1 on FAIL**, so CI blocks promotion.
+
+## Module 01 — GENERAL (done)
+
+Company master (`company` + `gst_registration`) with the **`general.master_dedup`** brain
+(AI #2, `committed`). At create-time the brain runs a deterministic detector (exact
+GSTIN/CIN plus pg_trgm name similarity) and, on a suspected duplicate, the AI **explains**
+the finding with cited evidence — it does **not** create the record. The endpoint returns
+**`409` `duplicate_suspected`** carrying the matched rows + the explanation; the caller
+either picks the existing record or re-submits with `acknowledgeDuplicates=true` to
+override. The write path itself (domain write + hash-chained audit + outbox event) is the
+reference implementation every module repeats, all atomic in one tenant-fenced tx.
+
+Its **golden-set gate PASSES**: the fuzzy detector scores **F1 = 1.000** against the
+exact-id baseline's **0.444** (12 labelled cases mixing exact-id dups, name-variant dups,
+and clearly-distinct records) — and the "an exact-id duplicate must never be missed"
+must-pass assertion holds.
+
+## Module 02 — ENGINEERING (done)
+
+- **Item master** (`item`) — the parts catalogue (raw material / component / sub-assembly
+  / finished good / consumable), with UOM, HSN, standard cost, and purchasable /
+  manufacturable / sellable flags.
+- **Bill of Materials** (`bom` header + `bom_line`) — **versioned**, intra-module FKs only.
+  Create validates that the produced item and every component exist (via RLS-scoped
+  lookups) and **rejects a self-reference** (`BOM_SELF_REFERENCE`); multi-level cycle
+  detection is explicitly deferred to Production planning.
+- **Reuses the SHARED dedup brain** for item duplicate detection — the pure detector was
+  lifted into `packages/platform/src/masterdata/dedup.ts` and a `@Global` `DedupExplainer`
+  in the AI spine, so items get the same 409/acknowledge flow as companies, with
+  per-domain field labels (`item code`, `name`). No module→module reuse (§1.1) — the
+  brain lives on the platform floor.
+
+## Module 03 — INVENTORY (done)
+
+Warehouses, an append-only **stock ledger**, and **the single write path to stock**
+(§5.6): `POST /api/v1/stock/entries` is the only writer of stock — Production and every
+other module post here, nothing touches the stock tables directly.
+
+- **Ledger-critical posting** (§5.5) — one synchronous transaction per entry. For every
+  movement it INSERTs-and-locks the `stock_balance` row **`FOR UPDATE`**, refuses to let
+  stock go negative (`409 INSUFFICIENT_STOCK`), updates the balance, and appends an
+  **immutable** `stock_ledger` row. Then audit + a **side-effect-only** `stock.posted`
+  event — the ledger write itself never rides the bus.
+- **Entry types** — `receipt` (in), `issue` (out), `transfer` (move between warehouses,
+  two ledger rows), and `adjustment` (signed, reason-code required). Plus on-hand
+  balances (`GET /inventory/stock`) and the warehouse list.
+- **Cross-module by logical id** — `item_id` is a bare uuid (no FK, §1.1); `warehouse_id`
+  is an intra-module FK. Tenant isolation holds: another tenant's admin posting into a
+  Trishul warehouse gets `404` (RLS hides it).
+
+### Demo universe (§7)
+
+Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
+Pune-Chakan + Coimbatore); secondary tenant **Kaveri ElectroFab** (seeded for RLS
+leak-probe demos). Demo users (realm `indcore`, password `demo`): **poongodi** → Trishul
+*stores_incharge* (read-only), **venkat** → Trishul *admin* (read+create),
+**kaveri-admin** → Kaveri *admin*. Plus a **Centrifugal Pump CP-50**, its components
+(casing, impeller, shaft, seal, bolts), the pump's BOM, and five Trishul warehouses
+(accepted / quarantine / WIP / finished / scrap). `poongodi` (stores) can post stock.
 
 ## Run it
 
-Prerequisites: **Docker** (for PG17/Valkey/Keycloak/Gotenberg) and **pnpm 9**.
+Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.
 
 ```bash
 corepack enable && corepack prepare pnpm@9 --activate   # or: npm i -g pnpm@9
@@ -61,74 +236,84 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000_init + 0001_seed (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0013 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
 
 # In a SECOND shell — the worker process (the outbox "mailman" + a demo consumer).
-# It drains outbox_event -> Valkey/BullMQ per tenant (never bypassing RLS) and a
-# demo subscriber records each event once (idempotent), so redeliveries are no-ops.
+# It drains outbox_event -> Valkey/BullMQ per tenant (never bypassing RLS); the
+# consumer records each event once (idempotent), so redeliveries are no-ops.
 pnpm --filter @ind-core/api worker
+
+# The AI ship-gate (exits 0 PASS / 1 FAIL) — run per feature_key:
+pnpm --filter @ind-core/api eval general.master_dedup
 ```
 
-Exercise the slice. Auth is real Keycloak OIDC — get a token, then call with `Bearer`
+Exercise a module. Auth is real Keycloak OIDC — get a token, then call with `Bearer`
 (the tenant comes from the verified token's group, never a header):
 
 ```bash
-# a token for the Trishul user (group 'trishul' -> Trishul tenant)
+# a token for a Trishul user (group 'trishul' -> Trishul tenant)
 TOKEN=$(curl -s -X POST http://localhost:8080/realms/indcore/protocol/openid-connect/token \
-  -d grant_type=password -d client_id=indcore-api -d username=poongodi -d password=demo \
+  -d grant_type=password -d client_id=indcore-api -d username=venkat -d password=demo \
   | grep -o '"access_token":"[^"]*"' | sed 's/.*:"//;s/"$//')
 
-curl -s localhost:3000/api/v1/general/companies -H "authorization: Bearer $TOKEN"
-
+# GENERAL — a name that collides with the seeded Trishul company returns 409 with evidence.
 curl -s -X POST localhost:3000/api/v1/general/companies \
   -H "authorization: Bearer $TOKEN" \
   -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" \
-  -d '{"legalName":"Trishul — new subsidiary"}'
+  -d '{"legalName":"Trishul Precision Components Private Limited"}'
+
+# ENGINEERING — list the seeded item catalogue (CP-50 + components).
+curl -s "localhost:3000/api/v1/engineering/items" -H "authorization: Bearer $TOKEN"
+
+# INVENTORY — receive 1000 bolts into the Pune accepted store (the single stock write path),
+# then read on-hand. (item/warehouse ids come from the seed; see migrations 0012/0013.)
+curl -s -X POST localhost:3000/api/v1/stock/entries \
+  -H "authorization: Bearer $TOKEN" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" \
+  -d '{"entryType":"receipt","lines":[{"itemId":"0192a8c0-0012-7000-8000-000000000006","toWarehouseId":"0192a8c0-0013-7000-8000-000000000001","qty":1000}]}'
+curl -s "localhost:3000/api/v1/inventory/stock" -H "authorization: Bearer $TOKEN"
 ```
 
-Demo users (realm `indcore`, password `demo`) and their in-app roles:
-**poongodi** → Trishul *stores_incharge* (read-only → `403` on create),
-**venkat** → Trishul *admin* (read+create), **kaveri-admin** → Kaveri *admin*.
-No token / bad signature → `401`; authenticated-but-unpermitted → `403`. Note: run
-these **inside WSL** — Windows cannot reach the container ports on `localhost`.
+`poongodi` (stores_incharge) can read the catalogues and **post stock**, but is read-only
+on masters → `403` on a company/item create. No token / bad signature → `401`;
+authenticated-but-unpermitted → `403`.
 
-CI aggregate: `pnpm ci` (lint → typecheck → test). Boundary + RLS gates are wired
+**CI aggregate:** `pnpm ci` (lint → typecheck → test). Boundary + RLS gates are wired
 from sprint 1, exactly as §1.1/§1.6 require.
 
 ## Honest caveats (read before running)
 
-- **Docker is required** and isn't installed on the authoring machine, so the db/API
-  paths were written against the pinned images but not executed here. Expect to run
-  the steps above once Docker + pnpm are present.
-- **Node:** the baseline is **22 LTS** (`.nvmrc`); this machine has 24, which is fine
-  for dev. Pin to 22 for parity before shipping.
-- **API build (ESM + SWC)** is the single most likely thing to need a small tweak on
-  first `pnpm build`: NestJS + native ESM + SWC decorator-metadata is supported but
-  version-sensitive. If DI complains, the fallback is the stock CJS+tsc Nest builder.
-- **Auth is real Keycloak OIDC.** The tenant is derived only from a JWKS-signature-
-  verified access token (§1.5) — never a trusted header (§2, CVE-2025-29927). Token →
-  tenant uses a **group → tenant** mapping (a group per tenant); the production upgrade
-  is Keycloak **Organizations** → the tenant registry, same guard logic. The demo
-  password grant is dev-only; real clients use the auth-code flow.
-- **Idempotency-Key** is enforced as *present* on mutations; the replay/dedup store
-  is ADMINISTRATION's to build next.
-- Implemented surface is intentionally just GENERAL → company + gst_registration.
+- **Docker is required** and was not installed on the authoring machine, so the db/API
+  paths were written against the pinned images but not executed there. Expect to run the
+  steps above once Docker + pnpm are present.
+- **Windows/WSL:** run the `curl`/API steps **inside WSL** — Windows cannot reach the
+  container ports on `localhost`.
+- **Node:** the baseline is **22 LTS**; `engines` allows `>=22 <25`. Pin to 22 for parity
+  before shipping.
+- **API build (ESM + SWC):** NestJS + native ESM + SWC decorator-metadata is
+  version-sensitive; the most likely first-`pnpm build` tweak. Fallback is the stock
+  CJS+tsc Nest builder.
+- **The AI provider is the offline stub.** No real model is wired yet — explanations are
+  deterministic. Swapping in a live provider is a config change in `ai.module.ts`, gated
+  by the same governance + eval machinery.
 
 ## Next increments (in order)
 
-1. ~~Keycloak realm + OIDC guard; retire the dev headers.~~ ✅ done (`feat/keycloak-oidc`).
-2. ADMINISTRATION: ~~RBAC permission engine~~ ✅, ~~Idempotency replay store~~ ✅,
-   ~~W1 approval engine~~ ✅ (`WorkflowExecutor` port: versioned templates, role/user
-   approver resolution, SLA timers, hash-chained append-only action trail). Still to
-   come: ABAC row/field scoping.
-3. ~~The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.~~ ✅ done
-   (`apps/api/src/bus/*` + `worker.ts`: per-tenant drain under RLS, `FOR UPDATE SKIP
-   LOCKED`, BullMQ delivery keyed by event id, `event_consumption` dedup ledger →
-   at-least-once delivery + idempotent consumer = **exactly-once effect**).
-4. Frontend app (Next.js 15/React 19 + shadcn/ui) against `/api/v1`.
-5. Then the spine — ENGINEERING → INVENTORY → PURCHASE → PRODUCTION — per the ranking.
-6. Upgrade auth: Keycloak Organizations → tenant (replacing the group stand-in);
-   auth-code flow for the SPA; retire the demo password grant.
+1. ~~Platform foundation (RLS, outbox + relay, hash-chained audit, event bus).~~ ✅
+2. ~~Identity/RBAC (Keycloak OIDC + in-app permission engine) & W1 approval engine.~~ ✅
+3. ~~The shared **AI spine** — router, closed 8-feature registry, governance,
+   hash-chained action log, golden-set eval gate.~~ ✅
+4. ~~**Module 01 GENERAL** — company master + the `master_dedup` brain (gate PASSES).~~ ✅
+5. ~~**Module 02 ENGINEERING** — item master + versioned BOM, reusing the shared dedup
+   brain.~~ ✅
+6. ~~**Module 03 INVENTORY** — stock ledger + the single stock write path
+   (`POST /api/stock/entries`, the only writer of stock), ledger-critical & race-safe.~~ ✅
+7. Then **PURCHASE** → **PRODUCTION** (Production never writes stock directly — it goes
+   through Inventory's single write path).
+8. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
+9. Wire a **real AI model provider** (OpenAI/Gemini/Claude) behind the router — governed,
+   budgeted, and eval-gated exactly as the stub is.
+10. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+    auth-code flow for the SPA; retire the demo password grant.
