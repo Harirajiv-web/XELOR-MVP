@@ -71,7 +71,11 @@ export class GeneralService {
     if (!acknowledgeDuplicates) {
       const { candidate, matches } = await this.findDuplicates(input);
       if (matches.length > 0) {
-        const { text, degraded } = await this.dedup.explain({ candidate, matches });
+        const { text, degraded } = await this.dedup.explain({
+          candidate,
+          matches,
+          fieldLabels: { gstin: "GSTIN", cin: "CIN", legal_name: "name" },
+        });
         return { outcome: "duplicate_suspected", candidate, matches, explanation: text, degraded };
       }
     }

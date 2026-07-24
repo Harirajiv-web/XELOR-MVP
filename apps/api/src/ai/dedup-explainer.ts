@@ -7,6 +7,9 @@ import { StubProvider } from "./stub.provider.js";
 export interface DuplicateExplainInput {
   candidate: MasterRecord;
   matches: DuplicateMatch[];
+  /** Friendly labels per matched field, so the explanation reads naturally in each
+   *  domain (e.g. { cin: "item code", legal_name: "name" } for ENGINEERING items). */
+  fieldLabels?: Record<string, string>;
 }
 
 /** Deterministic explanation from the evidence — used BOTH as the offline stub answer
@@ -15,10 +18,12 @@ function renderExplanation(input: DuplicateExplainInput): string {
   const top = input.matches[0];
   if (!top) return `No likely duplicate found for '${input.candidate.legalName}'.`;
   const pct = Math.round(top.score * 100);
+  const labels = input.fieldLabels ?? {};
+  const fields = top.matchedFields.map((f) => labels[f] ?? f).join(", ");
   const others = input.matches.length > 1 ? ` (and ${input.matches.length - 1} more)` : "";
   return (
     `'${input.candidate.legalName}' looks like a ${top.level} match for the existing ` +
-    `'${top.existingName}' — ${pct}% on ${top.matchedFields.join(", ")}${others}. ` +
+    `'${top.existingName}' — ${pct}% on ${fields}${others}. ` +
     `Please confirm this is not a duplicate before creating it.`
   );
 }
