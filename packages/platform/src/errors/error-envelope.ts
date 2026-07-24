@@ -49,6 +49,8 @@ export const Errors = {
     new AppError("TENANT_MISSING", 401, "No tenant in request context."),
   validation: (details: Array<{ field: string; message: string }>) =>
     new AppError("VALIDATION_FAILED", 422, "Request failed validation.", details),
+  forbidden: (permission: string) =>
+    new AppError("FORBIDDEN", 403, `Missing permission: ${permission}.`),
   notFound: (what: string) =>
     new AppError("NOT_FOUND", 404, `${what} not found.`),
   conflict: (message: string) => new AppError("CONFLICT", 409, message),

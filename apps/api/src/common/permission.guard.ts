@@ -1,0 +1,52 @@
+import {
+  type CanActivate,
+  type ExecutionContext,
+  Injectable,
+  SetMetadata,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { eq } from "drizzle-orm";
+import { withTenant, schema } from "@ind-core/db";
+import { currentTenant, Errors } from "@ind-core/platform";
+
+/**
+ * ADMINISTRATION's in-app RBAC gate (DECISIONS-V2 §1.5). Authorization lives in
+ * NestJS guards + RLS, never in a token scope or a header. A route declares the
+ * permission it needs with @RequirePermission; this guard resolves the AUTHENTICATED
+ * user's effective permissions from the tenant-fenced role tables and allows or 403s.
+ */
+export const PERMISSION_KEY = "required_permission";
+export const RequirePermission = (permission: string): MethodDecorator =>
+  SetMetadata(PERMISSION_KEY, permission);
+
+const { userRole, rolePermission } = schema;
+
+@Injectable()
+export class PermissionGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const required = this.reflector.getAllAndOverride<string | undefined>(PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (!required) return true; // unguarded route
+
+    // actorId (Keycloak subject) + tenant were established by TenantMiddleware from
+    // the verified token; this guard runs inside that same tenant context.
+    const { actorId } = currentTenant();
+
+    const perms = await withTenant(async (tx) => {
+      const rows = await tx
+        .select({ permission: rolePermission.permission })
+        .from(userRole)
+        // RLS fences both tables to the current tenant, so joining on role_id is safe.
+        .innerJoin(rolePermission, eq(rolePermission.roleId, userRole.roleId))
+        .where(eq(userRole.subject, actorId));
+      return new Set(rows.map((r) => r.permission));
+    });
+
+    if (!perms.has(required)) throw Errors.forbidden(required);
+    return true;
+  }
+}

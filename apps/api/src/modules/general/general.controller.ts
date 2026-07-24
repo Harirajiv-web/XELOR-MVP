@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
+import { RequirePermission } from "../../common/permission.guard.js";
 import { GeneralService } from "./general.service.js";
 
 const createCompanySchema = z.object({
@@ -18,6 +19,7 @@ export class GeneralController {
   constructor(private readonly general: GeneralService) {}
 
   @Post()
+  @RequirePermission("general.company.create")
   async create(
     @Body() body: unknown,
     // §5.3: Idempotency-Key is required on mutating endpoints. The full replay
@@ -39,6 +41,7 @@ export class GeneralController {
   }
 
   @Get()
+  @RequirePermission("general.company.read")
   async list(@Query() query: unknown) {
     const parsed = listQuerySchema.safeParse(query);
     if (!parsed.success) {

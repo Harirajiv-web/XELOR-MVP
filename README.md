@@ -80,9 +80,11 @@ curl -s -X POST localhost:3000/api/v1/general/companies \
   -d '{"legalName":"Trishul — new subsidiary"}'
 ```
 
-Demo users (realm `indcore`, password `demo`): **poongodi** → Trishul, **kaveri-admin**
-→ Kaveri. No token / bad signature → `401`. Note: run these **inside WSL** — Windows
-cannot reach the container ports on `localhost`.
+Demo users (realm `indcore`, password `demo`) and their in-app roles:
+**poongodi** → Trishul *stores_incharge* (read-only → `403` on create),
+**venkat** → Trishul *admin* (read+create), **kaveri-admin** → Kaveri *admin*.
+No token / bad signature → `401`; authenticated-but-unpermitted → `403`. Note: run
+these **inside WSL** — Windows cannot reach the container ports on `localhost`.
 
 CI aggregate: `pnpm ci` (lint → typecheck → test). Boundary + RLS gates are wired
 from sprint 1, exactly as §1.1/§1.6 require.
@@ -109,7 +111,9 @@ from sprint 1, exactly as §1.1/§1.6 require.
 ## Next increments (in order)
 
 1. ~~Keycloak realm + OIDC guard; retire the dev headers.~~ ✅ done (`feat/keycloak-oidc`).
-2. ADMINISTRATION: RBAC/ABAC, the `WorkflowExecutor` (W1) port, Idempotency replay store.
+2. ADMINISTRATION: ~~RBAC permission engine~~ ✅ (`@RequirePermission` + tenant-fenced
+   role tables). Still to come: ABAC row/field scoping, the `WorkflowExecutor` (W1)
+   port, and the Idempotency replay store.
 3. The outbox **relay** worker (Valkey/BullMQ) + idempotent consumer dedup.
 4. Frontend app (Next.js 15/React 19 + shadcn/ui) against `/api/v1`.
 5. Then the spine — ENGINEERING → INVENTORY → PURCHASE → PRODUCTION — per the ranking.

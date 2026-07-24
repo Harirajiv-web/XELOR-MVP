@@ -1,5 +1,7 @@
 import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { TenantMiddleware } from "./common/tenant.middleware.js";
+import { PermissionGuard } from "./common/permission.guard.js";
 import { GeneralModule } from "./modules/general/general.module.js";
 
 /**
@@ -13,6 +15,8 @@ import { GeneralModule } from "./modules/general/general.module.js";
  */
 @Module({
   imports: [GeneralModule],
+  // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
+  providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
