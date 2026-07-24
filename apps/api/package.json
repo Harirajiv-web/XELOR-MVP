@@ -7,6 +7,7 @@
     "build": "nest build -b swc",
     "start": "node dist/src/main.js",
     "worker": "node dist/src/worker.js",
+    "eval": "node dist/src/eval.js",
     "start:dev": "nest start -b swc --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
