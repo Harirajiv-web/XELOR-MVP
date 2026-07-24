@@ -13,6 +13,8 @@ import {
   type CursorPage,
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
+import { detectDuplicates, type DuplicateMatch, type MasterRecord } from "./dedup.core.js";
+import { GeneralDedupExplainer } from "./general.ai.js";
 
 const { company, auditLog, outboxEvent } = schema;
 
@@ -27,8 +29,25 @@ export interface CompanyRow {
   createdAt: string;
 }
 
+/**
+ * Create returns a DISCRIMINATED result. The brain drafts a duplicate concern for a
+ * human to resolve (§4.3 "AI explains; it never decides"): on a suspected duplicate the
+ * record is NOT created — the caller either picks the existing record or re-submits with
+ * acknowledgeDuplicates=true to proceed anyway.
+ */
+export type CreateCompanyResult =
+  | { outcome: "created"; company: CompanyRow }
+  | {
+      outcome: "duplicate_suspected";
+      candidate: MasterRecord;
+      matches: DuplicateMatch[];
+      explanation: string;
+      degraded: boolean;
+    };
+
 @Injectable()
 export class GeneralService {
+  constructor(private readonly dedup: GeneralDedupExplainer) {}
   /**
    * Create a company. This ONE transaction shows the binding platform pattern
    * (DECISIONS-V2 §5.4/§5.5/§3.3) that every module repeats:
@@ -38,16 +57,56 @@ export class GeneralService {
    * All three commit atomically, fenced to the current tenant by SET LOCAL + RLS.
    */
   /**
-   * Create a company, exactly once per Idempotency-Key. The real work runs through
-   * the no-duplicates notebook: a retried request with the same key returns the
-   * first company instead of creating a second one.
+   * Create a company. First the BRAIN checks for likely duplicates (general.master_dedup):
+   * if any are found and the caller hasn't acknowledged them, nothing is created — the
+   * evidence + an explanation are returned for a human to resolve. Otherwise the create
+   * runs exactly once per Idempotency-Key (a retry with the same key returns the first
+   * company, never a second).
    */
-  async createCompany(input: CreateCompanyInput, idempotencyKey: string): Promise<CompanyRow> {
+  async createCompany(
+    input: CreateCompanyInput,
+    idempotencyKey: string,
+    acknowledgeDuplicates = false,
+  ): Promise<CreateCompanyResult> {
+    if (!acknowledgeDuplicates) {
+      const { candidate, matches } = await this.findDuplicates(input);
+      if (matches.length > 0) {
+        const { text, degraded } = await this.dedup.explain({ candidate, matches });
+        return { outcome: "duplicate_suspected", candidate, matches, explanation: text, degraded };
+      }
+    }
     const result = await runIdempotent(idempotencyKey, fingerprint(input), async () => ({
       status: 201,
       body: await this.doCreateCompany(input),
     }));
-    return result.body;
+    return { outcome: "created", company: result.body };
+  }
+
+  /**
+   * Find likely duplicates of the candidate among active companies. pg_trgm gives an
+   * index-accelerated coarse prefilter (name similarity OR exact CIN); the pure
+   * dedup.core scorer then makes the final call — identical to what the eval gate grades.
+   */
+  private async findDuplicates(
+    input: CreateCompanyInput,
+  ): Promise<{ candidate: MasterRecord; matches: DuplicateMatch[] }> {
+    const candidate: MasterRecord = { legalName: input.legalName, cin: input.cin ?? null };
+    const rows = await withTenant(async (tx) => {
+      const res = await tx.execute<{ id: string; legal_name: string; cin: string | null }>(sql`
+        select id, legal_name, cin from company
+        where is_active = true
+          and ( (${input.cin ?? null}::text is not null and cin = ${input.cin ?? null})
+                or similarity(legal_name, ${input.legalName}) > 0.3 )
+        limit 25
+      `);
+      return res.rows;
+    });
+    const existing: MasterRecord[] = rows.map((r) => ({
+      id: r.id,
+      legalName: r.legal_name,
+      cin: r.cin,
+    }));
+    return { candidate, matches: detectDuplicates(candidate, existing) };
   }
 
   private async doCreateCompany(input: CreateCompanyInput): Promise<CompanyRow> {

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Headers, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Post, Query, Res } from "@nestjs/common";
+import type { Response } from "express";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -7,6 +8,8 @@ import { GeneralService } from "./general.service.js";
 const createCompanySchema = z.object({
   legalName: z.string().min(1).max(200),
   cin: z.string().min(1).max(21).optional(),
+  // The human's explicit "yes, create it anyway" after seeing a duplicate warning.
+  acknowledgeDuplicates: z.boolean().optional(),
 });
 
 const listQuerySchema = z.object({
@@ -22,8 +25,8 @@ export class GeneralController {
   @RequirePermission("general.company.create")
   async create(
     @Body() body: unknown,
-    // §5.3: Idempotency-Key is required on mutating endpoints. The full replay
-    // store lands with ADMINISTRATION; here we enforce the contract (presence).
+    @Res({ passthrough: true }) res: Response,
+    // §5.3: Idempotency-Key is required on mutating endpoints.
     @Headers("idempotency-key") idempotencyKey?: string,
   ) {
     if (!idempotencyKey) {
@@ -37,7 +40,16 @@ export class GeneralController {
         parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
       );
     }
-    return this.general.createCompany(parsed.data, idempotencyKey);
+    const { acknowledgeDuplicates, ...input } = parsed.data;
+    const result = await this.general.createCompany(input, idempotencyKey, acknowledgeDuplicates);
+    if (result.outcome === "duplicate_suspected") {
+      // 409: a human must resolve the suspected duplicate (or re-submit with
+      // acknowledgeDuplicates=true). The evidence + explanation ride in the body.
+      res.status(409);
+      return result;
+    }
+    res.status(201);
+    return result.company;
   }
 
   @Get()
