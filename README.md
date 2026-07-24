@@ -17,7 +17,8 @@ swappable for OpenAI/Gemini/Claude by config).
 > **Module 02 ENGINEERING** (item master + Bill of Materials, reusing the shared dedup
 > brain) + **Module 03 INVENTORY** (the stock ledger + the single stock write path) +
 > **Module 04 PURCHASE** (vendors, POs approved through W1, GRNs posting stock through
-> Inventory). PRODUCTION is the next module.
+> Inventory) + **Module 05 PRODUCTION** (the make cycle — consume components, produce
+> finished goods). The full manufacturing spine (buy → stock → make) is in place.
 
 ## What's here
 
@@ -38,19 +39,19 @@ MVP_PROTOTYPE_1/
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
 │  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
 │  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
-│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase}.ts
+│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production}.ts
 │     ├─ src/{client,migrate,rls-check}.ts
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0016.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0017.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
          ├─ main.ts                 # HTTP entrypoint (the API)
          ├─ worker.ts               # WORKER entrypoint — the outbox relay ("mailman") + consumer
          ├─ eval.ts                 # ship-gate CLI — runs a feature's golden set, exits 0/1
-         ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory + Purchase
+         ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory + Purchase + Production
          ├─ common/                 # tenant middleware · RBAC guard · audit · idempotency · error filter
-         ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster
+         ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster · BomProvider
          ├─ bus/                    # the event bus: BullMQ relay + idempotent consumer
          │  └─ {connection,queue,outbox-relay,event-consumer}.ts
          ├─ ai/                     # the shared AI SPINE (see below)
@@ -59,6 +60,7 @@ MVP_PROTOTYPE_1/
             ├─ engineering/         # Module 02 — item master + Bill of Materials
             ├─ inventory/           # Module 03 — stock ledger + the single stock write path (@Global port)
             ├─ purchase/            # Module 04 — vendors + POs (W1 approval) + GRNs (post stock)
+            ├─ production/          # Module 05 — the make cycle (consume components, produce FG)
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
@@ -83,6 +85,7 @@ MVP_PROTOTYPE_1/
 | 0014 | `purchase_vendor` | PURCHASE `vendor` master (GIN trigram index on name for the shared dedup brain) |
 | 0015 | `purchase_order` | `purchase_order` + `_line` (approved through W1; `workflow_instance_id` links the approval) |
 | 0016 | `purchase_grn` | `grn` + `grn_line` — goods receipts that post stock through Inventory's write path atomically |
+| 0017 | `production` | `production_order` + `production_order_component` (BOM requirements exploded + snapshotted); consumes/produces stock through Inventory's port |
 
 ### The conventions, made real
 
@@ -100,7 +103,7 @@ MVP_PROTOTYPE_1/
 | §4.3 hash-chained `ai_action_log` for **every** AI call (refusals included) | `apps/api/src/ai/ai-action-log.service.ts`, `migrations/0007` |
 | §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
-| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`); `@Global` Workflow + Inventory modules |
+| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`); `@Global` Workflow + Inventory + Engineering |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
 | §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `packages/db/src/schema/columns.ts`, `migrations/0000` |
 | §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `packages/platform/src/errors`, `.../api/pagination.ts`, `apps/api/src/common/idempotency.ts` |
@@ -241,6 +244,22 @@ imports, §1.1).
   the PO line received-qty updates, the PO status recompute, and the stock ledger write
   all commit **atomically**. No over-receipt; a rejected receipt writes no stock.
 
+## Module 05 — PRODUCTION (done)
+
+The make cycle — and it closes the manufacturing spine (**buy → stock → make**),
+composing three modules through ports with no module→module imports.
+
+- **Explode a BOM** — a production order reads the item's BOM via the `BomProvider` port
+  (ENGINEERING) and snapshots the component requirements: `required = componentQty /
+  bomOutput × qtyToProduce × (1 + scrap%)`. The snapshot pins the BOM, so later edits
+  don't disturb a running order.
+- **Consume components** — issuing consumes all components from the source warehouse in
+  ONE atomic stock issue through Inventory's `StockPoster` port; if any component is
+  short, the whole issue is refused (`INSUFFICIENT_STOCK`) and nothing is written.
+- **Produce finished goods** — completing receives the finished good into the FG
+  warehouse (again through the port). Production never writes stock itself (§5.6); it is
+  gated OFF until Inventory hits its stock-accuracy target (the SPAR ↔ KILN contract).
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -261,7 +280,7 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0016 (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0017 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
@@ -337,8 +356,8 @@ from sprint 1, exactly as §1.1/§1.6 require.
    (`POST /api/stock/entries`, the only writer of stock), ledger-critical & race-safe.~~ ✅
 7. ~~**Module 04 PURCHASE** — vendors + POs (approved through W1) + GRNs (posting stock
    through Inventory), composed via app-level ports.~~ ✅
-8. **PRODUCTION** — consume components + produce finished goods, also through Inventory's
-   single write path (gated until Inventory hits its stock-accuracy target).
+8. ~~**Module 05 PRODUCTION** — consume components + produce finished goods through
+   Inventory's write path; closes the buy → stock → make spine.~~ ✅
 9. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
 10. Wire a **real AI model provider** (OpenAI/Gemini/Claude) behind the router — governed,
     budgeted, and eval-gated exactly as the stub is.
