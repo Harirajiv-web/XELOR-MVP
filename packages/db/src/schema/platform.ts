@@ -1,5 +1,6 @@
 import {
   bigint,
+  boolean,
   char,
   index,
   integer,
@@ -93,14 +94,29 @@ export const eventConsumption = pgTable(
   (t) => [unique("uq_event_consumption").on(t.tenantId, t.consumer, t.eventId)],
 );
 
-// Every AI action is logged (§4.3), even explanation calls.
-export const aiActionLog = pgTable("ai_action_log", {
-  id: uuid("id").primaryKey(),
-  tenantId: uuid("tenant_id").notNull(),
-  featureKey: text("feature_key").notNull(), // must exist in the closed registry (§4.2)
-  actorId: uuid("actor_id").notNull(),
-  inputHash: char("input_hash", { length: 64 }).notNull(),
-  outputHash: char("output_hash", { length: 64 }),
-  decision: jsonb("decision"),
-  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
-});
+// Every AI action is logged (§4.3), even explanation calls. Hash-chained per tenant
+// (seq/prev_hash/hash), append-only, non-disableable — the same tamper-evidence the
+// audit log and workflow trail carry. Content hashes (input/output) keep prompts and
+// PII out of the log while proving what was sent/returned.
+export const aiActionLog = pgTable(
+  "ai_action_log",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    seq: bigint("seq", { mode: "number" }).notNull(), // per-tenant chain order
+    featureKey: text("feature_key").notNull(), // must exist in the closed registry (§4.2)
+    actorId: uuid("actor_id").notNull(),
+    inputHash: char("input_hash", { length: 64 }).notNull(),
+    outputHash: char("output_hash", { length: 64 }),
+    decision: jsonb("decision"),
+    model: text("model"), // concrete model id used (e.g. stub-deterministic, gpt-5-nano)
+    tier: text("tier"), // small | premium
+    inputTokens: bigint("input_tokens", { mode: "number" }).notNull().default(0),
+    outputTokens: bigint("output_tokens", { mode: "number" }).notNull().default(0),
+    degraded: boolean("degraded").notNull().default(false),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    prevHash: char("prev_hash", { length: 64 }).notNull(),
+    hash: char("hash", { length: 64 }).notNull(),
+  },
+  (t) => [unique("uq_ai_action_tenant_seq").on(t.tenantId, t.seq)],
+);
