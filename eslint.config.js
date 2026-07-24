@@ -56,12 +56,14 @@ export default [
             { from: "platform", allow: ["platform"] },
             // db builds on platform only
             { from: "db", allow: ["platform", "db"] },
-            // a module may use platform, db, and only its OWN module
+            // a module may use platform, db, shared app infrastructure (common/), and
+            // only its OWN module — never a sibling business module.
             {
               from: "module",
               allow: [
                 "platform",
                 "db",
+                "app",
                 ["module", { moduleName: "${from.moduleName}" }],
               ],
             },
