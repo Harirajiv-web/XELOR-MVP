@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { VendorController } from "./vendor.controller.js";
 import { PoController } from "./po.controller.js";
+import { GrnController } from "./grn.controller.js";
 import { PurchaseService } from "./purchase.service.js";
 
 /**
@@ -11,7 +12,7 @@ import { PurchaseService } from "./purchase.service.js";
  * imports (§1.1).
  */
 @Module({
-  controllers: [VendorController, PoController],
+  controllers: [VendorController, PoController, GrnController],
   providers: [PurchaseService],
   exports: [PurchaseService],
 })

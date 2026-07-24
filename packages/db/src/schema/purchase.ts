@@ -72,3 +72,34 @@ export const purchaseOrderLine = pgTable(
   },
   (t) => [unique("uq_poline_po_line").on(t.tenantId, t.poId, t.lineNo)],
 );
+
+// A goods receipt against a PO. Posting a GRN records stock through Inventory's single
+// write path (STOCK_POSTER port) in the SAME transaction — the doc, the PO line updates,
+// and the stock ledger all commit atomically. warehouse_id is a cross-module ref (no FK).
+export const grn = pgTable(
+  "grn",
+  {
+    ...tenantScopedColumns,
+    grnNo: text("grn_no").notNull(),
+    poId: uuid("po_id").notNull(), // intra-module FK -> purchase_order
+    vendorId: uuid("vendor_id").notNull(), // denormalised snapshot
+    warehouseId: uuid("warehouse_id").notNull(), // received into (Inventory warehouse; logical ref)
+    grnDate: timestamp("grn_date", { withTimezone: true }).notNull().defaultNow(),
+    status: text("status").notNull().default("posted"),
+  },
+  (t) => [unique("uq_grn_tenant_no").on(t.tenantId, t.grnNo), index("ix_grn_tenant_po").on(t.tenantId, t.poId)],
+);
+
+export const grnLine = pgTable(
+  "grn_line",
+  {
+    ...tenantScopedColumns,
+    grnId: uuid("grn_id").notNull(), // intra-module FK -> grn
+    lineNo: integer("line_no").notNull(),
+    poLineId: uuid("po_line_id").notNull(), // intra-module FK -> purchase_order_line
+    itemId: uuid("item_id").notNull(), // logical ref
+    qty: numeric("qty", { precision: 18, scale: 3 }).notNull(),
+    batch: text("batch").notNull().default(""),
+  },
+  (t) => [unique("uq_grnline_grn_line").on(t.tenantId, t.grnId, t.lineNo)],
+);

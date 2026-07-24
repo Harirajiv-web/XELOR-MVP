@@ -22,8 +22,9 @@ import {
   type WorkflowExecutor,
   type WorkflowInstanceView,
 } from "../../ports/workflow.port.js";
+import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 
-const { vendor, purchaseOrder, purchaseOrderLine, outboxEvent } = schema;
+const { vendor, purchaseOrder, purchaseOrderLine, grn, grnLine, outboxEvent } = schema;
 
 export interface CreateVendorInput {
   code: string;
@@ -64,6 +65,7 @@ export interface CreatePoInput {
   lines: CreatePoLineInput[];
 }
 export interface PoLineView {
+  id: string;
   lineNo: number;
   itemId: string;
   qty: string;
@@ -99,6 +101,38 @@ export interface PoActionResult {
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
+export interface CreateGrnLineInput {
+  poLineId: string;
+  qty: number;
+  batch?: string;
+}
+export interface CreateGrnInput {
+  poId: string;
+  warehouseId: string;
+  grnDate?: string;
+  lines: CreateGrnLineInput[];
+}
+export interface GrnLineView {
+  lineNo: number;
+  poLineId: string;
+  itemId: string;
+  qty: string;
+  batch: string;
+}
+export interface GrnView {
+  id: string;
+  grnNo: string;
+  poId: string;
+  poNo: string;
+  vendorId: string;
+  warehouseId: string;
+  grnDate: string;
+  status: string;
+  poStatus: string; // the PO's status after this receipt
+  lines: GrnLineView[];
+  stockMovements?: Array<{ itemId: string; warehouseId: string; delta: number; balanceAfter: number }>;
+}
+
 /**
  * PURCHASE — vendor master (this file), plus purchase orders and goods receipts (added
  * alongside). Vendor creation reuses the shared master-dedup brain exactly like GENERAL
@@ -111,6 +145,7 @@ export class PurchaseService {
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
     @Inject(WORKFLOW_EXECUTOR) private readonly wf: WorkflowExecutor,
+    @Inject(STOCK_POSTER) private readonly stock: StockPoster,
   ) {}
 
   async createVendor(
@@ -439,6 +474,186 @@ export class PurchaseService {
     });
   }
 
+  // ---- Goods receipts (GRN) ----
+
+  async createGrn(input: CreateGrnInput, idempotencyKey: string): Promise<GrnView> {
+    if (input.lines.length === 0) {
+      throw Errors.validation([{ field: "lines", message: "a goods receipt needs at least one line" }]);
+    }
+    const result = await runIdempotent(idempotencyKey, fingerprint(input), async () => ({
+      status: 201,
+      body: await this.doCreateGrn(input),
+    }));
+    return result.body;
+  }
+
+  /**
+   * Receive goods against an approved PO. The stock receipt is posted through Inventory's
+   * STOCK_POSTER port IN THIS SAME TRANSACTION, so the GRN doc, the PO line received-qty
+   * updates, and the stock ledger commit atomically (§5.5/§5.6). No over-receipt.
+   */
+  private async doCreateGrn(input: CreateGrnInput): Promise<GrnView> {
+    const { tenantId, actorId } = currentTenant();
+    const now = new Date();
+    return withTenant(async (tx) => {
+      const [po] = await tx
+        .select({ id: purchaseOrder.id, poNo: purchaseOrder.poNo, status: purchaseOrder.status, vendorId: purchaseOrder.vendorId })
+        .from(purchaseOrder)
+        .where(eq(purchaseOrder.id, input.poId))
+        .limit(1);
+      if (!po) throw Errors.notFound("purchase order");
+      if (po.status !== "approved" && po.status !== "partially_received") {
+        throw new AppError("PO_NOT_RECEIVABLE", 409, `PO is ${po.status}; only an approved PO can be received.`);
+      }
+
+      const poLines = await tx
+        .select({ id: purchaseOrderLine.id, itemId: purchaseOrderLine.itemId, qty: purchaseOrderLine.qty, receivedQty: purchaseOrderLine.receivedQty })
+        .from(purchaseOrderLine)
+        .where(eq(purchaseOrderLine.poId, input.poId));
+      const byId = new Map(poLines.map((l) => [l.id, l]));
+
+      // Validate every GRN line against its PO line (belongs to the PO; no over-receipt).
+      const stockLines: Array<{ itemId: string; toWarehouseId: string; qty: number; batch: string }> = [];
+      const grnLinesData: Array<{ poLineId: string; itemId: string; qty: number; batch: string }> = [];
+      input.lines.forEach((l, i) => {
+        const pl = byId.get(l.poLineId);
+        if (!pl) throw new AppError("GRN_LINE_INVALID", 422, `line ${i + 1}: poLineId is not on this PO`);
+        const remaining = Number(pl.qty) - Number(pl.receivedQty);
+        if (l.qty > remaining + 1e-9) {
+          throw new AppError("OVER_RECEIPT", 422, `line ${i + 1}: receiving ${l.qty} exceeds remaining ${remaining}`);
+        }
+        const batch = l.batch ?? "";
+        stockLines.push({ itemId: pl.itemId, toWarehouseId: input.warehouseId, qty: l.qty, batch });
+        grnLinesData.push({ poLineId: l.poLineId, itemId: pl.itemId, qty: l.qty, batch });
+      });
+
+      // ATOMIC stock write — Inventory's single write path, inside this GRN transaction.
+      const post = await this.stock.postInTx(tx, { entryType: "receipt", remarks: "GRN", lines: stockLines });
+
+      const grnId = newId();
+      const grnNo = `GRN-${(grnId.split("-").pop() ?? grnId).toUpperCase()}`;
+      const grnDate = input.grnDate ? new Date(input.grnDate) : now;
+      await tx.insert(grn).values({
+        id: grnId,
+        tenantId,
+        createdBy: actorId,
+        updatedBy: actorId,
+        grnNo,
+        poId: input.poId,
+        vendorId: po.vendorId,
+        warehouseId: input.warehouseId,
+        grnDate,
+        status: "posted",
+      });
+      await tx.insert(grnLine).values(
+        grnLinesData.map((g, i) => ({
+          id: newId(),
+          tenantId,
+          createdBy: actorId,
+          updatedBy: actorId,
+          grnId,
+          lineNo: i + 1,
+          poLineId: g.poLineId,
+          itemId: g.itemId,
+          qty: g.qty.toFixed(3),
+          batch: g.batch,
+        })),
+      );
+
+      // Bump received_qty on each PO line, then recompute the PO status.
+      let allReceived = true;
+      for (const pl of poLines) {
+        const recvThis = input.lines.filter((x) => x.poLineId === pl.id).reduce((s, x) => s + x.qty, 0);
+        const newReceived = Number(pl.receivedQty) + recvThis;
+        if (recvThis > 0) {
+          await tx
+            .update(purchaseOrderLine)
+            .set({ receivedQty: newReceived.toFixed(3), updatedBy: actorId, updatedAt: now })
+            .where(eq(purchaseOrderLine.id, pl.id));
+        }
+        if (newReceived + 1e-9 < Number(pl.qty)) allReceived = false;
+      }
+      const poStatus = allReceived ? "received" : "partially_received";
+      await tx
+        .update(purchaseOrder)
+        .set({ status: poStatus, updatedBy: actorId, updatedAt: now })
+        .where(eq(purchaseOrder.id, input.poId));
+
+      await this.audit.appendInTx(tx, {
+        action: "purchase.grn.created",
+        entityType: "grn",
+        entityId: grnId,
+        data: { grnNo, poId: input.poId, poStatus, lines: grnLinesData.length },
+      });
+      await tx.insert(outboxEvent).values({
+        id: newId(),
+        tenantId,
+        name: eventName("purchase", "grn", "created"),
+        payload: { id: grnId, grnNo, poId: input.poId },
+        createdAt: now,
+      });
+
+      return {
+        id: grnId,
+        grnNo,
+        poId: input.poId,
+        poNo: po.poNo,
+        vendorId: po.vendorId,
+        warehouseId: input.warehouseId,
+        grnDate: grnDate.toISOString(),
+        status: "posted",
+        poStatus,
+        lines: grnLinesData.map((g, i) => ({
+          lineNo: i + 1,
+          poLineId: g.poLineId,
+          itemId: g.itemId,
+          qty: g.qty.toFixed(3),
+          batch: g.batch,
+        })),
+        stockMovements: post.movements.map((m) => ({
+          itemId: m.itemId,
+          warehouseId: m.warehouseId,
+          delta: m.delta,
+          balanceAfter: m.balanceAfter,
+        })),
+      };
+    });
+  }
+
+  async getGrn(grnId: string): Promise<GrnView> {
+    return withTenant(async (tx) => {
+      const [g] = await tx
+        .select({
+          id: grn.id,
+          grnNo: grn.grnNo,
+          poId: grn.poId,
+          poNo: purchaseOrder.poNo,
+          poStatus: purchaseOrder.status,
+          vendorId: grn.vendorId,
+          warehouseId: grn.warehouseId,
+          grnDate: grn.grnDate,
+          status: grn.status,
+        })
+        .from(grn)
+        .innerJoin(purchaseOrder, eq(purchaseOrder.id, grn.poId))
+        .where(eq(grn.id, grnId))
+        .limit(1);
+      if (!g) throw Errors.notFound("GRN");
+      const lines = await tx
+        .select({
+          lineNo: grnLine.lineNo,
+          poLineId: grnLine.poLineId,
+          itemId: grnLine.itemId,
+          qty: grnLine.qty,
+          batch: grnLine.batch,
+        })
+        .from(grnLine)
+        .where(eq(grnLine.grnId, grnId))
+        .orderBy(asc(grnLine.lineNo));
+      return { ...g, grnDate: g.grnDate.toISOString(), lines };
+    });
+  }
+
   private async loadPo(
     tx: Tx,
     poId: string,
@@ -473,6 +688,7 @@ export class PurchaseService {
     if (!po) throw Errors.notFound("purchase order");
     const lines = await tx
       .select({
+        id: purchaseOrderLine.id,
         lineNo: purchaseOrderLine.lineNo,
         itemId: purchaseOrderLine.itemId,
         qty: purchaseOrderLine.qty,
