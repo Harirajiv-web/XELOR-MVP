@@ -6,6 +6,7 @@ import { AiModule } from "./ai/ai.module.js";
 import { GeneralModule } from "./modules/general/general.module.js";
 import { WorkflowModule } from "./modules/workflow/workflow.module.js";
 import { EngineeringModule } from "./modules/engineering/engineering.module.js";
+import { InventoryModule } from "./modules/inventory/inventory.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -20,7 +21,7 @@ import { EngineeringModule } from "./modules/engineering/engineering.module.js";
   // AiModule is @Global — the shared AI spine (router, governance, hash-chained
   // ai_action_log) every module's "brain" injects. Listed first so it is available
   // platform-wide before the business modules load.
-  imports: [AiModule, GeneralModule, WorkflowModule, EngineeringModule],
+  imports: [AiModule, GeneralModule, WorkflowModule, EngineeringModule, InventoryModule],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
 })
