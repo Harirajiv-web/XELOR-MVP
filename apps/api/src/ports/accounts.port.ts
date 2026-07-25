@@ -50,6 +50,32 @@ export interface CustomerOutstanding {
   oldestDueDate: string | null;
 }
 
+/** One line of a journal a sibling module has already valued. */
+export interface PostedJournalLine {
+  accountCode: string;
+  debit?: number;
+  credit?: number;
+  memo?: string;
+  customerRef?: string | null;
+  vendorRef?: string | null;
+}
+
+export interface PostJournalRequest {
+  voucherType: string;
+  postingDate: string;
+  narration: string;
+  sourceModule: string;
+  sourceDocType: string;
+  sourceDocId: string;
+  lines: PostedJournalLine[];
+}
+
+export interface PostJournalResult {
+  voucherId: string;
+  voucherNo: string;
+  totalDebit: number;
+}
+
 export interface AccountsPoster {
   /**
    * Raise a sales invoice INSIDE the caller's transaction, so the dispatch, the stock
@@ -57,6 +83,14 @@ export interface AccountsPoster {
    * source document: a replay returns the original invoice, never a second one.
    */
   raiseSalesInvoiceInTx(tx: Tx, input: RaiseSalesInvoiceInput): Promise<RaiseSalesInvoiceResult>;
+  /**
+   * Post an arbitrary already-valued journal inside the caller's transaction — HRM's
+   * payroll posting (HR-51) and, later, Expenditure's. The four checks still apply
+   * (balanced, period open, accounts exist and are postable, not a duplicate), and the
+   * source document keys the idempotency, so replaying `post-journal` yields exactly ONE
+   * voucher no matter how many times it is called.
+   */
+  postJournalInTx(tx: Tx, input: PostJournalRequest): Promise<PostJournalResult>;
   /** What SMBD's credit gate asks before confirming an order. */
   getCustomerOutstanding(customerId: string): Promise<CustomerOutstanding>;
   /** Same question, inside a transaction the caller already holds. */

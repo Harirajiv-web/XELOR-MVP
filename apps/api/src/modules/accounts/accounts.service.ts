@@ -22,6 +22,8 @@ import { AuditLogService } from "../../common/audit-log.service.js";
 import type {
   AccountsPoster,
   CustomerOutstanding,
+  PostJournalRequest,
+  PostJournalResult,
   RaiseSalesInvoiceInput,
   RaiseSalesInvoiceResult,
 } from "../../ports/accounts.port.js";
@@ -233,6 +235,26 @@ export class AccountsService implements AccountsPoster {
       }),
     }));
     return result.body;
+  }
+
+  /**
+   * Contract with any module that has already valued a set of postings — HRM's payroll
+   * journal (HR-51) is the first. Runs inside the caller's transaction and through the
+   * same `postVoucherInTx` single write path, so the four checks cannot be skipped and a
+   * replay returns the ORIGINAL voucher rather than double-posting.
+   */
+  async postJournalInTx(tx: Tx, input: PostJournalRequest): Promise<PostJournalResult> {
+    return this.postVoucherInTx(tx, {
+      voucherType: input.voucherType,
+      postingDate: input.postingDate,
+      narration: input.narration,
+      postingMode: "sync",
+      sourceModule: input.sourceModule,
+      sourceDocType: input.sourceDocType,
+      sourceDocId: input.sourceDocId,
+      idempotencyKey: `${input.sourceModule}:${input.sourceDocType}:${input.sourceDocId}`,
+      lines: input.lines,
+    });
   }
 
   /* --------------------------- the sales invoice -------------------------- */

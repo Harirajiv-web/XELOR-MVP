@@ -22,8 +22,10 @@ swappable in by the same config.
 > finished goods) + **Module 06 INSPECTION/QMS** (sampling, inspections, dispositions, and
 > the quality gate Production now honours) + **Module 07 SMBD** (customers, sales orders
 > with real GST place-of-supply, credit gate, dispatch) + **Module 08 ACCOUNTS** (the
-> append-only general ledger, the AR subledger, receipts). The order-to-cash spine
-> (buy → stock → make → inspect → sell → **book it**) is in place.
+> append-only general ledger, the AR subledger, receipts) + **Module 09 HRM &
+> ATTENDANCE** (punch → attendance → **deemed wages (s.2(y))** → payroll → payslip → GL).
+> The order-to-cash spine (buy → stock → make → inspect → sell → **book it**) is in place,
+> and so is the people-and-pay spine that feeds it.
 
 ## What's here
 
@@ -79,10 +81,11 @@ MVP_PROTOTYPE_1/
             ├─ quality/             # Module 06 — inspections, sampling, dispositions (@Global gate port)
             ├─ sales/               # Module 07 — customers, sales orders + GST, credit gate, dispatch
             ├─ accounts/            # Module 08 — append-only GL, AR subledger, receipts (@Global ledger port)
+            ├─ hrm/                 # Module 09 — attendance, leave, deemed wages, payroll → GL
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
-### Schema surface (migrations 0000 → 0013)
+### Schema surface (migrations 0000 → 0025)
 
 | # | Migration | What it adds |
 |---|---|---|
@@ -110,6 +113,8 @@ MVP_PROTOTYPE_1/
 | 0021 | `seed_sales` | four demo customers chosen to exercise place of supply: Pune (intra), Bengaluru (inter), Coimbatore (intra *or* inter depending on the selling GSTIN), and one unregistered buyer (§7) |
 | 0022 | `accounts` | `gl_account`, `acc_period` (the close), `journal_voucher` + `journal_line` under the **three-layer append-only guard**, `ar_open_item` (GENERATED `outstanding`), `settlement` + allocations |
 | 0023 | `seed_accounts` | a Schedule III-shaped chart of accounts (separate GST head per direction, so a return is a *query*) + FY 2026-27 periods with April–June closed and July open |
+| 0024 | `hrm` | the **platform-global, append-only statutory rate book** (`stat_wage_definition`, `stat_epf_config`, `stat_esi_config`, `stat_pt_slab`, `stat_tds_config` + slabs, `stat_gratuity_config`, `stat_ot_config` — UPDATE/DELETE revoked *and* trigger-blocked) + 19 tenant-scoped tables: `employee` (encrypted PII columns), `pii_access_log`, `shift`, `shift_roster`, append-only `biometric_punch`, `attendance_day` (lock-guarded), `regularisation_request`, leave, salary structures, `payroll_run` (**`ck_payrollrun_sod`**), `payslip` (**the s.2(y) identity as CHECK constraints**), `payslip_line`, `statutory_contribution` |
+| 0025 | `seed_hrm` | the rate book itself — s.2(y) 50% threshold (eff. 21-Nov-2025), EPF ceiling ₹15,000 (re-notified 29-May-2026), ESI ₹21,000, Maharashtra PT (with the February ₹300), Tamil Nadu half-yearly PT, FY 2026-27 new-regime slabs + §87A, gratuity 15/26 with the **dual vesting horizon** — each row carrying a `source_note`; plus the §20 shifts, leave types, salary structure and ten employees, and the payroll GL accounts |
 
 ### The conventions, made real
 
@@ -194,7 +199,9 @@ draft-for-approval, evidence-grounded, human-in-control.
 - **Closed 8-feature registry** (`packages/platform/src/ai/feature-registry.ts`) — the
   MVP portfolio is fixed at 8 features (the AI research cut ~32 to reach it). A call for
   a key not in the table, or for a non-routable status, is a hard reject at runtime
-  (FR-AIO-001). Only `general.master_dedup` (AI #2) is `committed` and wired so far.
+  (FR-AIO-001). Two are wired: `general.master_dedup` (AI #2, `committed`, Tier-2) and
+  `hrm.payslip_explainer` (AI #7, `stretch`, **Tier-3 advisory-only-forever**). INSPECTION
+  ships **zero AI** for the same reason — no key of its own exists in the closed set.
 - **Governance** (`db.governance.ts`, `migrations/0008`) — checked **before every call**,
   fail-closed and ordered: tenant **DPDP opt-out** → **kill switch** (per-feature or the
   tenant-wide `*`) → **daily token budget**. Each admin action (kill/release, opt-out,
@@ -236,6 +243,11 @@ non-zero on any violation. Measured: **0 violations** on both the stub and the l
 model; with the live 3B model 2–3 of 5 explanations are refused by the guards and degrade
 to the deterministic wording. That degradation rate is the honest quality ceiling of a 3B
 model — a larger model clears the guards more often; the safety behaviour is identical.
+
+The same shape was applied to `hrm.payslip_explainer` (Module 09), with two rules the
+dedup gate does not need: an explanation may not **advise** the employee, and it may not
+**judge** whether the pay is correct. "You appear to have been underpaid" is not a bad
+sentence; it is a legal event.
 
 ## Module 01 — GENERAL (done)
 
@@ -418,6 +430,90 @@ tables. That keeps the module graph acyclic and makes the rule structural.
 - **Receipts settle oldest-first**, and `outstanding` is a GENERATED column — it cannot
   drift from the figures it derives from.
 
+## Module 09 — HRM & ATTENDANCE (done)
+
+The people-and-pay backbone, fixed as **one auditable pipeline**:
+
+> **punch → attendance day → payable days / OT → DEEMED WAGES → payroll → payslip → GL**
+
+This blueprint carries the largest compliance delta of any module, because since
+**21 Nov 2025** all four Labour Codes are in force and the Code on Wages **s.2(y)** changed
+the wage base payroll computes on. Every SMB spreadsheet — and most legacy payroll tools —
+still computes PF on Basic + DA. That is systematic underpayment from day one, with
+interest and damages under EPF §14B and a gratuity shortfall waiting at exit.
+
+**The s.2(y) deemed-wages engine is the centre of the module.** When excluded components
+(HRA, OT, conveyance, special allowance…) exceed 50% of total remuneration, the *excess* is
+added back to "wages". Sanjay Patil's June payslip is the case that makes it visible:
+
+| | ₹ |
+|---|---|
+| Basic 9,750 + HRA 3,900 + Special 5,850 + **OT (8h at 2×) 1,500** | **21,000** |
+| Included wages (Basic) | 9,750 |
+| Excluded components — **53.57%** of total | 11,250 |
+| 50% of total remuneration | 10,500 |
+| **Add-back (the excess only)** | **750** |
+| **Deemed wages — the PF and gratuity base** | **10,500** |
+| EPF employee 12% × 10,500 | **1,260** *(a Basic+DA engine says 1,170)* |
+
+The overtime is what tips it over — and OT is an *excluded* component, so paying it
+triggers the very add-back the employer wasn't computing.
+
+- **Statutory rates are data, never code.** Not one rate, slab, ceiling or threshold is a
+  literal anywhere in `src/`. The `stat_*` tables are platform-global and effective-dated,
+  resolved **as-of the payroll period**, and each `statutory_contribution` row stores the
+  `config_ref` of the exact row that produced it. A rate change is an INSERT with a new
+  `effective_from` — and **UPDATE/DELETE are revoked and trigger-blocked**, so a rate can be
+  superseded but never edited. A June-2026 payslip recomputes against June-2026's rates
+  forever.
+- **The published golden vectors are executable.** The six hand-computed payslips in
+  HRM §20.4/§20.5 are the test suite (`TC-GOLD-*`), and the end-to-end run asserts four of
+  them against a live database to the rupee: Sanjay's add-back, Kavita's exact-50% boundary
+  and §87A rebate, Imran's ceiling cap under LOP proration, Priya's slab walk.
+- **The s.2(y) identity is a CHECK constraint.** `deemed = included + addback` and
+  `excluded = total − included` are asserted by the *database* on every payslip row, so a
+  wrong PF base cannot be persisted even by a code path that has not been written yet.
+  The arithmetic itself runs in **integer paise**, because rounding each step in floating
+  point makes an exact 50/50 split at an odd paise total disagree with itself by a paisa —
+  and the boundary is precisely where it matters.
+- **Attendance is a pure function, so a disputed day is re-derived, not argued about.**
+  Punches in, roster + holiday + leave in, one row out — replayable in any order, any number
+  of times. A **C-shift out-punch at 06:10 the next morning belongs to the previous
+  attendance date** (the case a `WHERE punch_time::date = att_date` query loses every
+  night), and the pairing window is bounded by the neighbouring rostered shifts so
+  back-to-back nights don't steal each other's punches.
+- **A single punch is never auto-Present.** It becomes Pending-Regularisation, the month
+  **cannot be locked** while one remains, and approving a regularisation **appends a
+  corrective punch and replays the day** — it never edits what the device recorded. The raw
+  punch store is append-only at the grant *and* at a trigger.
+- **Segregation of duties, defended three times.** The preparer's role does not carry
+  `hrm.payroll.approve` at all; the service refuses an approver equal to the preparer; and
+  `ck_payrollrun_sod` refuses it in the database, even for a direct SQL statement.
+- **PII is encrypted, masked, and revealed only under audit.** PAN / Aadhaar / bank use
+  AES-256-GCM with the **tenant and field bound in as additional authenticated data** — a
+  ciphertext lifted into another tenant's row simply will not decrypt. Aadhaar is checked
+  against its Verhoeff checksum *before* encryption. Every unmask writes a `pii_access_log`
+  row with the reason typed, on a table where UPDATE/DELETE are revoked. Legal basis is
+  DPDP **s.7 legitimate use** — no consent theatre — and the wording stays "DPDP-**ready**".
+- **Payroll posts through the ACCOUNTS port, same as everyone else.** Salary cost by nature,
+  employer contributions as expense, net pay and each statute as separate payables — one
+  synchronous transaction, and the ledger refuses a **closed period** (June's salaries post
+  on the July pay date, which is what actually happens). A replayed `post-journal` returns
+  the *original* voucher.
+- **`hrm.payslip_explainer` (AI #7, registered Tier-3 advisory-only).** The registered
+  deterministic baseline is a complete explanation on its own; a model may only re-word it,
+  and the grounding gate rejects any figure not already on the payslip — plus, uniquely for
+  this feature, any **advice** ("you should contact HR") and any **claim of error** ("you
+  appear to have been underpaid"). Those are not bad sentences; they are legal events.
+
+**Verified end-to-end against PG17** (`_scratch/run30.sh`): 506 simulated punches through
+the `BiometricDevicePort` fake adapter (duplicates, a missing out-punch, direction-less
+turnstile reads, a late arrival, a no-show); 300 employee-days processed and re-processed to
+the identical result; a regularisation replayed; the month locked and further processing
+skipped; ten payslips computed twice to an identical `inputs_hash`; the four golden payslips
+matching; a balanced ₹7,96,622.93 payroll journal; and every guard — grant, trigger, CHECK —
+refusing independently.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -517,6 +613,18 @@ from sprint 1, exactly as §1.1/§1.6 require.
 - **A 3B local model degrades often (by design).** 2–3 of 5 explanations are refused by the
   grounding guards and fall back to deterministic wording. That is the guards working, not
   a fault — the output is always correct, occasionally less fluent.
+- **HRM deliberately stops short of five things**, each named in the blueprint as MVP-out or
+  as an infrastructure dependency, and none of them affecting a computed figure: payslip
+  **PDFs** (Gotenberg is in the compose file but not wired — the payslip data and its full
+  trace are served as JSON); **BullMQ fan-out** for compute (it runs synchronously
+  in-process, which is a scaling question, not a correctness one); **CSV punch import + S3**
+  (the device port and its fake adapter carry the same contract); the **real ZKTeco/eSSL
+  bridge** (post-MVP by design — the port exists precisely so it lands additively); and
+  **holiday calendars**, which belong to GENERAL and which that module does not yet own —
+  §20.3 records no MH/TN holiday in June 2026, so the demo month is unaffected.
+- **Two blueprint spellings were overridden by the binding baseline.** DECISIONS-V2 §5.4
+  mandates kebab-case event segments, so `hrm.attendance.month_locked.v1` ships as
+  `hrm.attendance.month-locked.v1` (same event). §5.4 wins on conflict, by rule.
 
 ## Next increments (in order)
 
@@ -544,12 +652,16 @@ from sprint 1, exactly as §1.1/§1.6 require.
 13. ~~**Module 08 ACCOUNTS** — the append-only general ledger, the invoice raised inside
     the dispatch transaction, the AR subledger and receipts, and SMBD's credit gate reading
     real receivables through the ledger port.~~ ✅
-14. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+14. ~~**Module 09 HRM & ATTENDANCE** — the deterministic attendance engine, the s.2(y)
+    deemed-wages engine, an effective-dated statutory rate book that cannot be edited,
+    payroll under segregation of duties, and the payroll journal posted through the ledger
+    port.~~ ✅
+15. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-15. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+16. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
-16. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+17. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it

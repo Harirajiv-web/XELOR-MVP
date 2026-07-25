@@ -8,6 +8,7 @@ import { AiRouterService } from "./ai-router.service.js";
 import { DbAiGovernance } from "./db.governance.js";
 import { GovernanceController } from "./governance.controller.js";
 import { DedupExplainer } from "./dedup-explainer.js";
+import { PayslipExplainer } from "./payslip-explainer.js";
 import { AuditLogService } from "../common/audit-log.service.js";
 
 /**
@@ -44,6 +45,7 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     AiRouterService,
     { provide: AI_ROUTER, useExisting: AiRouterService },
     DedupExplainer,
+    PayslipExplainer,
   ],
   exports: [
     AI_ROUTER,
@@ -54,6 +56,7 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     AiActionLogService,
     AuditLogService,
     DedupExplainer,
+    PayslipExplainer,
   ],
 })
 export class AiModule {}

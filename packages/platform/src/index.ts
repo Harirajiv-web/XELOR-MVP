@@ -13,3 +13,8 @@ export * from "./masterdata/dedup-verdict.js";
 export * from "./quality/sampling.js";
 export * from "./tax/gst.js";
 export * from "./accounting/journal.js";
+export * from "./people/wages.js";
+export * from "./people/statutory.js";
+export * from "./people/attendance.js";
+export * from "./people/payslip-explain.js";
+export * from "./crypto/field-encryption.js";
