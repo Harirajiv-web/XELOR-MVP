@@ -9,8 +9,9 @@ locked patterns instead of re-litigating them.
 
 **Stack (locked, do not re-choose):** NestJS v11 / Node 22 · PostgreSQL 17 + **FORCE
 RLS** · Drizzle ORM · Valkey + BullMQ · Keycloak 26 OIDC · pgvector/pg_trgm ·
-Gotenberg · pnpm workspace. Provider-agnostic AI router (offline stub today,
-swappable for OpenAI/Gemini/Claude by config).
+Gotenberg · pnpm workspace. Provider-agnostic AI router — an offline deterministic stub by
+default, a **local model (EDGE tier)** with `AI_PROVIDER=ollama`, and a hosted provider
+swappable in by the same config.
 
 > **Scope now:** platform foundation + Identity/RBAC + W1 approval engine + the shared
 > AI spine + **Module 01 GENERAL** (company master with a duplicate-detection brain) +
@@ -33,7 +34,9 @@ MVP_PROTOTYPE_1/
 │  │  └─ src/
 │  │     ├─ {ids,errors,events,tenancy,audit,api}/     # UUIDv7, error envelope, outbox
 │  │     │                                             #   events, cursor pagination …
-│  │     ├─ masterdata/dedup.ts     # the SHARED, pure dedup brain (AI #2 baseline+detector)
+│  │     ├─ masterdata/
+│  │     │  ├─ dedup.ts             # the SHARED, pure dedup brain (AI #2 baseline+detector)
+│  │     │  └─ dedup-verdict.ts     # CODE decides the conclusion + action; grounding guard
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -49,12 +52,17 @@ MVP_PROTOTYPE_1/
          ├─ main.ts                 # HTTP entrypoint (the API)
          ├─ worker.ts               # WORKER entrypoint — the outbox relay ("mailman") + consumer
          ├─ eval.ts                 # ship-gate CLI — runs a feature's golden set, exits 0/1
+         ├─ ai-grounding.ts         # grounding gate CLI — is the EXPLANATION true? exits 0/1
          ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory + Purchase + Production
          ├─ common/                 # tenant middleware · RBAC guard · audit · idempotency · error filter
          ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster · BomProvider
          ├─ bus/                    # the event bus: BullMQ relay + idempotent consumer
          │  └─ {connection,queue,outbox-relay,event-consumer}.ts
          ├─ ai/                     # the shared AI SPINE (see below)
+         │  ├─ ai-router.service.ts #   the one doorway: reject → govern → route → log
+         │  ├─ stub.provider.ts     #   OFFLINE provider (default) — deterministic, zero spend
+         │  ├─ ollama.provider.ts   #   EDGE provider — a model on this machine, auto-degrades
+         │  └─ dedup-explainer.ts   #   the dedup brain's surface (verdict in code, wording in model)
          └─ modules/
             ├─ general/             # Module 01 — company master + master_dedup brain
             ├─ engineering/         # Module 02 — item master + Bill of Materials
@@ -102,6 +110,7 @@ MVP_PROTOTYPE_1/
 | §4.3 AI governance (kill switch · DPDP opt-out · daily budget), checked & audited | `apps/api/src/ai/db.governance.ts`, `.../governance.controller.ts`, `migrations/0008` |
 | §4.3 hash-chained `ai_action_log` for **every** AI call (refusals included) | `apps/api/src/ai/ai-action-log.service.ts`, `migrations/0007` |
 | §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
+| §4.3 **"AI explains, never decides"** — the conclusion + action decided in code, the model writes only the reason, and ungrounded wording is rejected | `packages/platform/src/masterdata/dedup-verdict.ts` + `apps/api/src/ai-grounding.ts` |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
 | §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`); `@Global` Workflow + Inventory + Engineering |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
@@ -158,9 +167,11 @@ draft-for-approval, evidence-grounded, human-in-control.
   passes through. It does exactly four things, in order: (1) **reject** any `feature_key`
   not in the closed registry; (2) **ask governance** before spending a token; (3)
   **route** to the configured provider; (4) **log** the call — refusals included.
-- **Provider-agnostic** — `AI_PROVIDER` binds to an **offline `StubProvider`** today
-  (zero model spend, deterministic answers for dev/CI). Pointing it at an
-  OpenAI/Gemini/Claude adapter is a one-line swap in `ai.module.ts`.
+- **Provider-agnostic** — `AI_PROVIDER` selects the backend as **config, not code**:
+  `stub` (default) is the offline deterministic responder — zero model spend, used by CI;
+  `ollama` is the **EDGE tier**, a real model running on the plant's own machine (no API
+  key, no per-call cost, no data leaving the site). A hosted CLOUD-tier adapter slots in
+  the same way. No business module changes either way.
 - **Closed 8-feature registry** (`packages/platform/src/ai/feature-registry.ts`) — the
   MVP portfolio is fixed at 8 features (the AI research cut ~32 to reach it). A call for
   a key not in the table, or for a non-routable status, is a hard reject at runtime
@@ -176,6 +187,36 @@ draft-for-approval, evidence-grounded, human-in-control.
   the headline metric (F1) *and* regress no must-pass assertion, or it does not ship. Run
   it with `pnpm --filter @ind-core/api eval <feature_key>`; the CLI exits **0 on PASS,
   1 on FAIL**, so CI blocks promotion.
+- **Grounding gate** (`ai:grounding`) — the eval gate grades the *detector*; this one
+  grades the *explanation*. See below.
+
+### Verdict in code, wording in the model
+
+A local 3B model was measured on `general.master_dedup` before being wired in
+(`_scratch/ai-capability-test*.ps1`). Given the raw records it **fabricated a GSTIN match
+between two different GSTINs**; given a worked example it **copied the example's conclusion**
+and recommended merging two clearly different vendors. A small model cannot be relied on to
+execute the conditional *"if the identifier differs, say different"* — and better prompting
+made it worse, not better. So the integration is shaped accordingly:
+
+- `decideDuplicateVerdict()` (`packages/platform/src/masterdata/dedup-verdict.ts`) settles
+  the **conclusion and the recommended action in pure code** from the deterministic
+  evidence. This is the literal implementation of §4.3 *"AI explains, never decides"* — the
+  model cannot flip a conclusion it never owns.
+- The model is handed the settled verdict and writes **only the reason sentence**.
+- `checkGrounding()` then rejects that sentence if it invents an identifier or a number
+  (however short), re-reads a similarity percentage as a difference, contradicts the verdict
+  (including hedged claims like *"likely the same entity"*), leaks internal tokens, or is
+  truncated mid-name.
+- **Any** rejection, timeout, or unreachable model falls back to the deterministic sentence
+  and flags `degraded` — the human always gets a correct note, and the ERP never blocks on
+  a model.
+
+Run it with `pnpm --filter @ind-core/api ai:grounding` (honours `AI_PROVIDER`); exits
+non-zero on any violation. Measured: **0 violations** on both the stub and the live local
+model; with the live 3B model 2–3 of 5 explanations are refused by the guards and degrade
+to the deterministic wording. That degradation rate is the honest quality ceiling of a 3B
+model — a larger model clears the guards more often; the safety behaviour is identical.
 
 ## Module 01 — GENERAL (done)
 
@@ -290,9 +331,23 @@ pnpm dev               # NestJS API on http://localhost:3000/api/v1
 # consumer records each event once (idempotent), so redeliveries are no-ops.
 pnpm --filter @ind-core/api worker
 
-# The AI ship-gate (exits 0 PASS / 1 FAIL) — run per feature_key:
-pnpm --filter @ind-core/api eval general.master_dedup
+# The AI ship-gates (exit 0 PASS / 1 FAIL).
+pnpm --filter @ind-core/api eval general.master_dedup    # grades the DETECTOR (F1)
+pnpm --filter @ind-core/api ai:grounding                 # grades the EXPLANATION
 ```
+
+**Optional — run the EDGE-tier local model.** Everything above works with no model at all.
+To let a real model on this machine write the explanations (no API key, no cost, nothing
+leaves the box):
+
+```bash
+ollama pull qwen2.5:3b            # ~2 GB; runs on a 4 GB GPU
+export AI_PROVIDER=ollama         # PowerShell: $env:AI_PROVIDER='ollama'
+pnpm --filter @ind-core/api ai:grounding    # same gate, now against the live model
+```
+
+If Ollama is not running, every call simply degrades to the deterministic answer and the
+gate still passes — the model is an enhancement, never a dependency.
 
 Exercise a module. Auth is real Keycloak OIDC — get a token, then call with `Bearer`
 (the tenant comes from the verified token's group, never a header):
@@ -339,9 +394,12 @@ from sprint 1, exactly as §1.1/§1.6 require.
 - **API build (ESM + SWC):** NestJS + native ESM + SWC decorator-metadata is
   version-sensitive; the most likely first-`pnpm build` tweak. Fallback is the stock
   CJS+tsc Nest builder.
-- **The AI provider is the offline stub.** No real model is wired yet — explanations are
-  deterministic. Swapping in a live provider is a config change in `ai.module.ts`, gated
-  by the same governance + eval machinery.
+- **The default AI provider is the offline stub.** A real **local** model (EDGE tier) is
+  wired and gated — set `AI_PROVIDER=ollama` to use it. No **hosted** provider is wired
+  yet; adding one is the same config change, gated by the same governance + eval machinery.
+- **A 3B local model degrades often (by design).** 2–3 of 5 explanations are refused by the
+  grounding guards and fall back to deterministic wording. That is the guards working, not
+  a fault — the output is always correct, occasionally less fluent.
 
 ## Next increments (in order)
 
@@ -358,8 +416,11 @@ from sprint 1, exactly as §1.1/§1.6 require.
    through Inventory), composed via app-level ports.~~ ✅
 8. ~~**Module 05 PRODUCTION** — consume components + produce finished goods through
    Inventory's write path; closes the buy → stock → make spine.~~ ✅
-9. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
-10. Wire a **real AI model provider** (OpenAI/Gemini/Claude) behind the router — governed,
-    budgeted, and eval-gated exactly as the stub is.
-11. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+9. ~~Wire a **real AI model** behind the router — the **EDGE tier**: a local model via
+   Ollama, with the verdict decided in code and a grounding gate over the wording.~~ ✅
+10. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
+11. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+    existing `tier` field routing routine work to the local model and hard work to the
+    cloud. Governed, budgeted and eval-gated exactly as the local provider is.
+12. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
