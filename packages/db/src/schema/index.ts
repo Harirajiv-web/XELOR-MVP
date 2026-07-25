@@ -7,4 +7,5 @@ export * from "./inventory.js";
 export * from "./purchase.js";
 export * from "./production.js";
 export * from "./quality.js";
+export * from "./sales.js";
 export { tenantScopedColumns } from "./columns.js";

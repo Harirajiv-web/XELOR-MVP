@@ -20,8 +20,9 @@ swappable in by the same config.
 > **Module 04 PURCHASE** (vendors, POs approved through W1, GRNs posting stock through
 > Inventory) + **Module 05 PRODUCTION** (the make cycle — consume components, produce
 > finished goods) + **Module 06 INSPECTION/QMS** (sampling, inspections, dispositions, and
-> the quality gate Production now honours). The manufacturing spine
-> (buy → stock → make → **inspect**) is in place.
+> the quality gate Production now honours) + **Module 07 SMBD** (customers, sales orders
+> with real GST place-of-supply, credit gate, dispatch). The order-to-cash spine
+> (buy → stock → make → inspect → **sell**) is in place.
 
 ## What's here
 
@@ -40,6 +41,7 @@ MVP_PROTOTYPE_1/
 │  │     │  ├─ dedup.ts             # the SHARED, pure dedup brain (AI #2 baseline+detector)
 │  │     │  └─ dedup-verdict.ts     # CODE decides the conclusion + action; grounding guard
 │  │     ├─ quality/sampling.ts     # pure QMS brain: ISO 2859-1 sampling · spec eval · lot verdict
+│  │     ├─ tax/gst.ts              # pure GST brain: GSTIN+checksum · place of supply · CGST/SGST vs IGST
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -73,6 +75,7 @@ MVP_PROTOTYPE_1/
             ├─ purchase/            # Module 04 — vendors + POs (W1 approval) + GRNs (post stock)
             ├─ production/          # Module 05 — the make cycle (consume components, produce FG)
             ├─ quality/             # Module 06 — inspections, sampling, dispositions (@Global gate port)
+            ├─ sales/               # Module 07 — customers, sales orders + GST, credit gate, dispatch
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
@@ -100,6 +103,8 @@ MVP_PROTOTYPE_1/
 | 0017 | `production` | `production_order` + `production_order_component` (BOM requirements exploded + snapshotted); consumes/produces stock through Inventory's port |
 | 0018 | `quality` | QMS: `qms_characteristic` (effective-dated specs), `qms_sampling_plan` (band tables as config), versioned `qms_inspection_template` + lines, `qms_inspection` (+ the partial-unique **gate anchor**), `qms_inspection_reading` (spec limits snapshotted), `qms_disposition` (CHECK: `executed` requires a stock-entry ref) |
 | 0019 | `seed_quality` | AQL 1.0 / Level II band table, the CP-50 pump's final-inspection template (bore ⌀, runout, leak test) and the casing's incoming template (§7) |
+| 0020 | `sales` | SMBD: `customer` (GSTIN shape CHECK + trigram index for the dedup brain), `sales_order` + `_line` (rate-wise GST stored per line, `chk_gst_exclusive`, duplicate-PO guard, credit snapshots), `dispatch` + `_line` (CHECK: shipped requires a stock-entry ref) |
+| 0021 | `seed_sales` | four demo customers chosen to exercise place of supply: Pune (intra), Bengaluru (inter), Coimbatore (intra *or* inter depending on the selling GSTIN), and one unregistered buyer (§7) |
 
 ### The conventions, made real
 
@@ -117,6 +122,8 @@ MVP_PROTOTYPE_1/
 | §4.3 hash-chained `ai_action_log` for **every** AI call (refusals included) | `apps/api/src/ai/ai-action-log.service.ts`, `migrations/0007` |
 | §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
 | §4.3 **"AI explains, never decides"** — the conclusion + action decided in code, the model writes only the reason, and ungrounded wording is rejected | `packages/platform/src/masterdata/dedup-verdict.ts` + `apps/api/src/ai-grounding.ts` |
+| §3.4 GST — place of supply, CGST/SGST vs IGST, HSN, and the **1 Aug 2026 Ship-to-GSTIN mandate** as a config date | `packages/platform/src/tax/gst.ts` + `migrations/0020` |
+| "every statutory number is config, never a constant" | `GstConfig` (mandate date, checksum enforcement) + `qms_sampling_plan.plan_table` (sampling bands as data) |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
 | §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`, `InspectionGate`); `@Global` Workflow + Inventory + Engineering + Quality |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
@@ -338,6 +345,40 @@ lets the transaction through exactly as before.
   an unregistered `feature_key` is a hard reject at the router. Quality's intelligence is
   arithmetic, which is the point: every number can be re-derived by hand.
 
+## Module 07 — SMBD / Sales & dispatch (done)
+
+The sell side, and the module where India actually shows up in the arithmetic. Reconciled
+to the locked baseline: the blueprint was authored on PG16/FastAPI with BIGINT identities
+and a separate `smbd.` schema — its **domain** decisions are kept, its **infrastructure**
+ones replaced by UUIDv7 + shared schema + FORCE RLS + `NUMERIC(18,2)` (§5.1).
+
+- **Place of supply, done properly** — the destination state decides the tax: same state ⇒
+  CGST + SGST at half the rate each; different state ⇒ IGST at the full rate. This is why
+  the two-GSTIN demo tenant exists: selling the *same* pump to the *same* Coimbatore
+  customer is **IGST from Pune** and **CGST+SGST from Coimbatore**. Both are proven in the
+  verification run.
+- **The 1 Aug 2026 Ship-to-GSTIN mandate** (§3.4, ranked risk #1) — captured at **order**
+  time, not invoice time, because that is the last moment a human can still ask the
+  customer for it. Unregistered consignees record the IRP literal `URP` on *both* sides of
+  the date, so nothing needs backfilling. The effective date is **config**, never a branch.
+- **A document can never be both** intra- and inter-state: `chk_gst_exclusive` plus a
+  second CHECK tying the flag to the totals. The line-level split is **stored**, so an
+  invoice reproduces the tax agreed on the order date rather than today's rate table.
+- **Credit gate** — confirming compares the order against the customer's limit and this
+  module's own open exposure; over the limit parks the order in `credit_hold`, which
+  **cannot ship**. An override needs a separate permission, a reason, and it is audited —
+  and all three inputs are snapshotted so the decision stays reviewable after the numbers
+  move.
+- **Dispatch actually moves goods** — through Inventory's `StockPoster` port in the same
+  transaction, refusing over-dispatch and short stock. `status='dispatched'` without a
+  stock-entry reference is refused by a CHECK constraint.
+
+> **Honest note on GSTIN check digits.** The canonical §7 demo GSTINs are well-formed but
+> carry **invalid** check digits — they are fictional. So checksum *rejection* is a config
+> flag (off for the demo tenant, on in production) while the checksum itself is always
+> computed. A test records this deliberately, so nobody later "fixes" the checksum and
+> breaks the entire demo universe.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -358,7 +399,7 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0019 (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0021 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
@@ -457,13 +498,19 @@ from sprint 1, exactly as §1.1/§1.6 require.
    Ollama, with the verdict decided in code and a grounding gate over the wording.~~ ✅
 10. ~~**Module 06 INSPECTION/QMS** — sampling, inspections, dispositions, and the
     `InspectionGate` port Production honours before releasing finished goods.~~ ✅
-11. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
-12. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+11. ~~**Module 07 SMBD** — customers, sales orders with GST place-of-supply and the
+    1 Aug 2026 ship-to mandate, credit gate, dispatch through Inventory's write path;
+    closes buy → make → inspect → sell.~~ ✅
+12. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
+13. **ACCOUNTS** — the invoice off a dispatched sales order (SMBD already stores every
+    field the IRP payload needs), receivables, and the credit exposure SMBD currently
+    computes locally becoming a port.
+14. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-13. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+15. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
-14. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+16. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it
