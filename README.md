@@ -29,10 +29,14 @@ swappable in by the same config.
 > Service Portal** (the first internet-facing surface: a **second scoping dimension** —
 > tenant *and* customer account — a business-time SLA clock, triage that is suggested and
 > never forced, reply drafting that cannot promise anything, and warranty as a computed
-> gate). The order-to-cash spine (buy → stock → make → inspect → sell → **book it**) is in
-> place, so is the people-and-pay spine that feeds it, so is the asset-uptime layer that
-> decides whether the machines are there tomorrow — and now the customer can see their own
-> side of it.
+> gate) + **Module 12 EXPENDITURE** (budgetary control as a **reservation ledger** that counts
+> committed money and not just spent money, input tax credit through the s.17(5) and
+> company-GSTIN gates, TDS with a threshold crossing the system refuses to decide, and
+> receipt extraction whose every figure is re-derived). The order-to-cash spine
+> (buy → stock → make → inspect → sell → **book it**) is in place, so is the people-and-pay
+> spine that feeds it, so is the asset-uptime layer that decides whether the machines are
+> there tomorrow, the customer can see their own side of it — and now every rupee going out
+> is checked against a budget before it is committed rather than after it is spent.
 
 ## What's here
 
@@ -58,6 +62,9 @@ MVP_PROTOTYPE_1/
 │  │     │                          #   · criticality×severity SLA · completion gate · narrative grounding
 │  │     ├─ csp/                    # pure SERVICE-DESK brains: business-time SLA clock · ticket lifecycle
 │  │     │                          #   · triage classifier (AI #3) · reply gate (AI #6) · entitlement
+│  │     ├─ spend/                  # pure SPEND brains: the reservation ledger · s.17(5) ITC gates
+│  │     │                          #   · TDS thresholds + the crossing · receipt cross-checks (AI #1)
+│  │     │                          #   · duplicate tiers (AI #4) · per-diem + advance settlement
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -66,7 +73,7 @@ MVP_PROTOTYPE_1/
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production,…,csp}.ts
 │     ├─ src/{client,migrate,rls-check,naming-check}.ts   # naming-check gates the MWO/WO boundary
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0029.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0031.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -85,7 +92,8 @@ MVP_PROTOTYPE_1/
          │  ├─ ollama.provider.ts   #   EDGE provider — a model on this machine, auto-degrades
          │  ├─ dedup-explainer.ts   #   the dedup brain's surface (verdict in code, wording in model)
          │  ├─ ticket-triage.ts     #   AI #3 — suggested never forced; degrades to a HIDDEN chip
-         │  └─ reply-drafter.ts     #   AI #6 — drafts only; the gate refuses promises and verdicts
+         │  ├─ reply-drafter.ts     #   AI #6 — drafts only; the gate refuses promises and verdicts
+         │  └─ receipt-extractor.ts #   AI #1 — the flagship; every figure re-derived, nothing posts
          └─ modules/
             ├─ general/             # Module 01 — company master + master_dedup brain
             ├─ engineering/         # Module 02 — item master + Bill of Materials
@@ -99,10 +107,12 @@ MVP_PROTOTYPE_1/
             ├─ maintenance/         # Module 10 — assets, MWOs, the downtime clock, PM, reliability KPIs
             ├─ csp/                 # Module 11 — tickets, the business-time SLA clock, complaints,
             │                       #   entitlement, spares, KB, CSAT; TWO route prefixes, disjoint guards
+            ├─ expenditure/         # Module 12 — the budget reservation ledger, claims, advances,
+            │                       #   indirect spend with GST/TDS, and the posting handoff to Accounts
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
-### Schema surface (migrations 0000 → 0029)
+### Schema surface (migrations 0000 → 0031)
 
 | # | Migration | What it adds |
 |---|---|---|
@@ -136,6 +146,8 @@ MVP_PROTOTYPE_1/
 | 0027 | `seed_maintenance` | the Trishul asset register (23 assets over two plants, four levels, criticality with a written justification), 11 meters with real readings behind them, the §4.C criticality × severity SLA matrix, labour rates by trade, an ISO 14224-shaped failure taxonomy (12 modes / 12 causes / 6 detections / 5 actions), 9 PM schedules including the **Factories Act s.29 twelve-monthly crane examination**, two AMC coverage mirrors, seven MRO spare items, the `mwo_closure_approval` W1 ladder, and the `mnt.*` permission set — with `mnt.downtime.adjust` and `mnt.mwo.prioritise` deliberately granted separately |
 | 0028 | `csp` | the only internet-facing schema, and **six** guarantees made in the database: (1) every portal-reachable table carries `customer_account_id` and a **RESTRICTIVE** `customer_account_isolation` policy *in addition to* tenant isolation — Postgres ANDs restrictive policies with permissive ones, so a portal session sees rows that are both this tenant's **and** this customer's; (2) that policy carries **`WITH CHECK` as well as `USING`** (the blueprint's DDL shows only `USING`, which fences reads while leaving a portal principal able to *write* a row stamped with somebody else's account); (3) children reference the ticket by the **composite key `(id, customer_account_id)`**, so a comment cannot claim a different customer from its ticket; (4) a **btree_gist EXCLUDE** on `csp_ticket_pause` makes a ticket paused twice over the same minute unrepresentable — doubly-subtracted minutes are how an SLA report quietly becomes fiction; (5) `csp_ticket_event` and `csp_abuse_event` are append-only at the grant *and* at a trigger; (6) a **sent reply is frozen** by trigger. Plus a GENERATED `search_tsv` on `csp_kb_article` with a restrictive policy that shows a portal session published public articles and nothing else, and a provisioned `vector(384)` + HNSW index so the fast-follow RAG is a backfill rather than a migration on a live table |
 | 0029 | `seed_csp` | the service desk: the **Mon–Sat 09:00–18:00 IST** calendar (a nine-hour day, six days — assuming Mon–Fri 9-to-5 would have promised every customer an extra day on every resolution clock) with three real holidays; three teams; the eight-category taxonomy whose `code` the SLA policies and the AI baseline both key on; **six SLA policies across all three precedence bands** — priority, category (a DPDP rights request has a statutory clock and does **not** pause) and contract (the AMC's own 240-minute commitment, which outranks the tenant's "urgent"); the `TKT/CMP/SPR-2627` counters; four portal users including one left `invited` so "invited but not consented" is a real state; eight warranties and two AMCs — one comprehensive, one **non-comprehensive** so the entitlement engine has something to answer `partial` about; and five KB articles, the fifth **internal** and deliberately stuffed with the vocabulary a customer would search for, so a broken visibility policy fails loudly |
+| 0030 | `expenditure` | budgetary control and the spend that is not a purchase order, with **seven** guarantees in the database: (1) `budget_consumption` is **append-only** at the grant and at a trigger — availability is `budget − actual − committed − in_approval` read from it under a row lock, and a rejection is a signed negative row rather than an edit; (2) **UNIQUE (tenant, idempotency_key)** on that ledger, so a retried submit collides instead of doubling a commitment; (3) a CHECK over an **immutable function** asserts a budget line's twelve monthly cells sum to its annual figure (a subquery is not permitted in a CHECK, and this guarantee was worth a function rather than a trigger that fires after the fact); (4) `net_reimbursable` is **GENERATED and cannot go negative** — when an advance exceeds the claim the difference is a refund receivable, not a payroll deduction nobody agreed to; (5) `tds_config`, `per_diem_rate` and `fx_rate` are effective-dated and **append-only**, so a July deduction is still reproducible in a 2029 assessment; (6) **UNIQUE idempotency key on `posting_instruction`** — Expenditure writes one instruction per document version and Accounts posts it; (7) `tds_config_ref` is required whenever `tds_amount` is non-zero, so no deduction exists without the dated row that produced it. Plus `ck_meter_forward` (a utility meter does not run backwards), `ck_line_itc_block` (a blocked line cannot carry a credit) and a deliberately **non-unique** `exp_attachment.sha256`, because a duplicate must be detected and flagged with both documents named rather than refused at upload |
+| 0031 | `seed_expenditure` | 17 expense heads carrying the s.17(5) position that decides whether GST is recoverable (meals, motor vehicles, staff welfare blocked; electricity `exempt`; freight `rcm`) plus the `category_keywords` that are AI #1's deterministic baseline; the **TDS rate book** with the pre- and post-Finance-Act-2025 rows for 194C/194J/194I/194Q, the older ones *closed* rather than edited, each carrying a `source_note`; the grade × city-tier per-diem matrix; FY 26-27 budgets for five cost centres over 18 lines — MRO spares and tooling **stop**, travel **warn**, rent **ignore** — every distribution verified by the database on insert; and three recurring templates, none auto-posting |
 
 ### The conventions, made real
 
@@ -887,6 +899,263 @@ everything is on fire; three append-only refusals; and a replayed submit returni
 original ticket.
 
 
+## Module 12 — EXPENDITURE (done)
+
+PURCHASE buys things that arrive in a warehouse. This module handles everything else a
+factory actually spends money on — the engineer's hotel bill, the housekeeping AMC, the
+electricity, the auditor's fee, the rent — and it is where three questions get decided that
+nobody can answer from a journal: **is there budget, is the GST recoverable, and how much
+must be withheld from the supplier.**
+
+> **budget reserved → claim or invoice raised → approved → posting instruction to Accounts
+> → acknowledged → the reservation becomes actual → paid**
+
+### Availability is a ledger, not a report
+
+The single idea the module turns on. A budget checked by summing posted journals answers
+*"what have we spent?"* — which is the wrong question, because the money that will sink a
+cost centre is already committed on approved documents and claims sitting in an approval
+inbox. By the time it reaches the ledger the decision has been taken.
+
+So availability is read from an append-only reservation ledger with three buckets:
+
+```
+available = budget(period) − actual − committed − in_approval
+```
+
+and one reservation's life is: **reserve** into `in_approval` on submit → **flip** to
+`committed` on final approval → **flip** to `actual` when Accounts acknowledges → **reverse**
+(a signed negative row) on rejection. Nothing is ever updated in place. Six months later the
+ledger can still answer *"why was this allowed?"*, which is the only question anybody ever
+asks of a budget.
+
+Three properties make it hold:
+
+- **`SELECT … FOR UPDATE` on the budget line before availability is read.** Without it, two
+  people submitting ₹30,000 against ₹50,000 remaining both read "available" and both pass,
+  and the cost centre is over with no single document responsible. With it, one waits, reads
+  the other's reservation, and gets a refusal naming the shortfall. The verification proves
+  exactly this.
+- **The reservation and the document are the SAME transaction.** A crash between them rolls
+  back both. Budget held against a document that does not exist is the failure nobody notices
+  until a controller asks why a cost centre looks full.
+- **`UNIQUE (tenant, idempotency_key)` on the ledger.** A submit that times out and is
+  retried produces one reservation and one collision — never a silent double-commitment.
+
+Three control actions, and the distinction between them is the point. **Stop** refuses with
+the shortfall and the override path — MRO spares is `stop`, because an unbudgeted spares
+spike is exactly what a controller wants to hear about *before* it happens. **Warn** allows
+and says so loudly — travel is `warn`, because refusing a customer visit to protect a budget
+line is usually the more expensive decision. **Ignore** allows silently — rent is `ignore`,
+because the lease was signed last year and the system refusing to record it changes nothing
+except the accounts.
+
+A revision that cuts a line below what is already spent is **returned as a conflict**, not
+refused: the money is gone and the budget must be allowed to record reality. What cannot
+happen is the cut going through unseen — a CHECK constraint refuses a revision row carrying
+conflicts without an acknowledger, and the consumption already booked is carried forward
+onto the new version rather than the cost centre being handed its budget back.
+
+### Input tax credit: two gates, and both must pass
+
+Every rupee of GST on a purchase is either recoverable from the government or it is cost.
+Getting it wrong in either direction is expensive and neither error announces itself:
+over-claiming produces a demand with interest and penalty at the next audit, under-claiming
+silently donates working capital.
+
+1. **The expense head.** CGST Act **s.17(5)** blocks credit on named categories whatever the
+   paperwork says — food and beverages, motor vehicles under thirteen seats and rent-a-cab,
+   club and fitness membership, personal consumption. The staff lunch is blocked because it
+   is a lunch, and a perfect company-GSTIN invoice does not change that.
+2. **The invoice.** Credit requires a tax invoice carrying the **recipient's** GSTIN. A B2C
+   cash bill showing GST is a bill on which no credit exists, because the supplier never
+   reported it against the company. This is the rule employees refuse to believe, so the
+   refusal says which gate failed and why.
+
+The demo runs both on one trip: ₹758 recovered on the company-GSTIN hotel bill, ₹67 blocked
+on the meal beside it. And **a model never sets eligibility** — receipt extraction may
+suggest the head; `resolveItc` then decides the credit from the head and the invoice. The AI
+reads paper; the code decides money.
+
+CGST + SGST versus IGST is decided purely by the two-digit state code opening each GSTIN.
+The money the company pays is identical either way; which government receives it is not, and
+that is the commonest notice in Indian GST. The odd paisa on a half-split goes to SGST rather
+than evaporating, because a register one paisa out is a register somebody has to explain.
+
+### TDS, including the crossing the system refuses to decide
+
+Under-deducting makes the company liable for the tax it failed to withhold, plus interest,
+plus the disallowance of 30% of the expense itself under s.40(a)(ia). Over-deducting takes
+money out of a small supplier's working capital that they spend months recovering.
+
+Three things make it harder than a percentage, and all three are implemented:
+
+- **Two thresholds.** A section fires on a single payment above one limit **or** on the
+  running annual total above another. A vendor billing ₹9,000 a month never trips the single
+  test and trips the annual one in the eleventh month — which is why the per-vendor ×
+  section × year accumulator exists.
+- **The rate depends on who the supplier is.** 194C is 1% for an individual or HUF and 2% for
+  a company, so the same invoice from two vendors withholds different money. A vendor with no
+  PAN is deducted at 20% under s.206AA, and the reason line says so.
+- **TDS is withheld on the TAXABLE VALUE, never on the GST-inclusive total.** Withholding on
+  the gross over-deducts on every single invoice, and it is a common enough error to be worth
+  a test of its own.
+
+**The crossing is genuinely ambiguous, and the module refuses to pretend otherwise.** When
+the running total crosses the annual threshold mid-year, one reading of the Act says deduct
+on this payment; another says the threshold was always going to be crossed, so catch up on
+everything paid so far. **Both figures are computed, stored on the document, and a finance
+review is raised.** The demo's freight bill takes Vega Logistics from ₹96,000 to ₹1,14,000:
+₹180 prospective, ₹1,140 catch-up, and the note reads *"this is a tax position, and it
+belongs to Finance."* Silently choosing either would be a software author taking a tax
+position on somebody else's behalf.
+
+Every rate and threshold is an **effective-dated, append-only row** carrying a `source_note`
+— the same discipline as HRM's statutory rate book, because a July 2026 deduction must still
+be reproducible in a 2029 assessment. A change is a new row; the pre-Finance-Act-2025 rows
+are *closed*, not edited.
+
+### Two blueprint figures that predate the Finance Act 2025
+
+Stated in the seed and here rather than glossed over, because both change what the demo
+does:
+
+- **194J.** §20.8 deducts ₹4,500 on a single ₹45,000 professional-fee bill. The threshold was
+  raised from ₹30,000 to ₹50,000 with effect from 01-Apr-2025, so a *first* ₹45,000 bill in
+  FY 26-27 does not reach it. The prototype withholds nothing on the Q1 bill and ₹4,500 on
+  the Q2 one, where it is actually due — and the demo shows the crossing, which is a better
+  beat than an unexplained deduction.
+- **194I.** §20.8 justifies the ₹10,000 rent deduction as *"annual > ₹2.4L"*. That was the
+  pre-2025 test; from 01-Apr-2025 it is **₹50,000 per month**, which a ₹1,00,000 monthly rent
+  crosses on the first bill. The blueprint's figure is right and its stated reason is out of
+  date, so the seeded row carries the current rule and says exactly that.
+
+### AI #1 — receipt extraction, the flagship
+
+Committed, Tier-2 (draft-record), baseline `azure_doc_intelligence_prebuilt_invoice`,
+degraded mode `manual_entry`. Point a phone at a hotel bill, get a claim line — and it is the
+AI feature in this product with the largest blast radius, because its output is money.
+
+The principle is `ai-verdict-in-code-wording-in-model` pushed one step further: **the model
+reads paper and the code checks arithmetic.** A vision model is genuinely good at finding
+"₹6,322" on a crumpled thermal print and genuinely willing to invent a total that makes the
+numbers look tidy. So every figure is re-derived:
+
+| cross-check | what it catches |
+|---|---|
+| GSTIN shape + state code vs place of supply | `Z4AAHFH…` — a plausible string and an unclaimable credit |
+| CGST + SGST (or IGST) = rate × taxable value | a transcribed tax that does not match the rate |
+| taxable + tax = total, ±₹1 for the supplier's rounding | the inclusive/exclusive confusion |
+| line sum = total | **the hallucinated line** |
+
+A failed total drags every figure it was derived from into review — reviewing the total alone
+while the taxable value that produced it stays "confident" is not a review. Low confidence
+sends a field to review even when the arithmetic is perfect. The demo's contrast seed is a
+thermal-print taxi receipt reading ₹850 whose two lines sum to ₹730: caught, flagged, and
+corrected by a human whose correction is recorded.
+
+Four more properties:
+
+- **Wholesale validation.** An unexpected field is fatal rather than dropped — a receipt image
+  is untrusted input, and a model echoing text out of it is how a field called `approved`
+  eventually appears.
+- **The deterministic fallback wins on numbers** and the disagreement is shown as a pick-one
+  diff, never merged silently.
+- **Nothing posts.** The draft lives on the attachment. It becomes a claim line only through
+  the confirm endpoint, tagged `source = 'ai_assisted'`, and a CHECK constraint refuses such
+  a line without its confidence record.
+- **The edit rate is published beside the acceptance rate.** A user who confirms a draft after
+  correcting four of its seven fields has "accepted" it and has also done the work by hand.
+  Acceptance rate alone flatters the feature; the field edit rate is the honest measure, and
+  the dashboard returns them together so the headline cannot be quoted on its own.
+
+### AI #4 — duplicate receipts, in three tiers
+
+Stretch, Tier-1 advisory, baseline `attachment_sha256_exact`, degraded mode
+`deterministic_substitute`. The tiers matter because they are the difference between a
+control and an accusation:
+
+- **Exact** — the same file, byte for byte, on two claims. A hash match is a fact, costs
+  nothing, and ships whether or not any model does. Somebody claiming a receipt twice usually
+  uploads the same file twice, because they photographed it once.
+- **Near** — same merchant, same date, same amount, different bytes. Deterministic fuzzy
+  matching catches most re-photographed bills without a model. Reported as *probable*, because
+  two identical taxi fares on the same route on the same day are an ordinary Tuesday.
+- **Pattern** — several receipts just under a threshold, same merchant, same evening. This is
+  the finding most likely to be **wrong about a person**, so its severity is capped and its
+  wording is careful: *"This is the shape of splitting to stay under a limit — and also the
+  shape of 4 people splitting one bill. Worth asking; not worth assuming."*
+
+**Nothing in the module ever rejects anything.** Every finding is a flag naming both
+documents. And `exp_attachment.sha256` is deliberately an index rather than a unique
+constraint: refusing the second upload would *hide* the second claim instead of surfacing it.
+
+### The posting handoff
+
+Expenditure never writes a general-ledger row. It writes a `posting_instruction` carrying a
+journal-shaped payload, in the same transaction as the approval, and Accounts posts it — the
+same discipline that gives Inventory one stock write path. The key is
+`exp:{docType}:{id}:v{n}` and it is UNIQUE, so a relay that delivers twice, a worker that
+restarts mid-batch and an operator who presses retry all produce one journal.
+
+The acknowledgement — not the approval — is what flips the bucket from `committed` to
+`actual`. **An approval is a decision; a posting is a fact**, and a budget that treats them as
+the same thing reports money as spent that the ledger has never seen.
+
+### The one hard refusal
+
+Everything in this module flags and lets a human decide, with one exception: **a new advance
+while an old one is unsettled past its settle-by date is blocked.** A claim with a missing
+receipt is a conversation for an approver, who can see context the software cannot; cash
+already handed out and not accounted for is the company's money sitting somewhere
+unexplained. It is overridable with a recorded reason, and the default is no.
+
+Settlement never produces a negative payout. When the advance exceeds the claim — the demo's
+₹15,000 against ₹13,650 — the difference is a **refund receivable from the employee**, which
+goes on the advance's ageing rather than becoming a payroll deduction nobody agreed to. The
+advance stays *partially settled* until that refund lands.
+
+Per-diem is resolved **as of the trip date**, and the exact effective-dated rate row is
+stamped on the travel request. A rate revised in October must not restate a July trip, and an
+employee promoted in September must be paid the grade they held when they travelled. Days are
+counted inclusively, because they ate on all of them.
+
+### What the database refuses
+
+- The **reservation ledger** cannot be edited or deleted — trigger and grant.
+- The **statutory rate books** (`tds_config`, `per_diem_rate`, `fx_rate`) accept only the
+  closing of a row; a change is a new row with a new `effective_from`.
+- A **budget line whose twelve cells do not sum to its annual figure** — enforced by a CHECK
+  over an immutable function, because a budget that disagrees with itself is unreconcilable
+  and the disagreement is invisible until year end.
+- **`net_reimbursable` is GENERATED and cannot go negative**; `advance_adjusted` cannot exceed
+  the claim; ITC cannot exceed the tax charged; a blocked line cannot carry a credit.
+- **A deduction without the config row that produced it** — `tds_config_ref` is required
+  whenever `tds_amount` is non-zero.
+- **A second posting instruction for the same document version.**
+- **A meter reading that runs backwards**, which would otherwise flow into the ₹/unit anomaly
+  report as fact.
+- **Deleting a claim, an advance or an invoice.**
+
+### The eval gate, and what it honestly measures
+
+The blueprint's ship gate is ≥50 labelled Indian receipts scored against Azure Document
+Intelligence with zero uncaught arithmetic inconsistencies. Two thirds of that cannot run
+here: there are no receipt *images* in the repository and no Azure subscription to compare
+against, and asserting a field accuracy nobody measured would be worse than measuring
+something smaller.
+
+So the gate measures the part that is real — **auto-categorisation**, macro-F1 over thirteen
+labelled Indian receipts — and asserts the part that matters more as must-pass conditions on
+every case:
+
+1. every receipt whose arithmetic does **not** reconcile must be caught (a miss is a wrong
+   number reaching a claim);
+2. every receipt whose arithmetic **does** reconcile must come back clean (a detector that
+   flags everything catches every error and is switched off by Friday).
+
+A single failure of either fails the gate outright, whatever the categorisation score.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -1018,6 +1287,34 @@ from sprint 1, exactly as §1.1/§1.6 require.
   **General's shift calendar**, which that module does not own yet — so scheduled hours are
   supplied by the caller and the KPI response says exactly where the number came from,
   rendering `Needs shift calendar` rather than assuming 24×7 when it is absent.
+- **EXPENDITURE corrects two of the blueprint's own tax figures, because both predate the
+  Finance Act 2025** — the 194J threshold moved from ₹30,000 to ₹50,000 and the 194I test
+  became ₹50,000 *per month*. Both the old and the new rows are seeded, the old ones closed
+  rather than edited, and the seed says in full which reasoning the demo now follows. The
+  ₹10,000 rent deduction the blueprint quotes is still right; only its stated justification
+  was out of date. The ₹4,500 professional-fee deduction moves from the first quarterly bill
+  to the second, where the accumulator actually crosses.
+- **EXPENDITURE deliberately stops short of six things**, none of them affecting a computed
+  figure: **W1 approval ladders** (the blueprint's amount-banded ladders are configuration for
+  the existing engine — the module submits, approves and rejects through its own guarded
+  transitions, and wiring the ladder is a seed rather than a code change); **BullMQ workers**
+  for the extraction queue, the recurring-expense generator and advance ageing (all three run
+  on demand and are idempotent, which is the property that matters); **S3 pre-signed uploads**
+  (the attachment row, its hash and the duplicate detection are real; the object store is
+  not); **Gotenberg PDF exports** of the registers, which are served as JSON; **multi-currency
+  claim lines** (the `fx_rate` table and the as-of rule ship, line-level conversion does not);
+  and the **Purchase PO supersession** of an indirect PR's reservation, which needs Purchase to
+  emit the event this module would consume.
+- **AI #1's eval gate measures categorisation, not field accuracy, and says so.** The
+  blueprint's ship gate compares ≥50 labelled receipts against Azure Document Intelligence;
+  there are no receipt images in this repository and no Azure subscription, so that half
+  cannot honestly run. What does run is the auto-categorisation macro-F1 plus the assertion
+  that matters more — zero uncaught arithmetic inconsistencies and zero false alarms on sound
+  receipts — as must-pass conditions that fail the gate outright.
+- **The offline receipt extractor is a fixture and reports itself as one.** With no vision
+  model bound, the stub returns the cached extraction §20.9 seeds, and the model name on the
+  record is the stub's rather than a provider's. That is what makes the demo independent of
+  provider latency without claiming a model ran.
 - **CSP reconciles three things to the established demo universe, and says so rather than
   glossing.** (a) **Demo "today" is Monday 20 July 2026** — DECISIONS-V2 §7 fixes it and
   §7 binds; CSP §20 writes 18-Jul, which is a Saturday. Every SLA figure in the module is
@@ -1103,14 +1400,19 @@ from sprint 1, exactly as §1.1/§1.6 require.
     second scoping dimension (tenant **and** customer account, read and write), the
     business-time SLA clock, AI #3 triage suggested-never-forced and AI #6 drafting that
     cannot promise, the entitlement gate, the Quality hand-off and CSAT.~~ ✅
-17. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+17. ~~**Module 12 EXPENDITURE** — the budget reservation ledger that counts committed money
+    and not just spent money, input-tax-credit resolution through the s.17(5) and
+    company-GSTIN gates, TDS with two thresholds and a crossing the system refuses to decide,
+    AI #1 receipt extraction whose every figure is re-derived, AI #4 duplicate detection that
+    only ever flags, and the posting handoff that keeps the ledger's single writer.~~ ✅
+18. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-18. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in) **and
+19. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in) **and
     → customer account for the portal realm**, which is now the load-bearing claim behind
     CSP's second scoping dimension; auth-code flow for the SPA; retire the demo password
     grant.
-19. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+20. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it

@@ -12,4 +12,5 @@ export * from "./accounts.js";
 export * from "./hrm.js";
 export * from "./maintenance.js";
 export * from "./csp.js";
+export * from "./expenditure.js";
 export { tenantScopedColumns } from "./columns.js";

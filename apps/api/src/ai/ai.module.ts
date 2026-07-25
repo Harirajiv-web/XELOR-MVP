@@ -11,6 +11,7 @@ import { DedupExplainer } from "./dedup-explainer.js";
 import { PayslipExplainer } from "./payslip-explainer.js";
 import { TicketTriage } from "./ticket-triage.js";
 import { ReplyDrafter } from "./reply-drafter.js";
+import { ReceiptExtractor } from "./receipt-extractor.js";
 import { AuditLogService } from "../common/audit-log.service.js";
 
 /**
@@ -53,6 +54,9 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     // hidden button, not a guess with a lower confidence printed next to it.
     TicketTriage,
     ReplyDrafter,
+    // AI #1 — the flagship. Committed, Tier-2, and the only one whose output is money,
+    // which is why its arithmetic is re-derived rather than trusted.
+    ReceiptExtractor,
   ],
   exports: [
     AI_ROUTER,
@@ -66,6 +70,7 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     PayslipExplainer,
     TicketTriage,
     ReplyDrafter,
+    ReceiptExtractor,
   ],
 })
 export class AiModule {}
