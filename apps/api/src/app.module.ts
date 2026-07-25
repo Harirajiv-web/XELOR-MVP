@@ -11,6 +11,7 @@ import { PurchaseModule } from "./modules/purchase/purchase.module.js";
 import { ProductionModule } from "./modules/production/production.module.js";
 import { QualityModule } from "./modules/quality/quality.module.js";
 import { SalesModule } from "./modules/sales/sales.module.js";
+import { AccountsModule } from "./modules/accounts/accounts.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -34,6 +35,8 @@ import { SalesModule } from "./modules/sales/sales.module.js";
     PurchaseModule,
     QualityModule,
     ProductionModule,
+    // Accounts is listed before Sales: SMBD depends on the ledger port, never the reverse.
+    AccountsModule,
     SalesModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.

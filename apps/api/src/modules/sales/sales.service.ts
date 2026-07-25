@@ -24,6 +24,7 @@ import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
+import { ACCOUNTS_POSTER, type AccountsPoster } from "../../ports/accounts.port.js";
 
 const { customer, salesOrder, salesOrderLine, dispatch, dispatchLine, outboxEvent } = schema;
 
@@ -117,6 +118,17 @@ export interface SalesOrderView {
   }>;
 }
 
+export interface DispatchResult {
+  dispatchNo: string;
+  stockEntryRef: string;
+  orderStatus: string;
+  movements: unknown[];
+  /** Raised by Accounts in the same transaction as the goods movement. */
+  invoiceNo: string;
+  invoiceTotal: number;
+  dueDate: string;
+}
+
 const m2 = (n: number): string => n.toFixed(2);
 const q3 = (n: number): string => n.toFixed(3);
 const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(v));
@@ -130,11 +142,12 @@ const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(
  *  - It captures **Ship-to GSTIN at order time** — mandatory on the IRP payload from
  *    1 Aug 2026 (§3.4) — because that is the last moment a human can still ask the
  *    customer for it. The effective DATE lives in config, never in a branch here.
- *  - Dispatch issues stock through the STOCK_POSTER port; SMBD never writes the ledger
- *    (§5.6), and a dispatch row cannot claim 'dispatched' without the entry id (CHECK).
- *  - The credit gate is computed from THIS module's own exposure (confirmed, undelivered
- *    orders). It does not pretend to know receivables — Accounts owns those, and when that
- *    module lands the exposure source becomes a port rather than a local sum.
+ *  - Dispatch issues stock through the STOCK_POSTER port and raises the invoice through the
+ *    ACCOUNTS_POSTER port, all in ONE transaction: the goods leaving, the stock ledger and
+ *    the receivable commit together or not at all (§5.5, §5.6).
+ *  - The credit gate combines the AR outstanding Accounts owns with SMBD's own confirmed-
+ *    but-unshipped commitments. Before Accounts existed this summed only the second half,
+ *    which understated every customer who already owed money.
  */
 @Injectable()
 export class SalesService {
@@ -142,6 +155,7 @@ export class SalesService {
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
+    @Inject(ACCOUNTS_POSTER) private readonly accounts: AccountsPoster,
   ) {}
 
   /** Statutory config is data. A tenant-level override slots in here later. */
@@ -446,6 +460,12 @@ export class SalesService {
       }
       const cust = (await tx.select().from(customer).where(eq(customer.id, so.customerId)).limit(1))[0]!;
 
+      // Exposure now has TWO parts, and Accounts owns the half that is real money:
+      //   * INVOICED and unpaid  -> the AR subledger, read through the ledger port;
+      //   * CONFIRMED not yet shipped -> still SMBD's own commitment, no invoice exists.
+      // Before Accounts existed this method summed only the second half and called it
+      // exposure, which understated every customer who already owed money.
+      const ar = await this.accounts.getCustomerOutstandingInTx(tx, so.customerId);
       const openRows = await tx
         .select({ total: salesOrder.grandTotal })
         .from(salesOrder)
@@ -456,7 +476,8 @@ export class SalesService {
             inArray(salesOrder.status, ["confirmed", "partially_dispatched"]),
           ),
         );
-      const exposure = openRows.reduce((a, r) => a + numOf(r.total), 0);
+      const committed = openRows.reduce((a, r) => a + numOf(r.total), 0);
+      const exposure = Math.round((ar.outstanding + committed) * 100) / 100;
       const limit = numOf(cust.creditLimit);
       const orderValue = numOf(so.grandTotal);
       const withinLimit = exposure + orderValue <= limit + 1e-9;
@@ -528,7 +549,7 @@ export class SalesService {
     orderId: string,
     input: { lines: Array<{ orderLineId: string; qty: number }>; transporter?: string; vehicleNo?: string; ewayBillNo?: string },
     idempotencyKey: string,
-  ): Promise<{ dispatchNo: string; stockEntryRef: string; orderStatus: string; movements: unknown[] }> {
+  ): Promise<DispatchResult> {
     const result = await runIdempotent(
       idempotencyKey,
       fingerprint({ orderId, input, op: "dispatch" }),
@@ -540,7 +561,7 @@ export class SalesService {
   private async doDispatch(
     orderId: string,
     input: { lines: Array<{ orderLineId: string; qty: number }>; transporter?: string; vehicleNo?: string; ewayBillNo?: string },
-  ): Promise<{ dispatchNo: string; stockEntryRef: string; orderStatus: string; movements: unknown[] }> {
+  ): Promise<DispatchResult> {
     if (input.lines.length === 0) {
       throw Errors.validation([{ field: "lines", message: "a dispatch needs at least one line" }]);
     }
@@ -634,11 +655,56 @@ export class SalesService {
         .set({ status: orderStatus, updatedBy: actorId, updatedAt: now })
         .where(eq(salesOrder.id, orderId));
 
+      // ---- the invoice, raised in THIS transaction (contract #6) ----------------------
+      // SMBD values the shipped subset with its own GST brain and hands the figures over;
+      // Accounts records them and never recomputes (ACCOUNTS §1.3). Goods leaving, the
+      // ledger entry and the receivable therefore commit together or not at all.
+      const invoiceTax = computeOrderTax({
+        supplierGstin: so.supplierGstin,
+        placeOfSupplyStateCode: so.placeOfSupply,
+        lines: input.lines.map((req, i) => {
+          const l = byId.get(req.orderLineId)!;
+          return {
+            lineNo: i + 1,
+            qty: req.qty,
+            rate: numOf(l.rate),
+            discountPct: numOf(l.discountPct),
+            gstRatePct: numOf(l.gstRatePct),
+            hsn: l.hsn,
+          };
+        }),
+      });
+      const cust = (await tx.select().from(customer).where(eq(customer.id, so.customerId)).limit(1))[0];
+      const invoice = await this.accounts.raiseSalesInvoiceInTx(tx, {
+        customerId: so.customerId,
+        customerName: cust?.name,
+        soRef: so.soNo,
+        dispatchRef: dispatchNo,
+        amounts: {
+          taxableValue: invoiceTax.subtotal,
+          cgst: invoiceTax.cgstTotal,
+          sgst: invoiceTax.sgstTotal,
+          igst: invoiceTax.igstTotal,
+          roundOff: invoiceTax.roundOff,
+          grossReceivable: invoiceTax.grandTotal,
+        },
+        paymentTermsDays: cust?.creditDays ?? 30,
+        invoiceDate: now.toISOString().slice(0, 10),
+        sourceDocType: "dispatch",
+        sourceDocId: dispatchId,
+      });
+
       await this.audit.appendInTx(tx, {
         action: "sales.dispatch.executed",
         entityType: "dispatch",
         entityId: dispatchId,
-        data: { dispatchNo, soNo: so.soNo, stockEntryRef: post.entryId, orderStatus },
+        data: {
+          dispatchNo,
+          soNo: so.soNo,
+          stockEntryRef: post.entryId,
+          orderStatus,
+          invoiceNo: invoice.invoiceNo,
+        },
       });
       await tx.insert(outboxEvent).values({
         id: newId(),
@@ -648,7 +714,15 @@ export class SalesService {
         createdAt: now,
       });
 
-      return { dispatchNo, stockEntryRef: post.entryId, orderStatus, movements: post.movements };
+      return {
+        dispatchNo,
+        stockEntryRef: post.entryId,
+        orderStatus,
+        movements: post.movements,
+        invoiceNo: invoice.invoiceNo,
+        invoiceTotal: invoice.grossReceivable,
+        dueDate: invoice.dueDate,
+      };
     });
   }
 

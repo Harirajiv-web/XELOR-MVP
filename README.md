@@ -21,8 +21,9 @@ swappable in by the same config.
 > Inventory) + **Module 05 PRODUCTION** (the make cycle — consume components, produce
 > finished goods) + **Module 06 INSPECTION/QMS** (sampling, inspections, dispositions, and
 > the quality gate Production now honours) + **Module 07 SMBD** (customers, sales orders
-> with real GST place-of-supply, credit gate, dispatch). The order-to-cash spine
-> (buy → stock → make → inspect → **sell**) is in place.
+> with real GST place-of-supply, credit gate, dispatch) + **Module 08 ACCOUNTS** (the
+> append-only general ledger, the AR subledger, receipts). The order-to-cash spine
+> (buy → stock → make → inspect → sell → **book it**) is in place.
 
 ## What's here
 
@@ -42,6 +43,7 @@ MVP_PROTOTYPE_1/
 │  │     │  └─ dedup-verdict.ts     # CODE decides the conclusion + action; grounding guard
 │  │     ├─ quality/sampling.ts     # pure QMS brain: ISO 2859-1 sampling · spec eval · lot verdict
 │  │     ├─ tax/gst.ts              # pure GST brain: GSTIN+checksum · place of supply · CGST/SGST vs IGST
+│  │     ├─ accounting/journal.ts   # pure LEDGER brain: double-entry · reversal · trial balance
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -50,7 +52,7 @@ MVP_PROTOTYPE_1/
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production}.ts
 │     ├─ src/{client,migrate,rls-check}.ts
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0019.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0023.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -76,6 +78,7 @@ MVP_PROTOTYPE_1/
             ├─ production/          # Module 05 — the make cycle (consume components, produce FG)
             ├─ quality/             # Module 06 — inspections, sampling, dispositions (@Global gate port)
             ├─ sales/               # Module 07 — customers, sales orders + GST, credit gate, dispatch
+            ├─ accounts/            # Module 08 — append-only GL, AR subledger, receipts (@Global ledger port)
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
@@ -105,6 +108,8 @@ MVP_PROTOTYPE_1/
 | 0019 | `seed_quality` | AQL 1.0 / Level II band table, the CP-50 pump's final-inspection template (bore ⌀, runout, leak test) and the casing's incoming template (§7) |
 | 0020 | `sales` | SMBD: `customer` (GSTIN shape CHECK + trigram index for the dedup brain), `sales_order` + `_line` (rate-wise GST stored per line, `chk_gst_exclusive`, duplicate-PO guard, credit snapshots), `dispatch` + `_line` (CHECK: shipped requires a stock-entry ref) |
 | 0021 | `seed_sales` | four demo customers chosen to exercise place of supply: Pune (intra), Bengaluru (inter), Coimbatore (intra *or* inter depending on the selling GSTIN), and one unregistered buyer (§7) |
+| 0022 | `accounts` | `gl_account`, `acc_period` (the close), `journal_voucher` + `journal_line` under the **three-layer append-only guard**, `ar_open_item` (GENERATED `outstanding`), `settlement` + allocations |
+| 0023 | `seed_accounts` | a Schedule III-shaped chart of accounts (separate GST head per direction, so a return is a *query*) + FY 2026-27 periods with April–June closed and July open |
 
 ### The conventions, made real
 
@@ -125,7 +130,8 @@ MVP_PROTOTYPE_1/
 | §3.4 GST — place of supply, CGST/SGST vs IGST, HSN, and the **1 Aug 2026 Ship-to-GSTIN mandate** as a config date | `packages/platform/src/tax/gst.ts` + `migrations/0020` |
 | "every statutory number is config, never a constant" | `GstConfig` (mandate date, checksum enforcement) + `qms_sampling_plan.plan_table` (sampling bands as data) |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
-| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`, `InspectionGate`); `@Global` Workflow + Inventory + Engineering + Quality |
+| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`, `InspectionGate`, `AccountsPoster`); `@Global` Workflow + Inventory + Engineering + Quality + Accounts |
+| ledger-critical writes are **append-only**, guarded at trigger *and* grant level | `stock_ledger` (`migrations/0013`) and `journal_voucher`/`journal_line` (`migrations/0022`) |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
 | §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `packages/db/src/schema/columns.ts`, `migrations/0000` |
 | §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `packages/platform/src/errors`, `.../api/pagination.ts`, `apps/api/src/common/idempotency.ts` |
@@ -379,6 +385,39 @@ ones replaced by UUIDv7 + shared schema + FORCE RLS + `NUMERIC(18,2)` (§5.1).
 > computed. A test records this deliberately, so nobody later "fixes" the checksum and
 > breaks the entire demo universe.
 
+## Module 08 — ACCOUNTS (done)
+
+The general ledger, the AR subledger, and the credit exposure every other module asks
+about. Its governing rule (ACCOUNTS §1.3) is a boundary, not a feature:
+
+> **Never re-post what a sibling already valued.** If SMBD says the invoice is ₹1,47,500,
+> the ledger says ₹1,47,500.
+
+Accounts checks exactly four things and nothing else: the journal **balances**, the period
+is **open**, every account **exists and is postable**, and the instruction is **not a
+duplicate**. It never second-guesses a sibling's arithmetic — and it *cannot*, because the
+dependency arrow points one way: modules depend on Accounts, Accounts reads no sibling's
+tables. That keeps the module graph acyclic and makes the rule structural.
+
+- **The journal is append-only, guarded in three independent layers** (§9.4), the same
+  discipline Inventory applies to `stock_ledger`:
+  **(a)** a DEFERRED constraint trigger asserts debits = credits and ≥ 2 lines *at COMMIT*,
+  so a voucher can be assembled line by line but can never commit lopsided;
+  **(b)** BEFORE UPDATE/DELETE triggers — a posted voucher's date, amount or account can
+  never change; **(c)** the GRANT is revoked, so even a code bug cannot get past it.
+  All three are tested **independently** — the grant test runs as `app_user`, the trigger
+  test as the schema owner (who bypasses grants entirely).
+- **Correction is a reversal, never an edit** — the reversal is the same lines with the
+  sides swapped, so the pair nets to zero and *both* stay visible forever.
+- **Dispatch raises the invoice in the same transaction** — goods leaving, the stock
+  ledger and the receivable commit together or not at all. One invoice per dispatch,
+  forever: a retried dispatch returns the original, it does not double-bill.
+- **The credit gate got real teeth.** SMBD's exposure now = the **unpaid AR** Accounts owns
+  + SMBD's own confirmed-but-unshipped commitments. Before this module, it summed only the
+  second half and so understated every customer who already owed money.
+- **Receipts settle oldest-first**, and `outstanding` is a GENERATED column — it cannot
+  drift from the figures it derives from.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -399,7 +438,7 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0021 (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0023 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
@@ -502,9 +541,9 @@ from sprint 1, exactly as §1.1/§1.6 require.
     1 Aug 2026 ship-to mandate, credit gate, dispatch through Inventory's write path;
     closes buy → make → inspect → sell.~~ ✅
 12. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
-13. **ACCOUNTS** — the invoice off a dispatched sales order (SMBD already stores every
-    field the IRP payload needs), receivables, and the credit exposure SMBD currently
-    computes locally becoming a port.
+13. ~~**Module 08 ACCOUNTS** — the append-only general ledger, the invoice raised inside
+    the dispatch transaction, the AR subledger and receipts, and SMBD's credit gate reading
+    real receivables through the ledger port.~~ ✅
 14. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.

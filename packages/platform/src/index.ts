@@ -12,3 +12,4 @@ export * from "./masterdata/dedup.js";
 export * from "./masterdata/dedup-verdict.js";
 export * from "./quality/sampling.js";
 export * from "./tax/gst.js";
+export * from "./accounting/journal.js";
