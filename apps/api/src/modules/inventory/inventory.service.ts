@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
   newId,
   currentTenant,
   eventName,
+  round2,
   AppError,
   Errors,
 } from "@ind-core/platform";
@@ -16,6 +17,7 @@ import type {
   PostStockEntryResult,
   StockMovement,
 } from "../../ports/stock.port.js";
+import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 
 const { warehouse, stockEntry, stockEntryLine, stockLedger, stockBalance } = schema;
 
@@ -42,7 +44,10 @@ export interface OnHandRow {
  */
 @Injectable()
 export class InventoryService implements StockPoster {
-  constructor(private readonly audit: AuditLogService) {}
+  constructor(
+    private readonly audit: AuditLogService,
+    @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
+  ) {}
 
   /** Standalone post, idempotent on the key — the HTTP write path (§5.6). */
   async post(
@@ -117,6 +122,13 @@ export class InventoryService implements StockPoster {
         remarks: input.remarks ?? null,
       });
 
+      // Valuation is INVENTORY's, and it happens here so that every consumer of a movement
+      // — Purchase's GRN, Production, Maintenance's spare line — receives the same number
+      // from the same place and none of them has a reason to compute one of its own.
+      // Standard cost is the MVP basis; FIFO/moving-average lands behind this same shape.
+      const itemSpecs = await this.items.getItems([...new Set(input.lines.map((l) => l.itemId))]);
+      const rateOf = new Map(itemSpecs.map((s) => [s.id, s.standardCost]));
+
       const movements: StockMovement[] = [];
       for (const [i, l] of input.lines.entries()) {
         const batch = l.batch ?? "";
@@ -146,7 +158,19 @@ export class InventoryService implements StockPoster {
           const balanceAfter = await this.applyMovement(
             tx, tenantId, actorId, l.itemId, d.whId, batch, d.delta, entryId, input.entryType, input.reasonCode ?? null, now,
           );
-          movements.push({ itemId: l.itemId, warehouseId: d.whId, batch, delta: d.delta, balanceAfter });
+          const valuationRate = rateOf.get(l.itemId) ?? 0;
+          movements.push({
+            itemId: l.itemId,
+            warehouseId: d.whId,
+            batch,
+            delta: d.delta,
+            balanceAfter,
+            valuationRate,
+            // Signed with the movement: an issue of 1 at Rs 2,840 is -2,840 to stock and
+            // +2,840 of consumption for whoever asked for it.
+            valuedAmount: round2(Math.abs(d.delta) * valuationRate),
+            valuationBasis: "standard_cost",
+          });
         }
       }
 

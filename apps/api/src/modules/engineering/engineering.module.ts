@@ -3,6 +3,7 @@ import { EngineeringController } from "./engineering.controller.js";
 import { BomController } from "./bom.controller.js";
 import { EngineeringService } from "./engineering.service.js";
 import { BOM_PROVIDER } from "../../ports/bom.port.js";
+import { ITEM_PROVIDER } from "../../ports/item.port.js";
 
 /**
  * ENGINEERING (AXLE, Module 02) — item master + BOM. Made @Global and exposes the
@@ -12,7 +13,13 @@ import { BOM_PROVIDER } from "../../ports/bom.port.js";
 @Global()
 @Module({
   controllers: [EngineeringController, BomController],
-  providers: [EngineeringService, { provide: BOM_PROVIDER, useExisting: EngineeringService }],
-  exports: [EngineeringService, BOM_PROVIDER],
+  providers: [
+    EngineeringService,
+    { provide: BOM_PROVIDER, useExisting: EngineeringService },
+    // ITEM_PROVIDER is read by INVENTORY (to value a movement at standard cost) and by
+    // MAINTENANCE (to show a spare's code and unit) — neither imports this module.
+    { provide: ITEM_PROVIDER, useExisting: EngineeringService },
+  ],
+  exports: [EngineeringService, BOM_PROVIDER, ITEM_PROVIDER],
 })
 export class EngineeringModule {}

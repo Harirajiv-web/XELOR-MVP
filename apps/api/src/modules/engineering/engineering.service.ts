@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import type { BomProvider, BomSpec } from "../../ports/bom.port.js";
+import type { ItemProvider, ItemSpec } from "../../ports/item.port.js";
 import {
   newId,
   currentTenant,
@@ -100,11 +101,53 @@ export interface BomView {
  * tenant-fenced transaction does the write + hash-chained audit + outbox event.
  */
 @Injectable()
-export class EngineeringService implements BomProvider {
+export class EngineeringService implements BomProvider, ItemProvider {
   constructor(
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
   ) {}
+
+  // ---- ItemProvider port (read by INVENTORY for valuation, by MAINTENANCE for display) ----
+
+  async getItem(itemId: string): Promise<ItemSpec | null> {
+    const [spec] = await this.getItems([itemId]);
+    return spec ?? null;
+  }
+
+  async getItems(itemIds: readonly string[]): Promise<ItemSpec[]> {
+    if (itemIds.length === 0) return [];
+    return withTenant((tx) => this.itemsInTx(tx, itemIds));
+  }
+
+  async getItemByCode(itemCode: string): Promise<ItemSpec | null> {
+    return withTenant(async (tx) => {
+      const [r] = await tx.select().from(item).where(eq(item.itemCode, itemCode)).limit(1);
+      return r ? this.toItemSpec(r) : null;
+    });
+  }
+
+  /** In-transaction variant, so a caller posting stock can value the movement inside the
+   *  same transaction it is writing (ledger-critical, §5.5). */
+  async itemsInTx(tx: Tx, itemIds: readonly string[]): Promise<ItemSpec[]> {
+    const rows = await tx.select().from(item).where(inArray(item.id, [...itemIds]));
+    return rows.map((r) => this.toItemSpec(r));
+  }
+
+  private toItemSpec(r: {
+    id: string;
+    itemCode: string;
+    name: string;
+    uom: string;
+    standardCost: string | null;
+  }): ItemSpec {
+    return {
+      id: r.id,
+      itemCode: r.itemCode,
+      name: r.name,
+      uom: r.uom,
+      standardCost: r.standardCost == null ? 0 : Number(r.standardCost),
+    };
+  }
 
   // ---- BomProvider port (read by PRODUCTION) ----
 

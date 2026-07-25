@@ -28,6 +28,16 @@ export interface StockMovement {
   batch: string;
   delta: number;
   balanceAfter: number;
+  /**
+   * What Inventory valued this movement at, and on what basis.
+   *
+   * Consumers MIRROR these figures; they never recompute them. That is what lets
+   * Maintenance state honestly that it holds no valuation logic — the number on an MWO's
+   * spare line is Inventory's answer, carried across the boundary intact.
+   */
+  valuationRate: number;
+  valuedAmount: number;
+  valuationBasis: "standard_cost";
 }
 export interface PostStockEntryResult {
   entryId: string;

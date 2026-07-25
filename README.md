@@ -23,9 +23,12 @@ swappable in by the same config.
 > the quality gate Production now honours) + **Module 07 SMBD** (customers, sales orders
 > with real GST place-of-supply, credit gate, dispatch) + **Module 08 ACCOUNTS** (the
 > append-only general ledger, the AR subledger, receipts) + **Module 09 HRM &
-> ATTENDANCE** (punch → attendance → **deemed wages (s.2(y))** → payroll → payslip → GL).
-> The order-to-cash spine (buy → stock → make → inspect → sell → **book it**) is in place,
-> and so is the people-and-pay spine that feeds it.
+> ATTENDANCE** (punch → attendance → **deemed wages (s.2(y))** → payroll → payslip → GL) +
+> **Module 10 MAINTENANCE/CMMS** (asset register → request → MWO → an overlap-free
+> **downtime clock** → PM schedules → reliability KPIs). The order-to-cash spine
+> (buy → stock → make → inspect → sell → **book it**) is in place, so is the people-and-pay
+> spine that feeds it, and so is the asset-uptime layer that decides whether the machines
+> are there tomorrow.
 
 ## What's here
 
@@ -46,13 +49,16 @@ MVP_PROTOTYPE_1/
 │  │     ├─ quality/sampling.ts     # pure QMS brain: ISO 2859-1 sampling · spec eval · lot verdict
 │  │     ├─ tax/gst.ts              # pure GST brain: GSTIN+checksum · place of supply · CGST/SGST vs IGST
 │  │     ├─ accounting/journal.ts   # pure LEDGER brain: double-entry · reversal · trial balance
+│  │     ├─ people/                 # pure PAYROLL brains: s.2(y) deemed wages · EPF/ESI/PT/TDS · attendance
+│  │     ├─ maintenance/            # pure CMMS brains: MTBF/MTTR/availability · PM drift + meter forecast
+│  │     │                          #   · criticality×severity SLA · completion gate · narrative grounding
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
 │  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
 │  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production}.ts
-│     ├─ src/{client,migrate,rls-check}.ts
+│     ├─ src/{client,migrate,rls-check,naming-check}.ts   # naming-check gates the MWO/WO boundary
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
 │     └─ migrations/0000 … 0023.sql # see "Schema surface" below
 └─ apps/
@@ -82,10 +88,11 @@ MVP_PROTOTYPE_1/
             ├─ sales/               # Module 07 — customers, sales orders + GST, credit gate, dispatch
             ├─ accounts/            # Module 08 — append-only GL, AR subledger, receipts (@Global ledger port)
             ├─ hrm/                 # Module 09 — attendance, leave, deemed wages, payroll → GL
+            ├─ maintenance/         # Module 10 — assets, MWOs, the downtime clock, PM, reliability KPIs
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
-### Schema surface (migrations 0000 → 0025)
+### Schema surface (migrations 0000 → 0027)
 
 | # | Migration | What it adds |
 |---|---|---|
@@ -115,6 +122,8 @@ MVP_PROTOTYPE_1/
 | 0023 | `seed_accounts` | a Schedule III-shaped chart of accounts (separate GST head per direction, so a return is a *query*) + FY 2026-27 periods with April–June closed and July open |
 | 0024 | `hrm` | the **platform-global, append-only statutory rate book** (`stat_wage_definition`, `stat_epf_config`, `stat_esi_config`, `stat_pt_slab`, `stat_tds_config` + slabs, `stat_gratuity_config`, `stat_ot_config` — UPDATE/DELETE revoked *and* trigger-blocked) + 19 tenant-scoped tables: `employee` (encrypted PII columns), `pii_access_log`, `shift`, `shift_roster`, append-only `biometric_punch`, `attendance_day` (lock-guarded), `regularisation_request`, leave, salary structures, `payroll_run` (**`ck_payrollrun_sod`**), `payslip` (**the s.2(y) identity as CHECK constraints**), `payslip_line`, `statutory_contribution` |
 | 0025 | `seed_hrm` | the rate book itself — s.2(y) 50% threshold (eff. 21-Nov-2025), EPF ceiling ₹15,000 (re-notified 29-May-2026), ESI ₹21,000, Maharashtra PT (with the February ₹300), Tamil Nadu half-yearly PT, FY 2026-27 new-regime slabs + §87A, gratuity 15/26 with the **dual vesting horizon** — each row carrying a `source_note`; plus the §20 shifts, leave types, salary structure and ten employees, and the payroll GL accounts |
+| 0026 | `maintenance` | 23 tables and the module's four structural guarantees: `asset_downtime` with a **btree_gist EXCLUDE** so one asset can never hold two overlapping intervals, `mwo_labour` with the same over `(employee, interval)` so a fitter cannot be in two places, GENERATED `duration_minutes` / `hours` / `cost_total`, and `UNIQUE (tenant, schedule, occurrence_seq)` so PM generation is idempotent. Plus `ck_statutory_fixed` (a statutory examination cannot float), `ck_spare_issued_has_entry` (issued is impossible without Inventory's stock-entry ref), an append-only `asset_meter_reading` with a trigger asserting `current_value` stays a projection of it, and an append-only `criticality_sla_matrix` |
+| 0027 | `seed_maintenance` | the Trishul asset register (23 assets over two plants, four levels, criticality with a written justification), 11 meters with real readings behind them, the §4.C criticality × severity SLA matrix, labour rates by trade, an ISO 14224-shaped failure taxonomy (12 modes / 12 causes / 6 detections / 5 actions), 9 PM schedules including the **Factories Act s.29 twelve-monthly crane examination**, two AMC coverage mirrors, seven MRO spare items, the `mwo_closure_approval` W1 ladder, and the `mnt.*` permission set — with `mnt.downtime.adjust` and `mnt.mwo.prioritise` deliberately granted separately |
 
 ### The conventions, made real
 
@@ -514,6 +523,117 @@ skipped; ten payslips computed twice to an identical `inputs_hash`; the four gol
 matching; a balanced ₹7,96,622.93 payroll journal; and every guard — grant, trigger, CHECK —
 refusing independently.
 
+## Module 10 — MAINTENANCE / CMMS (done)
+
+The asset-uptime layer. Where Production asks *"did we make the part?"*, Maintenance asks
+**"will the machine be there tomorrow?"** — and it answers with transactions instead of
+memory:
+
+> **request → triage → MWO → execute (labour + spares + checklist) → close with a failure
+> code → downtime and cost land on the asset → the KPIs and the next PM fall out of the data**
+
+**Read the naming rule first.** "Work order" is overloaded in this suite, so the two are
+kept structurally apart: PRODUCTION owns `production_order` (item + BOM + quantity, `WO-`
+series, `prod.*` permissions); MAINTENANCE owns **`maintenance_work_order`** (asset +
+failure + downtime, `MWO-` series, `mnt.*` permissions). No FK between them, ever. The only
+shared vocabulary is the *machine*, and that is a logical `work_center_ref`. This is checked
+on every migration by `pnpm --filter @ind-core/db naming-check`, which fails CI on a bare
+`work_order` table, an `mwo_*` column on a production table, or a foreign key crossing the
+two — the "convenient" FK somebody adds in month four.
+
+### The four things the database refuses, so the code doesn't have to be trusted
+
+- **A machine cannot be down twice.** A `btree_gist` EXCLUDE over
+  `(tenant, asset, tstzrange(started_at, coalesce(ended_at,'infinity')))` makes an
+  overlapping interval *unrepresentable*. Two operators reporting the same stop produce one
+  clock and a structured `DOWNTIME_OVERLAP` naming the interval that won, so the UI can
+  offer "join the existing job". Postgres is the arbiter — the service only translates.
+  The range's upper bound is exclusive, so a stop ending at `13:02:04` and the next
+  starting at exactly `13:02:04` is legal while `13:02:03` is not; that one second is the
+  difference between a correct clock and a plausible one.
+- **A technician cannot be in two places.** The same mechanism over
+  `(tenant, employee_ref, labour interval)`, across *all* work orders — without it a
+  double-tap silently doubles labour cost.
+- **Duration and totals are GENERATED**, never hand-maintained, so they cannot drift from
+  the endpoints and amounts they come from.
+- **PM generation is idempotent.** `UNIQUE (tenant, schedule, occurrence_seq)` — a retry, a
+  redeploy, a manual re-run and two workers racing all produce exactly one occurrence. And
+  a **statutory** schedule cannot be set to floating drift at all (`ck_statutory_fixed`):
+  the Factories Act's twelve-monthly examination stays on the calendar.
+
+### The behaviours that make the data worth having
+
+- **The clock starts before triage, not after.** A `severity=stopped` request opens the
+  downtime interval in the same transaction as the request. Measuring from the moment
+  maintenance *noticed* would measure the wrong thing. If triage disagrees, the interval is
+  **corrected with a reason** — never deleted, because deleting it erases the fact that
+  somebody believed the line was down.
+- **Handback is its own action, before completion.** Real technicians give the machine back
+  and write their notes afterwards. Closing the clock when the paperwork is done would
+  overstate every downtime figure in the plant by however long the paperwork takes.
+- **Only one hold reason stops the clock.** `awaiting_production_window` — the machine is
+  back with production while the job stays open. Downtime measures the *asset*, not the
+  work order. Every other reason keeps it running, and the API says which in plain English.
+- **The completion gate reports every unmet condition at once** — the exact task with its
+  instruction, the exact missing field, the open interval with a hint — so the UI renders a
+  checklist with jump links rather than one refusal at a time.
+- **Drift is a stored, visible decision.** `fixed` anchors the next service to the
+  *scheduled* date (a job done 21 days late is still due 01-Sep); `floating` anchors it to
+  *actual completion* (22-Sep). A schedule dormant for a year wakes with **one** occurrence
+  and a trail of honest `missed` rows, never twelve work orders.
+- **A stale meter forecasts nothing.** No observed reading in 60 days suppresses the
+  projection and raises a flag rather than inventing a date — and the projection is anchored
+  at the **last reading**, not at today, so an unread meter goes overdue instead of
+  appearing to be a constant seven days from its service, for ever.
+- **Spares are Inventory's stock, and it shows.** There is no stock table, no bin, no
+  on-hand column and no valuation function anywhere in `modules/maintenance`. An issue is a
+  synchronous call through `STOCK_POSTER`; the stock-entry id and the amount **Inventory**
+  valued it at are mirrored read-only, and `issue_status = 'issued'` is impossible without
+  that reference (a CHECK constraint, not a promise). A refusal surfaces Inventory's own
+  code and message **verbatim**.
+- **Two levers are made noisy by design.** Downtime correction and priority override are
+  separately granted permissions, both demand a reason, and the correction retains the
+  original endpoints in-row and re-emits the event with `corrected: true` so Production's
+  OEE *recomputes* instead of quietly diverging. They are the two changes that could
+  flatter every reliability KPI at once.
+- **Every KPI is one implementation with its formula attached.** MTBF, MTTR, availability,
+  PM compliance and schedule adherence are computed in one pure function and nowhere else;
+  the response carries the formula, the input row ids and an `inputs_digest` proving a
+  recompute reproduces it. A zero-failure window returns **NULL**, not 0 and not infinity.
+  A plant with no shift calendar returns NULL availability and says *"Needs shift calendar"*
+  rather than assuming 24×7 for exactly the customers who configured nothing.
+
+### The golden fixture, matched to the decimal
+
+VMC-01, July 2026, two shifts × 8 h × 26 days = **416.0 scheduled hours**; three unplanned
+production-impacting stops of 3.5 h, 3.5 h and 1.5 h (**one crossing midnight**), plus a
+4.0 h planned PM window that is reported but excluded:
+
+| | computed | blueprint §16.3 |
+|---|---|---|
+| unplanned downtime | 8.5 h | 8.5 h |
+| operating hours | 407.5 h | 407.5 h |
+| **MTBF** | **135.833 h** | 135.833 h ✅ |
+| **MTTR** | **2.833 h** | 2.833 h ✅ |
+| **Availability** | **97.9567 %** | 97.9567 % ✅ |
+
+…and the identity the dashboard prints out loud holds: `407.5 / 416 = 97.9567 %`. The
+function *throws* if those two expressions ever disagree, because an availability tile that
+contradicts the downtime tile is the argument that ends a CMMS rollout.
+
+**The 14-Jul story arc closes at ₹6,480 exactly** — labour ₹1,804 (3.2 h × ₹420 + 1.0 h ×
+₹460, both at the **as-of** rate, so a raise dated October cannot restate a July job) plus
+spares ₹4,676 valued by Inventory. Below the ₹25,000 band, so no approval; above it, closure
+routes through W1 and `close` refuses while the workflow is pending.
+
+**Verified end-to-end against PG17** (`_scratch/run31.sh`): the full arc from a 20-second
+shop-floor request to a closed, coded work order; a second operator's report joining the
+same clock; the completion gate refusing with four named conditions; handback closing the
+interval at 210 minutes; PM generation across nine schedules and re-run idempotently; the
+s.29 crane examination dated 09-Aug; the reliability fixture matching; a two-tenant leak
+probe returning 23 / 3 / 0 / 0; and fourteen database guards — EXCLUDE, CHECK, trigger and
+grant — each refusing independently with no application code running.
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -624,7 +744,35 @@ from sprint 1, exactly as §1.1/§1.6 require.
   §20.3 records no MH/TN holiday in June 2026, so the demo month is unaffected.
 - **Two blueprint spellings were overridden by the binding baseline.** DECISIONS-V2 §5.4
   mandates kebab-case event segments, so `hrm.attendance.month_locked.v1` ships as
-  `hrm.attendance.month-locked.v1` (same event). §5.4 wins on conflict, by rule.
+  `hrm.attendance.month-locked.v1` (same event). §5.4 wins on conflict, by rule. The same
+  rule reshapes Maintenance's downtime events:
+  `maintenance.asset.downtime.started.v1` → `maintenance.downtime.started.v1`.
+- **MAINTENANCE ships with NO AI feature, and that is the binding document winning.**
+  DECISIONS-V2 §4.2 fixes the MVP portfolio at a **closed registry of eight**; the module
+  blueprint proposes four more (§13.1–§13.4). What ships is the half the blueprint itself
+  calls the *deterministic baseline* — a complete asset narrative that needs no model —
+  plus the guard a model would have to pass, including a **numeric cross-check** and a
+  **PII probe** that refuses any technician's name. Asking the router for
+  `maintenance.asset_summary` returns `AI_FEATURE_NOT_REGISTERED`, on purpose. Opening the
+  registry is an ADR against §4.2, not a code change.
+- **MAINTENANCE deliberately stops short of five things**, none of them affecting a
+  computed figure: **Gotenberg PDFs** (the statutory register and the asset dossier are
+  served as JSON/CSV-shaped data); **BullMQ scheduling** for the PM generator and the
+  KPI rollup (both run on demand and are idempotent, which is the property that matters —
+  putting them on a timer is configuration); **Inventory reservations** (Inventory does not
+  yet expose a reservation contract, so a PM's default spares are recorded as planned lines
+  and flagged to stores — the amber chip, without the hold); **S3 photo attachments**; and
+  **General's shift calendar**, which that module does not own yet — so scheduled hours are
+  supplied by the caller and the KPI response says exactly where the number came from,
+  rendering `Needs shift calendar` rather than assuming 24×7 when it is absent.
+- **Two of the blueprint's own numbers do not follow from its own inputs**, and the code
+  says so rather than reproducing them. §16.2 quotes a compressor consumption rate of
+  22.4 h/day, but the two meter readings the same document gives (11,450 h on 15-Jun,
+  11,842.5 h on 03-Jul) imply **21.8056 h/day**; and its step-2 row expects a 22-Jul
+  projection that no anchoring of its own figures produces. The engine uses the rate its
+  readings support and reproduces the document's *step-1* arithmetic exactly (550 h at
+  22.0 h/day from 15-Jun = 25 days = **10-Jul**). Both discrepancies are recorded in the
+  seed, the test and the platform source.
 
 ## Next increments (in order)
 
@@ -656,12 +804,16 @@ from sprint 1, exactly as §1.1/§1.6 require.
     deemed-wages engine, an effective-dated statutory rate book that cannot be edited,
     payroll under segregation of duties, and the payroll journal posted through the ledger
     port.~~ ✅
-15. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+15. ~~**Module 10 MAINTENANCE / CMMS** — the asset register, the overlap-free downtime
+    clock, MWOs with a completion gate that collects the data reliability needs, calendar
+    and meter PM with explicit drift, spares brokered through Inventory, and deterministic
+    MTBF / MTTR / availability.~~ ✅
+16. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-16. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+17. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
-17. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+18. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it

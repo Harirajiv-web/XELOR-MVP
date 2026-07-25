@@ -10,4 +10,5 @@ export * from "./quality.js";
 export * from "./sales.js";
 export * from "./accounts.js";
 export * from "./hrm.js";
+export * from "./maintenance.js";
 export { tenantScopedColumns } from "./columns.js";

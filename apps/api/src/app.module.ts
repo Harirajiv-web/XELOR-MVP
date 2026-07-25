@@ -13,6 +13,7 @@ import { QualityModule } from "./modules/quality/quality.module.js";
 import { SalesModule } from "./modules/sales/sales.module.js";
 import { AccountsModule } from "./modules/accounts/accounts.module.js";
 import { HrmModule } from "./modules/hrm/hrm.module.js";
+import { MaintenanceModule } from "./modules/maintenance/maintenance.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -41,6 +42,8 @@ import { HrmModule } from "./modules/hrm/hrm.module.js";
     SalesModule,
     // HRM likewise depends on the ledger port to post payroll — never the reverse.
     HrmModule,
+    // Maintenance depends on the stock, item and workflow ports, and on nothing else.
+    MaintenanceModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
