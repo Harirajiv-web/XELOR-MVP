@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { IST_OFFSET_MINUTES } from "../time/ist.js";
 
 /**
  * RELIABILITY MATHS (MAINTENANCE §11.5, FR-MNT-100..102).
@@ -54,8 +55,6 @@ export interface KpiWindow {
    */
   utcOffsetMinutes?: number;
 }
-
-export const IST_OFFSET_MINUTES = 330;
 
 const offsetOf = (w: KpiWindow): number => w.utcOffsetMinutes ?? IST_OFFSET_MINUTES;
 

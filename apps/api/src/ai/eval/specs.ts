@@ -3,3 +3,4 @@
  * registry. The `eval` CLI imports this so all gates are discoverable.
  */
 import "./specs/general-master-dedup.spec.js";
+import "./specs/csp-ticket-triage.spec.js";

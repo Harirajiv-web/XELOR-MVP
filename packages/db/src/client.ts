@@ -28,9 +28,14 @@ export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
  * NEVER ride the event bus (§5.5); the outbox row is staged here too.
  */
 export async function withTenant<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
-  const { tenantId } = currentTenant(); // throws TENANT_MISSING if absent (fail closed)
+  const { tenantId, customerAccountId } = currentTenant(); // throws TENANT_MISSING if absent
   return db.transaction(async (tx) => {
     await tx.execute(sql`select set_config('app.current_tenant', ${tenantId}, true)`);
+    // The SECOND scoping dimension, for portal principals only (CSP §9.3). It is set
+    // explicitly to '' rather than left unset, because a connection returned to the pool
+    // carrying a stale value would be the exact leak this exists to prevent — and the
+    // restrictive policy reads an empty string as "staff session, no narrowing".
+    await tx.execute(sql`select set_config('app.customer_account_id', ${customerAccountId ?? ""}, true)`);
     return fn(tx);
   });
 }

@@ -53,6 +53,47 @@ export function f1(c: Confusion): PrecisionRecallF1 {
   return { precision, recall, f1: denom === 0 ? 0 : (2 * precision * recall) / denom };
 }
 
+/**
+ * MULTI-CLASS SCORING.
+ *
+ * Binary precision/recall is the wrong instrument for a classifier that picks one of eight
+ * categories: a model that answers "support" to everything would look respectable on a
+ * yes/no metric while being useless. **Macro-F1** — the unweighted mean of the per-class
+ * F1 scores — is the metric CSP's ship gate names, and it is unweighted on purpose: the
+ * rare classes (a data-protection rights request) are the ones where being wrong costs
+ * the most, so they count as much as the common ones.
+ */
+export interface ClassScore extends PrecisionRecallF1 {
+  label: string;
+  support: number;
+}
+
+export interface MulticlassScore {
+  macroF1: number;
+  accuracy: number;
+  perClass: ClassScore[];
+}
+
+export function macroF1(pairs: Array<{ expected: string; predicted: string }>): MulticlassScore {
+  const labels = [...new Set(pairs.flatMap((p) => [p.expected, p.predicted]))].sort();
+  const perClass: ClassScore[] = labels.map((label) => {
+    const c = tallyConfusion(
+      pairs.map((p) => ({ expected: p.expected === label, predicted: p.predicted === label })),
+    );
+    return { label, support: pairs.filter((p) => p.expected === label).length, ...f1(c) };
+  });
+  // Classes with no support in the golden set are excluded: scoring a model on a category
+  // the set never exercises rewards or punishes it for nothing.
+  const scored = perClass.filter((c) => c.support > 0);
+  const macro = scored.length === 0 ? 0 : scored.reduce((a, c) => a + c.f1, 0) / scored.length;
+  const correct = pairs.filter((p) => p.expected === p.predicted).length;
+  return {
+    macroF1: Math.round(macro * 10000) / 10000,
+    accuracy: pairs.length === 0 ? 0 : Math.round((correct / pairs.length) * 10000) / 10000,
+    perClass,
+  };
+}
+
 export interface GateRule {
   /** display name of the headline metric, e.g. "field-F1". */
   metric: string;

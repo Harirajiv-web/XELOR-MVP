@@ -14,6 +14,7 @@ import { SalesModule } from "./modules/sales/sales.module.js";
 import { AccountsModule } from "./modules/accounts/accounts.module.js";
 import { HrmModule } from "./modules/hrm/hrm.module.js";
 import { MaintenanceModule } from "./modules/maintenance/maintenance.module.js";
+import { CspModule } from "./modules/csp/csp.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -44,6 +45,10 @@ import { MaintenanceModule } from "./modules/maintenance/maintenance.module.js";
     HrmModule,
     // Maintenance depends on the stock, item and workflow ports, and on nothing else.
     MaintenanceModule,
+    // CSP is the only internet-facing module. It mounts TWO route prefixes with disjoint
+    // guards — `/api/v1/csp` for staff and `/api/v1/portal` for customers — and depends on
+    // the item port, the AI router and the outbox, and on nothing else.
+    CspModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],

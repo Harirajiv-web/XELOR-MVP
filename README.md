@@ -25,10 +25,14 @@ swappable in by the same config.
 > append-only general ledger, the AR subledger, receipts) + **Module 09 HRM &
 > ATTENDANCE** (punch → attendance → **deemed wages (s.2(y))** → payroll → payslip → GL) +
 > **Module 10 MAINTENANCE/CMMS** (asset register → request → MWO → an overlap-free
-> **downtime clock** → PM schedules → reliability KPIs). The order-to-cash spine
-> (buy → stock → make → inspect → sell → **book it**) is in place, so is the people-and-pay
-> spine that feeds it, and so is the asset-uptime layer that decides whether the machines
-> are there tomorrow.
+> **downtime clock** → PM schedules → reliability KPIs) + **Module 11 CSP / Customer
+> Service Portal** (the first internet-facing surface: a **second scoping dimension** —
+> tenant *and* customer account — a business-time SLA clock, triage that is suggested and
+> never forced, reply drafting that cannot promise anything, and warranty as a computed
+> gate). The order-to-cash spine (buy → stock → make → inspect → sell → **book it**) is in
+> place, so is the people-and-pay spine that feeds it, so is the asset-uptime layer that
+> decides whether the machines are there tomorrow — and now the customer can see their own
+> side of it.
 
 ## What's here
 
@@ -52,15 +56,17 @@ MVP_PROTOTYPE_1/
 │  │     ├─ people/                 # pure PAYROLL brains: s.2(y) deemed wages · EPF/ESI/PT/TDS · attendance
 │  │     ├─ maintenance/            # pure CMMS brains: MTBF/MTTR/availability · PM drift + meter forecast
 │  │     │                          #   · criticality×severity SLA · completion gate · narrative grounding
+│  │     ├─ csp/                    # pure SERVICE-DESK brains: business-time SLA clock · ticket lifecycle
+│  │     │                          #   · triage classifier (AI #3) · reply gate (AI #6) · entitlement
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
 │  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
 │  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
-│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production}.ts
+│     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production,…,csp}.ts
 │     ├─ src/{client,migrate,rls-check,naming-check}.ts   # naming-check gates the MWO/WO boundary
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0023.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0029.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -77,7 +83,9 @@ MVP_PROTOTYPE_1/
          │  ├─ ai-router.service.ts #   the one doorway: reject → govern → route → log
          │  ├─ stub.provider.ts     #   OFFLINE provider (default) — deterministic, zero spend
          │  ├─ ollama.provider.ts   #   EDGE provider — a model on this machine, auto-degrades
-         │  └─ dedup-explainer.ts   #   the dedup brain's surface (verdict in code, wording in model)
+         │  ├─ dedup-explainer.ts   #   the dedup brain's surface (verdict in code, wording in model)
+         │  ├─ ticket-triage.ts     #   AI #3 — suggested never forced; degrades to a HIDDEN chip
+         │  └─ reply-drafter.ts     #   AI #6 — drafts only; the gate refuses promises and verdicts
          └─ modules/
             ├─ general/             # Module 01 — company master + master_dedup brain
             ├─ engineering/         # Module 02 — item master + Bill of Materials
@@ -89,10 +97,12 @@ MVP_PROTOTYPE_1/
             ├─ accounts/            # Module 08 — append-only GL, AR subledger, receipts (@Global ledger port)
             ├─ hrm/                 # Module 09 — attendance, leave, deemed wages, payroll → GL
             ├─ maintenance/         # Module 10 — assets, MWOs, the downtime clock, PM, reliability KPIs
+            ├─ csp/                 # Module 11 — tickets, the business-time SLA clock, complaints,
+            │                       #   entitlement, spares, KB, CSAT; TWO route prefixes, disjoint guards
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
-### Schema surface (migrations 0000 → 0027)
+### Schema surface (migrations 0000 → 0029)
 
 | # | Migration | What it adds |
 |---|---|---|
@@ -124,6 +134,8 @@ MVP_PROTOTYPE_1/
 | 0025 | `seed_hrm` | the rate book itself — s.2(y) 50% threshold (eff. 21-Nov-2025), EPF ceiling ₹15,000 (re-notified 29-May-2026), ESI ₹21,000, Maharashtra PT (with the February ₹300), Tamil Nadu half-yearly PT, FY 2026-27 new-regime slabs + §87A, gratuity 15/26 with the **dual vesting horizon** — each row carrying a `source_note`; plus the §20 shifts, leave types, salary structure and ten employees, and the payroll GL accounts |
 | 0026 | `maintenance` | 23 tables and the module's four structural guarantees: `asset_downtime` with a **btree_gist EXCLUDE** so one asset can never hold two overlapping intervals, `mwo_labour` with the same over `(employee, interval)` so a fitter cannot be in two places, GENERATED `duration_minutes` / `hours` / `cost_total`, and `UNIQUE (tenant, schedule, occurrence_seq)` so PM generation is idempotent. Plus `ck_statutory_fixed` (a statutory examination cannot float), `ck_spare_issued_has_entry` (issued is impossible without Inventory's stock-entry ref), an append-only `asset_meter_reading` with a trigger asserting `current_value` stays a projection of it, and an append-only `criticality_sla_matrix` |
 | 0027 | `seed_maintenance` | the Trishul asset register (23 assets over two plants, four levels, criticality with a written justification), 11 meters with real readings behind them, the §4.C criticality × severity SLA matrix, labour rates by trade, an ISO 14224-shaped failure taxonomy (12 modes / 12 causes / 6 detections / 5 actions), 9 PM schedules including the **Factories Act s.29 twelve-monthly crane examination**, two AMC coverage mirrors, seven MRO spare items, the `mwo_closure_approval` W1 ladder, and the `mnt.*` permission set — with `mnt.downtime.adjust` and `mnt.mwo.prioritise` deliberately granted separately |
+| 0028 | `csp` | the only internet-facing schema, and **six** guarantees made in the database: (1) every portal-reachable table carries `customer_account_id` and a **RESTRICTIVE** `customer_account_isolation` policy *in addition to* tenant isolation — Postgres ANDs restrictive policies with permissive ones, so a portal session sees rows that are both this tenant's **and** this customer's; (2) that policy carries **`WITH CHECK` as well as `USING`** (the blueprint's DDL shows only `USING`, which fences reads while leaving a portal principal able to *write* a row stamped with somebody else's account); (3) children reference the ticket by the **composite key `(id, customer_account_id)`**, so a comment cannot claim a different customer from its ticket; (4) a **btree_gist EXCLUDE** on `csp_ticket_pause` makes a ticket paused twice over the same minute unrepresentable — doubly-subtracted minutes are how an SLA report quietly becomes fiction; (5) `csp_ticket_event` and `csp_abuse_event` are append-only at the grant *and* at a trigger; (6) a **sent reply is frozen** by trigger. Plus a GENERATED `search_tsv` on `csp_kb_article` with a restrictive policy that shows a portal session published public articles and nothing else, and a provisioned `vector(384)` + HNSW index so the fast-follow RAG is a backfill rather than a migration on a live table |
+| 0029 | `seed_csp` | the service desk: the **Mon–Sat 09:00–18:00 IST** calendar (a nine-hour day, six days — assuming Mon–Fri 9-to-5 would have promised every customer an extra day on every resolution clock) with three real holidays; three teams; the eight-category taxonomy whose `code` the SLA policies and the AI baseline both key on; **six SLA policies across all three precedence bands** — priority, category (a DPDP rights request has a statutory clock and does **not** pause) and contract (the AMC's own 240-minute commitment, which outranks the tenant's "urgent"); the `TKT/CMP/SPR-2627` counters; four portal users including one left `invited` so "invited but not consented" is a real state; eight warranties and two AMCs — one comprehensive, one **non-comprehensive** so the entitlement engine has something to answer `partial` about; and five KB articles, the fifth **internal** and deliberately stuffed with the vocabulary a customer would search for, so a broken visibility policy fails loudly |
 
 ### The conventions, made real
 
@@ -634,6 +646,247 @@ s.29 crane examination dated 09-Aug; the reliability fixture matching; a two-ten
 probe returning 23 / 3 / 0 / 0; and fourteen database guards — EXCLUDE, CHECK, trigger and
 grant — each refusing independently with no application code running.
 
+## Module 11 — CSP / Customer Service Portal (done)
+
+The first module a **customer** touches. Everything else in this suite is reached by an
+employee, through a VPN, with a staff-realm token; this one is reached from the public
+internet by somebody who does not work here — and nearly every structural decision in it
+follows from that single difference.
+
+> **raise → auto-triage (suggested) → SLA clock → agent works it → complaint to Quality →
+> entitlement decides who pays → resolve → the customer closes it → CSAT**
+
+One record, **two faces**. There is no customer-facing copy of a ticket: the customer and
+the agent read the same row, and the difference between what they see is a projection, not
+a second table that can drift. An internal note is a comment with `visibility = 'internal'`;
+an unsent AI reply is a comment with `author_type = 'ai_draft'`. Neither is ever selected
+into the portal view, and neither needs a copy kept in step.
+
+### The second scoping dimension
+
+Tenant isolation answers *"is this Trishul's row?"*. It cannot answer *"is this
+**BlueOrbit's** row?"*, and on an internet-facing surface that is the question that matters.
+
+So every portal-reachable table carries `customer_account_id` and a **RESTRICTIVE** policy
+on it, in addition to the ordinary permissive tenant policy. Postgres evaluates
+`(OR of permissive) AND (AND of restrictive)`, so the second policy can only ever narrow
+what the first allowed:
+
+```sql
+CREATE POLICY customer_account_isolation ON csp_ticket AS RESTRICTIVE
+  USING (NULLIF(current_setting('app.customer_account_id', true), '') IS NULL
+         OR customer_account_id = NULLIF(current_setting('app.customer_account_id', true), '')::uuid)
+  WITH CHECK (…same…);
+```
+
+Four things make it trustworthy rather than decorative:
+
+- **The value is minted, never accepted.** It comes from the organization claim on a
+  signature-verified portal-realm token. No header, query parameter or body field can set
+  it, and the middleware refuses a portal token that carries no organization at all.
+- **`withTenant` sets it to `''` explicitly on every transaction**, rather than leaving it
+  unset for staff. A pooled connection still carrying the previous request's customer id
+  would be precisely the leak this exists to prevent.
+- **`WITH CHECK`, not only `USING`.** The blueprint's DDL shows only `USING`, which fences
+  reads. Without the check half, a portal principal could *insert* a ticket stamped with
+  another customer's account: the row would vanish from their own view — so nothing would
+  look wrong — and appear in the victim's.
+- **Children reference the ticket by `(id, customer_account_id)`.** A comment, attachment,
+  event, pause, complaint or CSAT row whose account does not match its ticket's is refused
+  by a foreign key. That closes the one route an application bug could have taken to leak a
+  thread: mislabelling the child rather than the parent.
+
+For staff the setting is empty, the restrictive policy is a no-op, and an agent sees every
+customer in their tenant — which is exactly right.
+
+The knowledge base has no customer account, so its second dimension is **publication**: a
+portal session sees published, public articles and nothing else, by policy rather than by
+`WHERE` clause. `KB-005` — the internal complaint→NCR SOP — is seeded deliberately full of
+the vocabulary a customer would search for, so a broken policy fails loudly.
+
+### Business time, or the SLA number is a fiction
+
+"First response within 4 hours" promised at 22:40 on a Friday does not mean 02:40 on
+Saturday. Depending on the calendar it means Saturday 09:30, or Tuesday if Monday is a
+holiday. Getting this wrong does not produce a slightly-off number; it produces a breach
+notification at 9 p.m. and an argument with a customer who was never promised what the
+software thinks it promised.
+
+So there is exactly one implementation of business time, it is pure, and it is the only
+thing allowed to add minutes to a clock. Four properties, each verified end to end:
+
+- **A calendar is data** — working weekdays, a daily window, a holiday list. Trishul's desk
+  runs **Mon–Sat 09:00–18:00 IST**: a nine-hour day, six days a week. Nothing assumes
+  Mon–Fri 9-to-5, and assuming an eight-hour day would have promised every customer an
+  extra day on every resolution clock.
+- **A request raised before the desk opens starts its clock at opening.** The oil-leak
+  ticket is raised at 06:20 and its first response is due at **13:00** — 09:00 plus four
+  business hours — not at 10:20.
+- **Elapsed time is re-derived from stored pause intervals, never accumulated.** A counter
+  is cheaper and is wrong the first time a pause is back-dated or a job runs twice — and by
+  then the number has been on a report. A disputed verdict is recomputed, not argued about.
+- **Escalating does not hand back a fresh clock.** Raised 09:00 as medium (due 18:00),
+  escalated to urgent at 12:00: three business hours are already spent, so it is due at
+  **13:00**, not 16:00. Recomputing from *now* is the classic way an SLA report quietly
+  becomes fiction, and it would have recorded a "met" response that took seven hours.
+
+Time the *customer* held the ticket can never breach the agent's clock: `pending_customer`
+pauses it, the customer's reply resumes it and returns the ticket to `in_progress`, and a
+`btree_gist` EXCLUDE constraint makes two overlapping pauses on one ticket unrepresentable —
+doubly-subtracted minutes would make a ticket look less consumed than it was.
+
+Escalation tiers fire **exactly once** per ticket: the fired markers live on the row, so a
+scanner running every minute for an hour sends one notification rather than sixty. And a
+response clock that has already been answered does not escalate — chasing a response that
+has happened is how people learn to mute the ladder.
+
+### Warranty as a gate, not a gift
+
+Claims get honoured on goodwill without anyone checking the serial, the purchase date or
+the contract terms, and the result is a drain Finance cannot accrue for. So coverage is a
+**computed verdict with reasons**, cached on the ticket with the moment it was reached
+(a CHECK constraint refuses one without the other — a verdict without a timestamp cannot be
+told apart from one reached a year ago against cover that has since expired).
+
+- The claim is judged on the **date of failure, not on today**. A failure inside the cover
+  period stays covered even if reported three weeks later; defaulting to `now` would quietly
+  deny every late-reported claim, which is a commercial decision nobody made.
+- A comprehensive AMC **outranks** the standard warranty — it is what the customer paid
+  extra for, and reporting the cheaper cover would understate what they bought.
+- A non-comprehensive AMC returns **`partial`**: visit and labour covered, parts chargeable.
+  "Covered" and "not covered" would both be false.
+- **Anomalies never silently flip a verdict.** A claim dated before dispatch, or two live
+  warranties on one serial, are flagged for a human and the coverage answer stands on its
+  own merits. A data-entry error is not fraud, and the software is not entitled to treat it
+  as one. (Warranty-fraud scoring stays deferred for the same reason.)
+
+The AMC renewal lead goes to SMBD **once**, not nightly for two months — `AMC-2627-0002` is
+T-42 on 20-Jul-2026, flips to `expiring`, emits one `csp.amc.expiring.v1`, and the second
+scan emits nothing.
+
+### The two AI features, and what they are not allowed to do
+
+CSP owns two of the closed registry's eight, and they have the strictest guards in the
+codebase — because a support reply is a statement a company makes to its customer.
+
+**AI #3 `csp.ticket_triage`** — committed, Tier-1 advisory, baseline `keyword_rule_classifier`,
+degraded mode `feature_hidden`.
+
+- **Suggested, never forced.** The output is written to `ai_triage` and *nothing else moves*.
+  Category, priority and therefore the SLA policy change only when a human accepts — and the
+  acceptance, the edits and the dismissals are recorded, because **override rate** is the
+  metric that reveals drift before a customer does.
+- **Closed enums, always.** A model returning `"URGENT!!! (customer says line down)"` is
+  rejected outright rather than string-matched into compliance. The moment free text is
+  tolerated in a field the UI renders, the ticket body has a route into the interface.
+- **PII never leaves.** Emails, Indian mobile numbers, GSTINs, PANs and long identifiers are
+  replaced with type tokens before the payload is built, and a hard assertion refuses to
+  route if anything personal survived the scrub.
+- **Honest confidence.** Below 0.6 the chip renders collapsed. A confident wrong answer costs
+  more than no answer.
+- **Degrading hides the feature.** `feature_hidden` is implemented literally: governance
+  refusal or an invalid reply returns *no suggestion*, and the agent triages an ordinary
+  ticket. A missing chip costs seconds; a confident wrong one costs trust in every future
+  suggestion.
+
+A ticket body attempting to steer the classifier is logged to `csp_abuse_event` and then
+ignored. Worth being exact about the claim: the keyword baseline has no instruction-following
+in it, but it will match the word "urgent" wherever that word appears — including inside the
+attack. That costs nothing, because the output is a closed enum and **nothing is applied**.
+
+**AI #6 `csp.reply_draft`** — stretch, Tier-2 draft-record, baseline
+`canned_response_template`, degraded mode `feature_hidden`. The blueprint names the lesson
+this is built around: assistive drafting is where the evidence is good, autonomy is where it
+broke publicly. So **a draft is never sent** — structurally, not carefully. It is stored with
+`author_type = 'ai_draft'`, a value the customer-visibility rule excludes and a CHECK
+constraint forbids from ever carrying a `sent_at`. It becomes a message when a human presses
+send, and that act rewrites the author, stamps the sender, and a trigger **freezes the text**:
+a reply the customer has read and may be relying on cannot be edited into something else.
+
+The gate refuses a draft that:
+
+| refusal | example it catches |
+|---|---|
+| `made_a_commitment` | "We will replace the seal free of charge and dispatch it tomorrow." |
+| `decided_liability` | "This is a manufacturing defect on our side." |
+| `leaked_internal_context` | "NCR-2627-0044 has been raised for this batch." |
+| `claimed_coverage_without_an_entitlement_check` | "This part is covered under warranty." |
+| `ungrounded_number:42` | "We have shipped 6 units; the balance 42 will follow." |
+| `broke_persona` | "As an AI language model I cannot confirm coverage." |
+
+The context handed to the drafter is built from **public comments only**, so an internal note
+cannot reach a drafting prompt — the difference between a model that might leak one and a
+model that has never seen one.
+
+### The eval gate, and why it does not score 1.000
+
+`pnpm --filter @ind-core/api eval csp.ticket_triage` runs a 27-case golden set scored on
+**macro-F1** — the unweighted mean of the per-class F1s. Weighting by support would let a
+classifier that is excellent on the two common categories and useless on the six rare ones
+post a fine number; the rare ones are what a human would otherwise have to catch. A DPDP
+rights request misfiled as "support" is a statutory clock nobody started, and there are few
+of them — which is exactly why they must count as much as an oil leak.
+
+```
+baseline   macro-F1=0.032  accuracy=14.8%     ← believe the customer's own wizard selection
+candidate  macro-F1=0.977  accuracy=96.3%     ← the shipped keyword rules
+verdict    PASS ✓
+```
+
+Two notes on honesty. First, DECISIONS-V2 registers `keyword_rule_classifier` as this
+feature's baseline — the thing a *model* must beat — and no model is bound in CI, so running
+the model against itself would be a gate that cannot fail. This gate is therefore the tier
+below: the shipped rules against the honest naive comparator, and it **publishes the bar** a
+model must clear. When a model is bound, both slots move down one and the dataset does not
+move.
+
+Second, the set contains a **known miss, kept deliberately**: a performance failure written
+entirely in domain terms — *"not building pressure, 30% below the rated curve"* — with no
+defect vocabulary and no serial. The rules return `support` at 0.2 confidence and the chip
+collapses. That is the honest failure mode, and it is precisely the ceiling a model exists to
+raise. Adding "not building" to the keyword list would fix the number and fix nothing else.
+
+Two must-pass assertions no macro-F1 can buy its way past: a data-protection request must
+never be misfiled, and a stopped line must be suggested `urgent`.
+
+### Two route prefixes, two trust zones, disjoint guards
+
+`/api/v1/csp` takes a staff-realm token through the RBAC grid. `/api/v1/portal` takes a
+portal-realm token and asserts the principal on entry. They are **not** two roles on one
+route table: a permission bug on a staff route cannot expose a customer, because a portal
+token cannot address a staff path at all, and a staff token — having no `customerAccountId` —
+is refused on the portal path.
+
+Out-of-scope is **404, not 403**. A ticket belonging to another customer must be
+indistinguishable from one that does not exist; a 403 confirms the id was real, which is the
+whole enumeration attack. RLS makes this the natural outcome rather than something to
+remember: the row simply is not selectable.
+
+### What the run proves
+
+`_scratch/run32.sh` drives the whole module against live PG17 — **69 assertions, 0
+failures** — through the service layer, not through fixtures:
+
+the 06:20 ticket due at 13:00 and Saturday 17:30 + 60 business minutes landing Monday 09:30;
+a medium→urgent escalation due at 13:00 rather than 16:00; a suggestion recorded and *not
+applied*, then overridden field by field; a prompt-injection attempt logged and inert; five
+entitlement verdicts including `partial` and a flagged pre-dispatch claim; the renewal lead
+firing once and only once; a paused clock charging the desk 540 minutes instead of five days,
+and the database refusing an overlapping pause; escalation tiers firing once across two
+scans; a draft invisible to the customer, then sent by a human, then frozen against editing;
+five refused draft sentences; a complaint reaching Quality in the same transaction as its own
+row, refusing to close over an open CAPA and then closing on a recorded manager override; a
+warranty-covered spare at no charge and a `partial` one quoted at ₹21,000; an agent forbidden
+from closing their own resolved ticket; CSAT answerable exactly once with a follow-up on 2★; a
+seven-day reopen window that refuses on day 47 *with a path forward* and yields to a manager;
+a claim race producing one owner and one 409; a portal payload containing no internal note, no
+NCR number, no agent and no AI suggestion; a customer unable to find the internal SOP the desk
+finds; **both leak probes** — cross-tenant and cross-customer, read *and* write; a dashboard
+reporting 30% compliance of 10 tickets with a verdict rather than 0% of a world where
+everything is on fire; three append-only refusals; and a replayed submit returning the
+original ticket.
+
+
 ### Demo universe (§7)
 
 Primary tenant **Trishul Precision Components Pvt Ltd** (one company, two GSTINs:
@@ -765,6 +1018,44 @@ from sprint 1, exactly as §1.1/§1.6 require.
   **General's shift calendar**, which that module does not own yet — so scheduled hours are
   supplied by the caller and the KPI response says exactly where the number came from,
   rendering `Needs shift calendar` rather than assuming 24×7 when it is absent.
+- **CSP reconciles three things to the established demo universe, and says so rather than
+  glossing.** (a) **Demo "today" is Monday 20 July 2026** — DECISIONS-V2 §7 fixes it and
+  §7 binds; CSP §20 writes 18-Jul, which is a Saturday. Every SLA figure in the module is
+  therefore *computed* at 20-Jul rather than copied from the blueprint's table, and the
+  computed values are what the verification prints. (b) **The customers are SMBD's, not new
+  ones.** §20 names Ashvamedha Motors, BlueOrbit Pumps and Deccan Agrotech; migration 0021
+  already seeded this tenant's customer master, and inventing three more would give the demo
+  two sets of customers and the first genuinely divergent master in the prototype — so
+  BlueOrbit maps to `CUST-BLO`, and `CUST-SUN` / `CUST-BAC` stand in for Ashvamedha and
+  Deccan. (c) **The machines are the CP-50 pump**, because a spare request calls
+  `ITEM_PROVIDER` and a demo that only works if nobody presses the button is not a demo.
+- **Inventory does not yet track serials, so CSP stores the serial as text.** The warranty
+  registry, the AMC asset list and the ticket all key on the number stamped on the
+  nameplate, which is what a customer reads out. When Inventory grows a serial register this
+  becomes a logical `product_serial_id` and the column shape does not change.
+- **`csp_business_calendar` lives in CSP because the platform has no shared calendar master
+  yet.** Its columns match `BusinessCalendar` in `@ind-core/platform` exactly, so moving it
+  to GENERAL is a rename rather than a rewrite. The same is true of the holiday list, which
+  is the gap HRM already records.
+- **CSP deliberately stops short of six things**, none affecting a computed figure:
+  **Keycloak Organizations** (the portal principal is minted from a realm + organization
+  claim the middleware already reads, but the portal realm itself is not provisioned — the
+  verification drives the two zones by constructing the contexts directly); **BullMQ
+  scheduling** for the SLA scanner and the renewal scan (both run on demand and are
+  idempotent, which is the property that matters — a timer is configuration, and `asOf` is a
+  parameter precisely so the engine can be time-travelled and checked); **S3 attachments and
+  AV scanning** (the `scan_status` column and its `clean`-only serving rule are in place, the
+  pipeline is not); **outbound tenant webhooks** with HMAC signatures and a delivery ledger
+  (the outbox events they would carry are all published); **rate limiting and CAPTCHA** on
+  the portal auth endpoints (the `csp_abuse_event` ledger they feed exists and already
+  records prompt-injection attempts); and the **KB RAG assistant**, which the blueprint
+  itself defers until the KB is curated — the `vector(384)` column and its HNSW index are
+  provisioned so that lands as a backfill.
+- **The AI #3 eval gate scores the shipped RULES, not a model, and the README says which.**
+  §4.2 registers `keyword_rule_classifier` as the baseline a model must beat; with no model
+  bound in CI, comparing the model to itself would be a gate that cannot fail. The gate as it
+  stands compares the rules to the honest naive comparator and publishes the bar
+  (**macro-F1 0.977** over 27 cases). It keeps one case it fails, on purpose.
 - **Two of the blueprint's own numbers do not follow from its own inputs**, and the code
   says so rather than reproducing them. §16.2 quotes a compressor consumption rate of
   22.4 h/day, but the two meter readings the same document gives (11,450 h on 15-Jun,
@@ -808,12 +1099,18 @@ from sprint 1, exactly as §1.1/§1.6 require.
     clock, MWOs with a completion gate that collects the data reliability needs, calendar
     and meter PM with explicit drift, spares brokered through Inventory, and deterministic
     MTBF / MTTR / availability.~~ ✅
-16. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+16. ~~**Module 11 CSP / Customer Service Portal** — the first internet-facing surface: the
+    second scoping dimension (tenant **and** customer account, read and write), the
+    business-time SLA clock, AI #3 triage suggested-never-forced and AI #6 drafting that
+    cannot promise, the entitlement gate, the Quality hand-off and CSAT.~~ ✅
+17. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-17. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
-    auth-code flow for the SPA; retire the demo password grant.
-18. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+18. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in) **and
+    → customer account for the portal realm**, which is now the load-bearing claim behind
+    CSP's second scoping dimension; auth-code flow for the SPA; retire the demo password
+    grant.
+19. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it

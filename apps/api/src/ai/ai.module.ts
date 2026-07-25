@@ -9,6 +9,8 @@ import { DbAiGovernance } from "./db.governance.js";
 import { GovernanceController } from "./governance.controller.js";
 import { DedupExplainer } from "./dedup-explainer.js";
 import { PayslipExplainer } from "./payslip-explainer.js";
+import { TicketTriage } from "./ticket-triage.js";
+import { ReplyDrafter } from "./reply-drafter.js";
 import { AuditLogService } from "../common/audit-log.service.js";
 
 /**
@@ -46,6 +48,11 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     { provide: AI_ROUTER, useExisting: AiRouterService },
     DedupExplainer,
     PayslipExplainer,
+    // CSP's two: AI #3 (committed, Tier-1) and AI #6 (stretch, Tier-2). Both degrade to
+    // `feature_hidden`, which is implemented literally — a suppressed suggestion and a
+    // hidden button, not a guess with a lower confidence printed next to it.
+    TicketTriage,
+    ReplyDrafter,
   ],
   exports: [
     AI_ROUTER,
@@ -57,6 +64,8 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     AuditLogService,
     DedupExplainer,
     PayslipExplainer,
+    TicketTriage,
+    ReplyDrafter,
   ],
 })
 export class AiModule {}

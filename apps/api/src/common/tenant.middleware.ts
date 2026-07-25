@@ -1,7 +1,7 @@
 import { Injectable, type NestMiddleware } from "@nestjs/common";
 import type { Request, Response, NextFunction } from "express";
 import { createRemoteJWKSet, jwtVerify } from "jose";
-import { runWithTenant, isUuidV7, AppError, Errors } from "@ind-core/platform";
+import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@ind-core/platform";
 
 /**
  * Resolves the tenant from a VERIFIED Keycloak OIDC access token and runs the rest
@@ -51,7 +51,7 @@ export class TenantMiddleware implements NestMiddleware {
   }
 }
 
-async function resolveTenant(req: Request): Promise<{ tenantId: string; actorId: string }> {
+async function resolveTenant(req: Request): Promise<TenantContext> {
   const auth = req.header("authorization") ?? "";
   const [scheme, token] = auth.split(" ");
   if (scheme?.toLowerCase() !== "bearer" || !token) {
@@ -81,6 +81,38 @@ async function resolveTenant(req: Request): Promise<{ tenantId: string; actorId:
     throw Errors.tenantMissing(); // authenticated but not mapped to a tenant
   }
 
+  // ---- THE SECOND SCOPING DIMENSION (CSP §9.3) --------------------------------
+  //
+  // A portal-realm token carries the customer organization it belongs to. That claim, and
+  // only that claim, becomes `customerAccountId` — it is minted here from a
+  // signature-verified token and is never read from a header, a query parameter or a body
+  // field, because the whole guarantee rests on the caller being unable to choose it.
+  //
+  // A staff token has no such claim, `customerAccountId` stays undefined, `withTenant`
+  // writes an empty string, and the RESTRICTIVE row policy becomes a no-op: an agent sees
+  // every customer in their tenant, which is exactly right.
+  //
+  // The realm claim is checked as well as the org claim. A staff token that somehow
+  // acquired an org claim would otherwise be silently narrowed to one customer — failing
+  // closed in a way that looks like missing data rather than like a security event.
+  const realm = typeof claims.realm === "string" ? claims.realm : REALM;
+  const isPortalRealm = realm.endsWith("-portal") || claims.principal === "portal";
+  const orgClaim =
+    typeof claims.customer_account_id === "string" ? claims.customer_account_id : undefined;
+
+  if (isPortalRealm) {
+    if (!orgClaim || !isUuidV7(orgClaim)) {
+      // A portal principal with no organization is authenticated and unscoped. There is no
+      // safe default: refusing is the only fail-closed answer.
+      throw new AppError(
+        "PORTAL_ACCOUNT_MISSING",
+        403,
+        "Portal token carries no customer organization.",
+      );
+    }
+    return { tenantId, actorId: sub, customerAccountId: orgClaim, principal: "portal" };
+  }
+
   // actorId = Keycloak subject (a UUID; created_by/updated_by accept any uuid).
-  return { tenantId, actorId: sub };
+  return { tenantId, actorId: sub, principal: "staff" };
 }
