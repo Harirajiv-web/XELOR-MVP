@@ -28,6 +28,10 @@ export interface DuplicateMatch {
   score: number; // 0..1
   level: DuplicateLevel;
   matchedFields: string[]; // the evidence: gstin | cin | legal_name
+  /** The matched record's id fields, carried so the explainer can state per-field
+   *  verdicts (MATCH vs DIFFERENT vs MISSING) without re-querying. */
+  existingGstin?: string | null;
+  existingCin?: string | null;
 }
 
 // Name-similarity thresholds (tuned so exact-id stays definite, close names are strong).
@@ -100,18 +104,19 @@ export function exactIdMatch(candidate: MasterRecord, existing: MasterRecord): b
 /** Score one existing record against the candidate; null if not a plausible duplicate. */
 export function scoreAgainst(candidate: MasterRecord, existing: MasterRecord): DuplicateMatch | null {
   if (!existing.id) return null;
+  const ids = { existingGstin: existing.gstin ?? null, existingCin: existing.cin ?? null };
   if (sameId(candidate.gstin, existing.gstin)) {
-    return { existingId: existing.id, existingName: existing.legalName, score: 1, level: "definite", matchedFields: ["gstin"] };
+    return { existingId: existing.id, existingName: existing.legalName, score: 1, level: "definite", matchedFields: ["gstin"], ...ids };
   }
   if (sameId(candidate.cin, existing.cin)) {
-    return { existingId: existing.id, existingName: existing.legalName, score: 1, level: "definite", matchedFields: ["cin"] };
+    return { existingId: existing.id, existingName: existing.legalName, score: 1, level: "definite", matchedFields: ["cin"], ...ids };
   }
   const sim = trigramSimilarity(candidate.legalName, existing.legalName);
   if (sim >= STRONG_NAME_SIM) {
-    return { existingId: existing.id, existingName: existing.legalName, score: sim, level: "strong", matchedFields: ["legal_name"] };
+    return { existingId: existing.id, existingName: existing.legalName, score: sim, level: "strong", matchedFields: ["legal_name"], ...ids };
   }
   if (sim >= POSSIBLE_NAME_SIM) {
-    return { existingId: existing.id, existingName: existing.legalName, score: sim, level: "possible", matchedFields: ["legal_name"] };
+    return { existingId: existing.id, existingName: existing.legalName, score: sim, level: "possible", matchedFields: ["legal_name"], ...ids };
   }
   return null;
 }

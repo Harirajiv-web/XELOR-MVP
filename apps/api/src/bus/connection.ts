@@ -1,4 +1,6 @@
-import IORedis, { type Redis } from "ioredis";
+// Named `Redis` class, not the default export: under NodeNext resolution ioredis' default
+// export is not constructable, which only surfaces on `typecheck` (SWC builds skip types).
+import { Redis } from "ioredis";
 
 /**
  * A Valkey connection (Redis wire protocol) for BullMQ. BullMQ's blocking commands
@@ -8,5 +10,5 @@ import IORedis, { type Redis } from "ioredis";
  */
 export function makeRedis(): Redis {
   const url = process.env.VALKEY_URL ?? "redis://localhost:6379";
-  return new IORedis(url, { maxRetriesPerRequest: null });
+  return new Redis(url, { maxRetriesPerRequest: null });
 }

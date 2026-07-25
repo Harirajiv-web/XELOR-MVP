@@ -8,6 +8,7 @@
     "start": "node dist/src/main.js",
     "worker": "node dist/src/worker.js",
     "eval": "node dist/src/eval.js",
+    "ai:grounding": "node dist/src/ai-grounding.js",
     "start:dev": "nest start -b swc --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\""

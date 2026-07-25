@@ -9,3 +9,4 @@ export * from "./audit/hash-chain.js";
 export * from "./api/pagination.js";
 export * from "./ai/index.js";
 export * from "./masterdata/dedup.js";
+export * from "./masterdata/dedup-verdict.js";
