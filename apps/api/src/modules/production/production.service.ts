@@ -15,6 +15,7 @@ import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
 import { BOM_PROVIDER, type BomProvider } from "../../ports/bom.port.js";
 import { STOCK_POSTER, type StockPoster, type StockMovement } from "../../ports/stock.port.js";
+import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.port.js";
 
 const { productionOrder, productionOrderComponent, outboxEvent } = schema;
 
@@ -63,6 +64,7 @@ export class ProductionService {
     private readonly audit: AuditLogService,
     @Inject(BOM_PROVIDER) private readonly bom: BomProvider,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
+    @Inject(INSPECTION_GATE) private readonly inspection: InspectionGate,
   ) {}
 
   async createOrder(input: CreateProductionOrderInput, idempotencyKey: string): Promise<ProductionOrderView> {
@@ -221,6 +223,28 @@ export class ProductionService {
   private async doComplete(orderId: string, producedQty: number): Promise<ProductionActionResult> {
     const { actorId } = currentTenant();
     const now = new Date();
+
+    // THE QUALITY GATE (INSPECTION §1.2). The gate belongs to Production because Production
+    // owns the transaction — but the inspection record belongs to Quality, so we ASK through
+    // the port rather than reading its tables. `state: 'none'` means nobody requested an
+    // inspection for this order, and the order completes exactly as it always did: wiring
+    // the gate in never retroactively blocks work that was never meant to be inspected.
+    const gate = await this.inspection.gateStatus("manufacture", orderId);
+    if (gate.state === "pending" || gate.state === "in_progress") {
+      throw new AppError(
+        "INSPECTION_PENDING",
+        409,
+        `Inspection ${gate.inspectionNo} for this order is ${gate.state}; finished goods are held until it is completed.`,
+      );
+    }
+    if (gate.state === "completed" && gate.result === "rejected") {
+      throw new AppError(
+        "INSPECTION_REJECTED",
+        409,
+        `Inspection ${gate.inspectionNo} rejected this lot; it cannot be received into finished goods. Disposition it in Quality.`,
+      );
+    }
+
     return withTenant(async (tx) => {
       const order = await this.loadOrder(tx, orderId);
       if (order.status !== "in_progress") {

@@ -19,7 +19,9 @@ swappable in by the same config.
 > brain) + **Module 03 INVENTORY** (the stock ledger + the single stock write path) +
 > **Module 04 PURCHASE** (vendors, POs approved through W1, GRNs posting stock through
 > Inventory) + **Module 05 PRODUCTION** (the make cycle — consume components, produce
-> finished goods). The full manufacturing spine (buy → stock → make) is in place.
+> finished goods) + **Module 06 INSPECTION/QMS** (sampling, inspections, dispositions, and
+> the quality gate Production now honours). The manufacturing spine
+> (buy → stock → make → **inspect**) is in place.
 
 ## What's here
 
@@ -37,6 +39,7 @@ MVP_PROTOTYPE_1/
 │  │     ├─ masterdata/
 │  │     │  ├─ dedup.ts             # the SHARED, pure dedup brain (AI #2 baseline+detector)
 │  │     │  └─ dedup-verdict.ts     # CODE decides the conclusion + action; grounding guard
+│  │     ├─ quality/sampling.ts     # pure QMS brain: ISO 2859-1 sampling · spec eval · lot verdict
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -45,7 +48,7 @@ MVP_PROTOTYPE_1/
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production}.ts
 │     ├─ src/{client,migrate,rls-check}.ts
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0017.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0019.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -55,7 +58,7 @@ MVP_PROTOTYPE_1/
          ├─ ai-grounding.ts         # grounding gate CLI — is the EXPLANATION true? exits 0/1
          ├─ app.module.ts           # composes AiModule + General + Workflow + Engineering + Inventory + Purchase + Production
          ├─ common/                 # tenant middleware · RBAC guard · audit · idempotency · error filter
-         ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster · BomProvider
+         ├─ ports/                  # app-level cross-module ports: WorkflowExecutor · StockPoster · BomProvider · InspectionGate
          ├─ bus/                    # the event bus: BullMQ relay + idempotent consumer
          │  └─ {connection,queue,outbox-relay,event-consumer}.ts
          ├─ ai/                     # the shared AI SPINE (see below)
@@ -69,6 +72,7 @@ MVP_PROTOTYPE_1/
             ├─ inventory/           # Module 03 — stock ledger + the single stock write path (@Global port)
             ├─ purchase/            # Module 04 — vendors + POs (W1 approval) + GRNs (post stock)
             ├─ production/          # Module 05 — the make cycle (consume components, produce FG)
+            ├─ quality/             # Module 06 — inspections, sampling, dispositions (@Global gate port)
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
@@ -94,6 +98,8 @@ MVP_PROTOTYPE_1/
 | 0015 | `purchase_order` | `purchase_order` + `_line` (approved through W1; `workflow_instance_id` links the approval) |
 | 0016 | `purchase_grn` | `grn` + `grn_line` — goods receipts that post stock through Inventory's write path atomically |
 | 0017 | `production` | `production_order` + `production_order_component` (BOM requirements exploded + snapshotted); consumes/produces stock through Inventory's port |
+| 0018 | `quality` | QMS: `qms_characteristic` (effective-dated specs), `qms_sampling_plan` (band tables as config), versioned `qms_inspection_template` + lines, `qms_inspection` (+ the partial-unique **gate anchor**), `qms_inspection_reading` (spec limits snapshotted), `qms_disposition` (CHECK: `executed` requires a stock-entry ref) |
+| 0019 | `seed_quality` | AQL 1.0 / Level II band table, the CP-50 pump's final-inspection template (bore ⌀, runout, leak test) and the casing's incoming template (§7) |
 
 ### The conventions, made real
 
@@ -112,7 +118,7 @@ MVP_PROTOTYPE_1/
 | §4.1 golden-set **eval gate** (beat the deterministic baseline; no must-pass regression) | `apps/api/src/ai/eval/*` + `apps/api/src/eval.ts` + `packages/platform/src/ai/eval.ts` |
 | §4.3 **"AI explains, never decides"** — the conclusion + action decided in code, the model writes only the reason, and ungrounded wording is rejected | `packages/platform/src/masterdata/dedup-verdict.ts` + `apps/api/src/ai-grounding.ts` |
 | the SHARED master-dedup brain (one brain, every module) | `packages/platform/src/masterdata/dedup.ts` + `@Global` `apps/api/src/ai/dedup-explainer.ts` |
-| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`); `@Global` Workflow + Inventory + Engineering |
+| §1.1 cross-module access via shared **ports**, never module→module imports | `apps/api/src/ports/*` (`WorkflowExecutor`, `StockPoster`, `BomProvider`, `InspectionGate`); `@Global` Workflow + Inventory + Engineering + Quality |
 | §3.3 append-only, hash-chained audit, **no disable switch** | `apps/api/src/common/audit-log.service.ts` + `audit_log` in `migrations/0000` |
 | §5.1 UUIDv7, tenant_id, created/updated/by, is_active, no hard DELETE | `packages/db/src/schema/columns.ts`, `migrations/0000` |
 | §5.3 canonical error envelope · cursor pagination · Idempotency-Key | `packages/platform/src/errors`, `.../api/pagination.ts`, `apps/api/src/common/idempotency.ts` |
@@ -300,6 +306,37 @@ composing three modules through ports with no module→module imports.
 - **Produce finished goods** — completing receives the finished good into the FG
   warehouse (again through the port). Production never writes stock itself (§5.6); it is
   gated OFF until Inventory hits its stock-accuracy target (the SPAR ↔ KILN contract).
+- **The quality gate** — completing now asks Quality through the `InspectionGate` port and
+  refuses while an inspection is open (`INSPECTION_PENDING`) or was rejected
+  (`INSPECTION_REJECTED`). See Module 06.
+
+## Module 06 — INSPECTION / QMS (done)
+
+The quality system of record. Its hardest design problem is a boundary, not a feature:
+**the gate belongs to the module that owns the transaction; the definition and the record
+belong to Quality** (INSPECTION §1.2). So Production still decides whether its order may
+complete — it just asks through the `INSPECTION_GATE` port instead of owning an inspection
+table. Wiring is opt-in by construction: `state: 'none'` (nobody requested an inspection)
+lets the transaction through exactly as before.
+
+- **Defensible sampling** — how many pieces to check comes from an ISO 2859-1-style
+  lot-size band table held as **configuration**, not code, so a tenant can load a
+  customer-mandated plan without a release. The derivation is stored in words on the
+  inspection: *"lot 40 falls in band 26-50 (code D) → sample 8, accept ≤0, reject ≥1"*.
+  An OEM auditor asking "what sampling standard do you apply?" gets an answer with
+  arithmetic behind it.
+- **Readings snapshot their spec** — each measurement stores the limits that applied at the
+  time, so revising a spec tomorrow can never retroactively flip a historical verdict.
+- **The verdict is arithmetic** — a piece failing two characteristics is *one* defective
+  piece; and a **critical** characteristic out of spec rejects the lot regardless of the
+  accept number (an AQL is not a licence to ship a critical defect).
+- **Dispositions move stock through Inventory, never around it** (§1.4) — a reject posts a
+  transfer via `StockPoster` inside the same transaction and records the entry id it gets
+  back. `status='executed'` without one is **unrepresentable**: a CHECK constraint refuses
+  the row, so a disposition can never claim to have segregated material that never moved.
+- **No AI, deliberately** — the closed 8-feature registry (§4.2) has no quality feature, and
+  an unregistered `feature_key` is a hard reject at the router. Quality's intelligence is
+  arithmetic, which is the point: every number can be re-derived by hand.
 
 ### Demo universe (§7)
 
@@ -321,7 +358,7 @@ cp .env.example .env
 
 pnpm install
 pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0017 (as the schema owner)
+pnpm db:migrate        # apply 0000 … 0019 (as the schema owner)
 pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
 pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
 pnpm dev               # NestJS API on http://localhost:3000/api/v1
@@ -418,9 +455,16 @@ from sprint 1, exactly as §1.1/§1.6 require.
    Inventory's write path; closes the buy → stock → make spine.~~ ✅
 9. ~~Wire a **real AI model** behind the router — the **EDGE tier**: a local model via
    Ollama, with the verdict decided in code and a grounding gate over the wording.~~ ✅
-10. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
-11. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+10. ~~**Module 06 INSPECTION/QMS** — sampling, inspections, dispositions, and the
+    `InspectionGate` port Production honours before releasing finished goods.~~ ✅
+11. A **frontend** (Next.js 15 / React 19 + shadcn/ui) against `/api/v1`.
+12. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-12. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
+13. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in);
     auth-code flow for the SPA; retire the demo password grant.
+14. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+    blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
+    architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
+    constraint) but *not* by a database grant. Splitting the role per module would make it
+    structural.
