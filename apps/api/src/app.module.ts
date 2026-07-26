@@ -2,6 +2,7 @@ import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common
 import { APP_GUARD } from "@nestjs/core";
 import { TenantMiddleware } from "./common/tenant.middleware.js";
 import { PermissionGuard } from "./common/permission.guard.js";
+import { CommonModule } from "./common/common.module.js";
 import { AiModule } from "./ai/ai.module.js";
 import { GeneralModule } from "./modules/general/general.module.js";
 import { WorkflowModule } from "./modules/workflow/workflow.module.js";
@@ -35,6 +36,9 @@ import { AiOpsModule } from "./modules/aiops/aiops.module.js";
   // ai_action_log) every module's "brain" injects. Listed first so it is available
   // platform-wide before the business modules load.
   imports: [
+    // Cross-cutting infrastructure (document numbering). @Global, listed first so it is
+    // available before any business module resolves.
+    CommonModule,
     AiModule,
     GeneralModule,
     WorkflowModule,

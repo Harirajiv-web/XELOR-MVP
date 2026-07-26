@@ -19,6 +19,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import type {
   AccountsPoster,
   CustomerOutstanding,
@@ -104,7 +105,10 @@ const addDays = (iso: string, days: number): string => {
  */
 @Injectable()
 export class AccountsService implements AccountsPoster {
-  constructor(private readonly audit: AuditLogService) {}
+  constructor(
+    private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
+  ) {}
 
   /* ------------------------------ posting core ---------------------------- */
 
@@ -169,7 +173,16 @@ export class AccountsService implements AccountsPoster {
     }
 
     const voucherId = newId();
-    const voucherNo = `${(input.voucherType ?? "journal") === "ar_invoice" ? "INV" : "JV"}-${(voucherId.split("-").pop() ?? voucherId).toUpperCase()}`;
+    // A tax invoice and a journal voucher draw on SEPARATE series. Rule 46(b) governs the
+    // invoice one — consecutive, unique for the financial year, sixteen characters at most,
+    // which INV-2627-00001 exactly is. The series is keyed on the POSTING date, so a
+    // voucher posted into a prior open period lands in that period's series.
+    const isInvoice = (input.voucherType ?? "journal") === "ar_invoice";
+    const voucherNo = await this.numbering.next(
+      tx,
+      isInvoice ? "voucher_invoice" : "voucher_journal",
+      fyCode(postingDate),
+    );
     await tx.insert(journalVoucher).values({
       id: voucherId,
       tenantId,
@@ -400,7 +413,7 @@ export class AccountsService implements AccountsPoster {
       });
 
       const settlementId = newId();
-      const settlementNo = `RCPT-${(settlementId.split("-").pop() ?? settlementId).toUpperCase()}`;
+      const settlementNo = await this.numbering.next(tx, "receipt", fyCode(new Date().toISOString()));
       await tx.insert(settlement).values({
         id: settlementId,
         tenantId,

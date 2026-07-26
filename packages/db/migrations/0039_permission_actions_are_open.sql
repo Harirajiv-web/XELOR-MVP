@@ -22,7 +22,14 @@
 -- nobody registered cannot be granted, whatever it is spelt like.
 -- =============================================================================
 
+-- NOTE, added later: 0036 now declares `action` without the closed list in the first place,
+-- because with it there the migration set could not be replayed from an empty database —
+-- 0037 seeds `planning.mrp.run`, which 0036 forbade and only this file allowed. So on a
+-- fresh database the DROP below finds nothing and the ADD is the first to define the shape;
+-- on a database built before that correction, the DROP does the work described above. Both
+-- paths end identically, which is the only property that matters.
 ALTER TABLE permission_catalogue DROP CONSTRAINT IF EXISTS permission_catalogue_action_check;
+ALTER TABLE permission_catalogue DROP CONSTRAINT IF EXISTS ck_permcat_action_shape;
 
 ALTER TABLE permission_catalogue
   ADD CONSTRAINT ck_permcat_action_shape CHECK (action ~ '^[a-z][a-z0-9_]*$');

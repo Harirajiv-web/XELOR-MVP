@@ -14,6 +14,7 @@ import {
   type SlaMatrixRow,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { AssetService } from "./asset.service.js";
 import { DowntimeService } from "./downtime.service.js";
 import { MwoService } from "./mwo.service.js";
@@ -69,6 +70,7 @@ export interface RequestView {
 export class RequestService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     private readonly assets: AssetService,
     private readonly downtime: DowntimeService,
     private readonly mwos: MwoService,
@@ -105,7 +107,7 @@ export class RequestService {
       const deadlines = slaDeadlines(requestedAt.toISOString(), sla);
 
       const id = newId();
-      const requestNo = `MR-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const requestNo = await this.numbering.next(tx, "maintenance_request", fyCode(requestedAt.toISOString()));
 
       // The clock, before the triage. If this asset is ALREADY down, the request joins the
       // existing interval rather than opening a second one — two operators reporting the

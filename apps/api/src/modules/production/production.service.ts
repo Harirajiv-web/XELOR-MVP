@@ -13,6 +13,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import {
   STOCK_READER,
   type StockReader,
@@ -71,6 +72,7 @@ const q3 = (n: number): string => n.toFixed(3);
 export class ProductionService implements SupplySource, ProductionOrderCreator {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     @Inject(BOM_PROVIDER) private readonly bom: BomProvider,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     @Inject(INSPECTION_GATE) private readonly inspection: InspectionGate,
@@ -118,7 +120,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
 
     return withTenant(async (tx) => {
       const id = newId();
-      const orderNo = `MO-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const orderNo = await this.numbering.next(tx, "production_order", fyCode(new Date().toISOString()));
       await tx.insert(productionOrder).values({
         id,
         tenantId,

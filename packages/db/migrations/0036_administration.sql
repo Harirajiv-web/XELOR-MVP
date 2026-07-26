@@ -143,8 +143,17 @@ CREATE TABLE permission_catalogue (
   is_active     boolean NOT NULL DEFAULT true,
   permission    text NOT NULL,
   doc_type      text NOT NULL,
-  action        text NOT NULL CHECK (action IN
-                  ('create','read','write','delete','submit','cancel','amend','print','export','email','import','report','share')),
+  -- Any lowercase verb, not the blueprint's closed 13. This CONSTRAINT ORIGINALLY LISTED
+  -- THE 13 and it was wrong: 0037 immediately seeds `planning.mrp.run`, and 45 other
+  -- permissions this system enforces use operational verbs (`post`, `confirm`, `decide`,
+  -- `close`) that say what they guard. Migration 0039 sets out the full reasoning.
+  --
+  -- It is corrected HERE, at source, rather than only in 0039, because the migration set
+  -- has to be replayable from an empty database — and with the closed list in place it was
+  -- not: 0037 inserted a row 0036 forbade, and only 0039 lifted the ban. Every existing
+  -- database had run them one at a time as they were written, so nothing failed until the
+  -- first from-scratch rebuild, which stopped dead at 0037.
+  action        text NOT NULL,
   description   text NOT NULL,
   is_privileged boolean NOT NULL DEFAULT false,
   CONSTRAINT uq_permcat_tenant_perm UNIQUE (tenant_id, permission),

@@ -23,6 +23,7 @@ import {
   type MwoType,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { WORKFLOW_EXECUTOR, type WorkflowExecutor } from "../../ports/workflow.port.js";
 import { DowntimeService } from "./downtime.service.js";
 
@@ -116,6 +117,7 @@ export interface MwoView {
 export class MwoService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     private readonly downtime: DowntimeService,
     @Inject(WORKFLOW_EXECUTOR) private readonly workflow: WorkflowExecutor,
   ) {}
@@ -146,9 +148,9 @@ export class MwoService {
     }
 
     const id = newId();
-    // MWO- series, allocated from a counter of its own. The production order's WO- series
+    // MWO- series, allocated from a counter of its own. The production order's MO- series
     // is a different counter entirely and the two can never collide (§9.2, naming-check).
-    const mwoNo = `MWO-${(id.split("-").pop() ?? id).toUpperCase()}`;
+    const mwoNo = await this.numbering.next(tx, "maintenance_work_order", fyCode(input.reportedAt));
     const amcId = await this.activeAmcFor(tx, asset.id, input.reportedAt.slice(0, 10));
 
     await tx.insert(maintenanceWorkOrder).values({

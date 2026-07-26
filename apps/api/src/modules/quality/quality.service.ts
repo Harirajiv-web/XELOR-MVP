@@ -19,6 +19,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 import type {
   GateStatus,
@@ -99,6 +100,7 @@ const num = (v: string | null | undefined): number | null => (v == null ? null :
 export class QualityService implements InspectionGate {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
   ) {}
 
@@ -126,7 +128,7 @@ export class QualityService implements InspectionGate {
       const sampling = template ? await this.resolveSamplingFor(tx, template, input.lotQty) : null;
 
       const id = newId();
-      const inspectionNo = `INS-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const inspectionNo = await this.numbering.next(tx, "inspection", fyCode(new Date().toISOString()));
       await tx.insert(qmsInspection).values({
         id,
         tenantId,
@@ -231,7 +233,7 @@ export class QualityService implements InspectionGate {
       const template = await this.resolveTemplate(tx, input.itemId, input.inspectionType);
       const sampling = template ? await this.resolveSamplingFor(tx, template, input.lotQty) : null;
       const id = newId();
-      const inspectionNo = `INS-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const inspectionNo = await this.numbering.next(tx, "inspection", fyCode(new Date().toISOString()));
       await tx.insert(qmsInspection).values({
         id,
         tenantId,
@@ -533,7 +535,7 @@ export class QualityService implements InspectionGate {
       }
 
       const id = newId();
-      const dispositionNo = `DSP-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const dispositionNo = await this.numbering.next(tx, "disposition", fyCode(new Date().toISOString()));
       let movementRef: string | null = null;
       let movements: unknown[] = [];
 

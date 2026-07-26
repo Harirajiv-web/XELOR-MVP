@@ -23,6 +23,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { ACCOUNTS_POSTER, type AccountsPoster, type PostedJournalLine } from "../../ports/accounts.port.js";
 import { AttendanceService } from "./attendance.service.js";
 import { StatutoryConfigService } from "./statutory-config.service.js";
@@ -134,6 +135,7 @@ export interface PayslipView {
 export class PayrollService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     private readonly statutory: StatutoryConfigService,
     private readonly attendance: AttendanceService,
     @Inject(ACCOUNTS_POSTER) private readonly accounts: AccountsPoster,
@@ -173,7 +175,10 @@ export class PayrollService {
     }
     return withTenant(async (tx) => {
       const id = newId();
-      const runNo = `PRUN-${fiscalYearOf(input.periodMonth).replace("-", "")}-${(id.split("-").pop() ?? id).slice(-6).toUpperCase()}`;
+      // The run belongs to the PAYROLL MONTH's financial year, not to the month it is
+      // processed in: a March run prepared in April is FY 2526's, and the register reads
+      // that way too.
+      const runNo = await this.numbering.next(tx, "payroll_run", fyCode(`${input.periodMonth}-01`));
       await tx.insert(payrollRun).values({
         id,
         tenantId,

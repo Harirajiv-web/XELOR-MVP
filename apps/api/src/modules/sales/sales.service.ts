@@ -22,6 +22,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 import { ACCOUNTS_POSTER, type AccountsPoster } from "../../ports/accounts.port.js";
@@ -155,6 +156,7 @@ const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(
 export class SalesService implements DemandSource {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     private readonly dedup: DedupExplainer,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     @Inject(ACCOUNTS_POSTER) private readonly accounts: AccountsPoster,
@@ -355,7 +357,9 @@ export class SalesService implements DemandSource {
       }
 
       const id = newId();
-      const soNo = `SO-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      // Numbered from the order's OWN date, not today's: an order back-dated into March
+      // belongs to the previous year's series, and that is what a register is read by.
+      const soNo = await this.numbering.next(tx, "sales_order", fyCode(orderDate));
       await tx.insert(salesOrder).values({
         id,
         tenantId,
@@ -610,7 +614,7 @@ export class SalesService implements DemandSource {
       });
 
       const dispatchId = newId();
-      const dispatchNo = `DN-${(dispatchId.split("-").pop() ?? dispatchId).toUpperCase()}`;
+      const dispatchNo = await this.numbering.next(tx, "delivery_note", fyCode(now.toISOString()));
       await tx.insert(dispatch).values({
         id: dispatchId,
         tenantId,

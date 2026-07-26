@@ -16,6 +16,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import type { SupplySource, OpenSupplyLine } from "../../ports/planning-inputs.port.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import {
@@ -144,6 +145,7 @@ export interface GrnView {
 export class PurchaseService implements SupplySource {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly numbering: NumberingService,
     private readonly dedup: DedupExplainer,
     @Inject(WORKFLOW_EXECUTOR) private readonly wf: WorkflowExecutor,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
@@ -293,9 +295,7 @@ export class PurchaseService implements SupplySource {
       if (!v) throw Errors.notFound(`vendor '${input.vendorId}'`);
 
       const id = newId();
-      // Use the RANDOM tail of the UUIDv7 (its high bits are a shared ms timestamp, so
-      // POs created moments apart would collide on the first hex chars).
-      const poNo = `PO-${(id.split("-").pop() ?? id).toUpperCase()}`;
+      const poNo = await this.numbering.next(tx, "purchase_order", fyCode(now.toISOString()));
       let total = 0;
       const lines = input.lines.map((l, i) => {
         const amount = round2(l.qty * l.rate);
@@ -577,8 +577,10 @@ export class PurchaseService implements SupplySource {
       const post = await this.stock.postInTx(tx, { entryType: "receipt", remarks: "GRN", lines: stockLines });
 
       const grnId = newId();
-      const grnNo = `GRN-${(grnId.split("-").pop() ?? grnId).toUpperCase()}`;
       const grnDate = input.grnDate ? new Date(input.grnDate) : now;
+      // The GRN's own date decides its series — goods received on 31 March belong to that
+      // year even when the paperwork is keyed on 2 April.
+      const grnNo = await this.numbering.next(tx, "goods_receipt", fyCode(grnDate.toISOString()));
       await tx.insert(grn).values({
         id: grnId,
         tenantId,

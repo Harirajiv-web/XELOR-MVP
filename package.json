@@ -20,6 +20,7 @@
     "db:migrate": "pnpm --filter @ind-core/db migrate",
     "db:rls-check": "pnpm --filter @ind-core/db rls-check",
     "db:perm-check": "pnpm --filter @ind-core/db perm-check",
+    "demo:seed": "node apps/api/scripts/seed-demo.mjs",
     "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm db:perm-check"
   },
   "devDependencies": {
