@@ -1,4 +1,5 @@
 import { Injectable, type NestMiddleware } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@ind-core/platform";
@@ -45,7 +46,9 @@ export class TenantMiddleware implements NestMiddleware {
         e instanceof AppError
           ? e
           : new AppError("UNAUTHENTICATED", 401, "Invalid or missing token.");
-      const traceId = req.header("x-trace-id") || undefined;
+      // Mint the correlation id when the caller sent none — same rule as the exception
+      // filter. A 401 nobody can trace is a support ticket with nothing in it.
+      const traceId = req.header("x-trace-id") || randomUUID();
       res.status(err.httpStatus).json(err.toEnvelope(traceId));
     }
   }

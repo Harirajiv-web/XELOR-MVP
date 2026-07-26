@@ -17,6 +17,7 @@
     "migrate": "node --import tsx src/migrate.ts",
     "rls-check": "node --import tsx src/rls-check.ts",
     "naming-check": "node --import tsx src/naming-check.ts",
+    "perm-check": "node --import tsx src/perm-check.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

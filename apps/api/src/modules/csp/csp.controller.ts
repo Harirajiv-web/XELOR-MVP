@@ -123,7 +123,9 @@ function requireIdempotencyKey(key: string | undefined): string {
  * (§10). They are not two roles on one route table: a permission bug on a staff route
  * cannot reach a customer, because the customer's token cannot address these paths at all.
  */
-@Controller("api/v1/csp")
+// The `api/v1` prefix is applied globally in main.ts — repeating it here served this
+// controller at /api/v1/api/v1/csp. Controller prefixes are relative, always.
+@Controller("csp")
 export class CspController {
   constructor(
     private readonly tickets: TicketService,

@@ -7,16 +7,21 @@ import {
 import { Reflector } from "@nestjs/core";
 import { eq } from "drizzle-orm";
 import { withTenant, schema } from "@ind-core/db";
-import { currentTenant, Errors } from "@ind-core/platform";
+import { currentTenant, Errors, type PermissionKey } from "@ind-core/platform";
 
 /**
  * ADMINISTRATION's in-app RBAC gate (DECISIONS-V2 §1.5). Authorization lives in
  * NestJS guards + RLS, never in a token scope or a header. A route declares the
  * permission it needs with @RequirePermission; this guard resolves the AUTHENTICATED
  * user's effective permissions from the tenant-fenced role tables and allows or 403s.
+ *
+ * The argument is a `PermissionKey`, not a string: a permission that is not declared in
+ * PERMISSION_REGISTRY will not compile. A mistyped permission used to produce a route
+ * that every user — administrators included — could only ever receive a 403 from, and
+ * nothing failed until somebody clicked it.
  */
 export const PERMISSION_KEY = "required_permission";
-export const RequirePermission = (permission: string): MethodDecorator =>
+export const RequirePermission = (permission: PermissionKey): MethodDecorator =>
   SetMetadata(PERMISSION_KEY, permission);
 
 const { userRole, rolePermission } = schema;

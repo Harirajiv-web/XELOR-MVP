@@ -58,7 +58,8 @@ function parse<S extends z.ZodTypeAny>(schema: S, body: unknown): z.output<S> {
  *     real, which is the entire enumeration attack. RLS makes this the natural outcome:
  *     the row simply is not selectable, and `Errors.notFound` is what the service raises.
  */
-@Controller("api/v1/portal")
+// Prefix is relative — `api/v1` is set globally in main.ts (see CspController).
+@Controller("portal")
 export class PortalController {
   constructor(
     private readonly tickets: TicketService,

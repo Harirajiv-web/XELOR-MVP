@@ -48,6 +48,7 @@ export * from "./planning/capacity.js";
 export * from "./planning/dispatch.js";
 export * from "./planning/reorder.js";
 export * from "./access/permissions.js";
+export * from "./access/permission-registry.js";
 export * from "./access/scope.js";
 export * from "./access/masking.js";
 export * from "./access/sod.js";

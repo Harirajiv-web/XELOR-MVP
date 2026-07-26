@@ -19,7 +19,8 @@
     "infra:down": "docker compose -f infra/docker-compose.yml down",
     "db:migrate": "pnpm --filter @ind-core/db migrate",
     "db:rls-check": "pnpm --filter @ind-core/db rls-check",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test"
+    "db:perm-check": "pnpm --filter @ind-core/db perm-check",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm db:perm-check"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.15.0",

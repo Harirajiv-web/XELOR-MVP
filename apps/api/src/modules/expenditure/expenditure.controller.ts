@@ -121,7 +121,8 @@ function requireKey(key: string | undefined, what: string): string {
  * unique constraint on the consumption ledger is what turns a duplicate into a collision
  * rather than a silent double-reservation.
  */
-@Controller("api/v1/expenditure")
+// Prefix is relative — `api/v1` is set globally in main.ts (see CspController).
+@Controller("expenditure")
 export class ExpenditureController {
   constructor(
     private readonly budgets: BudgetService,

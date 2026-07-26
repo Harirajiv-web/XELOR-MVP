@@ -67,6 +67,8 @@ import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(TenantMiddleware).forRoutes("*");
+    // `{*path}` is path-to-regexp v8's named catch-all. The bare `*` this used to be was
+    // silently auto-converted by Nest 11 with a deprecation warning on every boot.
+    consumer.apply(TenantMiddleware).forRoutes("{*path}");
   }
 }
