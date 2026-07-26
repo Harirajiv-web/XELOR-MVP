@@ -1,4 +1,4 @@
-import { index, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 import { tenantScopedColumns } from "./columns.js";
 
 /**
@@ -17,6 +17,17 @@ export const role = pgTable(
     ...tenantScopedColumns,
     code: text("code").notNull(), // e.g. admin, stores_incharge
     name: text("name").notNull(),
+    // Added by ADMINISTRATION (migration 0036) — the attributes the control plane needs.
+    description: text("description").notNull().default(""),
+    category: text("category").notNull().default("functional"),
+    /** Forces MFA; removing the role revokes the holder's live sessions. */
+    isPrivileged: boolean("is_privileged").notNull().default(false),
+    /**
+     * Unrestricted ROW access, granted explicitly and therefore visible in any role
+     * listing. It is never the consequence of a missing scope — an unscoped user sees
+     * nothing, because "unconfigured" and "unrestricted" must not be the same state.
+     */
+    isRowUnrestricted: boolean("is_row_unrestricted").notNull().default(false),
   },
   (t) => [unique("uq_role_tenant_code").on(t.tenantId, t.code)],
 );

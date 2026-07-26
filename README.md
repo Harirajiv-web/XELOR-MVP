@@ -1241,6 +1241,56 @@ The impeller settles on exactly its 10 of safety stock — a floor the plan sits
 
 **48 assertions against live PostgreSQL 17**, exit 0: the three-level golden case, the holiday effect, forecast consumption, the undated-order warning, past-due clamping, the pegging chain climbing to a real sales order, the exception worklist and its refusals, capacity to two decimal places, an existing PO treated as fact, firm → convert → the double-conversion refusal, the requisition hand-off, the schedule board and its publish gate, the policy conflict guard, and seven things the database refuses outright. Plus **114 new platform tests** (507 total), the RLS gate at **158 tenant-scoped tables**, the naming gate at 168, a clean cross-tenant leak probe, and zero typecheck or boundary-lint errors.
 
+## Module 14 — ADMINISTRATION (done)
+
+The control plane. Keycloak already authenticated, `role`/`role_permission`/`user_role` already decided, and `audit_log` already chained — those landed in the platform bootstrap. This module is everything that turns those primitives into something an auditor, a regulator or a plant manager can actually work with.
+
+### Three questions, not one
+
+A permission answers *may this person read work orders?* It does not answer **which ones**, or **how much of each**. Skipping either turns a shop-floor operator into somebody who can read every plant's costs — with a perfectly correct permission grid on the screen.
+
+- **Row scope.** Absence of a scope row means **no access**, never all access. That default is the whole thing: making "unconfigured" and "unrestricted" the same state is how a scoping model leaks. Unrestricted row access exists, but only as an explicit role flag that shows up in any role listing.
+- **Field masks**, applied on the way *out*, to whole rows, before they become JSON. A hidden field is **removed** — a blanked key still tells you the field exists, and hiding it in the UI leaves it in the payload. Where two roles disagree, the **most restrictive wins**; otherwise the way to see a masked salary is to collect roles until one of them forgets to mask it.
+- **"Explain access"** is the *same function the guard uses*, run uncached. A simulator answering from a second code path eventually tells an administrator the access is fine while the guard denies it.
+
+Every denial names the roles the user actually holds and the roles that *would* grant it. Every grant reports which roles a permission arrives through — usually more than one, which is the number an access review gets wrong.
+
+### Segregation of duties, and exactly one thing that blocks
+
+The classics are seeded — raise-and-approve a PO, create-a-vendor-and-pay-it, prepare-and-approve payroll. Only **`prevent`**-level rules refuse a grant. Blocking every classic conflict in a plant whose entire office is four people stops the plant, and a control that stops the plant is switched off in week two, after which nothing is controlled at all. The rest are granted and **recorded**, and accepting one as a known risk requires a name and a reason — the database enforces both, because "accepted risk" with nobody's name on it is how a control becomes a checkbox.
+
+The demo tenant ships with a **real critical conflict on a real person**. A control plane whose every light is green demonstrates nothing.
+
+### AI #8 — the model may only choose the words
+
+`admin.sod_explain` is Tier 3 (advisory forever) and ships **off**. The deterministic matrix decides; the model rephrases. A grounding gate runs twice — inside the provider so the router degrades, and again before anything is stored — and the database refuses to store an explanation that did not pass it. The template sentence is kept **alongside** every finding, so the record still reads correctly when the model is off, which is its default.
+
+The gate scores **safe-to-show F1 0.889 against a 0.533 baseline** (+0.356). The baseline is "accept anything non-empty" — exactly what shipping a model with no grounding gate would do. Ten of the eleven cases are the failure modes a small model actually produces; one is a deliberate, documented miss (a faithful sentence that invents a *motive*), kept so the number stays honest.
+
+### The clocks the law starts
+
+- **CERT-In: six hours from DETECTION** — not from confirming it. `detected_at` is captured before anybody knows how bad it is, and the database refuses any deadline that is not exactly detection + 6h.
+- **DPDP: 72 hours** to intimate the Board, running **in parallel**, not after. Treating them as a pipeline is how the second deadline is missed while the first is being handled.
+- **DPDP: 90 days** for a data-principal request, alarmed well before the end — assembling one person's data across a manufacturing ERP is not a same-day job.
+- A **late report is recorded as late** and cannot be edited out. An **erasure refused under a statutory hold must name the obligation**; "refused" alone is what a regulator asks about first.
+- **Employment data is legitimate use (s.7), not consent** — recording it as consent would imply payroll stops the moment somebody clicks withdraw.
+
+### Proof, not claims
+
+The chain verifier distinguishes three failures, because they mean different things: a **hash mismatch** (a row was edited), a **link mismatch** (a row was replaced or re-signed), and a **sequence gap** (a row was deleted). "Chain broken" throws away the only diagnostic information the chain carries. Verifications are **stored** — "we verify nightly" is a claim; a row per verification is evidence. One verifier covers both `audit_log` and `ai_action_log`; two would eventually disagree about what a valid link looks like.
+
+Machine keys are **shown once and never stored** — there is deliberately no column a secret could be read back from — scoped narrowly, and a revoked key reports **revoked**, not unknown, because the holder is usually a device somebody forgot to reconfigure.
+
+### A finding worth recording
+
+Seeding the permission catalogue proved the blueprint's "13 closed actions" wrong about this system. It enforces **112 permissions and 46 of them use operational verbs the 13 do not contain** — `hrm.payroll.approve`, `inventory.stock.post`, `quality.disposition.decide`, `planning.mrp.run`. My first cut made those ungrantable, unexplainable and uncataloguable. Renaming them to fit was worse: `hrm.payroll.approve` says what it guards and `hrm.payroll.amend` does not.
+
+So the 13 stayed as the recommended *document* vocabulary, the catalogue accepts any verb, and typos are caught by **catalogue membership** instead — which is strictly stronger, since a compiled-in list could only reject `aprove` by also rejecting `approve`. A separate constraint keeps the permission string's last segment identical to its `action` column, so the two can never drift into a grant that checks nothing.
+
+### Verified
+
+**57 assertions against live PostgreSQL 17**, exit 0, plus **56 new platform tests** (562 total). RLS gate at **177 tenant-scoped tables**, naming gate at 187, clean cross-tenant leak probe, all four AI eval gates green, zero typecheck or boundary-lint errors. Eight things the database refuses outright, including a forged "all rows" scope, an anonymous accepted risk, an attestation claiming a break with no position, and a retention setting below its statutory floor.
+
 ## Run it
 
 Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.

@@ -17,6 +17,7 @@ import { MaintenanceModule } from "./modules/maintenance/maintenance.module.js";
 import { CspModule } from "./modules/csp/csp.module.js";
 import { ExpenditureModule } from "./modules/expenditure/expenditure.module.js";
 import { PlanningModule } from "./modules/planning/planning.module.js";
+import { AdministrationModule } from "./modules/administration/administration.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -55,6 +56,7 @@ import { PlanningModule } from "./modules/planning/planning.module.js";
     // it hands Accounts a posting instruction and Accounts posts it.
     ExpenditureModule,
     PlanningModule,
+    AdministrationModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],

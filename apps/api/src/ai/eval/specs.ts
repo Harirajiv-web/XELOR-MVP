@@ -5,3 +5,4 @@
 import "./specs/general-master-dedup.spec.js";
 import "./specs/csp-ticket-triage.spec.js";
 import "./specs/expenditure-receipt-extraction.spec.js";
+import "./specs/admin-sod-explain.spec.js";

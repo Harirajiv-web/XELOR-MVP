@@ -12,6 +12,7 @@ import { PayslipExplainer } from "./payslip-explainer.js";
 import { TicketTriage } from "./ticket-triage.js";
 import { ReplyDrafter } from "./reply-drafter.js";
 import { ReceiptExtractor } from "./receipt-extractor.js";
+import { SodExplainer } from "./sod-explainer.js";
 import { AuditLogService } from "../common/audit-log.service.js";
 
 /**
@@ -57,6 +58,7 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     // AI #1 — the flagship. Committed, Tier-2, and the only one whose output is money,
     // which is why its arithmetic is re-derived rather than trusted.
     ReceiptExtractor,
+    SodExplainer,
   ],
   exports: [
     AI_ROUTER,
@@ -71,6 +73,7 @@ function selectProvider(stub: StubProvider, ollama: OllamaProvider): AiProvider 
     TicketTriage,
     ReplyDrafter,
     ReceiptExtractor,
+    SodExplainer,
   ],
 })
 export class AiModule {}
