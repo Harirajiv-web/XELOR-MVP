@@ -194,6 +194,15 @@ export const PERMISSION_REGISTRY = [
   { permission: "integration.statutory.submit", docType: "statutory_filing", description: "Submit an e-invoice or e-way bill to the government portal.", privileged: true },
   { permission: "integration.webhook.manage", docType: "webhook_subscription", description: "Manage webhook subscriptions and rotate signing secrets.", privileged: true },
 
+  // ---- COPILOT ------------------------------------------------------------------
+  // Holding this lets a person ASK. It does not let them see anything: every question in
+  // the catalogue declares its own module permission on top, so the copilot can only
+  // retrieve what the asker could already open a screen for. Two gates, deliberately —
+  // revoking `copilot.ask` turns the assistant off for someone without touching what they
+  // can otherwise do, and granting it widens nothing.
+  { permission: "copilot.question.ask", docType: "copilot_question", description: "Ask the read-only copilot a question. Answers are still limited to what the asker's other permissions allow.", privileged: false },
+  { permission: "copilot.log.read", docType: "copilot_question", description: "Read the log of questions asked of the copilot, and what each answer was drawn from.", privileged: true },
+
   // ---- AI: the shared spine's governance switch ---------------------------------
   { permission: "ai.governance.manage", docType: "ai_governance", description: "Operate the shared AI kill switch, release, training opt-out and budget.", privileged: true },
 

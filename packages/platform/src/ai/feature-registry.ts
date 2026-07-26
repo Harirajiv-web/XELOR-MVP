@@ -129,6 +129,31 @@ export const AI_FEATURES: readonly AiFeature[] = [
     degradedMode: "template_output",
   },
   {
+    // AI #9 — AND AN EXPLICIT DIVERGENCE FROM THE "CLOSED 8". DECISIONS-V2 §4.2 fixes the
+    // MVP portfolio at eight features and says so for a good reason: a registry that grows
+    // whenever somebody has an idea is not a control. This entry needs an ADR reviewed by
+    // HEXA before it goes past `in_eval`, and it is recorded here rather than slipped in
+    // quietly so the divergence is visible to anyone reading the registry.
+    //
+    // What makes it defensible is the shape rather than the intent. Risk tier 3 is the
+    // one-way setting: advisory only, forever, no tool access and no write path — which is
+    // not a promise about this feature's behaviour but a description of what the code can
+    // physically do. The copilot's queries are hand-written SELECTs; there is no write path
+    // in the module to disable. And the deterministic baseline is not a fallback here, it
+    // is the PRIMARY router: with AI switched off entirely the copilot still answers, in
+    // plainer words. That is why `degradedMode` is `deterministic_template` rather than
+    // `feature_hidden` — pulling the kill switch costs phrasing, not function.
+    key: "copilot.retrieval_qa",
+    ref: "AI #9",
+    ownerModule: "copilot",
+    displayName: "Copilot — read-only question answering over the tenant's own data",
+    status: "in_eval",
+    riskTier: 3,
+    dataClass: "business",
+    deterministicBaseline: "keyword_intent_router",
+    degradedMode: "deterministic_template",
+  },
+  {
     key: "integrations.no_mvp_ai",
     ref: "—",
     ownerModule: "integrations",

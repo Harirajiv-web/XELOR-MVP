@@ -64,3 +64,6 @@ export * from "./aiops/guardrails.js";
 export * from "./aiops/prompt.js";
 export * from "./aiops/routing.js";
 export * from "./aiops/lifecycle.js";
+export * from "./copilot/intents.js";
+export * from "./copilot/route.js";
+export * from "./copilot/answer.js";
