@@ -53,3 +53,8 @@ export * from "./access/masking.js";
 export * from "./access/sod.js";
 export * from "./access/compliance.js";
 export * from "./access/api-key.js";
+export * from "./integration/retry.js";
+export * from "./integration/webhook.js";
+export * from "./integration/einvoice.js";
+export * from "./integration/dlq.js";
+export * from "./integration/mapping.js";

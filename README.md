@@ -1291,6 +1291,70 @@ So the 13 stayed as the recommended *document* vocabulary, the catalogue accepts
 
 **57 assertions against live PostgreSQL 17**, exit 0, plus **56 new platform tests** (562 total). RLS gate at **177 tenant-scoped tables**, naming gate at 187, clean cross-tenant leak probe, all four AI eval gates green, zero typecheck or boundary-lint errors. Eight things the database refuses outright, including a forged "all rows" scope, an anonymous accepted risk, an attestation claiming a break with no position, and a retention setting below its statutory floor.
 
+## Module 15 — INTEGRATION (done)
+
+The edge of the system. Everything here talks to something we do not control — a GST portal, a bank's SFTP drop, a biometric device, a customer's webhook endpoint — and that single fact shapes every decision in the module.
+
+### Nothing is assumed to have worked
+
+**A timeout is not a failure.** It is the one case where the two possible truths — *it never arrived* and *it arrived and the response was lost* — are indistinguishable from our side, and only one of them is safe to retry. So an IRN timeout triggers **GET-before-retry**: fetch by document reference, and only submit again if the portal genuinely does not have it. A blind resubmit either duplicates a tax filing or burns the 24-hour cancellation window, and a duplicate filing is visible to a regulator and cannot be quietly withdrawn.
+
+The idempotency key is derived from the **document**, never the attempt. Attempt two must present the same key or the gateway sees a second invoice.
+
+### Failure classification decides everything downstream
+
+| Failure | Verdict | Why |
+|---|---|---|
+| `401 / 403` | **fatal** | Retrying a wrong credential is how an account gets locked out mid-incident |
+| `4xx` | **fatal** | The payload will be just as wrong in thirty seconds |
+| `409` | **fatal** | It almost certainly already succeeded — fetch, do not resend |
+| `429` | retryable | And the server's own `Retry-After` beats our schedule |
+| `5xx` / network | retryable | Their problem, and it usually passes |
+| timeout | retryable, **side-effect possible** | Which is what makes a replay unsafe |
+
+Backoff is exponential **with jitter**, and the jitter is not decoration: without it everything that failed during one outage retries at the same instants afterwards, and the recovering system is hit by a synchronised wave.
+
+The **circuit breaker lives on the connection row**, not in memory. An in-process breaker is not a breaker once there are two processes — each discovers the same outage separately and the far side gets double the traffic it was being protected from.
+
+### The 30-day window is a cliff, not a slope
+
+Above ₹10 crore turnover an invoice older than 30 days **cannot be reported at all** — the portal simply refuses, permanently, and the only remedy is a credit note and a re-issue. So the alerts escalate at **day 20, 25 and 28** rather than arriving once at the end, the deadline is computed by a database CHECK rather than typed, and a submission past the cliff is refused *before* it is sent rather than discovered from a rejection.
+
+### An e-way bill remembers which portal made it
+
+The dual portal exists because the primary has downtime and a truck at a gate cannot wait. Failover is **recorded on the document**, because a bill generated on the secondary must be *cancelled* on the secondary — losing that fact is how a cancellation silently succeeds at doing nothing while the vehicle is already moving. With both portals down the document is queued and says so; it is never lost.
+
+### Webhooks
+
+The signature binds the timestamp **into** the HMAC (`t=…,v1=…`), which is what makes the replay window enforceable rather than advisory — signing the payload alone lets a captured message be replayed forever. A **future** timestamp is rejected too, for the same reason. Twenty consecutive failures **auto-pause** the subscription: continuing is a slow denial-of-service against somebody who very likely decommissioned the URL. A rotation keeps the previous secret valid for a grace period, because a rotation with no grace is a coordinated outage, and a secret nobody can rotate is a secret forever.
+
+### The module with no AI, and why that is the feature
+
+INTEGRATION carries the registry's **explicit null entry** (`integrations.no_mvp_ai`). The dead-letter triage table is the reason: the error category already determines what a person should do, and a model guessing at it would be slower, unauditable, and capable of the one failure this queue cannot afford — a confident wrong answer about a statutory document. The deterministic table *is* the feature, and it is also the registered baseline any future model would have to beat.
+
+Replay is guard-railed, hard. A DLQ that replays anything on one click is a way to submit the same invoice four times:
+
+- a **transform** failure is not replayable — fix the mapping first, or the replay runs the same broken mapping;
+- a **timeout with a possible side effect** is refused outright — check the far side first;
+- a **statutory** replay is allowed but demands explicit confirmation;
+- **resolving** requires a note, without which the same failure is diagnosed from scratch three months later.
+
+### Mapping fails before the wire, not after
+
+A required field that maps to nothing **fails the message** rather than writing a null — a stock entry with no quantity is discovered days later by a person, and by then the source file is gone. A transform that throws fails it too, rather than passing the raw value through. `dd/mm/yyyy` is read as Indian and never as American, because reading it as `mm/dd` produces a valid-looking wrong date for eleven days of every month. An unmapped unit code is a failure, not a pass-through: letting both `PCS` and `NOS` through gives a plant two units for one thing and quietly wrongs every stock report after that.
+
+The pre-flight dry run finds the **one** mis-typed source path rather than reporting four unrelated problems.
+
+### A correction worth recording
+
+My first cut of the circuit-breaker constraint asserted that only an `open` circuit carries `circuit_opened_at`. That is wrong about the middle state: a **half-open** breaker keeps the timestamp, because if the probe fails the cool-down is measured from the *original* opening. Clearing it would restart the cool-down on every probe, so a flapping endpoint would be probed forever at the shortest possible interval — precisely what the breaker exists to prevent. Migration 0042 inverts the rule: only a *closed* circuit has no opened-at.
+
+### Verified
+
+**48 assertions against live PostgreSQL 17**, exit 0, plus **52 new platform tests** (614 total). RLS gate at **193 tenant-scoped tables**, naming gate at 203, clean cross-tenant leak probe, all four AI eval gates green, zero typecheck or boundary-lint errors. Eight database refusals including a plain-http webhook target, a hand-typed 30-day deadline, a generated IRN with no IRN number, and an attempt orphaned from both its parents.
+
+Every connection ships in **`fake` adapter mode**. That is not a shortcut — it is how the failover, the timeout recovery and the auto-pause can be rehearsed at all. A system whose outage handling can only be demonstrated by causing an outage never gets demonstrated, and the first time anybody sees it is during the incident.
+
 ## Run it
 
 Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.
