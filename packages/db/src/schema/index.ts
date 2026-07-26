@@ -16,4 +16,5 @@ export * from "./expenditure.js";
 export * from "./planning.js";
 export * from "./administration.js";
 export * from "./integration.js";
+export * from "./aiops.js";
 export { tenantScopedColumns } from "./columns.js";

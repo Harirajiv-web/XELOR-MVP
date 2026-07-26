@@ -19,6 +19,7 @@ import { ExpenditureModule } from "./modules/expenditure/expenditure.module.js";
 import { PlanningModule } from "./modules/planning/planning.module.js";
 import { AdministrationModule } from "./modules/administration/administration.module.js";
 import { IntegrationModule } from "./modules/integration/integration.module.js";
+import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -59,6 +60,7 @@ import { IntegrationModule } from "./modules/integration/integration.module.js";
     PlanningModule,
     AdministrationModule,
     IntegrationModule,
+    AiOpsModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],

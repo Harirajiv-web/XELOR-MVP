@@ -58,3 +58,8 @@ export * from "./integration/webhook.js";
 export * from "./integration/einvoice.js";
 export * from "./integration/dlq.js";
 export * from "./integration/mapping.js";
+export * from "./aiops/pii.js";
+export * from "./aiops/guardrails.js";
+export * from "./aiops/prompt.js";
+export * from "./aiops/routing.js";
+export * from "./aiops/lifecycle.js";

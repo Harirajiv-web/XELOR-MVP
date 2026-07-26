@@ -1355,6 +1355,74 @@ My first cut of the circuit-breaker constraint asserted that only an `open` circ
 
 Every connection ships in **`fake` adapter mode**. That is not a shortcut — it is how the failover, the timeout recovery and the auto-pause can be rehearsed at all. A system whose outage handling can only be demonstrated by causing an outage never gets demonstrated, and the first time anybody sees it is during the incident.
 
+## Module 16 — AI OPERATIONS (done)
+
+The control plane for the AI itself. The platform already had the *mechanism* — a router, a closed 8-feature registry, a hash-chained action log, per-tenant governance. This is the *operations* plane over it.
+
+One rule underlies all of it: **the AI cannot ship itself.** Every promotion, rollout and rollback is a human action with a name and a reason. There is deliberately **no endpoint to force a promotion**, none to bypass a guardrail, and none that lets this module act on business data — the absence of those routes is how the rule is enforced rather than merely written down.
+
+### Minimisation is an allow-list, and it refuses
+
+A block-list is a promise to have thought of every format PII can take, forever, in a country with a dozen identifier schemes. An **allow-list** is a promise that only the fields somebody named will ever be sent.
+
+The detectors run anyway — over what the allow-list produced. When something gets through (somebody allows `remarks` for context and a vendor has typed a PAN into it) the call is **refused**, not quietly redacted: a silent redaction leaves the allow-list wrong forever. PAN is matched by its holder-type character, Aadhaar by the **Verhoeff checksum** — a checksum-valid number is `certain`, a look-alike is only `likely`, because flagging every twelve-digit string as certain PII buries the ones that are.
+
+The redaction record holds **field names, never values**. It is kept next to the audit trail for eight years, and a redaction log containing the thing it redacted is a second copy of the problem.
+
+**Injection is marked, not stripped.** Removing "ignore previous instructions" from a vendor's remarks silently changes the document, and the next attacker phrases it differently anyway. The text is sent as quarantined *data* — which is what it always was — and the confidence drops.
+
+### Numeric provenance
+
+The highest-value guardrail in a finance product. Every number in the model's output must appear in its input; anything else is rejected. The characteristic failure of this technology is not refusing to answer — it is **producing a plausible total nobody typed**, and a number the model invented is indistinguishable from one it read unless you check. Numbers the *code* derived and handed over are allowed explicitly, because "the model may compute" and "the model may invent" are the same permission otherwise.
+
+### The gate is not a warning
+
+A prompt change looks like editing a string and behaves like deploying code. So a version is **content-addressed**, immutable in production, and promoted only when three conditions hold — all refusals, none warnings:
+
+1. the template validates (an undeclared `{{invoiceTotl}}` renders as empty, the model reasons about a missing total and obliges, and **nothing crashes**);
+2. an eval **passed for this exact content hash** — a pass covering a previous version proves nothing about this one;
+3. the approver **is not the author**.
+
+The database enforces all three, plus one production version per feature. There is no force flag. A rollback states its **blast radius first** — the calls already answered by the bad version, which the rollback stops but does not un-answer.
+
+### Routing always ends somewhere that needs no model
+
+Every chain's last step is deterministic, enforced by a database trigger at activation. A chain that can be exhausted is a feature that stops working when somebody else's API does, and a plant cannot stop taking receipts for that. Residency is checked at **edit, activation and call time** — the third catches a provider that quietly changed where it serves from, which is the only one the first two cannot.
+
+Every attempt is attributed, not just the winner: "the call succeeded" hides that the primary failed nine times out of ten this hour, which is exactly the signal drift needs.
+
+### Cost, and the number beside it
+
+Calls are priced at **the rate in force on the day they happened** — a June call stays at June's rate when the report runs in September, because costing history at today's price is how a report stops matching the invoice. A missing price meters at **zero and flags it**: a guessed price is worse than a missing one, because it reconciles.
+
+The budget **throttles before it blocks**. At 90% the premium tier is refused and the cheap one still answers; only at 100% does the feature fall to its deterministic step. A budget that goes from "fine" to "off" produces an outage that looks like a bug.
+
+Cost is shown **beside acceptance rate**, because spend without acceptance is a number with no opinion attached.
+
+### The switch, and the drill
+
+The kill switch is a **refusal at the chokepoint** — the router declines to route — rather than a flag each feature is trusted to read. A switch depending on eight modules honouring it is eight chances to have missed one. Every feature already has a registered degraded mode, which is what makes it safe to pull: the feature degrades, it does not fail.
+
+And it is **probed**. A kill switch nobody has tried is a belief; the probe sends a real call through and asserts it was refused inside the 60-second bound, records the result, and **fails loudly** when the switch did nothing.
+
+### Drift, and the honest refusals
+
+A falling **acceptance rate** is the signal nothing else on a dashboard shows — the product quietly becoming wrong while latency and cost stay green. A rising fallback rate says the feature still works and it is increasingly *not the AI* doing it. Below twenty calls the scan reports nothing at all, because drift alerts from a handful of calls are how a team learns to ignore drift alerts. A promotion in the window is offered as **a lead, not a proven cause**.
+
+### The five-part answer
+
+"What did the AI do with this document?" — which feature and prompt version, which provider and **from which region**, exactly what left the building, what the guardrails did, and which human confirmed it. Anything less is a log; those five together are an answer somebody can give a regulator. The evidence pack adds the **1:1 reconciliation** between metered calls and the hash-chained action log — a call that was routed but not metered is spend nobody can see.
+
+Golden sets are **evaluation artefacts, contractually excluded from training**, and the database refuses to record one that is not.
+
+### Verified
+
+**59 assertions against live PostgreSQL 17**, exit 0, plus **49 new platform tests** (663 total). RLS gate at **210 tenant-scoped tables**, naming gate at 220, clean cross-tenant leak probe, all four AI eval gates green, zero typecheck or boundary-lint errors.
+
+Nine things the database refuses outright, including a self-approved production prompt, two production prompts for one feature, a restated price, an eval PASS with no content hash, an eval PASS that disagrees with its own numbers, an engaged kill switch with nobody's name on it, a golden set opted into training, and a routing chain activated without a deterministic tail.
+
+The ANN leak probe is recorded rather than assumed: a nearest-neighbour search that crosses tenants returns a competitor's part names as "similar items", and an index that was **never probed** says so — which is not the same as safe.
+
 ## Run it
 
 Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.
