@@ -16,6 +16,7 @@ import { HrmModule } from "./modules/hrm/hrm.module.js";
 import { MaintenanceModule } from "./modules/maintenance/maintenance.module.js";
 import { CspModule } from "./modules/csp/csp.module.js";
 import { ExpenditureModule } from "./modules/expenditure/expenditure.module.js";
+import { PlanningModule } from "./modules/planning/planning.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -53,6 +54,7 @@ import { ExpenditureModule } from "./modules/expenditure/expenditure.module.js";
     // Expenditure depends on the AI router and the outbox, and writes no GL row itself —
     // it hands Accounts a posting instruction and Accounts posts it.
     ExpenditureModule,
+    PlanningModule,
   ],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],

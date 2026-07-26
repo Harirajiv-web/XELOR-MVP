@@ -13,4 +13,5 @@ export * from "./hrm.js";
 export * from "./maintenance.js";
 export * from "./csp.js";
 export * from "./expenditure.js";
+export * from "./planning.js";
 export { tenantScopedColumns } from "./columns.js";

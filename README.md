@@ -32,11 +32,17 @@ swappable in by the same config.
 > gate) + **Module 12 EXPENDITURE** (budgetary control as a **reservation ledger** that counts
 > committed money and not just spent money, input tax credit through the s.17(5) and
 > company-GSTIN gates, TDS with a threshold crossing the system refuses to decide, and
-> receipt extraction whose every figure is re-derived). The order-to-cash spine
+> receipt extraction whose every figure is re-derived) + **Module 13 PLANNING / MRP** (what
+> to make, what to buy and by when: low-level codes derived from the bill of materials,
+> demand as `max(forecast, orders)`, level-by-level netting with scrap and safety stock,
+> lead times offset over a working-day calendar, and an exception worklist that proposes
+> and never acts). The order-to-cash spine
 > (buy → stock → make → inspect → sell → **book it**) is in place, so is the people-and-pay
 > spine that feeds it, so is the asset-uptime layer that decides whether the machines are
-> there tomorrow, the customer can see their own side of it — and now every rupee going out
-> is checked against a budget before it is committed rather than after it is spent.
+> there tomorrow, the customer can see their own side of it, every rupee going out is
+> checked against a budget before it is committed rather than after it is spent — and the
+> system now tells the plant *what to buy and what to make*, which is the question the
+> other twelve modules were all waiting on.
 
 ## What's here
 
@@ -65,6 +71,10 @@ MVP_PROTOTYPE_1/
 │  │     ├─ spend/                  # pure SPEND brains: the reservation ledger · s.17(5) ITC gates
 │  │     │                          #   · TDS thresholds + the crossing · receipt cross-checks (AI #1)
 │  │     │                          #   · duplicate tiers (AI #4) · per-diem + advance settlement
+│  │     ├─ planning/                # pure MRP brains: low-level codes + cycle detection · lot rules
+│  │     │                          #   · forecast consumption · MPS + discrete ATP · the netting engine
+│  │     │                          #   · exceptions · capacity load · EDD/SPT/CR dispatch · reorder points
+│  │     ├─ time/                    # shared date arithmetic: ISO weeks · IST offset · working-day walks
 │  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
 │  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
@@ -73,7 +83,7 @@ MVP_PROTOTYPE_1/
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production,…,csp}.ts
 │     ├─ src/{client,migrate,rls-check,naming-check}.ts   # naming-check gates the MWO/WO boundary
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0031.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0035.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -109,10 +119,12 @@ MVP_PROTOTYPE_1/
             │                       #   entitlement, spares, KB, CSAT; TWO route prefixes, disjoint guards
             ├─ expenditure/         # Module 12 — the budget reservation ledger, claims, advances,
             │                       #   indirect spend with GST/TDS, and the posting handoff to Accounts
+            ├─ planning/            # Module 13 — MRP: what to make, what to buy, by when. The widest READ
+            │                       #   surface in the system (6 ports), the narrowest write surface (a plan)
             └─ workflow/            # W1 approval engine (@Global WorkflowExecutor port)
 ```
 
-### Schema surface (migrations 0000 → 0031)
+### Schema surface (migrations 0000 → 0035)
 
 | # | Migration | What it adds |
 |---|---|---|
@@ -148,6 +160,10 @@ MVP_PROTOTYPE_1/
 | 0029 | `seed_csp` | the service desk: the **Mon–Sat 09:00–18:00 IST** calendar (a nine-hour day, six days — assuming Mon–Fri 9-to-5 would have promised every customer an extra day on every resolution clock) with three real holidays; three teams; the eight-category taxonomy whose `code` the SLA policies and the AI baseline both key on; **six SLA policies across all three precedence bands** — priority, category (a DPDP rights request has a statutory clock and does **not** pause) and contract (the AMC's own 240-minute commitment, which outranks the tenant's "urgent"); the `TKT/CMP/SPR-2627` counters; four portal users including one left `invited` so "invited but not consented" is a real state; eight warranties and two AMCs — one comprehensive, one **non-comprehensive** so the entitlement engine has something to answer `partial` about; and five KB articles, the fifth **internal** and deliberately stuffed with the vocabulary a customer would search for, so a broken visibility policy fails loudly |
 | 0030 | `expenditure` | budgetary control and the spend that is not a purchase order, with **seven** guarantees in the database: (1) `budget_consumption` is **append-only** at the grant and at a trigger — availability is `budget − actual − committed − in_approval` read from it under a row lock, and a rejection is a signed negative row rather than an edit; (2) **UNIQUE (tenant, idempotency_key)** on that ledger, so a retried submit collides instead of doubling a commitment; (3) a CHECK over an **immutable function** asserts a budget line's twelve monthly cells sum to its annual figure (a subquery is not permitted in a CHECK, and this guarantee was worth a function rather than a trigger that fires after the fact); (4) `net_reimbursable` is **GENERATED and cannot go negative** — when an advance exceeds the claim the difference is a refund receivable, not a payroll deduction nobody agreed to; (5) `tds_config`, `per_diem_rate` and `fx_rate` are effective-dated and **append-only**, so a July deduction is still reproducible in a 2029 assessment; (6) **UNIQUE idempotency key on `posting_instruction`** — Expenditure writes one instruction per document version and Accounts posts it; (7) `tds_config_ref` is required whenever `tds_amount` is non-zero, so no deduction exists without the dated row that produced it. Plus `ck_meter_forward` (a utility meter does not run backwards), `ck_line_itc_block` (a blocked line cannot carry a credit) and a deliberately **non-unique** `exp_attachment.sha256`, because a duplicate must be detected and flagged with both documents named rather than refused at upload |
 | 0031 | `seed_expenditure` | 17 expense heads carrying the s.17(5) position that decides whether GST is recoverable (meals, motor vehicles, staff welfare blocked; electricity `exempt`; freight `rcm`) plus the `category_keywords` that are AI #1's deterministic baseline; the **TDS rate book** with the pre- and post-Finance-Act-2025 rows for 194C/194J/194I/194Q, the older ones *closed* rather than edited, each carrying a `source_note`; the grade × city-tier per-diem matrix; FY 26-27 budgets for five cost centres over 18 lines — MRO spares and tooling **stop**, travel **warn**, rent **ignore** — every distribution verified by the database on insert; and three recurring templates, none auto-posting |
+| 0032 | `planning` | MRP's own tables, with **seven** guarantees in the database: (1) a **completed run is immutable** — `mrp_run_bucket`, `mrp_run_item` and `planned_order_peg` are trigger-blocked and their grants revoked, because the per-bucket working IS the answer to "why did we buy fifty castings in July?" and that question is asked in November; (2) **UNIQUE (tenant, run, order_key)** — one planned order per item per bucket, so a retried run cannot double-plan; (3) a planned order can be **converted exactly once** (a partial unique index on the conversion reference plus a CHECK that `converted` implies one), because converting twice builds the same pump twice and nothing downstream notices until the stock does not move; (4) an item **cannot be MRP-planned AND carry a reorder point** — the single commonest silent source of excess inventory, refused rather than reported; (5) utilisation and efficiency are **fractions in (0,1]** — zero makes every load percentage infinite, above one invents hours the plant does not have; (6) a frozen MPS bucket cannot change without `override_by` **and** `override_reason` together; (7) the demand fence cannot sit **outside** the planning fence. Plus `ck_plannedorder_clamp` — a release date may be moved forward to today but never back-dated behind what the lead time asked for, because the disagreement between the two IS the module reporting that the date cannot be met |
+| 0033 | `sales_delivery_date` | a **requested delivery date on the sales-order line** — a structural addition to SMBD's table, made because without it "demand from confirmed sales orders" is fiction: MRP's entire output is dates walked backwards from the day the customer expects delivery. Deliberately **nullable**, because an order taken with no promised date is a real thing; PLANNING places that demand in the current bucket and raises a `data_warning` rather than inventing a date nobody agreed to. A trigger refuses a delivery date earlier than the order date (a CHECK cannot reach the header) |
+| 0034 | `seed_planning` | the §7 demo universe **deepened from two BOM levels to three** — a two-level bill cannot demonstrate the thing MRP exists to do. Adds the casting blanks under the impeller and the casing, and puts the blueprint's scrap percentages on the assembly (2% impeller, 5% casting) so the gross-up step is visible. Then the planning world: a Mon–Sat calendar with Independence Day and Gandhi Jayanti; five work centres, the bottleneck VMC running two shifts for **73.44 available hours** against 96 nominal; five routings; eight planning policies carrying the blueprint's §20.3 lot rules and lead times **in working days** (1 wk = 6, 2 wk = 12, 3 wk = 18); the flat 20-a-week forecast; and the MPS grid with its ATP row |
+| 0035 | `append_only_names_its_table` | the shared append-only guard **names the table it is actually guarding**. Four tables use one trigger function that hard-coded `audit_log` into its message, so deleting from `stock_ledger` reported *"audit_log is append-only (MCA Rule 11(g))"* — pointing at the wrong table and at a compliance rule with nothing to do with stock. Found while building PLANNING. The statutory citation is kept where it belongs; nothing about what is refused changed |
 
 ### The conventions, made real
 
@@ -1166,6 +1182,65 @@ leak-probe demos). Demo users (realm `indcore`, password `demo`): **poongodi** �
 (casing, impeller, shaft, seal, bolts), the pump's BOM, and five Trishul warehouses
 (accepted / quarantine / WIP / finished / scrap). `poongodi` (stores) can post stock.
 
+## Module 13 — PLANNING / MRP (done)
+
+Every other module in this system records something that **happened**. This one records something that has **not happened yet** — and that is the whole difficulty. A plan is an argument about the future, and the only way it stays trustworthy is if the argument is kept next to the conclusion.
+
+Planning is also the module with the **widest read surface and the narrowest write surface** in the codebase. It reads demand from SMBD, stock from Inventory, the product structure from Engineering, and open supply from Purchase and Production — six `@Global` ports, no module→module imports — and it writes exactly one thing of its own: a plan.
+
+### What it actually computes
+
+**Low-level codes, derived from the whole BOM graph.** Every item is netted exactly once, at the deepest level it appears anywhere. An item planned too early is netted against demand that does not exist yet and the run **silently under-orders** — a failure with no error message and no symptom until the line stops. A cycle in the bill of materials is refused and the cycle is *named*: `PMP-CP50 → CMP-IMP6 → PMP-CP50` is a thirty-second fix, `circular BOM detected` is an afternoon bisecting a product structure by hand.
+
+**Demand is `max(Forecast, Orders)`, never the sum.** Real orders *consume* the forecast that predicted them. Adding them plans the same pump twice and the plant builds inventory nobody asked for.
+
+**The netting engine**, level by level: gross requirement (independent demand + what the parents released), net requirement (`gross − scheduled − projected available + safety stock`), a lot rule, and a lead-time offset walked over **working days**. A two-week foundry lead time is twelve working days, not fourteen; offsetting on calendar days silently promises the plant two days it does not have, once per order, forever.
+
+**Two things the engine refuses to do:**
+
+- **It never moves an existing commitment.** A released purchase order enters as a scheduled receipt at the date the buyer promised, and stays there. Where the plan disagrees, it raises a reschedule exception for a human — moving a supplier's commitment is a phone call, not a database write.
+- **It never back-dates.** A release date already in the past is clamped to today and **flagged**, with the date the lead time actually wanted kept beside it. A planned order dated last Tuesday is a lie that makes the horizon look feasible.
+
+**The exception worklist is the product.** A run over a real factory produces thousands of planned orders and almost none need a human. Severity comes from *consequence*, not category: the same lateness on a customer order outranks it on a forecast, because one of them breaks a promise to somebody expecting a delivery. Every row names something to **do**. Accepting one records the decision and does **not** perform it — an exception list that silently creates work orders is a plan that acts, and this system's whole position is that plans do not act.
+
+**Capacity** is `machines × shift hours × utilisation × efficiency` — the two percentages are where honest plants and optimistic ones diverge. The demo's bottleneck has **73.44** available hours a week against 96 nominal, and a four-hour maintenance block costs **3.06** effective hours, not four.
+
+**The schedule board** is a tier-1 heuristic (EDD / SPT / CR) and is labelled as one everywhere. It **never auto-publishes**: a draft becomes the shop's dispatch list only when a named person approves it, enforced by the database.
+
+### The golden case reproduces exactly
+
+`PLANNING §20.5` is a three-level MRP example worked by hand. It is the test. The blueprint dates its demo Monday 13 Jul 2026; `DECISIONS-V2 §7` is binding and fixes demo "today" at Monday **20 Jul 2026**, so the whole example is shifted forward exactly one week — every quantity unchanged, every bucket label one higher, and the past-due beat survives, which is the point of checking it.
+
+Against live PostgreSQL, all three levels land on the blueprint's numbers:
+
+| | W30 | W31 | W32 | W33 | W34 | W35 |
+|---|---|---|---|---|---|---|
+| **PMP-CP50** planned receipt | 0 | **16** | 20 | 25 | 20 | 20 |
+| **CMP-IMP6** gross (2% scrap) | 17 | 21 | 26 | 21 | 21 | 0 |
+| **CMP-IMP6** projected available | 13 | 10 | 10 | 10 | 10 | 10 |
+| **CST-IMP6** net requirement | 0 | **22** | 0 | 18 | 0 | 0 |
+| **CST-IMP6** planned receipt (MOQ 50) | 0 | **50** | 0 | 50 | 0 | 0 |
+
+The impeller settles on exactly its 10 of safety stock — a floor the plan sits on, not a buffer it eats. The casting's shortfall of 22 becomes an order of 50, because a foundry will not pour 22. And the two-week lead time puts that order's release in **W29 — the week before today** — so it is clamped, flagged, and counted as **6 working days** late.
+
+**Two findings while reproducing it:**
+
+- The blueprint's §20.5 *prose* names SO-1042 at the top of the pegging chain. Its own tables do not support that — SO-1042's demand is absorbed by impeller stock and never creates a casting order. The tables are hand-verified and were followed; the prose sentence is an error in the source, and the test says so.
+- The seeded **Independence Day holiday** legitimately changes the plan: six working days back from Mon 17 Aug crosses 15 Aug and lands a week earlier. The golden case therefore runs holiday-free, and a **second** section puts the holiday back and proves what it does. The totals differ by exactly one impeller — because when two requirements merge into one bucket the scrap gross-up rounds up *once* instead of twice. Rounding per parent, the obvious implementation, would have ordered that extra impeller every time two parents shared a week.
+
+### Reconciled to the baseline
+
+`PLANNING.md` is one of the six blueprints authored on FastAPI/PG16. Beyond the stack, four divergences were made deliberately:
+
+- **The low-level code does not live on `item`.** The blueprint persists it to Engineering's table; a module may not add a column to another module's system of record (§1.1), so every planning attribute lives in `item_planning_policy`, keyed by a bare `item_id`. Engineering describes what a part *is*; Planning describes how it is *replenished*.
+- **The run is synchronous.** The blueprint specifies a Celery job with SSE progress, which matters at ten thousand items; at pilot scale the whole run finishes in **~70 ms**, faster than the round trip that would poll it. The engine is a pure function, so moving it onto the BullMQ queue later changes one file.
+- **No AI feature.** The registry is closed at eight and Planning has none. What ships is the **deterministic explainer** the blueprint itself specifies for MVP — the pegging chain and the per-bucket working, rendered in words, with no model call. Claiming an unregistered flagship would have meant cutting it later.
+- **Sales orders gained a delivery date** (migration 0033) — without it, "demand from confirmed sales orders" is fiction.
+
+### Verified
+
+**48 assertions against live PostgreSQL 17**, exit 0: the three-level golden case, the holiday effect, forecast consumption, the undated-order warning, past-due clamping, the pegging chain climbing to a real sales order, the exception worklist and its refusals, capacity to two decimal places, an existing PO treated as fact, firm → convert → the double-conversion refusal, the requisition hand-off, the schedule board and its publish gate, the policy conflict guard, and seven things the database refuses outright. Plus **114 new platform tests** (507 total), the RLS gate at **158 tenant-scoped tables**, the naming gate at 168, a clean cross-tenant leak probe, and zero typecheck or boundary-lint errors.
+
 ## Run it
 
 Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.
@@ -1362,6 +1437,12 @@ from sprint 1, exactly as §1.1/§1.6 require.
   22.0 h/day from 15-Jun = 25 days = **10-Jul**). Both discrepancies are recorded in the
   seed, the test and the platform source.
 
+- **Planning is single-plant.** MRP nets against total on-hand across every warehouse; there is no inter-plant supply, no transfer planning and no per-warehouse allocation. When a planned order becomes a work order, the components are taken from the first `accepted` warehouse and the output received into the first `finished` one — a documented default, and the point at which multi-warehouse planning becomes a real routing decision rather than a convention.
+- **A production order carries no promised date.** Open work orders therefore enter the plan as supply available in the *current* bucket, which is optimistic. The run raises a `data_warning` naming every such document rather than hiding it; inventing a date from the order's creation timestamp would produce a confident number with nothing behind it.
+- **The MRP run is regenerative and synchronous.** There is no net-change engine yet: every run re-plans everything. At pilot scale that takes ~70 ms; the blueprint's async job with SSE progress is the shape this grows into, and the engine is already a pure function behind a queue-shaped boundary.
+- **The schedule board is a heuristic, not a solver.** EDD/SPT/CR list scheduling with precedence, material dates and the working calendar respected. There is no sequence-dependent setup optimisation and no CP-SAT; those are Phase 3 in the blueprint and are not implied anywhere in the UI copy.
+- **Items with no routing are missing from the capacity and schedule views**, and both say so by name. The plan is more optimistic than the plant until a routing exists.
+
 ## Next increments (in order)
 
 1. ~~Platform foundation (RLS, outbox + relay, hash-chained audit, event bus).~~ ✅
@@ -1405,14 +1486,21 @@ from sprint 1, exactly as §1.1/§1.6 require.
     company-GSTIN gates, TDS with two thresholds and a crossing the system refuses to decide,
     AI #1 receipt extraction whose every figure is re-derived, AI #4 duplicate detection that
     only ever flags, and the posting handoff that keeps the ledger's single writer.~~ ✅
-18. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
+18. ~~**Module 13 PLANNING / MRP** — low-level codes derived from the BOM graph with cycle
+    detection, `max(F,O)` forecast consumption, the MPS with discrete ATP and time fences,
+    the level-by-level netting engine with scrap gross-up and every lot rule, lead times
+    offset over a working-day calendar, past-due clamped-and-flagged rather than back-dated,
+    the pegging chain that answers "why fifty castings?", the exception worklist that
+    proposes and never acts, infinite-capacity load, the EDD/SPT/CR schedule board that
+    cannot publish itself, and the conversion hand-off to Production and Purchase.~~ ✅
+19. The **CLOUD / HYBRID tiers** — a hosted adapter behind the same router, with the
     existing `tier` field routing routine work to the local model and hard work to the
     cloud. Governed, budgeted and eval-gated exactly as the local provider is.
-19. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in) **and
+20. Upgrade auth: Keycloak **Organizations** → tenant (replacing the group stand-in) **and
     → customer account for the portal realm**, which is now the load-bearing claim behind
     CSP's second scoping dimension; auth-code flow for the SPA; retire the demo password
     grant.
-20. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
+21. **Per-module DB roles.** Today the whole app connects as one `app_user`, so the
     blueprint's "Quality has no INSERT grant on Inventory's tables" is enforced
     architecturally (boundary lint + the `StockPoster` port + the disposition CHECK
     constraint) but *not* by a database grant. Splitting the role per module would make it

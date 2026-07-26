@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { and, asc, eq, gt, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
   newId,
@@ -13,6 +13,15 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import {
+  STOCK_READER,
+  type StockReader,
+  type SupplySource,
+  type OpenSupplyLine,
+  type ProductionOrderCreator,
+  type CreateFromPlanInput,
+  type CreatedDocument,
+} from "../../ports/planning-inputs.port.js";
 import { BOM_PROVIDER, type BomProvider } from "../../ports/bom.port.js";
 import { STOCK_POSTER, type StockPoster, type StockMovement } from "../../ports/stock.port.js";
 import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.port.js";
@@ -59,12 +68,13 @@ const q3 = (n: number): string => n.toFixed(3);
  * by stock is refused whole (INSUFFICIENT_STOCK).
  */
 @Injectable()
-export class ProductionService {
+export class ProductionService implements SupplySource, ProductionOrderCreator {
   constructor(
     private readonly audit: AuditLogService,
     @Inject(BOM_PROVIDER) private readonly bom: BomProvider,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     @Inject(INSPECTION_GATE) private readonly inspection: InspectionGate,
+    @Inject(STOCK_READER) private readonly warehouses: StockReader,
   ) {}
 
   async createOrder(input: CreateProductionOrderInput, idempotencyKey: string): Promise<ProductionOrderView> {
@@ -276,6 +286,92 @@ export class ProductionService {
       });
       return { order: await this.viewInTx(tx, orderId), stockMovements: movements(post.movements) };
     });
+  }
+
+  // ---- SupplySource port (read by PLANNING) ----
+
+  /**
+   * Work orders that are open on the floor — supply already in motion.
+   *
+   * A production order carries no promised date in the MVP schema, so `dueDate` is null and
+   * Planning treats it as supply available in the current bucket. That is optimistic, and
+   * it is reported rather than hidden: the alternative — inventing a date from the order's
+   * creation timestamp — would produce a confident number with nothing behind it.
+   */
+  async openSupply(): Promise<OpenSupplyLine[]> {
+    return withTenant(async (tx) => {
+      const rows = await tx
+        .select({
+          itemId: productionOrder.itemId,
+          qtyToProduce: productionOrder.qtyToProduce,
+          producedQty: productionOrder.producedQty,
+          orderNo: productionOrder.orderNo,
+        })
+        .from(productionOrder)
+        .where(
+          and(
+            inArray(productionOrder.status, ["planned", "in_progress"]),
+            eq(productionOrder.isActive, true),
+            sql`${productionOrder.qtyToProduce} > ${productionOrder.producedQty}`,
+          ),
+        )
+        .orderBy(asc(productionOrder.orderNo));
+
+      return rows.map((r) => ({
+        itemId: r.itemId,
+        qty: Number(r.qtyToProduce) - Number(r.producedQty),
+        dueDate: null,
+        ref: r.orderNo,
+        kind: "production_order" as const,
+      }));
+    });
+  }
+
+  // ---- ProductionOrderCreator port (called by PLANNING) ----
+
+  /**
+   * Turn a planned make-order into a real work order.
+   *
+   * Planning supplies the what, the how many and the by-when — all a plan ever knew. Every
+   * decision that makes this a manufacturing document rather than a row stays here: which
+   * BOM version to pin, how to snapshot the components, which warehouses to issue from and
+   * receive into. Letting Planning write a `production_order` directly would make this
+   * module a table, and quietly bypass every rule it enforces.
+   */
+  async createFromPlan(input: CreateFromPlanInput, idempotencyKey: string): Promise<CreatedDocument> {
+    const warehouses = await this.defaultWarehouses();
+    const view = await this.createOrder(
+      {
+        itemId: input.itemId,
+        qtyToProduce: input.qty,
+        sourceWarehouseId: warehouses.source,
+        fgWarehouseId: warehouses.fg,
+      },
+      idempotencyKey,
+    );
+    return { id: view.id, ref: view.orderNo };
+  }
+
+  /**
+   * The warehouses a planned order is executed against when the plan did not name any.
+   *
+   * The plan legitimately does not know: single-plant MRP nets against total on-hand and
+   * has no view of which shelf it sits on. Picking the first accepted and finished-goods
+   * warehouses is a defensible default and a documented limitation — multi-warehouse
+   * planning is where this becomes a real routing decision.
+   */
+  private async defaultWarehouses(): Promise<{ source: string; fg: string }> {
+    const list = await this.warehouses.listWarehouseRefs();
+    const source = list.find((w) => w.warehouseType === "accepted");
+    const fg = list.find((w) => w.warehouseType === "finished");
+    if (!source || !fg) {
+      throw new AppError(
+        "PROD_NO_DEFAULT_WAREHOUSE",
+        422,
+        "Converting a planned order needs an 'accepted' and a 'finished' warehouse; the plant has not defined both.",
+      );
+    }
+    return { source: source.id, fg: fg.id };
   }
 
   async getOrder(orderId: string): Promise<ProductionOrderView> {

@@ -17,6 +17,7 @@ import type {
   PostStockEntryResult,
   StockMovement,
 } from "../../ports/stock.port.js";
+import type { StockReader, OnHandByItem, WarehouseRef } from "../../ports/planning-inputs.port.js";
 import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 
 const { warehouse, stockEntry, stockEntryLine, stockLedger, stockBalance } = schema;
@@ -43,7 +44,7 @@ export interface OnHandRow {
  * posted event is fired for side-effects only — the ledger write never rides the bus.
  */
 @Injectable()
-export class InventoryService implements StockPoster {
+export class InventoryService implements StockPoster, StockReader {
   constructor(
     private readonly audit: AuditLogService,
     @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
@@ -287,5 +288,33 @@ export class InventoryService implements StockPoster {
         qty: r.qty,
       }));
     });
+  }
+
+  // ---- StockReader port (read by PLANNING) ----
+
+  /**
+   * Total on-hand per item across every warehouse.
+   *
+   * Items with no balance row come back as 0 rather than being omitted: MRP must plan for
+   * an item it has none of, and a caller that has to distinguish "no stock" from "not in
+   * the result set" will eventually get it wrong in the direction of not ordering.
+   */
+  async onHandByItem(itemIds: readonly string[]): Promise<OnHandByItem[]> {
+    if (itemIds.length === 0) return [];
+    return withTenant(async (tx) => {
+      const rows = await tx.execute<{ item_id: string; qty: string }>(sql`
+        select sb.item_id, coalesce(sum(sb.qty), 0) as qty
+          from stock_balance sb
+         where sb.item_id in (${sql.join(itemIds.map((i) => sql`${i}`), sql`, `)})
+         group by sb.item_id
+      `);
+      const found = new Map(rows.rows.map((r) => [r.item_id, Number(r.qty)]));
+      return itemIds.map((itemId) => ({ itemId, qty: found.get(itemId) ?? 0 }));
+    });
+  }
+
+  async listWarehouseRefs(): Promise<WarehouseRef[]> {
+    const rows = await this.listWarehouses();
+    return rows.map((w) => ({ id: w.id, code: w.code, warehouseType: w.warehouseType }));
   }
 }

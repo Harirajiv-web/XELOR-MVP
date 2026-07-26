@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { IST_OFFSET_MINUTES } from "../time/ist.js";
+import { addDays, daysBetween } from "../time/date.js";
 
 /**
  * RELIABILITY MATHS (MAINTENANCE §11.5, FR-MNT-100..102).
@@ -283,12 +284,7 @@ export function computeReliability(input: ReliabilityInput): ReliabilityResult {
   };
 }
 
-/** Calendar-day arithmetic on a YYYY-MM-DD string, UTC-safe. */
-export function addDays(dateISO: string, days: number): string {
-  const d = new Date(`${dateISO}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
+
 
 export interface ParetoRow {
   key: string;

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { and, asc, eq, gt, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
   newId,
@@ -16,6 +16,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import type { SupplySource, OpenSupplyLine } from "../../ports/planning-inputs.port.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import {
   WORKFLOW_EXECUTOR,
@@ -140,7 +141,7 @@ export interface GrnView {
  * one tenant-fenced transaction with hash-chained audit + outbox event.
  */
 @Injectable()
-export class PurchaseService {
+export class PurchaseService implements SupplySource {
   constructor(
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
@@ -424,6 +425,51 @@ export class PurchaseService {
       return this.viewPoInTx(tx, poId);
     });
     return { po, workflow: instance };
+  }
+
+  // ---- SupplySource port (read by PLANNING) ----
+
+  /**
+   * Purchase orders that are approved and not yet fully received.
+   *
+   * Planning treats every row here as FACT at the date it carries and will never redate
+   * one — a purchase order is a commitment a buyer made to a supplier, and moving it is a
+   * phone call, not a database write. Where the plan disagrees with the date, Planning
+   * raises a reschedule exception for a human to act on (FR-PLN-024).
+   *
+   * Draft and pending-approval orders are excluded: nobody has promised to supply them.
+   * Counting them as incoming stock is how a plant discovers in week four that the order
+   * it was relying on was never actually placed.
+   */
+  async openSupply(): Promise<OpenSupplyLine[]> {
+    return withTenant(async (tx) => {
+      const rows = await tx
+        .select({
+          itemId: purchaseOrderLine.itemId,
+          qty: purchaseOrderLine.qty,
+          receivedQty: purchaseOrderLine.receivedQty,
+          poNo: purchaseOrder.poNo,
+          expectedDate: purchaseOrder.expectedDate,
+        })
+        .from(purchaseOrderLine)
+        .innerJoin(purchaseOrder, eq(purchaseOrder.id, purchaseOrderLine.poId))
+        .where(
+          and(
+            inArray(purchaseOrder.status, ["approved", "partially_received"]),
+            eq(purchaseOrderLine.isActive, true),
+            sql`${purchaseOrderLine.qty} > ${purchaseOrderLine.receivedQty}`,
+          ),
+        )
+        .orderBy(asc(purchaseOrder.poNo));
+
+      return rows.map((r) => ({
+        itemId: r.itemId,
+        qty: Number(r.qty) - Number(r.receivedQty),
+        dueDate: r.expectedDate ? r.expectedDate.toISOString().slice(0, 10) : null,
+        ref: r.poNo,
+        kind: "purchase_order" as const,
+      }));
+    });
   }
 
   async getPo(poId: string): Promise<PoView> {

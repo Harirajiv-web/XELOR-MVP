@@ -1,4 +1,4 @@
-import { addDays } from "./reliability.js";
+import { addDays, daysBetween } from "../time/date.js";
 
 /**
  * PM SCHEDULING (MAINTENANCE §11.2, FR-MNT-050..058).
@@ -183,9 +183,7 @@ export function projectMeterDue(rule: MeterRule, meter: MeterState, today: strin
   };
 }
 
-export function daysBetween(fromISO: string, toISO: string): number {
-  return Math.round((Date.parse(`${toISO}T00:00:00Z`) - Date.parse(`${fromISO}T00:00:00Z`)) / 86_400_000);
-}
+
 
 /** The trailing consumption rate: (last − first) / days, over the readings supplied.
  *  Deliberately the simplest defensible estimator — it is shown to the user as a rate,

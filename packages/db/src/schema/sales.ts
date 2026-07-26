@@ -97,6 +97,9 @@ export const salesOrderLine = pgTable(
     igst: numeric("igst", { precision: 18, scale: 2 }).notNull().default("0"),
     lineTotal: numeric("line_total", { precision: 18, scale: 2 }).notNull(),
     deliveredQty: numeric("delivered_qty", { precision: 18, scale: 3 }).notNull().default("0"),
+    // When the customer wants it. Nullable: an order taken without a promised date is a
+    // real thing, and PLANNING flags it rather than inventing one (migration 0033).
+    requestedDeliveryDate: date("requested_delivery_date"),
   },
   (t) => [
     unique("uq_soline_order_line").on(t.tenantId, t.orderId, t.lineNo),

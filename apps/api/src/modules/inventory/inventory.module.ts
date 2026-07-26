@@ -3,6 +3,7 @@ import { StockController } from "./stock.controller.js";
 import { InventoryController } from "./inventory.controller.js";
 import { InventoryService } from "./inventory.service.js";
 import { STOCK_POSTER } from "../../ports/stock.port.js";
+import { STOCK_READER } from "../../ports/planning-inputs.port.js";
 
 /**
  * INVENTORY (SPAR, Module 03) — warehouses, the stock ledger, and the SINGLE write path
@@ -13,7 +14,13 @@ import { STOCK_POSTER } from "../../ports/stock.port.js";
 @Global()
 @Module({
   controllers: [StockController, InventoryController],
-  providers: [InventoryService, { provide: STOCK_POSTER, useExisting: InventoryService }],
-  exports: [InventoryService, STOCK_POSTER],
+  providers: [
+    InventoryService,
+    { provide: STOCK_POSTER, useExisting: InventoryService },
+    // STOCK_READER is the read half: on-hand per item for MRP netting, and the warehouse
+    // list PRODUCTION needs when a planned order becomes a work order.
+    { provide: STOCK_READER, useExisting: InventoryService },
+  ],
+  exports: [InventoryService, STOCK_POSTER, STOCK_READER],
 })
 export class InventoryModule {}

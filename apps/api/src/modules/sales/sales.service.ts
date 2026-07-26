@@ -26,6 +26,8 @@ import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 import { ACCOUNTS_POSTER, type AccountsPoster } from "../../ports/accounts.port.js";
 
+import type { DemandSource, OpenDemandLine } from "../../ports/planning-inputs.port.js";
+
 const { customer, salesOrder, salesOrderLine, dispatch, dispatchLine, outboxEvent } = schema;
 
 export interface CreateCustomerInput {
@@ -150,7 +152,7 @@ const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(
  *    which understated every customer who already owed money.
  */
 @Injectable()
-export class SalesService {
+export class SalesService implements DemandSource {
   constructor(
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
@@ -727,6 +729,55 @@ export class SalesService {
   }
 
   /* --------------------------------- reads -------------------------------- */
+
+  // ---- DemandSource port (read by PLANNING) ----
+
+  /**
+   * Confirmed, undelivered sales-order demand.
+   *
+   * Three deliberate filters, each of which would corrupt a plan if it were dropped:
+   *  - only `confirmed` and `partially_dispatched` orders. A draft is a conversation and a
+   *    cancelled order is a memory; planning either builds pumps nobody ordered.
+   *  - only the UNDELIVERED balance. Netting against the ordered quantity re-plans what has
+   *    already shipped, every run, forever.
+   *  - the requested delivery date is passed through as it is, NULL included. Planning
+   *    decides what a missing date means; Sales does not get to invent one here, because
+   *    the invented date would look exactly like a promise the customer made.
+   */
+  async openSalesDemand(): Promise<OpenDemandLine[]> {
+    return withTenant(async (tx) => {
+      const rows = await tx
+        .select({
+          itemId: salesOrderLine.itemId,
+          qty: salesOrderLine.qty,
+          deliveredQty: salesOrderLine.deliveredQty,
+          requestedDeliveryDate: salesOrderLine.requestedDeliveryDate,
+          soNo: salesOrder.soNo,
+          status: salesOrder.status,
+          customerName: customer.name,
+        })
+        .from(salesOrderLine)
+        .innerJoin(salesOrder, eq(salesOrder.id, salesOrderLine.orderId))
+        .innerJoin(customer, eq(customer.id, salesOrder.customerId))
+        .where(
+          and(
+            inArray(salesOrder.status, ["confirmed", "partially_dispatched"]),
+            eq(salesOrderLine.isActive, true),
+            sql`${salesOrderLine.qty} > ${salesOrderLine.deliveredQty}`,
+          ),
+        )
+        .orderBy(asc(salesOrder.soNo));
+
+      return rows.map((r) => ({
+        itemId: r.itemId,
+        qty: Number(r.qty) - Number(r.deliveredQty),
+        requestedDeliveryDate: r.requestedDeliveryDate,
+        ref: r.soNo,
+        customerName: r.customerName,
+        orderStatus: r.status,
+      }));
+    });
+  }
 
   async getOrder(orderId: string): Promise<SalesOrderView> {
     return withTenant((tx) => this.viewInTx(tx, orderId));

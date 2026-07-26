@@ -3,6 +3,7 @@ import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import type { BomProvider, BomSpec } from "../../ports/bom.port.js";
 import type { ItemProvider, ItemSpec } from "../../ports/item.port.js";
+import type { BomGraph, BomGraphEdge } from "../../ports/planning-inputs.port.js";
 import {
   newId,
   currentTenant,
@@ -101,7 +102,7 @@ export interface BomView {
  * tenant-fenced transaction does the write + hash-chained audit + outbox event.
  */
 @Injectable()
-export class EngineeringService implements BomProvider, ItemProvider {
+export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
   constructor(
     private readonly audit: AuditLogService,
     private readonly dedup: DedupExplainer,
@@ -171,6 +172,45 @@ export class EngineeringService implements BomProvider, ItemProvider {
         .where(eq(bom.id, bomId))
         .limit(1);
       return b ? this.bomSpecInTx(tx, b) : null;
+    });
+  }
+
+  // ---- BomGraph port (read by PLANNING) ----
+
+  /**
+   * Every active BOM edge in the tenant, in one call, normalised to "per one unit of
+   * parent output".
+   *
+   * MRP needs the whole graph at once: an item's low-level code depends on every place it
+   * is used, so asking item by item would need the answer before it could form the
+   * question. The output_qty division happens HERE rather than in the planning engine —
+   * a BOM that makes 10 impellers from 10.5 castings is Engineering's fact to state, and
+   * a consumer that divides it itself is one refactor away from forgetting to.
+   */
+  async activeBomEdges(): Promise<BomGraphEdge[]> {
+    return withTenant(async (tx) => {
+      const rows = await tx
+        .select({
+          parentItemId: bom.itemId,
+          outputQty: bom.outputQty,
+          componentItemId: bomLine.componentItemId,
+          qty: bomLine.qty,
+          scrapPct: bomLine.scrapPct,
+        })
+        .from(bomLine)
+        .innerJoin(bom, eq(bom.id, bomLine.bomId))
+        .where(and(eq(bom.isActive, true), eq(bomLine.isActive, true)))
+        .orderBy(asc(bom.itemId), asc(bomLine.lineNo));
+
+      return rows.map((r) => {
+        const output = Number(r.outputQty);
+        return {
+          parentItemId: r.parentItemId,
+          componentItemId: r.componentItemId,
+          qtyPer: output > 0 ? Number(r.qty) / output : Number(r.qty),
+          scrapPct: Number(r.scrapPct),
+        };
+      });
     });
   }
 
