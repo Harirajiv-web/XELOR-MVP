@@ -49,6 +49,18 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
   const { can, isLicensed, licence, identity } = useAccess();
   const [collapsed, setCollapsed] = useState(false);
   const [railOpen, setRailOpen] = useState(true);
+  /**
+   * Which modules are showing their screens. Keyed by module, and DELIBERATELY SPARSE: a
+   * module with no entry falls back to "open if you are inside it", so the tree opens
+   * itself where you are and stays quiet everywhere else. Storing a value for all sixteen
+   * up front would mean the sidebar had an opinion about modules the user has never
+   * touched, and would have to be reconciled every time one is added or removed.
+   *
+   * The department and module rows are ALWAYS visible; only the screens fold away. The
+   * point of this tree is that you can see HEXA owns Administration, Organisation and
+   * Integration without opening anything.
+   */
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const modules = orderedModules().filter(
     (m) => moduleAvailability(m, { isLicensed, can }) === null,
@@ -106,17 +118,18 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           ) : null}
 
           {groups.map((g) => {
-            const entries = g.modules.flatMap((m) =>
-              visibleNav(m, can).map((n) => ({ m, n })),
-            );
-            if (entries.length === 0) return null;
+            const openable = g.modules
+              .map((m) => ({ m, entries: visibleNav(m, can) }))
+              .filter((x) => x.entries.length > 0);
+            if (openable.length === 0) return null;
+
             return (
               <div key={g.department.code}>
                 {!collapsed ? (
                   // The department header carries its four-letter code as a coloured
                   // marker. Not decoration: the code is how this organisation refers to the
                   // owner of everything underneath it, in tickets, branches and blueprints.
-                  <div className="flex items-center gap-2 px-2.5 pb-1.5 pt-3.5">
+                  <div className="flex items-center gap-2 px-2.5 pb-1 pt-4">
                     <span
                       className="rounded-[5px] px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-white"
                       style={{ background: g.department.accent }}
@@ -131,31 +144,88 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                   <div className="my-2 border-t border-[var(--border-subtle)]" />
                 )}
 
-                <ul className="space-y-0.5">
-                  {entries.map(({ m, n }) => {
-                    const href = `/${m.key}/${n.path}`;
-                    const active = pathname === href || pathname.startsWith(href + "/");
-                    return (
-                      <li key={href}>
-                        <Link
-                          href={href}
-                          title={collapsed ? `${m.name} — ${n.label}` : n.label}
-                          aria-current={active ? "page" : undefined}
+                {openable.map(({ m, entries }) => {
+                  const inModule = pathname.startsWith(`/${m.key}/`);
+                  const open = collapsed || (expanded[m.key] ?? inModule);
+                  return (
+                    <div key={m.key}>
+                      {/* THE MODULE, as its own level.
+                          Departments own modules and modules own screens, and flattening
+                          the middle one hid the fact the whole architecture rests on: that
+                          Administration, Organisation and Integration are three separate
+                          removable things HEXA happens to own, not one long list of
+                          platform screens. The module row also gives the tree a place to
+                          collapse, which is what keeps sixteen modules and fifty-three
+                          screens navigable in a 236px column. */}
+                      {!collapsed ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpanded((e) => ({ ...e, [m.key]: !(e[m.key] ?? inModule) }))
+                          }
+                          aria-expanded={open}
+                          title={m.summary}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-[8px] px-2.5 py-[7px] text-[12.6px] font-medium transition-all",
-                            collapsed && "justify-center px-0",
-                            active
-                              ? "bg-[var(--brand-soft)] font-semibold text-[var(--brand)]"
-                              : "text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
+                            "mt-0.5 flex w-full items-center gap-2 rounded-[8px] px-2.5 py-[6px] text-left text-[12px] font-semibold transition-colors",
+                            inModule
+                              ? "text-[var(--text-primary)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--bg)]",
                           )}
                         >
-                          <Icon name={n.icon ?? m.icon} className="h-[15px] w-[15px] shrink-0" />
-                          {!collapsed ? <span className="truncate">{n.label}</span> : null}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+                          <Icons.ChevronRight
+                            className={cn(
+                              "h-3 w-3 shrink-0 text-[var(--text-muted)] transition-transform",
+                              open && "rotate-90",
+                            )}
+                            aria-hidden
+                          />
+                          <Icon name={m.icon} className="h-[15px] w-[15px] shrink-0" />
+                          <span className="truncate">{m.name}</span>
+                          <span className="ml-auto text-[9.5px] font-bold tabular-nums text-[var(--text-muted)]">
+                            {entries.length}
+                          </span>
+                        </button>
+                      ) : null}
+
+                      {open ? (
+                        <ul className="space-y-0.5">
+                          {entries.map((n) => {
+                            const href = `/${m.key}/${n.path}`;
+                            const active =
+                              pathname === href || pathname.startsWith(href + "/");
+                            return (
+                              <li key={href}>
+                                <Link
+                                  href={href}
+                                  title={collapsed ? `${m.name} — ${n.label}` : n.label}
+                                  aria-current={active ? "page" : undefined}
+                                  className={cn(
+                                    "flex items-center gap-2.5 rounded-[8px] py-[6px] pr-2.5 text-[12.4px] font-medium transition-all",
+                                    // Indented under its module, with a hairline rail so
+                                    // the eye can follow which module a screen belongs to
+                                    // without counting pixels.
+                                    collapsed
+                                      ? "justify-center px-0"
+                                      : "ml-[17px] border-l border-[var(--border-subtle)] pl-[13px]",
+                                    active
+                                      ? "bg-[var(--brand-soft)] font-semibold text-[var(--brand)]"
+                                      : "text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
+                                  )}
+                                >
+                                  <Icon
+                                    name={n.icon ?? m.icon}
+                                    className="h-[14px] w-[14px] shrink-0"
+                                  />
+                                  {!collapsed ? <span className="truncate">{n.label}</span> : null}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
