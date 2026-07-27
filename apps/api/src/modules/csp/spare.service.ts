@@ -160,6 +160,11 @@ export class SpareService {
           ticketNo: t?.ticketNo ?? null,
           itemCode: r.itemCode,
           qty: Number(r.qty),
+          // The unit was stored at request time and was being dropped on the way out, so
+          // every screen printed a bare number. A quantity without its unit is a number
+          // nobody can act on — "4" of a bearing and "4" of a metre of hose are not the
+          // same request.
+          uom: r.uom,
           coverage: r.isWarranty,
           unitPrice: r.unitPrice == null ? null : Number(r.unitPrice),
           lineAmount: r.lineAmount == null ? null : Number(r.lineAmount),

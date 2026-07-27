@@ -151,6 +151,14 @@ export class AiOpsController {
     return this.registry.releaseKillSwitch(featureKey ?? null);
   }
 
+  /** Every registered feature's switch state, one read. Declared before the parameterised
+   *  route so `/kill-switch` can never be mistaken for a feature named nothing. */
+  @Get("kill-switch")
+  @RequirePermission("aiops.registry.read")
+  async killStates() {
+    return { data: await this.registry.killSwitchStates() };
+  }
+
   @Get("kill-switch/:featureKey")
   @RequirePermission("aiops.registry.read")
   async killState(@Param("featureKey") featureKey: string) {

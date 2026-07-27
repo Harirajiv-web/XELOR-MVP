@@ -8,7 +8,9 @@ import { DEMAND_SOURCE } from "../../ports/planning-inputs.port.js";
  *
  * Consumes the @Global AI spine (the shared dedup brain for the customer master) and the
  * @Global STOCK_POSTER port for the goods-out movement, and ACCOUNTS_POSTER for the
- * invoice raised inside the dispatch transaction.
+ * invoice raised inside the dispatch transaction. It also reads ITEM_PROVIDER — order
+ * lines name items, and a reader needs their code and unit; Engineering owns that master
+ * and Sales only ever looks at it.
  *
  * It provides DEMAND_SOURCE: Sales is the origin of independent demand for the whole
  * plant, and MRP nets against the confirmed, undelivered balance of every order — with

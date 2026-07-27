@@ -4,6 +4,8 @@ import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
 import { AccountsService } from "./accounts.service.js";
 
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 const journalSchema = z.object({
   voucherType: z.string().optional(),
   postingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -75,6 +77,13 @@ export class AccountsController {
     return this.accounts.reverseVoucher(id, p.data.reason, idk);
   }
 
+  /** The voucher register. Read-only; the ledger has no edit and no delete to expose. */
+  @Get("vouchers")
+  @RequirePermission("accounts.ledger.read")
+  async vouchers(@Query("limit") limit?: string, @Query("cursor") cursor?: string) {
+    return this.accounts.listVouchers(Math.min(Number(limit ?? 25) || 25, 100), cursor);
+  }
+
   @Get("vouchers/:id")
   @RequirePermission("accounts.ledger.read")
   async voucher(@Param("id") id: string) {
@@ -88,9 +97,18 @@ export class AccountsController {
     return this.accounts.getCustomerOutstanding(id);
   }
 
+  /**
+   * `asOf` is optional and defaults to today. It is VALIDATED rather than coerced: a
+   * malformed date silently falling back to "everything" would produce a trial balance
+   * labelled with one date and footing to another, which is the single worst thing a
+   * financial report can do.
+   */
   @Get("trial-balance")
   @RequirePermission("accounts.ledger.read")
-  async trialBalance(@Query() _query: unknown) {
-    return this.accounts.trialBalance();
+  async trialBalance(@Query("asOf") asOf?: string) {
+    if (asOf !== undefined && !DATE.test(asOf)) {
+      badRequest([{ path: ["asOf"], message: "expected YYYY-MM-DD" }]);
+    }
+    return this.accounts.trialBalance(asOf);
   }
 }

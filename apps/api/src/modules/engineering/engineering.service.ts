@@ -48,9 +48,14 @@ export interface ItemRow {
   id: string;
   itemCode: string;
   name: string;
+  description: string | null;
   itemType: string;
   uom: string;
   standardCost: string | null;
+  /** How many active bills of material exist for this item. 0 means it is bought, not made. */
+  bomCount: number;
+  /** The highest active version — what a caller means when it says "the BOM". */
+  defaultBomId: string | null;
   createdAt: string;
 }
 
@@ -333,9 +338,15 @@ export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
         id,
         itemCode: input.itemCode,
         name: input.name,
+        description: input.description ?? null,
         itemType: input.itemType,
         uom: input.uom,
         standardCost,
+        // A brand-new item cannot have a bill of material — one is created against it
+        // afterwards, never with it. Stated rather than left off the shape, so the row a
+        // creation returns is the same shape as a row the list returns.
+        bomCount: 0,
+        defaultBomId: null,
         createdAt: now.toISOString(),
       };
     });
@@ -457,6 +468,31 @@ export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
     return { ...head, lines };
   }
 
+  /**
+   * Active BOMs for a set of items, newest version first, grouped by item.
+   *
+   * Scoped to the ids handed in rather than run per row: a page of fifty items must cost one
+   * query, not fifty-one. Read-only — it decides nothing and writes nothing.
+   */
+  private async activeBomsFor(
+    tx: Tx,
+    itemIds: readonly string[],
+  ): Promise<Map<string, { id: string; version: number }[]>> {
+    const out = new Map<string, { id: string; version: number }[]>();
+    if (itemIds.length === 0) return out;
+    const rows = await tx
+      .select({ id: bom.id, itemId: bom.itemId, version: bom.version })
+      .from(bom)
+      .where(and(inArray(bom.itemId, [...itemIds]), eq(bom.isActive, true)))
+      .orderBy(asc(bom.itemId), desc(bom.version));
+    for (const r of rows) {
+      const list = out.get(r.itemId);
+      if (list) list.push({ id: r.id, version: r.version });
+      else out.set(r.itemId, [{ id: r.id, version: r.version }]);
+    }
+    return out;
+  }
+
   /** List active items, cursor-paginated on (created_at, id) — §5.3. */
   async listItems(limit: number, cursor?: string): Promise<CursorPage<ItemRow>> {
     return withTenant(async (tx) => {
@@ -466,6 +502,7 @@ export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
           id: item.id,
           itemCode: item.itemCode,
           name: item.name,
+          description: item.description,
           itemType: item.itemType,
           uom: item.uom,
           standardCost: item.standardCost,
@@ -491,16 +528,30 @@ export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
       const nextCursor =
         rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null;
 
+      // Which of these items are MADE, and where their recipe lives. One extra query scoped
+      // to the page — not a per-row lookup, and not a new endpoint. Without it a list of
+      // items is a dead end: a user looking at PMP-CP50 can see it is a finished good and
+      // still have no way to reach the bill of material that says what it is made of.
+      const bomsByItem = await this.activeBomsFor(tx, page.map((r) => r.id));
+
       return {
-        items: page.map((r) => ({
-          id: r.id,
-          itemCode: r.itemCode,
-          name: r.name,
-          itemType: r.itemType,
-          uom: r.uom,
-          standardCost: r.standardCost,
-          createdAt: r.createdAt.toISOString(),
-        })),
+        items: page.map((r) => {
+          const boms = bomsByItem.get(r.id) ?? [];
+          return {
+            id: r.id,
+            itemCode: r.itemCode,
+            name: r.name,
+            description: r.description,
+            itemType: r.itemType,
+            uom: r.uom,
+            standardCost: r.standardCost,
+            bomCount: boms.length,
+            // The highest version, because that is what "the BOM" means to everyone who
+            // says it. `boms` is already ordered version-descending.
+            defaultBomId: boms[0]?.id ?? null,
+            createdAt: r.createdAt.toISOString(),
+          };
+        }),
         nextCursor,
       };
     });

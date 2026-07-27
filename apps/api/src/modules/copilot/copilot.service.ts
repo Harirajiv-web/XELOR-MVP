@@ -151,7 +151,7 @@ export class CopilotService {
         .map((c) => getIntent(c.key))
         .filter((i): i is CopilotIntent => Boolean(i))
         .map((i) => ({ key: i.key, question: i.question }));
-      await this.record(correlationId, asked, route, null, 0, "clarify");
+      await this.record(correlationId, asked, route, null, 0, "clarify", routedBy);
       return {
         answered: false,
         answer: route.explanation,
@@ -164,7 +164,7 @@ export class CopilotService {
     }
 
     if (route.outcome === "refused" || !route.intent) {
-      await this.record(correlationId, asked, route, null, 0, "refused");
+      await this.record(correlationId, asked, route, null, 0, "refused", routedBy);
       return this.refuse(
         correlationId,
         asked,
@@ -185,7 +185,7 @@ export class CopilotService {
     if (!held.has(intent.permission)) {
       // Named plainly on purpose. "You do not have access" teaches nobody anything; the
       // permission is what an administrator needs in order to grant it, or to decide not to.
-      await this.record(correlationId, asked, route, null, 0, "forbidden");
+      await this.record(correlationId, asked, route, null, 0, "forbidden", routedBy);
       return this.refuse(
         correlationId,
         asked,
@@ -202,7 +202,7 @@ export class CopilotService {
     if (!query) {
       // Unreachable while the catalogue and the query map agree — and a test asserts they
       // do. Refusing beats a confusing empty answer if they ever drift.
-      await this.record(correlationId, asked, route, null, 0, "no_query");
+      await this.record(correlationId, asked, route, null, 0, "no_query", routedBy);
       return this.refuse(correlationId, asked, "NO_QUERY_FOR_INTENT",
         "I understood the question but have no query registered for it.",
         this.understanding(route, routedBy));
@@ -243,7 +243,7 @@ export class CopilotService {
 
     /* ---- 6. log ----------------------------------------------------------- */
 
-    await this.record(correlationId, asked, route, result.sources, rendered.rows.length, "answered");
+    await this.record(correlationId, asked, route, result.sources, rendered.rows.length, "answered", routedBy);
 
     return {
       answered: true,
@@ -386,6 +386,13 @@ export class CopilotService {
    * of the data outside the tables whose access rules protect it — a log that has to be
    * secured as carefully as the ledger. What is kept is enough to reconstruct: which query
    * ran, over which tables, returning how many rows, for whom.
+   *
+   * `routedBy` is PASSED IN rather than re-derived. It used to be inferred here from
+   * `route.candidates.length`, which meant the column read "deterministic" for every
+   * question — including the ones a model classified — while the response told the user the
+   * truth. The stored value is the audit trail, and an audit trail that under-reports the
+   * model's involvement is the one lie this system cannot afford: the whole governance
+   * claim rests on the record of what the model did matching what the model did.
    */
   private async record(
     correlationId: string,
@@ -394,6 +401,7 @@ export class CopilotService {
     sources: readonly string[] | null,
     rowCount: number,
     outcome: string,
+    routedBy: "deterministic" | "model" | "none",
   ): Promise<void> {
     const { tenantId, actorId } = currentTenant();
     try {
@@ -407,7 +415,7 @@ export class CopilotService {
           intentKey: route.intent?.key ?? null,
           outcome,
           confidence: String(route.confidence),
-          routedBy: route.candidates.length > 0 ? "deterministic" : "none",
+          routedBy,
           params: route.params,
           sources: sources ? [...sources] : [],
           rowCount,

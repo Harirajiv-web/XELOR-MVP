@@ -76,8 +76,20 @@ export function useQuery<T>(
  * skips and repeats records, and a stock report that quietly omits a line is worse than one
  * that makes you press Next.
  */
+/**
+ * The paged envelope, tolerated in both of the spellings that exist.
+ *
+ * The API's `CursorPage<T>` (packages/platform/src/api/pagination.ts) names the array
+ * `items`. This hook originally read `data`, and the failure mode was the worst kind: a
+ * successful 200 with rows in it rendered as an EMPTY TABLE and no error anywhere — the
+ * screen simply said there was nothing, which in an ERP is a sentence people act on.
+ *
+ * Accepting both rather than picking one, because there is no version of this where a
+ * mismatched key should cost a silent empty list.
+ */
 export interface PagedResult<T> {
-  data: T[];
+  items?: T[];
+  data?: T[];
   nextCursor?: string | null;
 }
 
@@ -128,9 +140,11 @@ export function useCursorList<T>(
         });
         if (controller.signal.aborted) return;
 
-        // Some endpoints return a bare array, others the paged envelope. Tolerating both
-        // keeps one hook usable everywhere rather than two that differ by accident.
-        const page: T[] = Array.isArray(result) ? result : (result.data ?? []);
+        // Some endpoints return a bare array, others the paged envelope under `items`, and
+        // a few under `data`. Tolerating all three keeps one hook usable everywhere rather
+        // than three that differ by accident — and, more to the point, means a naming
+        // mismatch can never again present itself to a user as "there is no stock".
+        const page: T[] = Array.isArray(result) ? result : (result.items ?? result.data ?? []);
         const next = Array.isArray(result) ? null : (result.nextCursor ?? null);
 
         setRows((prev) => (replace ? page : [...prev, ...page]));

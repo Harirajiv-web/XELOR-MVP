@@ -5,9 +5,10 @@ import { PRODUCTION_SUPPLY, PRODUCTION_ORDER_CREATOR } from "../../ports/plannin
 
 /**
  * PRODUCTION (KILN, Module 05) — the make cycle. Reads BOMs via the @Global BOM_PROVIDER
- * port (ENGINEERING) and consumes/produces stock via the @Global STOCK_POSTER port
- * (INVENTORY) — no module→module imports (§1.1). Production never writes stock directly
- * (§5.6); it is gated OFF until Inventory hits its stock-accuracy target (SPAR ↔ KILN).
+ * port and item codes via ITEM_PROVIDER (both ENGINEERING), and consumes/produces stock via
+ * the @Global STOCK_POSTER port (INVENTORY) — no module→module imports (§1.1). Production
+ * never writes stock directly (§5.6); it is gated OFF until Inventory hits its
+ * stock-accuracy target (SPAR ↔ KILN).
  */
 @Global()
 @Module({

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { and, desc, eq, gt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { withTenant, schema } from "@ind-core/db";
 import {
   newId,
@@ -16,7 +16,7 @@ import { detectDuplicates, type DuplicateMatch, type MasterRecord } from "@ind-c
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 
-const { company, auditLog, outboxEvent } = schema;
+const { company, gstRegistration, auditLog, outboxEvent } = schema;
 
 export interface CreateCompanyInput {
   legalName: string;
@@ -27,6 +27,33 @@ export interface CompanyRow {
   legalName: string;
   cin: string | null;
   createdAt: string;
+}
+
+/**
+ * A registered place of business under a company.
+ *
+ * There is no separate `plant` or `branch` table and there does not need to be: in India the
+ * registered place of business IS the operating site, because the GSTIN is issued per state
+ * and every invoice, e-way bill and return is filed against one. `place_name` carries the
+ * site — "Pune-Chakan", "Coimbatore".
+ */
+export interface GstRegistrationRow {
+  id: string;
+  gstin: string;
+  stateCode: string;
+  placeName: string;
+}
+
+/**
+ * A company WITH the places it is registered to trade from.
+ *
+ * One legal entity holding several GSTINs is the case that makes this an Indian ERP rather
+ * than a translated one, and it was invisible in the product until this join existed: the
+ * list returned a legal name and a CIN, and Trishul's two plants under two state
+ * registrations — the §7 demo universe — could not be seen anywhere.
+ */
+export interface CompanyWithRegistrations extends CompanyRow {
+  registrations: GstRegistrationRow[];
 }
 
 /**
@@ -180,8 +207,17 @@ export class GeneralService {
     });
   }
 
-  /** List active companies, cursor-paginated on (created_at, id) — §5.3. */
-  async listCompanies(limit: number, cursor?: string): Promise<CursorPage<CompanyRow>> {
+  /**
+   * List active companies with their GST registrations, cursor-paginated on
+   * (created_at, id) — §5.3.
+   *
+   * Two queries rather than a join, deliberately. A join would multiply the company row by
+   * its registrations, and the cursor keyset is defined on the COMPANY — so `limit + 1`
+   * would count registration rows and the page boundary would land in the middle of an
+   * entity. Paging the parents and then fetching the children for exactly that page keeps
+   * the cursor meaning what it says.
+   */
+  async listCompanies(limit: number, cursor?: string): Promise<CursorPage<CompanyWithRegistrations>> {
     return withTenant(async (tx) => {
       const keyset = cursor ? decodeCursor(cursor) : null;
       const rows = await tx
@@ -214,12 +250,44 @@ export class GeneralService {
       const nextCursor =
         rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null;
 
+      // Registrations for exactly the companies on this page. RLS fences the query to the
+      // tenant regardless; the companyId predicate is what keeps it to this page.
+      // Annotated because the empty-page short-circuit would otherwise infer `never[] | Row[]`,
+      // and `.filter` over that union is awkward under strict TypeScript.
+      const regs: Array<GstRegistrationRow & { companyId: string }> =
+        page.length === 0
+          ? []
+          : await tx
+              .select({
+                id: gstRegistration.id,
+                companyId: gstRegistration.companyId,
+                gstin: gstRegistration.gstin,
+                stateCode: gstRegistration.stateCode,
+                placeName: gstRegistration.placeName,
+              })
+              .from(gstRegistration)
+              .where(
+                and(
+                  eq(gstRegistration.isActive, true),
+                  inArray(gstRegistration.companyId, page.map((c) => c.id)),
+                ),
+              )
+              .orderBy(asc(gstRegistration.stateCode), asc(gstRegistration.placeName));
+
       return {
         items: page.map((r) => ({
           id: r.id,
           legalName: r.legalName,
           cin: r.cin,
           createdAt: r.createdAt.toISOString(),
+          registrations: regs
+            .filter((g) => g.companyId === r.id)
+            .map((g) => ({
+              id: g.id,
+              gstin: g.gstin,
+              stateCode: g.stateCode,
+              placeName: g.placeName,
+            })),
         })),
         nextCursor,
       };

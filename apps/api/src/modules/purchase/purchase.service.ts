@@ -26,7 +26,10 @@ import {
 } from "../../ports/workflow.port.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 
-const { vendor, purchaseOrder, purchaseOrderLine, grn, grnLine, outboxEvent } = schema;
+// `item` is ENGINEERING's table, read here only to put a code and a unit on a PO line. A
+// read-only join across a logical reference — no FK is declared and none is implied (§1.1);
+// Purchase still never writes it.
+const { vendor, purchaseOrder, purchaseOrderLine, grn, grnLine, item, outboxEvent } = schema;
 
 export interface CreateVendorInput {
   code: string;
@@ -70,6 +73,15 @@ export interface PoLineView {
   id: string;
   lineNo: number;
   itemId: string;
+  /**
+   * The item as a human reads it. `item_id` alone is an internal reference, and a purchase
+   * order line that cannot say WHAT is being ordered is not a purchase order line — it is a
+   * price against a uuid. Null only if the referenced item has gone (see the left join).
+   */
+  itemCode: string | null;
+  itemName: string | null;
+  /** So the quantity can be printed with its unit, as every other quantity in the product is. */
+  uom: string | null;
   qty: string;
   rate: string;
   amount: string;
@@ -92,7 +104,23 @@ export interface PoSummary {
   id: string;
   poNo: string;
   vendorId: string;
+  /**
+   * The vendor as a human reads it, carried ON the summary.
+   *
+   * A list screen that has to call the vendor master to render a name couples two modules
+   * for the sake of a string, doubles the requests, and fails awkwardly for a user who may
+   * read orders but not vendors. The join belongs here, once, in the module that owns both
+   * tables.
+   */
+  vendorCode: string;
+  vendorName: string;
   status: string;
+  /**
+   * When the vendor promised it. Without this the list cannot say what is LATE, which is
+   * half the reason a buyer opens it — and "late" derived from the created date would be a
+   * confident wrong answer.
+   */
+  expectedDate: string | null;
   totalAmount: string;
   createdAt: string;
 }
@@ -484,11 +512,18 @@ export class PurchaseService implements SupplySource {
           id: purchaseOrder.id,
           poNo: purchaseOrder.poNo,
           vendorId: purchaseOrder.vendorId,
+          vendorCode: vendor.code,
+          vendorName: vendor.name,
           status: purchaseOrder.status,
+          expectedDate: purchaseOrder.expectedDate,
           totalAmount: purchaseOrder.totalAmount,
           createdAt: purchaseOrder.createdAt,
         })
         .from(purchaseOrder)
+        // INNER, not left: a purchase order without a vendor is not a thing this system can
+        // create, and vendors are never hard-deleted (§5.1), so a missing row would mean the
+        // order is corrupt rather than merely unlabelled.
+        .innerJoin(vendor, eq(vendor.id, purchaseOrder.vendorId))
         .where(
           keyset
             ? and(
@@ -511,7 +546,10 @@ export class PurchaseService implements SupplySource {
           id: r.id,
           poNo: r.poNo,
           vendorId: r.vendorId,
+          vendorCode: r.vendorCode,
+          vendorName: r.vendorName,
           status: r.status,
+          expectedDate: r.expectedDate ? r.expectedDate.toISOString() : null,
           totalAmount: r.totalAmount,
           createdAt: r.createdAt.toISOString(),
         })),
@@ -739,12 +777,20 @@ export class PurchaseService implements SupplySource {
         id: purchaseOrderLine.id,
         lineNo: purchaseOrderLine.lineNo,
         itemId: purchaseOrderLine.itemId,
+        itemCode: item.itemCode,
+        itemName: item.name,
+        uom: item.uom,
         qty: purchaseOrderLine.qty,
         rate: purchaseOrderLine.rate,
         amount: purchaseOrderLine.amount,
         receivedQty: purchaseOrderLine.receivedQty,
       })
       .from(purchaseOrderLine)
+      // LEFT, deliberately. `item_id` is a cross-module LOGICAL reference with no foreign
+      // key (§1.1), so nothing at the database level guarantees the item still exists. An
+      // inner join would silently DROP a line from a financial document — an order whose
+      // total no longer matches its lines — where a left join loses only the label.
+      .leftJoin(item, eq(item.id, purchaseOrderLine.itemId))
       .where(eq(purchaseOrderLine.poId, poId))
       .orderBy(asc(purchaseOrderLine.lineNo));
     return {

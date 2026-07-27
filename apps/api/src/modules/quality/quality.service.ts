@@ -21,6 +21,7 @@ import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
+import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
 import type {
   GateStatus,
   InspectionGate,
@@ -52,9 +53,59 @@ export interface DispositionInput {
   reason: string;
   targetWarehouseId?: string;
 }
-export interface InspectionView {
+/**
+ * One reading, WITH the specification it was judged against.
+ *
+ * The applied limits were snapshotted onto the row at the moment of measurement precisely so
+ * a later drawing revision cannot flip a past verdict — and then the projection dropped
+ * them, which made the snapshot pointless to everyone outside the database. An inspector
+ * reads "18.02 against 18.00 +0.05 / −0.05"; the signed deviation alone does not say what
+ * the part was supposed to be.
+ */
+export interface InspectionReadingView {
+  characteristicId: string;
+  characteristicCode: string | null;
+  characteristicName: string | null;
+  characteristicUom: string | null;
+  sampleNo: number;
+  value: string | null;
+  conforming: boolean | null;
+  appliedUsl: string | null;
+  appliedLsl: string | null;
+  appliedDefectClass: string | null;
+  withinSpec: boolean;
+  deviation: string;
+}
+
+/** What was actually DONE with the material. A record that says a lot failed but not where
+ *  it went is the half of the story an auditor came for. */
+export interface DispositionView {
+  dispositionNo: string;
+  dispositionType: string;
+  qty: string;
+  reason: string;
+  status: string;
+  targetWarehouseRef: string | null;
+  inventoryMovementRef: string | null;
+  decidedAt: string;
+  decidedBy: string;
+}
+
+/**
+ * The inspection as this module's own tables hold it.
+ *
+ * Write paths return THIS. Naming the item means calling ENGINEERING through the item port,
+ * which opens its own connection — doing that inside `withTenant` would hold two pool slots
+ * at once against a `DB_POOL_MAX` of 10. The read paths name the item after the transaction
+ * has closed. Everything else here (the characteristics, the applied limits, the
+ * dispositions) is intra-module and stays in the same transaction where it belongs.
+ */
+export interface InspectionCore {
   id: string;
   inspectionNo: string;
+  /** incoming | in_process | final | pre_dispatch | first_article — an incoming rejection
+   *  and a final one mean very different things, and the list could not tell them apart. */
+  inspectionType: string;
   refType: string;
   refId: string | null;
   itemRef: string | null;
@@ -68,14 +119,17 @@ export interface InspectionView {
   result: string;
   qtyAccepted: string | null;
   qtyRejected: string | null;
-  readings: Array<{
-    characteristicId: string;
-    sampleNo: number;
-    value: string | null;
-    conforming: boolean | null;
-    withinSpec: boolean;
-    deviation: string;
-  }>;
+  completedAt: string | null;
+  inspectorRef: string | null;
+  readings: InspectionReadingView[];
+  dispositions: DispositionView[];
+}
+
+/** What a GET answers: the record, with the item named. */
+export interface InspectionView extends InspectionCore {
+  itemCode: string | null;
+  itemName: string | null;
+  uom: string | null;
 }
 
 const q3 = (n: number): string => n.toFixed(3);
@@ -102,6 +156,8 @@ export class QualityService implements InspectionGate {
     private readonly audit: AuditLogService,
     private readonly numbering: NumberingService,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
+    // ENGINEERING owns the item master; read-only, through the shared port (§1.1).
+    @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
 
   /* ------------------------------- the gate ------------------------------- */
@@ -212,7 +268,7 @@ export class QualityService implements InspectionGate {
   async openStandalone(
     input: { itemId: string; lotQty: number; sourceWarehouseId?: string; inspectionType?: string },
     idempotencyKey: string,
-  ): Promise<InspectionView> {
+  ): Promise<InspectionCore> {
     const result = await runIdempotent(idempotencyKey, fingerprint({ ...input, op: "open" }), async () => ({
       status: 201,
       body: await this.doOpenStandalone(input),
@@ -225,7 +281,7 @@ export class QualityService implements InspectionGate {
     lotQty: number;
     sourceWarehouseId?: string;
     inspectionType?: string;
-  }): Promise<InspectionView> {
+  }): Promise<InspectionCore> {
     if (input.lotQty <= 0) throw Errors.validation([{ field: "lotQty", message: "must be > 0" }]);
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
@@ -285,7 +341,7 @@ export class QualityService implements InspectionGate {
     inspectionId: string,
     readings: ReadingInput[],
     idempotencyKey: string,
-  ): Promise<InspectionView> {
+  ): Promise<InspectionCore> {
     if (readings.length === 0) {
       throw Errors.validation([{ field: "readings", message: "at least one reading is required" }]);
     }
@@ -297,7 +353,7 @@ export class QualityService implements InspectionGate {
     return result.body;
   }
 
-  private async doRecordReadings(inspectionId: string, readings: ReadingInput[]): Promise<InspectionView> {
+  private async doRecordReadings(inspectionId: string, readings: ReadingInput[]): Promise<InspectionCore> {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
     return withTenant(async (tx) => {
@@ -392,7 +448,7 @@ export class QualityService implements InspectionGate {
    * brain — a critical characteristic out of spec rejects the lot regardless of the accept
    * number — and the derivation is stored in words next to it.
    */
-  async completeInspection(inspectionId: string, idempotencyKey: string): Promise<InspectionView> {
+  async completeInspection(inspectionId: string, idempotencyKey: string): Promise<InspectionCore> {
     const result = await runIdempotent(
       idempotencyKey,
       fingerprint({ inspectionId, op: "complete-inspection" }),
@@ -401,7 +457,7 @@ export class QualityService implements InspectionGate {
     return result.body;
   }
 
-  private async doCompleteInspection(inspectionId: string): Promise<InspectionView> {
+  private async doCompleteInspection(inspectionId: string): Promise<InspectionCore> {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
     return withTenant(async (tx) => {
@@ -613,15 +669,22 @@ export class QualityService implements InspectionGate {
   /* --------------------------------- reads -------------------------------- */
 
   async getInspection(inspectionId: string): Promise<InspectionView> {
-    return withTenant((tx) => this.viewInTx(tx, inspectionId));
+    // Read, THEN name — the item lookup crosses a module boundary onto its own connection,
+    // so it happens after this transaction has released its pool slot.
+    const core = await withTenant((tx) => this.viewInTx(tx, inspectionId));
+    return this.nameItem(core, core.itemRef ? await this.items.getItem(core.itemRef) : null);
   }
 
   /** Cursor pagination only (§5) — keyset on (created_at, id), never an offset. */
   async listInspections(limit: number, cursor?: string): Promise<CursorPage<InspectionView>> {
-    return withTenant(async (tx) => {
+    const page = await withTenant(async (tx) => {
       const keyset = cursor ? decodeCursor(cursor) : null;
       const rows = await tx
-        .select({ id: qmsInspection.id, createdAt: qmsInspection.createdAt })
+        .select({
+          id: qmsInspection.id,
+          createdAt: qmsInspection.createdAt,
+          itemRef: qmsInspection.itemRef,
+        })
         .from(qmsInspection)
         .where(
           keyset
@@ -636,16 +699,26 @@ export class QualityService implements InspectionGate {
         )
         .orderBy(asc(qmsInspection.createdAt), asc(qmsInspection.id))
         .limit(limit + 1);
-      const page = rows.slice(0, limit);
-      const items: InspectionView[] = [];
-      for (const r of page) items.push(await this.viewInTx(tx, r.id));
-      const last = page[page.length - 1];
+      const rowsOnPage = rows.slice(0, limit);
+      const items: InspectionCore[] = [];
+      for (const r of rowsOnPage) items.push(await this.viewInTx(tx, r.id));
+      const last = rowsOnPage[rowsOnPage.length - 1];
       return {
         items,
         nextCursor:
           rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null,
       };
     });
+
+    // ONE item lookup for the whole page, outside the transaction — not one per inspection,
+    // and not while holding a pool connection.
+    const itemIds = [...new Set(page.items.map((r) => r.itemRef).filter((v): v is string => v !== null))];
+    const specs = itemIds.length > 0 ? await this.items.getItems(itemIds) : [];
+    const byItem = new Map(specs.map((s) => [s.id, s]));
+    return {
+      items: page.items.map((c) => this.nameItem(c, c.itemRef ? (byItem.get(c.itemRef) ?? null) : null)),
+      nextCursor: page.nextCursor,
+    };
   }
 
   /* -------------------------------- helpers ------------------------------- */
@@ -724,16 +797,33 @@ export class QualityService implements InspectionGate {
     };
   }
 
-  private async viewInTx(tx: Tx, id: string): Promise<InspectionView> {
+  private async viewInTx(tx: Tx, id: string): Promise<InspectionCore> {
     const r = await this.loadInspection(tx, id);
     const readings = await tx
       .select()
       .from(qmsInspectionReading)
       .where(eq(qmsInspectionReading.inspectionId, id))
       .orderBy(asc(qmsInspectionReading.sampleNo));
+
+    // The characteristics named, not just referenced. Intra-module join, one query for all
+    // of them — `qms_characteristic` belongs to this module, so no port is involved.
+    const charIds = [...new Set(readings.map((x) => x.characteristicId))];
+    const chars =
+      charIds.length > 0
+        ? await tx.select().from(qmsCharacteristic).where(inArray(qmsCharacteristic.id, charIds))
+        : [];
+    const byChar = new Map(chars.map((c) => [c.id, c]));
+
+    const dispositions = await tx
+      .select()
+      .from(qmsDisposition)
+      .where(eq(qmsDisposition.inspectionId, id))
+      .orderBy(asc(qmsDisposition.createdAt));
+
     return {
       id: r.id,
       inspectionNo: r.inspectionNo,
+      inspectionType: r.inspectionType,
       refType: r.refType,
       refId: r.refId,
       itemRef: r.itemRef,
@@ -747,14 +837,53 @@ export class QualityService implements InspectionGate {
       result: r.result,
       qtyAccepted: r.qtyAccepted,
       qtyRejected: r.qtyRejected,
-      readings: readings.map((x) => ({
-        characteristicId: x.characteristicId,
-        sampleNo: x.sampleNo,
-        value: x.readingNumeric,
-        conforming: x.readingBool,
-        withinSpec: x.isWithinSpec,
-        deviation: x.deviation,
+      completedAt: r.completedAt,
+      inspectorRef: r.inspectorRef,
+      readings: readings.map((x) => {
+        const c = byChar.get(x.characteristicId);
+        return {
+          characteristicId: x.characteristicId,
+          characteristicCode: c?.code ?? null,
+          characteristicName: c?.name ?? null,
+          // The unit comes from the characteristic, not the item: a bore is measured in mm
+          // on a pump sold by the piece.
+          characteristicUom: c?.uom ?? null,
+          sampleNo: x.sampleNo,
+          value: x.readingNumeric,
+          conforming: x.readingBool,
+          // The limits AS APPLIED, off the reading row — never re-read from the master,
+          // which is the whole point of having snapshotted them.
+          appliedUsl: x.appliedUsl,
+          appliedLsl: x.appliedLsl,
+          appliedDefectClass: x.appliedDefectClass,
+          withinSpec: x.isWithinSpec,
+          deviation: x.deviation,
+        };
+      }),
+      dispositions: dispositions.map((d) => ({
+        dispositionNo: d.dispositionNo,
+        dispositionType: d.dispositionType,
+        qty: d.qty,
+        reason: d.reason,
+        status: d.status,
+        targetWarehouseRef: d.targetWarehouseRef,
+        inventoryMovementRef: d.inventoryMovementRef,
+        decidedAt: d.createdAt.toISOString(),
+        decidedBy: d.createdBy,
       })),
+    };
+  }
+
+  /**
+   * Put the item's code, name and unit onto a record. Called AFTER the transaction has
+   * closed, never inside one — see `InspectionCore`.
+   */
+  private nameItem(core: InspectionCore, spec: ItemSpec | null): InspectionView {
+    return {
+      ...core,
+      itemCode: spec?.itemCode ?? null,
+      itemName: spec?.name ?? null,
+      uom: spec?.uom ?? null,
     };
   }
 }

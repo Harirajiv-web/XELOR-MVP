@@ -284,6 +284,11 @@ async function seedTrishul(call, stores) {
               hsn: "84137010",
               gstRatePct: 18,
               uom: "nos",
+              // The date this script has always printed in its own step label and then
+              // thrown away, because the endpoint had nowhere to put it. It is what MRP
+              // walks backwards from, so without it every planned order was dated from an
+              // assumption rather than from a promise the customer was actually given.
+              requestedDeliveryDate: o.due,
             },
           ],
         },
@@ -506,6 +511,367 @@ async function seedKaveri(call) {
   }
 }
 
+/* ------------------------------------------------- HEXA: the platform console */
+
+const DAY = 86_400_000;
+const isoDate = (ms) => new Date(ms).toISOString().slice(0, 10);
+const daysAgo = (n) => isoDate(Date.now() - n * DAY);
+
+/** Indian financial year for a date: April to March. 20-Jul-2026 falls in FY 2026-27. */
+function fyOf(dateStr) {
+  const [y, m] = dateStr.split("-").map(Number);
+  const start = m >= 4 ? y : y - 1;
+  return `${start}-${String((start + 1) % 100).padStart(2, "0")}`;
+}
+
+/**
+ * ADMINISTRATION and INTEGRATION — the control plane and the edge.
+ *
+ * Everything here goes through the real endpoints for the same reason the rest of this file
+ * does, and for one more that is specific to these two modules: their screens exist to show
+ * that a control WORKED. A segregation-of-duties finding INSERTed by a migration proves
+ * nothing about whether the scanner detects anything; an attestation INSERTed by a migration
+ * is a row claiming the audit chain was verified by something that never ran. Seeding those
+ * two by hand would fake exactly the evidence the module is sold on.
+ *
+ * So the SoD findings come from a real scan, and the chain verifications come from the real
+ * verifier walking the real chain. If either is wrong, this seeder says so.
+ *
+ * The failures on the integration side are injected through `simulate`, which is the fake
+ * adapter's failure-injection surface and the only honest way to rehearse a portal outage.
+ * Note which failures can be produced this way and which cannot: `classifyFailure` treats a
+ * timeout as RETRYABLE, so a single dispatch can never dead-letter one. Only the fatal
+ * categories — auth, validation and a transform failure — land in the queue on the first
+ * attempt. The timeout case is demonstrated on the e-invoice path instead, where it matters
+ * most and where Get-before-retry is the actual remedy.
+ */
+async function seedPlatform(call) {
+  console.log("\nPLATFORM — access, evidence, and the edge (HEXA)");
+
+  // ---- 1. Segregation of duties -------------------------------------------
+  //
+  // 0037 already gives Priya both `buyer` and `purchase_approver`, and Meena both
+  // `accountant` and `finance_controller`. The scan is what turns those role assignments
+  // into findings a person can act on, and it is idempotent: a second run re-detects the
+  // same conflicts and creates nothing.
+  await step("scan for segregation-of-duties conflicts", async () => {
+    const b = expect(await call("POST", "/api/v1/admin/sod/scan"), [200, 201], "sod scan");
+    return { note: b.headline ?? `${b.conflictsFound} conflict(s)` };
+  });
+
+  // ---- 2. Webhooks ---------------------------------------------------------
+  //
+  // The signing secret is returned ONCE, at subscription, and never again — so delivery can
+  // only be exercised in the same run that creates the subscription. On a re-run the
+  // subscriptions already exist and this whole block is skipped rather than half-repeated.
+  const existingSubs = rows(
+    expect(await call("GET", "/api/v1/integration/webhooks"), 200, "webhooks"),
+  );
+  const haveSub = new Set(existingSubs.map((s) => s.subscriberName));
+
+  const secrets = {};
+  const subscriptions = [
+    {
+      subscriberName: "ashvamedha-dealer-portal",
+      targetUrl: "https://portal.ashvamedha.example/hooks/indcore",
+      eventNames: ["sales.order.confirmed.v1", "sales.dispatch.executed.v1", "accounts.invoice.raised.v1"],
+    },
+    {
+      subscriberName: "finex-tally-bridge",
+      targetUrl: "https://bridge.finex.example/indcore/events",
+      eventNames: ["accounts.invoice.raised.v1", "accounts.payment.received.v1", "purchase.grn.created.v1"],
+    },
+  ];
+
+  for (const sub of subscriptions) {
+    await step(`subscribe ${sub.subscriberName}`, async () => {
+      if (haveSub.has(sub.subscriberName)) return SKIPPED;
+      const b = expect(
+        await call("POST", "/api/v1/integration/webhooks", sub, `demo-websub-${sub.subscriberName}`),
+        [200, 201],
+        `subscribe ${sub.subscriberName}`,
+      );
+      secrets[sub.subscriberName] = b.secret;
+      return { note: `${sub.eventNames.length} event(s)` };
+    });
+  }
+
+  // Three clean deliveries to the dealer portal.
+  if (secrets["ashvamedha-dealer-portal"]) {
+    for (const eventName of ["sales.order.confirmed.v1", "accounts.invoice.raised.v1", "sales.dispatch.executed.v1"]) {
+      await step(`deliver ${eventName} to ashvamedha-dealer-portal`, async () => {
+        const b = expect(
+          await call("POST", "/api/v1/integration/webhooks/deliver", {
+            subscriberName: "ashvamedha-dealer-portal",
+            eventName,
+            payload: { ref: "demo", at: TODAY },
+            secret: secrets["ashvamedha-dealer-portal"],
+            simulate: { responseCode: 200 },
+          }),
+          [200, 201],
+          "deliver",
+        );
+        return { note: b.delivered ? "200" : "not delivered" };
+      });
+    }
+
+    // Rotate with a long grace so both secrets verify for the whole demo window. A rotation
+    // with no grace period is a coordinated outage, which is why nobody performs one.
+    await step("rotate the ashvamedha signing secret (30-day grace)", async () => {
+      const b = expect(
+        await call("POST", "/api/v1/integration/webhooks/ashvamedha-dealer-portal/rotate?graceHours=720"),
+        [200, 201],
+        "rotate",
+      );
+      return { note: `both secrets valid until ${String(b.graceUntil).slice(0, 10)}` };
+    });
+  }
+
+  // The Tally bridge has gone away. Twenty consecutive failures is what trips the auto-pause
+  // (`AUTO_PAUSE_AFTER`), and the pause is the point: continuing would be a slow
+  // denial-of-service against a customer's server, delivered from ours.
+  if (secrets["finex-tally-bridge"]) {
+    await step("finex-tally-bridge fails until it auto-pauses", async () => {
+      let last = null;
+      for (let i = 0; i < 21; i += 1) {
+        const res = await call("POST", "/api/v1/integration/webhooks/deliver", {
+          subscriberName: "finex-tally-bridge",
+          eventName: "accounts.invoice.raised.v1",
+          payload: { ref: `demo-${i}` },
+          secret: secrets["finex-tally-bridge"],
+          simulate: { responseCode: 502 },
+        });
+        last = expect(res, [200, 201], "deliver (failing)");
+        if (last.subscriptionStatus === "auto_paused") break;
+      }
+      return { note: `status ${last?.subscriptionStatus ?? "unknown"}` };
+    });
+  }
+
+  // ---- 3. Dead letters -----------------------------------------------------
+  //
+  // Four failures, four different causes, chosen so the queue shows all three replay
+  // verdicts rather than four rows of the same advice:
+  //   transform  → refused, fix the mapping first
+  //   validation → refused, fix the source document
+  //   auth on a STATUTORY flow      → allowed, but demands explicit confirmation
+  //   auth on a non-statutory flow  → allowed outright
+  const dlqBefore = expect(await call("GET", "/api/v1/integration/dlq?status=new"), 200, "dlq");
+  if ((dlqBefore.total ?? 0) > 0) {
+    console.log(`  --   dead-letter queue already has ${dlqBefore.total} entr(ies)`);
+  } else {
+    const failures = [
+      {
+        label: "punch import fails to transform a dd/mm/yyyy date",
+        flowCode: "punch_import",
+        correlationId: "cor-punch-2627-0442",
+        entityRef: "PUNCH-2026-07-20-GATE1",
+        // `PunchDate` is mapped through to_iso_date. The device started exporting
+        // dd/mm/yyyy, which produces a valid-looking wrong date for eleven days of
+        // every month — so the mapping refuses it rather than guessing.
+        payload: { EmpCode: "EMP-TR-0184", PunchDate: "20/07/2026", Direction: "IN", DeviceId: "GATE-1" },
+      },
+      {
+        label: "e-way bill payload rejected by the portal (422)",
+        flowCode: "dispatch_to_ewb",
+        correlationId: "cor-ewb-2627-0313",
+        entityRef: "SHP-2627-0313",
+        payload: { shipmentRef: "SHP-2627-0313", distanceKm: 460, consignmentValue: 688400 },
+        simulate: { httpStatus: 422, message: "Invalid HSN at line 3" },
+      },
+      {
+        label: "e-invoice credential rejected (401) — statutory flow",
+        flowCode: "invoice_to_irn",
+        correlationId: "cor-irn-2627-0190",
+        entityRef: "INV-2627-0190",
+        payload: { invoiceRef: "INV-2627-0190", gstin: TRISHUL_GSTIN_PUNE },
+        simulate: { httpStatus: 401, message: "API key rejected" },
+      },
+      {
+        label: "bank drop credential rejected (401) — safe to replay",
+        flowCode: "payment_file",
+        correlationId: "cor-pay-2627-0031",
+        entityRef: "PAYRUN-2627-0031",
+        payload: {
+          Beneficiary: { Name: "Deccan Forgings Pvt Ltd", IFSC: "SUVB0000412" },
+          Amount: 486200,
+          State: "MH",
+        },
+        simulate: { httpStatus: 401, message: "SFTP key rejected" },
+      },
+    ];
+
+    for (const f of failures) {
+      await step(f.label, async () => {
+        const { label, ...body } = f;
+        const b = expect(
+          await call("POST", "/api/v1/integration/messages/dispatch", body),
+          [200, 201],
+          "dispatch",
+        );
+        return { note: `${b.status}${b.category ? ` (${b.category})` : ""}` };
+      });
+    }
+
+    // Replay the one that is genuinely safe, so the queue shows a `retrying` row beside the
+    // ones a person still has to look at.
+    await step("replay the bank drop (non-statutory, replayable)", async () => {
+      const q = expect(await call("GET", "/api/v1/integration/dlq?status=new"), 200, "dlq");
+      const entry = (q.entries ?? []).find((e) => e.correlationId === "cor-pay-2627-0031");
+      if (!entry) return SKIPPED;
+      const b = expect(
+        await call("POST", `/api/v1/integration/dlq/${entry.id}/replay`, {}),
+        [200, 201],
+        "replay",
+      );
+      return { note: b.status };
+    });
+  }
+
+  // ---- 4. E-invoices and the 30-day window --------------------------------
+  //
+  // Dates are relative to NOW rather than to the fixed demo date, because the reporting
+  // window is computed against the real clock: pinning them to 20-Jul would make the whole
+  // watch screen drift into "blocked" a week later and stay there.
+  const fresh = daysAgo(0);
+  const aging = daysAgo(28); // two days left of thirty — alert level 3, the escalation case
+
+  const invoices = [
+    { invoiceRef: "INV-2627-0201", gstin: TRISHUL_GSTIN_PUNE, buyerGstin: "29AABCK9012M1Z3", shipToGstin: "29AABCK9012M1Z3", docDate: fresh, taxableValue: 1284500, totalValue: 1515710, ok: true },
+    { invoiceRef: "INV-2627-0202", gstin: "33AABCT1234F1Z9", buyerGstin: "24AAACG7788L1ZB", shipToGstin: "24AAACG7788L1ZB", docDate: fresh, taxableValue: 486200, totalValue: 573716, ok: true },
+    // Times out. NOT resubmitted — the next step is a Get-by-document, because a blind
+    // retry is how one invoice becomes two filings that a regulator can see.
+    { invoiceRef: "INV-2627-0188", gstin: TRISHUL_GSTIN_PUNE, buyerGstin: "29AABCK9012M1Z3", docDate: daysAgo(2), taxableValue: 942000, totalValue: 1111560, ok: false },
+    { invoiceRef: "INV-2627-0151", gstin: TRISHUL_GSTIN_PUNE, buyerGstin: "24AAACG7788L1ZB", docDate: aging, taxableValue: 218400, totalValue: 257712, ok: false },
+  ];
+
+  for (const inv of invoices) {
+    await step(`e-invoice ${inv.invoiceRef} (${inv.ok ? "reported" : "times out"})`, async () => {
+      const { ok: shouldSucceed, ...doc } = inv;
+      const b = expect(
+        await call("POST", "/api/v1/integration/einvoice/submit", {
+          ...doc,
+          docType: "INV",
+          fy: fyOf(inv.docDate),
+          // Above the ₹10 crore turnover threshold, so the 30-day window applies.
+          aato: 150_000_000,
+          ...(shouldSucceed ? {} : { simulate: { timedOut: true } }),
+        }),
+        [200, 201],
+        `submit ${inv.invoiceRef}`,
+      );
+      return { note: b.status === "generated" ? "IRN generated" : `${b.status}` };
+    });
+  }
+
+  // The Get-before-retry step, on the document that timed out. This is the lesson the whole
+  // statutory pipeline is built around: the portal DID have it, and a blind resubmit would
+  // have produced a second filing that cannot be withdrawn.
+  await step("recover INV-2627-0188 by fetching it rather than resubmitting", async () => {
+    const b = expect(
+      await call("POST", "/api/v1/integration/einvoice/INV-2627-0188/fetch"),
+      [200, 201],
+      "fetch by document",
+    );
+    return { note: b.recoveredByGet ? "recovered by GET, no duplicate filing" : String(b.status) };
+  });
+
+  // ---- 5. E-way bills ------------------------------------------------------
+  const existingEwb = rows(
+    expect(await call("GET", "/api/v1/integration/ewaybill"), 200, "ewaybills"),
+  );
+  const haveEwb = new Set(existingEwb.map((e) => e.shipmentRef));
+
+  const bills = [
+    {
+      shipmentRef: "SHP-2627-0311",
+      invoiceRef: "INV-2627-0201",
+      consignmentValue: 1515710,
+      distanceKm: 840,
+      vehicleNo: "MH14GH2231",
+      transporterGstin: "27AACFT5566H1ZP",
+      shipToGstin: "29AABCK9012M1Z3",
+      billToState: "27",
+      shipToState: "29",
+    },
+    {
+      // The primary portal is down. A truck at a gate cannot wait for it, so this one fails
+      // over to the secondary — and it must be closed there too, which is the fact the
+      // `portalUsed` column exists to keep.
+      shipmentRef: "SHP-2627-0312",
+      invoiceRef: "INV-2627-0202",
+      consignmentValue: 573716,
+      distanceKm: 1850,
+      vehicleNo: "TN38AR7742",
+      transporterGstin: "33AAFCT9911K1ZQ",
+      shipToGstin: "24AAACG7788L1ZB",
+      billToState: "33",
+      shipToState: "24",
+      portalHealth: { ewb1Healthy: false, ewb2Healthy: true },
+    },
+    {
+      shipmentRef: "SHP-2627-0298",
+      consignmentValue: 342800,
+      distanceKm: 310,
+      vehicleNo: "MH12QR8890",
+      transporterGstin: "27AACFT5566H1ZP",
+      billToState: "27",
+      shipToState: "27",
+    },
+  ];
+
+  for (const ewb of bills) {
+    await step(`e-way bill ${ewb.shipmentRef}`, async () => {
+      if (haveEwb.has(ewb.shipmentRef)) return SKIPPED;
+      const b = expect(
+        await call("POST", "/api/v1/integration/ewaybill/generate", ewb),
+        [200, 201],
+        `generate ${ewb.shipmentRef}`,
+      );
+      return { note: `${b.portalUsed}${b.failedOver ? " (failed over)" : ""}, ${b.daysValid}d validity` };
+    });
+  }
+
+  await step("close SHP-2627-0298 on the portal that issued it", async () => {
+    const res = await call("POST", "/api/v1/integration/ewaybill/SHP-2627-0298/close", {
+      remarks: "Delivered at Nashik stores; gate entry 4471.",
+    });
+    if (res.status === 409) return SKIPPED;
+    const b = expect(res, [200, 201], "close ewb");
+    return { note: b.replay ? "already closed" : `closed on ${b.portalUsed}` };
+  });
+
+  // ---- 6. The evidence -----------------------------------------------------
+  //
+  // Last, deliberately: the verification covers everything this seeder just did. It is the
+  // real verifier re-walking the real chain, so if any write above broke the chain, this
+  // step reports it rather than a migration quietly asserting otherwise.
+  const priorVerifications = rows(
+    expect(await call("GET", "/api/v1/admin/audit/verifications"), 200, "verifications"),
+  );
+  if (priorVerifications.length >= 3) {
+    console.log(`  --   ${priorVerifications.length} chain verification(s) already recorded`);
+  } else {
+    for (const chain of ["audit_log", "ai_action_log"]) {
+      await step(`verify the ${chain} hash chain`, async () => {
+        const b = expect(
+          await call("POST", `/api/v1/admin/audit/verify?chain=${chain}`),
+          [200, 201],
+          `verify ${chain}`,
+        );
+        if (b.intact === false) {
+          throw new Error(`${chain} is BROKEN at ${b.firstBreakSeq} (${b.breakKind}): ${b.message}`);
+        }
+        return { note: b.message };
+      });
+    }
+    await step("anchor the audit chain", async () => {
+      const b = expect(await call("POST", "/api/v1/admin/audit/anchor"), [200, 201], "anchor");
+      return { note: b.anchored ? `anchored up to seq ${b.uptoSeq}` : String(b.reason) };
+    });
+  }
+}
+
 /* --------------------------------------------------------------------- main */
 
 async function main() {
@@ -519,6 +885,9 @@ async function main() {
   console.log("  tokens: venkat@trishul (admin), poongodi@trishul (stores in-charge), kaveri-admin@kaveri (admin)");
 
   await seedTrishul(trishul, storesInCharge);
+  // The platform console runs LAST for Trishul, so its chain verification covers every
+  // document the steps above created rather than attesting to a half-built world.
+  await seedPlatform(trishul);
   await seedKaveri(kaveri);
 
   console.log(`\n${"=".repeat(70)}`);

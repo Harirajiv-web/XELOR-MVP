@@ -17,6 +17,9 @@ export interface PlannedOrderRow {
   lotRule: string;
   lotReason: string;
   receiptBucket: string;
+  /** The date the material is actually WANTED. "When is this needed?" is the question a
+   *  planner opens the list with, and a receipt bucket makes them do arithmetic to answer it. */
+  needDate: string;
   releaseBucket: string;
   releaseDate: string;
   computedReleaseBucket: string;
@@ -366,6 +369,7 @@ export class PlannedOrderService {
       lotRule: r.lotRule,
       lotReason: r.lotReason,
       receiptBucket: r.receiptBucket,
+      needDate: r.needDate,
       releaseBucket: r.releaseBucket,
       releaseDate: r.releaseDate,
       computedReleaseBucket: r.computedReleaseBucket,

@@ -197,9 +197,18 @@ export class ComplianceService {
 
   async consentLedger(dataPrincipalRef?: string): Promise<Record<string, unknown>[]> {
     return withTenant(async (tx) => {
-      const rows = await tx.select().from(consentRecord).where(eq(consentRecord.isActive, true));
+      // Same shape as the verifications filter above: the predicate belongs in the WHERE.
+      // There is no LIMIT here so it was not returning wrong answers, but reading every
+      // consent row in the tenant to keep one person's is a table scan waiting to matter.
+      const rows = await tx
+        .select()
+        .from(consentRecord)
+        .where(
+          dataPrincipalRef
+            ? and(eq(consentRecord.isActive, true), eq(consentRecord.dataPrincipalRef, dataPrincipalRef))
+            : eq(consentRecord.isActive, true),
+        );
       return rows
-        .filter((r) => (dataPrincipalRef ? r.dataPrincipalRef === dataPrincipalRef : true))
         .map((r) => ({
           dataPrincipalRef: r.dataPrincipalRef,
           purposeCode: r.purposeCode,
@@ -335,10 +344,38 @@ export class ComplianceService {
     });
   }
 
+  /**
+   * The stored attestations, most recent first.
+   *
+   * The chain filter is a WHERE, not a post-filter. Taking the newest 50 rows and THEN
+   * discarding the ones for the other chain answers "the ai_action_log verifications among
+   * the last 50 of either" — which silently returns fewer rows than exist, and on this
+   * screen a missing attestation reads as a check that never happened.
+   *
+   * The projection is named rather than spread. An audit endpoint is the wrong one to leave
+   * without a contract: `{...row}` shipped `tenantId`, `createdBy`, `updatedBy` and
+   * `isActive` to the browser, and would have changed shape the day a column was renamed.
+   */
   async verifications(chainName?: string): Promise<Record<string, unknown>[]> {
     return withTenant(async (tx) => {
-      const rows = await tx.select().from(chainVerification).orderBy(desc(chainVerification.verifiedAt)).limit(50);
-      return rows.filter((r) => (chainName ? r.chainName === chainName : true)).map((r) => ({ ...r }));
+      const rows = await tx
+        .select()
+        .from(chainVerification)
+        .where(chainName ? eq(chainVerification.chainName, chainName) : undefined)
+        .orderBy(desc(chainVerification.verifiedAt))
+        .limit(50);
+      return rows.map((r) => ({
+        id: r.id,
+        chainName: r.chainName,
+        fromSeq: r.fromSeq,
+        toSeq: r.toSeq,
+        rowsChecked: r.rowsChecked,
+        intact: r.intact,
+        firstBreakSeq: r.firstBreakSeq,
+        breakKind: r.breakKind,
+        message: r.message,
+        verifiedAt: r.verifiedAt,
+      }));
     });
   }
 

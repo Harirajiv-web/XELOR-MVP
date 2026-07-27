@@ -29,6 +29,19 @@ export interface StartDowntimeInput {
   idempotencyKey: string;
 }
 
+/**
+ * The downtime ledger row, WITH the machine named.
+ *
+ * `DowntimeView` carries `assetId` alone because a mutation's caller already knows which
+ * asset it just acted on. A LIST does not: a screen whose entire purpose is "which machines
+ * went down and for how long" cannot answer it from a UUID. So the read path joins the asset
+ * and the write paths are left exactly as they were.
+ */
+export interface DowntimeListRow extends DowntimeView {
+  assetCode: string;
+  assetName: string;
+}
+
 export interface DowntimeView {
   id: string;
   assetId: string;
@@ -321,19 +334,32 @@ export class DowntimeService {
     return row ? this.toView(row) : null;
   }
 
-  async list(filter: { assetId?: string; from?: string; to?: string; openOnly?: boolean } = {}): Promise<DowntimeView[]> {
+  async list(
+    filter: { assetId?: string; from?: string; to?: string; openOnly?: boolean } = {},
+  ): Promise<DowntimeListRow[]> {
     return withTenant(async (tx) => {
       const conds = [];
       if (filter.assetId) conds.push(eq(assetDowntime.assetId, filter.assetId));
       if (filter.from) conds.push(gte(assetDowntime.startedAt, new Date(`${filter.from}T00:00:00+05:30`)));
       if (filter.to) conds.push(lte(assetDowntime.startedAt, new Date(`${filter.to}T23:59:59+05:30`)));
       if (filter.openOnly) conds.push(isNull(assetDowntime.endedAt));
+      // An inner join: every interval has an asset, and a stop whose machine cannot be
+      // resolved is a fault worth failing loudly rather than listing anonymously.
       const rows = await tx
-        .select()
+        .select({
+          downtime: assetDowntime,
+          assetCode: maintenanceAsset.assetCode,
+          assetName: maintenanceAsset.name,
+        })
         .from(assetDowntime)
+        .innerJoin(maintenanceAsset, eq(maintenanceAsset.id, assetDowntime.assetId))
         .where(conds.length > 0 ? and(...conds) : undefined)
         .orderBy(asc(assetDowntime.startedAt));
-      return rows.map((r) => this.toView(r));
+      return rows.map((r) => ({
+        ...this.toView(r.downtime),
+        assetCode: r.assetCode,
+        assetName: r.assetName,
+      }));
     });
   }
 

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, ne } from "drizzle-orm";
 import { withTenant, schema } from "@ind-core/db";
 import {
   AppError,
@@ -278,9 +278,22 @@ export class PlatformOpsService {
     return withTenant(async (tx) => {
       const users = await tx.select().from(appUser).where(eq(appUser.isActive, true));
       const privilegedNoMfa = users.filter((u) => u.status === "active" && !u.mfaEnrolled);
-      const liveSessions = await tx.select().from(appSession).where(eq(appSession.revokedAt, null as unknown as Date));
-      const recentFailures = await tx.select().from(loginAttempt).orderBy(desc(loginAttempt.attemptedAt)).limit(500);
-      const failures = recentFailures.filter((a) => a.result !== "success");
+      // `isNull`, NOT `eq(col, null)`. SQL `= NULL` is never true, so the previous form
+      // reported ZERO live sessions while the whole company was signed in — and a security
+      // screen that confidently understates its own numbers is worse than one that omits
+      // them. The `as unknown as Date` cast was what let it past the compiler; that is the
+      // shape to be suspicious of, not the comparison.
+      const liveSessions = await tx.select().from(appSession).where(isNull(appSession.revokedAt));
+      // The predicate goes in the WHERE, not after the LIMIT. Reading the 500 most recent
+      // ATTEMPTS and then counting the failures among them misses a handful of failures
+      // hiding behind ten thousand successes — which is exactly the pattern a slow
+      // credential-stuffing run makes.
+      const failures = await tx
+        .select()
+        .from(loginAttempt)
+        .where(ne(loginAttempt.result, "success"))
+        .orderBy(desc(loginAttempt.attemptedAt))
+        .limit(500);
       const lic = await this.licence(now);
       const backupRows = await this.backups();
 

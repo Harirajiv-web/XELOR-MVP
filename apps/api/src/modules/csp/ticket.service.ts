@@ -358,7 +358,9 @@ export class TicketService {
         occurredAt: at,
       });
 
-      const evaluation = await this.sla.evaluate(tx, t.id, at.toISOString());
+      // A mutation, already writing in this transaction, so the derived state is made
+      // durable here — `record`, not `evaluate`. Reads never reach this method.
+      const evaluation = await this.sla.record(tx, t.id, at.toISOString());
       return { commentId, slaState: evaluation.state, firstResponse };
     });
   }
@@ -418,7 +420,9 @@ export class TicketService {
         occurredAt: at,
       });
 
-      await this.sla.evaluate(tx, t.id, at.toISOString());
+      // Durable: a status change is exactly when the stored `sla_state` must catch up, or
+      // the queue's SLA filter would keep showing a resolved ticket as breached.
+      await this.sla.record(tx, t.id, at.toISOString());
 
       if (to === "closed") {
         await tx.insert(outboxEvent).values({
@@ -599,7 +603,9 @@ export class TicketService {
         occurredAt: at,
       });
 
-      await this.sla.evaluate(tx, t.id, at.toISOString());
+      // Accepting a triage attaches a policy where there may have been none, so this is the
+      // moment the stored state stops being "not triaged" — durable, in this transaction.
+      await this.sla.record(tx, t.id, at.toISOString());
       const view = await this.viewInTx(tx, t.id, at.toISOString());
       return { ...view, slaRecomputed };
     });
@@ -662,6 +668,35 @@ export class TicketService {
           actorType: e.actorType,
           occurredAt: e.occurredAt.toISOString(),
         })),
+      };
+    });
+  }
+
+  /**
+   * Just the clock.
+   *
+   * This is the one CSP endpoint a queue screen may poll, and it used to be served by
+   * `detail()` — loading every comment and every timeline row for the ticket and then
+   * discarding all but the `sla` field. It now reads the ticket row and the policy list and
+   * nothing else, and it honours `asOf` instead of accepting it and ignoring it: an
+   * argument that is silently dropped is worse than one that was never offered, because a
+   * caller passing it believes it worked.
+   */
+  async slaOf(ticketNo: string, asOf?: string): Promise<TicketView["sla"]> {
+    return withTenant(async (tx) => {
+      const t = await this.byNoInTx(tx, ticketNo);
+      const evaluation = await this.sla.evaluate(tx, t.id, asOf ?? new Date().toISOString());
+      const policies = await this.sla.policiesInTx(tx);
+      const policy = policies.find((p) => p.id === t.slaPolicyId) ?? null;
+      return {
+        state: evaluation.state,
+        chip: evaluation.chip,
+        firstResponseDue: t.firstResponseDue?.toISOString() ?? null,
+        resolutionDue: t.resolutionDue?.toISOString() ?? null,
+        consumedMins: evaluation.consumedMins,
+        reason: evaluation.reason,
+        promise: policy ? `First response within ${policy.responseMins} business minutes` : null,
+        policyName: policy?.name ?? null,
       };
     });
   }
@@ -763,10 +798,13 @@ export class TicketService {
   }
 
   /**
-   * `asOf` is threaded through every read for one reason: `evaluate` PERSISTS the state it
-   * derives. A view rendered at the wall clock would silently restamp a back-dated ticket's
-   * SLA state to whatever it looks like today — so the demo would breach its own history
-   * merely by looking at it.
+   * `asOf` is threaded through every read so a view can be rendered AS AT a moment — which
+   * is what makes a back-dated demo, and an SLA dispute six weeks later, reproducible.
+   *
+   * It used to carry a second, worse job: `evaluate` persisted what it derived, so a view
+   * rendered at the wall clock silently restamped a back-dated ticket's SLA state and the
+   * demo breached its own history merely by being looked at. `evaluate` is pure now, so
+   * `asOf` only decides what this call REPORTS. Nothing below writes.
    */
   async viewInTx(tx: Tx, id: string, asOf?: string): Promise<TicketView> {
     const [t] = await tx.select().from(cspTicket).where(eq(cspTicket.id, id)).limit(1);

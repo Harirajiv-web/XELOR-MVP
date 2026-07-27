@@ -197,12 +197,11 @@ export class CspController {
     return this.tickets.applyTriage(ticketNo, parse(triageDecisionSchema, body));
   }
 
+  /** The clock alone — no comments, no timeline. See `TicketService.slaOf`. */
   @Get("tickets/:ticketNo/sla")
   @RequirePermission("csp.ticket.read")
   async slaState(@Param("ticketNo") ticketNo: string, @Query("asOf") asOf?: string) {
-    const view = await this.tickets.detail(ticketNo);
-    void asOf;
-    return view.sla;
+    return this.tickets.slaOf(ticketNo, asOf);
   }
 
   /* ------------------------------ AI #6 drafting --------------------------- */

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
@@ -18,6 +18,7 @@ import {
   type ScheduleRule,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 import { MwoService } from "./mwo.service.js";
 import { SparesService } from "./spares.service.js";
 import { DowntimeService } from "./downtime.service.js";
@@ -74,10 +75,15 @@ export class PmService {
     private readonly mwos: MwoService,
     private readonly spares: SparesService,
     private readonly downtime: DowntimeService,
+    // ENGINEERING owns the item master. Read here — BEFORE the generator's transaction opens
+    // — so a spare's code can be written onto its work-order line without the reservation
+    // path ever holding two pool connections at once. See `defaultSpareCodes()`.
+    @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
 
   /** Run the generator across every active schedule, as the hourly worker does. */
   async generateAll(today: string): Promise<GenerationResult[]> {
+    const spareCodes = await this.defaultSpareCodes();
     return withTenant(async (tx) => {
       const schedules = await tx
         .select({ pmsCode: pmSchedule.pmsCode })
@@ -85,16 +91,45 @@ export class PmService {
         .where(eq(pmSchedule.status, "active"))
         .orderBy(asc(pmSchedule.pmsCode));
       const out: GenerationResult[] = [];
-      for (const s of schedules) out.push(await this.generateInTx(tx, s.pmsCode, today));
+      for (const s of schedules) out.push(await this.generateInTx(tx, s.pmsCode, today, spareCodes));
       return out;
     });
   }
 
   async generate(pmsCode: string, today: string): Promise<GenerationResult> {
-    return withTenant((tx) => this.generateInTx(tx, pmsCode, today));
+    const spareCodes = await this.defaultSpareCodes();
+    return withTenant((tx) => this.generateInTx(tx, pmsCode, today, spareCodes));
   }
 
-  private async generateInTx(tx: Tx, pmsCode: string, today: string): Promise<GenerationResult> {
+  /**
+   * Item code for every default spare any schedule names, resolved BEFORE the generator's
+   * transaction opens.
+   *
+   * Two sequential connections, never two at once: one short read for the item ids, then one
+   * batched call across the module boundary. Doing this inside the generator's transaction —
+   * which is where it used to live, one `getItem` per spare line — meant holding a second
+   * pool slot on every line, and `DB_POOL_MAX` is 10.
+   *
+   * The whole table is read rather than the one schedule's rows: `pm_default_spare` is a
+   * small configuration table, and one query beats threading a schedule filter through a
+   * path that also serves `generateAll`.
+   */
+  private async defaultSpareCodes(): Promise<ReadonlyMap<string, string>> {
+    const itemRefs = await withTenant(async (tx) => {
+      const rows = await tx.select({ itemRef: pmDefaultSpare.itemRef }).from(pmDefaultSpare);
+      return [...new Set(rows.map((r) => r.itemRef))];
+    });
+    if (itemRefs.length === 0) return new Map();
+    const specs = await this.items.getItems(itemRefs);
+    return new Map(specs.map((s) => [s.id, s.itemCode]));
+  }
+
+  private async generateInTx(
+    tx: Tx,
+    pmsCode: string,
+    today: string,
+    spareCodes: ReadonlyMap<string, string>,
+  ): Promise<GenerationResult> {
     const { tenantId, actorId } = currentTenant();
     const s = await this.byCodeInTx(tx, pmsCode);
 
@@ -267,7 +302,12 @@ export class PmService {
         tx,
         mwo.id,
         mwo.mwoNo,
-        defaults.map((d) => ({ itemRef: d.itemRef, uom: d.uom, qty: n(d.qty) })),
+        defaults.map((d) => ({
+          itemRef: d.itemRef,
+          uom: d.uom,
+          qty: n(d.qty),
+          itemCode: spareCodes.get(d.itemRef) ?? null,
+        })),
       );
       sparesFlagged = res.unavailable.length > 0 || res.reserved > 0;
       await tx

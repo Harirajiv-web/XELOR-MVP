@@ -33,6 +33,11 @@ export class DashboardService {
       const complaints = await tx.select().from(cspComplaint);
       const now = Date.now();
 
+      // These read the STORED `sla_state`, which is a projection maintained by the scanner
+      // and by ticket mutations — not a live evaluation. That is deliberate: computing it
+      // live here would mean a dashboard load evaluating every ticket in the tenant, and
+      // evaluating used to be what wrote. The figure is therefore "as at the last scan",
+      // which is the honest reading of a compliance number anyway.
       const withVerdict = tickets.filter((t) => t.responseAllowanceMins != null);
       const met = withVerdict.filter((t) => t.slaState === "met").length;
       const breached = withVerdict.filter((t) => t.slaState.startsWith("breached")).length;

@@ -26,6 +26,7 @@ import {
 import { BOM_PROVIDER, type BomProvider } from "../../ports/bom.port.js";
 import { STOCK_POSTER, type StockPoster, type StockMovement } from "../../ports/stock.port.js";
 import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.port.js";
+import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
 
 const { productionOrder, productionOrderComponent, outboxEvent } = schema;
 
@@ -36,13 +37,37 @@ export interface CreateProductionOrderInput {
   sourceWarehouseId: string;
   fgWarehouseId: string;
 }
-export interface ProdComponentView {
+/**
+ * The item master fields every read path carries.
+ *
+ * A shop-floor screen that shows a UUID where a part number belongs is not a usable screen —
+ * a supervisor who cannot match a line on the display to the drawing in their hand goes back
+ * to paper, and they are right to. `null` only when the id resolves to no item at all, which
+ * is a data fault worth seeing rather than hiding behind a blank.
+ */
+export interface ItemNaming {
+  itemCode: string | null;
+  itemName: string | null;
+  uom: string | null;
+}
+
+export interface ProdComponentCore {
   lineNo: number;
   componentItemId: string;
   requiredQty: string;
   issuedQty: string;
 }
-export interface ProductionOrderView {
+export interface ProdComponentView extends ProdComponentCore, ItemNaming {}
+
+/**
+ * The order as this module's own tables hold it — no cross-module lookup involved.
+ *
+ * Write paths return THIS. Naming an item means calling ENGINEERING through the item port,
+ * and that port opens its own connection: doing it inside `withTenant` would hold two pool
+ * slots at once, and `DB_POOL_MAX` is 10. Five concurrent issues would deadlock the pool on
+ * the ledger-critical path. The read paths enrich after the transaction has closed instead.
+ */
+export interface ProductionOrderCore {
   id: string;
   orderNo: string;
   itemId: string;
@@ -52,10 +77,31 @@ export interface ProductionOrderView {
   sourceWarehouseId: string;
   fgWarehouseId: string;
   status: string;
+  /** When the order was raised. The MVP schema carries no promised or due date — see
+   *  `openSupply()`, which reports the same absence to Planning rather than inventing one. */
+  createdAt: string;
+  updatedAt: string;
+  components: ProdComponentCore[];
+}
+
+/** What a GET answers: the order, with every item named. */
+export interface ProductionOrderView extends ItemNaming {
+  id: string;
+  orderNo: string;
+  itemId: string;
+  bomId: string;
+  qtyToProduce: string;
+  producedQty: string;
+  sourceWarehouseId: string;
+  fgWarehouseId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
   components: ProdComponentView[];
 }
+
 export interface ProductionActionResult {
-  order: ProductionOrderView;
+  order: ProductionOrderCore;
   stockMovements: Array<{ itemId: string; warehouseId: string; delta: number; balanceAfter: number }>;
 }
 
@@ -77,9 +123,12 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     @Inject(INSPECTION_GATE) private readonly inspection: InspectionGate,
     @Inject(STOCK_READER) private readonly warehouses: StockReader,
+    // ENGINEERING owns the item master; this module only ever READS a code and a unit from
+    // it, through the shared port — never a module→module import, never a raw SELECT (§1.1).
+    @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
 
-  async createOrder(input: CreateProductionOrderInput, idempotencyKey: string): Promise<ProductionOrderView> {
+  async createOrder(input: CreateProductionOrderInput, idempotencyKey: string): Promise<ProductionOrderCore> {
     if (input.qtyToProduce <= 0) {
       throw Errors.validation([{ field: "qtyToProduce", message: "must be > 0" }]);
     }
@@ -102,7 +151,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
   private async doCreate(
     input: CreateProductionOrderInput,
     bom: NonNullable<Awaited<ReturnType<BomProvider["getBomById"]>>>,
-  ): Promise<ProductionOrderView> {
+  ): Promise<ProductionOrderCore> {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
     // Explode: required = (componentQty / bomOutput) * qtyToProduce * (1 + scrap%).
@@ -377,11 +426,14 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
   }
 
   async getOrder(orderId: string): Promise<ProductionOrderView> {
-    return withTenant((tx) => this.viewInTx(tx, orderId));
+    // Read, THEN name — the item lookup crosses a module boundary onto its own connection,
+    // so it happens after this transaction has released its pool slot.
+    const core = await withTenant((tx) => this.viewInTx(tx, orderId));
+    return this.nameItems(core);
   }
 
   async listOrders(limit: number, cursor?: string): Promise<CursorPage<Omit<ProductionOrderView, "components">>> {
-    return withTenant(async (tx) => {
+    const page = await withTenant(async (tx) => {
       const keyset = cursor ? decodeCursor(cursor) : null;
       const rows = await tx
         .select({
@@ -395,6 +447,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
           fgWarehouseId: productionOrder.fgWarehouseId,
           status: productionOrder.status,
           createdAt: productionOrder.createdAt,
+          updatedAt: productionOrder.updatedAt,
         })
         .from(productionOrder)
         .where(
@@ -410,15 +463,32 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
         )
         .orderBy(asc(productionOrder.createdAt), asc(productionOrder.id))
         .limit(limit + 1);
-      const page = rows.slice(0, limit);
-      const last = page.at(-1);
+      const rowsOnPage = rows.slice(0, limit);
+      const last = rowsOnPage.at(-1);
       const nextCursor =
         rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null;
+
+      // `created_at` used to be stripped here, on the reasoning that it was only the cursor
+      // key. It left a work-order list with no time in it at all — a supervisor could not
+      // tell this morning's order from last month's. It is the raised date and it belongs
+      // in the answer.
       return {
-        items: page.map(({ createdAt, ...r }) => r),
+        items: rowsOnPage.map(({ createdAt, updatedAt, ...r }) => ({
+          ...r,
+          createdAt: createdAt.toISOString(),
+          updatedAt: updatedAt.toISOString(),
+        })),
         nextCursor,
       };
     });
+
+    // ONE batched item lookup for the whole page, outside the transaction — not one per row,
+    // and not while holding a connection.
+    const specs = await this.itemSpecs(page.items.map((r) => r.itemId));
+    return {
+      items: page.items.map((r) => ({ ...r, ...naming(specs.get(r.itemId)) })),
+      nextCursor: page.nextCursor,
+    };
   }
 
   private async loadOrder(
@@ -454,7 +524,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
     return o;
   }
 
-  private async viewInTx(tx: Tx, orderId: string): Promise<ProductionOrderView> {
+  private async viewInTx(tx: Tx, orderId: string): Promise<ProductionOrderCore> {
     const [o] = await tx
       .select({
         id: productionOrder.id,
@@ -466,6 +536,8 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
         sourceWarehouseId: productionOrder.sourceWarehouseId,
         fgWarehouseId: productionOrder.fgWarehouseId,
         status: productionOrder.status,
+        createdAt: productionOrder.createdAt,
+        updatedAt: productionOrder.updatedAt,
       })
       .from(productionOrder)
       .where(eq(productionOrder.id, orderId))
@@ -481,8 +553,51 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       .from(productionOrderComponent)
       .where(eq(productionOrderComponent.orderId, orderId))
       .orderBy(asc(productionOrderComponent.lineNo));
-    return { ...o, components };
+
+    const { createdAt, updatedAt, ...rest } = o;
+    return {
+      ...rest,
+      createdAt: createdAt.toISOString(),
+      updatedAt: updatedAt.toISOString(),
+      components,
+    };
   }
+
+  /**
+   * Put item codes, names and units onto an order. Called AFTER the transaction has closed,
+   * never inside one — see `ProductionOrderCore`.
+   *
+   * ONE lookup for the finished good and every component together: a per-line call would be
+   * a query per component on a screen a supervisor keeps open all day.
+   */
+  private async nameItems(core: ProductionOrderCore): Promise<ProductionOrderView> {
+    const specs = await this.itemSpecs([
+      core.itemId,
+      ...core.components.map((c) => c.componentItemId),
+    ]);
+    return {
+      ...core,
+      ...naming(specs.get(core.itemId)),
+      components: core.components.map((c) => ({ ...c, ...naming(specs.get(c.componentItemId)) })),
+    };
+  }
+
+  /** Item codes, names and units by id. De-duplicated, and a no-op on an empty list. */
+  private async itemSpecs(itemIds: readonly string[]): Promise<Map<string, ItemSpec>> {
+    const unique = [...new Set(itemIds)];
+    if (unique.length === 0) return new Map();
+    const specs = await this.items.getItems(unique);
+    return new Map(specs.map((s) => [s.id, s]));
+  }
+}
+
+/** An item id that resolves to nothing yields nulls, never a thrown read. */
+function naming(spec: ItemSpec | undefined): ItemNaming {
+  return {
+    itemCode: spec?.itemCode ?? null,
+    itemName: spec?.name ?? null,
+    uom: spec?.uom ?? null,
+  };
 }
 
 function movements(ms: StockMovement[]): ProductionActionResult["stockMovements"] {

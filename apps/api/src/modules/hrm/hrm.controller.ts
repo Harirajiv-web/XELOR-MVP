@@ -258,10 +258,21 @@ export class HrmController {
     return this.leave.decide(id, p.data.decision, p.data.approverId);
   }
 
+  /**
+   * A leave balance belongs to ONE person; there is no company-wide register behind this
+   * route. `employeeId` was typed as required but never checked, so an omitted one reached
+   * Drizzle as undefined and came back a 500 — a caller's mistake reported as our fault.
+   */
   @Get("leave-balances")
   @RequirePermission("hrm.leave.read")
-  async balances(@Query("employeeId") employeeId: string, @Query("year") year?: string) {
-    return this.leave.balances(employeeId, year ?? "2026-27");
+  async balances(@Query("employeeId") employeeId?: string, @Query("year") year?: string) {
+    const p = z.string().uuid().safeParse(employeeId);
+    if (!p.success) {
+      badRequest([
+        { path: ["employeeId"], message: "required — a leave balance belongs to one employee" },
+      ]);
+    }
+    return this.leave.balances(p.data, year ?? "2026-27");
   }
 
   @Post("leave/accrue")

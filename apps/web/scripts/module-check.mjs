@@ -133,7 +133,10 @@ for (const moduleKey of folders) {
 
   /* ---- 4. nav entries and screens line up -------------------------------- */
   const navPaths = [...src.matchAll(/path:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
-  const screenKeys = [...src.matchAll(/^\s{4}([a-z0-9-]+):\s*\(\)\s*=>\s*import\(/gm)].map(
+  // The quotes are optional because a nav path may contain a hyphen — `planned-orders` — and
+  // a hyphen is not legal in an unquoted JavaScript object key. Without this the check reads
+  // a perfectly good manifest as having no screen for its own nav entry.
+  const screenKeys = [...src.matchAll(/^\s{4}"?([a-z0-9-]+)"?:\s*\(\)\s*=>\s*import\(/gm)].map(
     (m) => m[1],
   );
   for (const n of navPaths) {

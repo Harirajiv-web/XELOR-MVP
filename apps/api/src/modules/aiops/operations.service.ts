@@ -448,9 +448,32 @@ export class AiOperationsService {
     });
   }
 
+  /**
+   * The incident register, as NAMED columns.
+   *
+   * `select()` with no argument would ship `tenant_id`, `created_by` and `updated_by` to a
+   * browser, and would leak whatever a future migration adds to the table into a response
+   * nobody reviewed. The copilot's query file forbids exactly this; the AI operations
+   * console cannot be the one endpoint that breaks the rule it enforces on everything else.
+   */
   async incidents(): Promise<Record<string, unknown>[]> {
     return withTenant(async (tx) => {
-      const rows = await tx.select().from(aiIncident).orderBy(desc(aiIncident.detectedAt));
+      const rows = await tx
+        .select({
+          id: aiIncident.id,
+          incidentNo: aiIncident.incidentNo,
+          featureKey: aiIncident.featureKey,
+          severity: aiIncident.severity,
+          title: aiIncident.title,
+          description: aiIncident.description,
+          detectedAt: aiIncident.detectedAt,
+          status: aiIncident.status,
+          actionTaken: aiIncident.actionTaken,
+          resolvedAt: aiIncident.resolvedAt,
+          resolutionNote: aiIncident.resolutionNote,
+        })
+        .from(aiIncident)
+        .orderBy(desc(aiIncident.detectedAt));
       return rows.map((r) => ({ ...r }));
     });
   }
@@ -552,11 +575,24 @@ export class AiOperationsService {
     });
   }
 
+  /**
+   * The last 50 runs, newest first — for one feature or for all of them.
+   *
+   * The filter is in the WHERE clause, and it has to be. Taking 50 rows and then filtering
+   * them in JavaScript answered "no runs" for any feature whose history sat below the most
+   * recent fifty across the tenant — on the eval gate, the one control that decides whether
+   * a feature may ship. A gate that can quietly report a clean sheet for a feature with a
+   * failing history is worse than no gate, because somebody believes it.
+   */
   async evalRuns(featureKey?: string): Promise<Record<string, unknown>[]> {
     return withTenant(async (tx) => {
-      const rows = await tx.select().from(aiEvalRun).orderBy(desc(aiEvalRun.runAt)).limit(50);
+      const rows = await tx
+        .select()
+        .from(aiEvalRun)
+        .where(featureKey ? eq(aiEvalRun.featureKey, featureKey) : undefined)
+        .orderBy(desc(aiEvalRun.runAt))
+        .limit(50);
       return rows
-        .filter((r) => (featureKey ? r.featureKey === featureKey : true))
         .map((r) => ({
           featureKey: r.featureKey, datasetVersion: r.datasetVersion, metric: r.metric,
           baseline: Number(r.baselineScore), candidate: Number(r.candidateScore),

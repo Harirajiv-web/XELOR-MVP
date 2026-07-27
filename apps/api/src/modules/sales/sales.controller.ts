@@ -37,6 +37,14 @@ const orderSchema = z.object({
         gstRatePct: z.number().min(0).max(28),
         discountPct: z.number().min(0).max(99.99).optional(),
         uom: z.string().optional(),
+        /**
+         * When the customer wants THIS line. Optional on purpose: orders are genuinely
+         * taken without a promised date, and rejecting those would push the operator into
+         * inventing one — which is worse, because an invented date is indistinguishable
+         * from a promise somebody actually made. PLANNING treats a null as demand in the
+         * current bucket and raises a `data_warning` (migration 0033).
+         */
+        requestedDeliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
       }),
     )
     .min(1),

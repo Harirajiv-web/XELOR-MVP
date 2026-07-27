@@ -26,6 +26,7 @@ import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 import { ACCOUNTS_POSTER, type AccountsPoster } from "../../ports/accounts.port.js";
+import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 
 import type { DemandSource, OpenDemandLine } from "../../ports/planning-inputs.port.js";
 
@@ -69,6 +70,8 @@ export interface CreateOrderLineInput {
   gstRatePct: number;
   discountPct?: number;
   uom?: string;
+  /** When the customer wants this line. Optional — an order with no promised date is real. */
+  requestedDeliveryDate?: string;
 }
 export interface CreateOrderInput {
   customerId: string;
@@ -84,12 +87,46 @@ export interface CreateOrderInput {
   lines: CreateOrderLineInput[];
 }
 
+/**
+ * One order line as a reader needs it.
+ *
+ * `itemCode`, `itemName` and `uom` are joined from ENGINEERING through `ITEM_PROVIDER` —
+ * the item master is not Sales' to own, and it is not Sales' to omit either. Returning a
+ * bare `itemId` pushed the join onto every caller, and the honest thing a UI could do with
+ * a uuid was print it. They are nullable because an item deleted from the master must not
+ * make an old order unreadable; the id it was raised against is always still there.
+ */
+export interface SalesOrderLineView {
+  id: string;
+  lineNo: number;
+  itemId: string;
+  itemCode: string | null;
+  itemName: string | null;
+  uom: string | null;
+  qty: string;
+  rate: string;
+  hsn: string;
+  gstRatePct: string;
+  taxableValue: string;
+  cgst: string;
+  sgst: string;
+  igst: string;
+  lineTotal: string;
+  deliveredQty: string;
+  /** When the customer asked for it. Null is a real answer: some orders carry no promise. */
+  requestedDeliveryDate: string | null;
+}
+
 export interface SalesOrderView {
   id: string;
   soNo: string;
   customerId: string;
+  customerCode: string | null;
+  customerName: string | null;
   custPoNo: string;
   orderDate: string;
+  /** @see SalesOrderSummary.requestedDeliveryDate — the earliest outstanding promise. */
+  requestedDeliveryDate: string | null;
   supplierGstin: string;
   billToGstin: string | null;
   shipToGstin: string | null;
@@ -104,21 +141,38 @@ export interface SalesOrderView {
   grandTotal: string;
   creditStatus: string;
   status: string;
-  lines: Array<{
-    id: string;
-    lineNo: number;
-    itemId: string;
-    qty: string;
-    rate: string;
-    hsn: string;
-    gstRatePct: string;
-    taxableValue: string;
-    cgst: string;
-    sgst: string;
-    igst: string;
-    lineTotal: string;
-    deliveredQty: string;
-  }>;
+  lines: SalesOrderLineView[];
+}
+
+/**
+ * A row on the order LIST. Deliberately not `SalesOrderView`.
+ *
+ * `listOrders` used to build a full view per row — every line of every order, one round
+ * trip each — so a hundred-row page was roughly two hundred queries to render a table that
+ * shows no lines at all. A list returns what a list displays.
+ */
+export interface SalesOrderSummary {
+  id: string;
+  soNo: string;
+  customerId: string;
+  customerCode: string | null;
+  customerName: string | null;
+  custPoNo: string;
+  orderDate: string;
+  /**
+   * The EARLIEST delivery date still outstanding across the order's undelivered lines, or
+   * null when every line has shipped or none carried a promise.
+   *
+   * An order has one promise per line, and the one that matters on a list is the first one
+   * that can still be missed. Showing the earliest date overall would keep an order looking
+   * late after the late line had actually shipped.
+   */
+  requestedDeliveryDate: string | null;
+  lineCount: number;
+  isInterState: boolean;
+  grandTotal: string;
+  creditStatus: string;
+  status: string;
 }
 
 export interface DispatchResult {
@@ -160,6 +214,10 @@ export class SalesService implements DemandSource {
     private readonly dedup: DedupExplainer,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     @Inject(ACCOUNTS_POSTER) private readonly accounts: AccountsPoster,
+    // Read-only, and only on the read paths: an order line names an item, and a reader
+    // needs its code and unit. Engineering owns the master; this is the sanctioned way to
+    // look at it (§1.1) rather than a join across a module boundary.
+    @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
 
   /** Statutory config is data. A tenant-level override slots in here later. */
@@ -335,6 +393,22 @@ export class SalesService implements DemandSource {
         );
       }
 
+      // A promised date before the order was taken is a typo, and it would place the demand
+      // in a bucket that has already passed — a permanent past-due exception no action can
+      // clear. A trigger enforces this (migration 0033); this check is what turns it into a
+      // DOMAIN error instead of a raw Postgres check_violation reaching the caller, exactly
+      // as the duplicate-PO check above does for 23505.
+      for (const [i, l] of input.lines.entries()) {
+        if (l.requestedDeliveryDate && l.requestedDeliveryDate < orderDate) {
+          throw Errors.validation([
+            {
+              field: `lines.${i}.requestedDeliveryDate`,
+              message: `${l.requestedDeliveryDate} is before the order date ${orderDate} — a delivery cannot be promised for a date already past.`,
+            },
+          ]);
+        }
+      }
+
       // The tax itself — one decision drives every line, so a document can never be both.
       // The brain throws plain Errors for bad input (HSN shape, unknown state); they are
       // caller mistakes, so they become 422s with a code rather than escaping as 500s.
@@ -409,6 +483,10 @@ export class SalesService implements DemandSource {
           sgst: m2(t.sgst),
           igst: m2(t.igst),
           lineTotal: m2(t.lineTotal),
+          // WHEN the customer wants it. Until now the column existed, PLANNING depended on
+          // it and nothing could ever set it — so every order reached MRP with a null need
+          // date and the plan was arithmetic against nothing.
+          requestedDeliveryDate: src.requestedDeliveryDate ?? null,
         });
       }
 
@@ -787,12 +865,37 @@ export class SalesService implements DemandSource {
     return withTenant((tx) => this.viewInTx(tx, orderId));
   }
 
-  async listOrders(limit: number, cursor?: string): Promise<CursorPage<SalesOrderView>> {
+  /**
+   * A page of orders, in THREE queries regardless of page size.
+   *
+   * It was one query plus a full `viewInTx` per row, which meant ~200 round trips to draw
+   * one screen. The page, the customer names and the line aggregates are now fetched in
+   * bulk and stitched in memory: the orders come back joined to their customer, and one
+   * `inArray` over the page's ids yields everything needed to count lines and find the
+   * earliest outstanding promise.
+   */
+  async listOrders(limit: number, cursor?: string): Promise<CursorPage<SalesOrderSummary>> {
     return withTenant(async (tx) => {
       const keyset = cursor ? decodeCursor(cursor) : null;
       const rows = await tx
-        .select({ id: salesOrder.id, createdAt: salesOrder.createdAt })
+        .select({
+          id: salesOrder.id,
+          createdAt: salesOrder.createdAt,
+          soNo: salesOrder.soNo,
+          customerId: salesOrder.customerId,
+          customerCode: customer.code,
+          customerName: customer.name,
+          custPoNo: salesOrder.custPoNo,
+          orderDate: salesOrder.orderDate,
+          isInterState: salesOrder.isInterState,
+          grandTotal: salesOrder.grandTotal,
+          creditStatus: salesOrder.creditStatus,
+          status: salesOrder.status,
+        })
         .from(salesOrder)
+        // An intra-module join: `customer` and `sales_order` are both SMBD's tables, so
+        // this is not a cross-module reach — it is one module reading its own spine.
+        .innerJoin(customer, eq(customer.id, salesOrder.customerId))
         .where(
           keyset
             ? and(
@@ -806,12 +909,55 @@ export class SalesService implements DemandSource {
         )
         .orderBy(asc(salesOrder.createdAt), asc(salesOrder.id))
         .limit(limit + 1);
+
       const page = rows.slice(0, limit);
-      const items: SalesOrderView[] = [];
-      for (const r of page) items.push(await this.viewInTx(tx, r.id));
+      const ids = page.map((r) => r.id);
+
+      // Line aggregates for the whole page at once. Reduced in memory rather than in SQL
+      // because "earliest date among lines that have not fully shipped" needs the qty vs
+      // delivered comparison, and expressing that as a grouped HAVING buys nothing here.
+      const lineRows =
+        ids.length === 0
+          ? []
+          : await tx
+              .select({
+                orderId: salesOrderLine.orderId,
+                qty: salesOrderLine.qty,
+                deliveredQty: salesOrderLine.deliveredQty,
+                requestedDeliveryDate: salesOrderLine.requestedDeliveryDate,
+              })
+              .from(salesOrderLine)
+              .where(and(inArray(salesOrderLine.orderId, ids), eq(salesOrderLine.isActive, true)));
+
+      const lineCount = new Map<string, number>();
+      const nextPromise = new Map<string, string>();
+      for (const l of lineRows) {
+        lineCount.set(l.orderId, (lineCount.get(l.orderId) ?? 0) + 1);
+        if (!l.requestedDeliveryDate) continue;
+        if (numOf(l.deliveredQty) + 1e-9 >= numOf(l.qty)) continue; // already shipped
+        const current = nextPromise.get(l.orderId);
+        if (!current || l.requestedDeliveryDate < current) {
+          nextPromise.set(l.orderId, l.requestedDeliveryDate);
+        }
+      }
+
       const last = page[page.length - 1];
       return {
-        items,
+        items: page.map((r) => ({
+          id: r.id,
+          soNo: r.soNo,
+          customerId: r.customerId,
+          customerCode: r.customerCode,
+          customerName: r.customerName,
+          custPoNo: r.custPoNo,
+          orderDate: r.orderDate,
+          requestedDeliveryDate: nextPromise.get(r.id) ?? null,
+          lineCount: lineCount.get(r.id) ?? 0,
+          isInterState: r.isInterState,
+          grandTotal: r.grandTotal,
+          creditStatus: r.creditStatus,
+          status: r.status,
+        })),
         nextCursor:
           rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null,
       };
@@ -870,12 +1016,33 @@ export class SalesService implements DemandSource {
       .from(salesOrderLine)
       .where(eq(salesOrderLine.orderId, id))
       .orderBy(asc(salesOrderLine.lineNo));
+
+    const cust = (await tx.select().from(customer).where(eq(customer.id, r.customerId)).limit(1))[0];
+
+    // ONE batched call for every distinct item on the order, not one per line. `getItems`
+    // exists on the port precisely so a document can resolve its whole parts list at once.
+    const itemIds = [...new Set(lines.map((l) => l.itemId))];
+    const specs = itemIds.length === 0 ? [] : await this.items.getItems(itemIds);
+    const itemById = new Map(specs.map((s) => [s.id, s]));
+
+    // The earliest promise still outstanding — the same rule the list uses, so a manager
+    // moving from the list to the order does not see two different dates for one fact.
+    let nextPromise: string | null = null;
+    for (const l of lines) {
+      if (!l.requestedDeliveryDate) continue;
+      if (numOf(l.deliveredQty) + 1e-9 >= numOf(l.qty)) continue;
+      if (!nextPromise || l.requestedDeliveryDate < nextPromise) nextPromise = l.requestedDeliveryDate;
+    }
+
     return {
       id: r.id,
       soNo: r.soNo,
       customerId: r.customerId,
+      customerCode: cust?.code ?? null,
+      customerName: cust?.name ?? null,
       custPoNo: r.custPoNo,
       orderDate: r.orderDate,
+      requestedDeliveryDate: nextPromise,
       supplierGstin: r.supplierGstin,
       billToGstin: r.billToGstin,
       shipToGstin: r.shipToGstin,
@@ -890,21 +1057,30 @@ export class SalesService implements DemandSource {
       grandTotal: r.grandTotal,
       creditStatus: r.creditStatus,
       status: r.status,
-      lines: lines.map((l) => ({
-        id: l.id,
-        lineNo: l.lineNo,
-        itemId: l.itemId,
-        qty: l.qty,
-        rate: l.rate,
-        hsn: l.hsn,
-        gstRatePct: l.gstRatePct,
-        taxableValue: l.taxableValue,
-        cgst: l.cgst,
-        sgst: l.sgst,
-        igst: l.igst,
-        lineTotal: l.lineTotal,
-        deliveredQty: l.deliveredQty,
-      })),
+      lines: lines.map((l) => {
+        const spec = itemById.get(l.itemId) ?? null;
+        return {
+          id: l.id,
+          lineNo: l.lineNo,
+          itemId: l.itemId,
+          itemCode: spec?.itemCode ?? null,
+          itemName: spec?.name ?? null,
+          // The unit agreed on the line wins over the master's: an order taken in boxes
+          // stays in boxes even if Engineering later restates the item in pieces.
+          uom: l.uom ?? spec?.uom ?? null,
+          qty: l.qty,
+          rate: l.rate,
+          hsn: l.hsn,
+          gstRatePct: l.gstRatePct,
+          taxableValue: l.taxableValue,
+          cgst: l.cgst,
+          sgst: l.sgst,
+          igst: l.igst,
+          lineTotal: l.lineTotal,
+          deliveredQty: l.deliveredQty,
+          requestedDeliveryDate: l.requestedDeliveryDate,
+        };
+      }),
     };
   }
 }

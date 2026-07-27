@@ -198,21 +198,48 @@ export class AiRegistryService {
   async killSwitchState(featureKey: string): Promise<Record<string, unknown>> {
     return withTenant(async (tx) => {
       const rows = await tx.select().from(aiKillSwitch).where(eq(aiKillSwitch.engaged, true));
-      const tenantWide = rows.find((r) => r.featureKey === null);
-      const scoped = rows.find((r) => r.featureKey === featureKey);
-      const active = tenantWide ?? scoped;
-      const verdict = killSwitchAllows(
-        {
-          engaged: Boolean(active),
-          engagedAt: active?.engagedAt ? active.engagedAt.toISOString() : null,
-          engagedBy: active?.engagedBy ?? null,
-          reason: active?.reason ?? null,
-          featureKey: active?.featureKey ?? null,
-        },
-        featureKey,
-      );
-      return { featureKey, ...verdict };
+      return this.verdictFor(rows, featureKey);
     });
+  }
+
+  /**
+   * The same verdict for every registered feature, in ONE read.
+   *
+   * The per-feature route is the one the router itself uses and stays. This exists because
+   * a console listing the registry had to ask nine times to draw one column, and an
+   * operations screen that fires a request per row is a screen that gets slower every time
+   * the registry grows. Nothing here is a new capability — it is the same closed list and
+   * the same verdict function, read once.
+   */
+  async killSwitchStates(): Promise<Record<string, unknown>[]> {
+    return withTenant(async (tx) => {
+      const rows = await tx.select().from(aiKillSwitch).where(eq(aiKillSwitch.engaged, true));
+      return listFeatures().map((f) => this.verdictFor(rows, f.key));
+    });
+  }
+
+  /**
+   * A tenant-wide switch beats a feature-scoped one, deliberately: "stop all AI" must not
+   * be narrowed by a row somebody left behind for one feature.
+   */
+  private verdictFor(
+    engaged: readonly { featureKey: string | null; engagedAt: Date | null; engagedBy: string | null; reason: string | null }[],
+    featureKey: string,
+  ): Record<string, unknown> {
+    const tenantWide = engaged.find((r) => r.featureKey === null);
+    const scoped = engaged.find((r) => r.featureKey === featureKey);
+    const active = tenantWide ?? scoped;
+    const verdict = killSwitchAllows(
+      {
+        engaged: Boolean(active),
+        engagedAt: active?.engagedAt ? active.engagedAt.toISOString() : null,
+        engagedBy: active?.engagedBy ?? null,
+        reason: active?.reason ?? null,
+        featureKey: active?.featureKey ?? null,
+      },
+      featureKey,
+    );
+    return { featureKey, ...verdict };
   }
 
   /**

@@ -223,19 +223,26 @@ export class SparesService {
    * Reserve ahead of planned work. A reservation FAILURE never blocks the PM — stores gets
    * an amber flag and a notification instead, because a technician arriving to find no
    * part is a worse outcome than a work order that says the part might not be there.
+   *
+   * `itemCode` ARRIVES ALREADY RESOLVED, and that is load-bearing rather than tidy. This
+   * method runs inside the PM generator's transaction, so calling `ItemProvider` here would
+   * acquire a SECOND pool connection while the first is still held — and `DB_POOL_MAX` is
+   * 10, so five concurrent generator runs would wedge the pool on a lookup that only ever
+   * supplied a LABEL. Nothing about what gets reserved depended on it: the unit and the
+   * quantity come from the schedule's default-spare row, and the status is fixed. The
+   * caller resolves the codes in one batch before it opens its transaction.
    */
   async reserveForOccurrence(
     tx: Tx,
     mwoId: string,
     mwoNo: string,
-    spares: readonly { itemRef: string; uom: string; qty: number }[],
+    spares: readonly { itemRef: string; uom: string; qty: number; itemCode: string | null }[],
   ): Promise<{ reserved: number; unavailable: string[] }> {
     const { tenantId, actorId } = currentTenant();
     const unavailable: string[] = [];
     let reserved = 0;
 
     for (const s of spares) {
-      const item = await this.items.getItem(s.itemRef);
       const id = newId();
       await tx.insert(mwoSpare).values({
         id,
@@ -244,7 +251,7 @@ export class SparesService {
         updatedBy: actorId,
         mwoId,
         itemRef: s.itemRef,
-        itemCodeCache: item?.itemCode ?? null,
+        itemCodeCache: s.itemCode,
         uom: s.uom,
         qtyPlanned: s.qty.toFixed(4),
         // MVP posture, stated plainly: Inventory does not yet own a reservation contract,

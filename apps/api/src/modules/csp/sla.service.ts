@@ -224,16 +224,25 @@ export class SlaService {
   /* -------------------------------- evaluation ----------------------------- */
 
   /**
-   * Derive the state, persist it if it changed, and fire any escalation tier that has come
-   * due. Safe to run every minute for ever: `escalation_fired` makes each tier once-only,
-   * so a scanner that runs sixty times in an hour sends one notification.
+   * Derive the state. PURE — reads rows, writes none.
+   *
+   * This used to persist `sla_state`, append a timeline row and insert escalation events,
+   * and it is called from `viewInTx`, which every read goes through. The consequence was
+   * that OPENING THE TICKET QUEUE mutated the tenant's data and could fire escalation
+   * notifications to customers: one manager glancing at forty rows escalated forty tickets,
+   * every render, every refresh, every browser tab. A read that has side effects is not a
+   * performance problem, it is a system nobody can reason about — "did I change something
+   * by looking at it" has no good answer.
+   *
+   * The write half now lives in `record()`, reached only from the scanner, from
+   * `POST /csp/sla/scan`, and from ticket mutations that were already writing in the same
+   * transaction. Nothing behind a GET can reach it.
    */
   async evaluate(
     tx: Tx,
     ticketId: string,
     asOf: string,
-  ): Promise<SlaEvaluation & { chip: { label: string; tone: string }; escalated: string[] }> {
-    const { tenantId, actorId } = currentTenant();
+  ): Promise<SlaEvaluation & { chip: { label: string; tone: string } }> {
     const [t] = await tx.select().from(cspTicket).where(eq(cspTicket.id, ticketId)).limit(1);
     if (!t) throw new Error(`ticket ${ticketId} not found for SLA evaluation`);
 
@@ -249,7 +258,6 @@ export class SlaService {
         resolutionBreached: false,
         reason: "No SLA policy is attached yet — the ticket has not been triaged.",
         chip: { label: "Not triaged", tone: "grey" },
-        escalated: [],
       };
     }
 
@@ -268,6 +276,41 @@ export class SlaService {
       resolvedAt: t.resolvedAt?.toISOString() ?? null,
       isPaused,
     });
+
+    return { ...evaluation, chip: slaChip(evaluation.state) };
+  }
+
+  /**
+   * Evaluate AND make it durable: persist the state if it moved, record the change on the
+   * timeline, and fire any escalation tier that has come due.
+   *
+   * Safe to run every minute for ever — `escalation_fired` makes each tier once-only, so a
+   * scanner that runs sixty times in an hour sends one notification. Callers are the
+   * scanner and the ticket mutations (a status change, a reply, an accepted triage), all of
+   * which are already writing in the enclosing transaction. Never a read.
+   *
+   * `sla_state` on the row is therefore a PROJECTION maintained by those callers, not a
+   * live value — which matters because the queue's `slaState` filter and the dashboard's
+   * `bySlaState` counts read the column. The `sla` object returned on a ticket view is
+   * always computed fresh; the stored column is as fresh as the last scan.
+   */
+  async record(
+    tx: Tx,
+    ticketId: string,
+    asOf: string,
+  ): Promise<SlaEvaluation & { chip: { label: string; tone: string }; escalated: string[] }> {
+    const { tenantId, actorId } = currentTenant();
+    const [t] = await tx.select().from(cspTicket).where(eq(cspTicket.id, ticketId)).limit(1);
+    if (!t) throw new Error(`ticket ${ticketId} not found for SLA evaluation`);
+
+    const evaluation = await this.evaluate(tx, ticketId, asOf);
+    if (t.responseAllowanceMins == null || t.resolutionAllowanceMins == null) {
+      // Untriaged: no policy, no verdict, and therefore nothing to persist or escalate.
+      return { ...evaluation, escalated: [] };
+    }
+
+    const windows = await this.pauseWindows(tx, ticketId);
+    const isPaused = windows.some((w) => w.to == null);
 
     // Escalation tiers, from the policy that was matched at triage — not from whatever the
     // policy says today. A tenant editing their escalation ladder must not retroactively
@@ -348,7 +391,7 @@ export class SlaService {
       });
     }
 
-    return { ...evaluation, chip: slaChip(evaluation.state), escalated };
+    return { ...evaluation, escalated };
   }
 
   /**
@@ -359,6 +402,10 @@ export class SlaService {
    * `asOf` is a parameter for the same reason the verdict is derived rather than timed: a
    * scan that can only ever run at "now" cannot be tested, and an SLA engine that cannot be
    * time-travelled is an SLA engine nobody has checked.
+   *
+   * THIS is where a breach becomes durable and where a customer gets escalated to. It is a
+   * POST, behind a permission, that somebody or some job asked for — as against a queue
+   * screen, which now only looks.
    */
   async scanOpen(asOf: string): Promise<Array<{ ticketNo: string; state: string; consumedMins: number; escalated: string[] }>> {
     return withTenant(async (tx) => {
@@ -368,7 +415,7 @@ export class SlaService {
         .where(notInArray(cspTicket.status, ["closed"]));
       const out: Array<{ ticketNo: string; state: string; consumedMins: number; escalated: string[] }> = [];
       for (const t of open) {
-        const e = await this.evaluate(tx, t.id, asOf);
+        const e = await this.record(tx, t.id, asOf);
         out.push({ ticketNo: t.ticketNo, state: e.state, consumedMins: e.consumedMins, escalated: e.escalated });
       }
       return out;

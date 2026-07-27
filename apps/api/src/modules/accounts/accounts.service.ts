@@ -1,10 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { and, asc, eq, inArray, lte, gte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, lte, gte, or, sql } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
   newId,
   currentTenant,
   eventName,
+  encodeCursor,
+  decodeCursor,
   buildReceiptJournal,
   buildSalesInvoiceJournal,
   naturalBalance,
@@ -14,6 +16,7 @@ import {
   AppError,
   Errors,
   type AccountType,
+  type CursorPage,
   type JournalLineInput,
   type TrialBalanceRow,
 } from "@ind-core/platform";
@@ -59,7 +62,33 @@ export interface PostJournalInput {
   sourceModule?: string;
   sourceDocType?: string;
   sourceDocId?: string;
+  /**
+   * Set ONLY on a reversal, and ONLY at insert. The append-only trigger will not let this
+   * column be written afterwards, which is deliberate: the link between a mistake and its
+   * correction is part of the original record, not an annotation added later.
+   */
+  reversesVoucherId?: string;
+  /**
+   * Why the correction was made, as its own column rather than buried in a narration
+   * string. It lands on the REVERSAL voucher, not the original — the original's only
+   * writable columns are its status and the reversal link, so the reason could not be
+   * added there afterwards even if we wanted it to be.
+   */
+  reversalReason?: string;
   lines: JournalLineInput[];
+}
+
+/** One row of `GET /accounts/vouchers` — the header only; lines come from the detail read. */
+export interface VoucherSummary {
+  id: string;
+  voucherNo: string;
+  voucherType: string;
+  postingDate: string;
+  status: string;
+  narration: string | null;
+  totalDebit: string;
+  totalCredit: string;
+  sourceModule: string | null;
 }
 
 export interface VoucherView {
@@ -71,6 +100,12 @@ export interface VoucherView {
   narration: string | null;
   totalDebit: string;
   totalCredit: string;
+  /** This voucher corrects that one. Set on a reversal. */
+  reversesVoucherId: string | null;
+  /** That voucher corrects this one. Set on the original when it is reversed. */
+  reversedByVoucherId: string | null;
+  /** Why the correction was made. Carried by the reversal, not by the original. */
+  reversalReason: string | null;
   lines: Array<{
     lineNo: number;
     accountCode: string;
@@ -198,6 +233,8 @@ export class AccountsService implements AccountsPoster {
       sourceModule: input.sourceModule ?? null,
       sourceDocType: input.sourceDocType ?? null,
       sourceDocId: input.sourceDocId ?? null,
+      reversesVoucherId: input.reversesVoucherId ?? null,
+      reversalReason: input.reversalReason ?? null,
       idempotencyKey: input.idempotencyKey,
       totalDebit: m2(v.totalDebit),
       totalCredit: m2(v.totalCredit),
@@ -525,6 +562,14 @@ export class AccountsService implements AccountsPoster {
         narration: `Reversal of ${original.voucherNo}: ${reason}`,
         postingMode: "manual",
         idempotencyKey: `reversal:${idempotencyKey}`,
+        // The back-link, written at INSERT because the trigger forbids setting it later.
+        // Without it the pair is only navigable in one direction, and "nothing is erased"
+        // is a claim the ledger cannot demonstrate from the correcting entry.
+        reversesVoucherId: voucherId,
+        // Queryable, reportable, and shown as its own field. "Why was this reversed" is the
+        // question asked immediately after "what reversed it", and an answer that exists
+        // only inside a narration string cannot be filtered, counted or audited.
+        reversalReason: reason,
         lines: reversed,
       });
 
@@ -568,7 +613,21 @@ export class AccountsService implements AccountsPoster {
 
   /* ---------------------------- the trial balance ------------------------- */
 
-  async trialBalance(): Promise<{ rows: TrialBalanceRow[]; totalDebit: number; totalCredit: number; balanced: boolean }> {
+  /**
+   * The trial balance AS AT a date — the first question anyone asks of one, and previously
+   * unanswerable here: this summed every line in the tenant regardless of when it was
+   * posted, which is only ever right by accident on the last day of the data.
+   *
+   * `asOf` filters on the VOUCHER's posting date rather than the line's creation time. Those
+   * differ whenever a voucher is posted into an earlier open period, and the posting date is
+   * the one an accountant means — it is the date the transaction is deemed to have happened.
+   * The date used is echoed back, so the screen reports the server's answer rather than
+   * restating its own assumption.
+   */
+  async trialBalance(
+    asOf?: string,
+  ): Promise<{ asOf: string; rows: TrialBalanceRow[]; totalDebit: number; totalCredit: number; balanced: boolean }> {
+    const asOfDate = asOf ?? new Date().toISOString().slice(0, 10);
     return withTenant(async (tx) => {
       const sums = await tx
         .select({
@@ -577,6 +636,8 @@ export class AccountsService implements AccountsPoster {
           credit: sql<string>`sum(${journalLine.credit})`,
         })
         .from(journalLine)
+        .innerJoin(journalVoucher, eq(journalVoucher.id, journalLine.voucherId))
+        .where(lte(journalVoucher.postingDate, asOfDate))
         .groupBy(journalLine.accountCode);
       const accounts = await tx.select().from(glAccount);
       const byCode = new Map(accounts.map((a) => [a.code, a]));
@@ -598,12 +659,62 @@ export class AccountsService implements AccountsPoster {
         })
         .sort((a, b) => a.accountCode.localeCompare(b.accountCode));
 
-      return { rows, ...trialBalanceTotals(rows) };
+      return { asOf: asOfDate, rows, ...trialBalanceTotals(rows) };
     });
   }
 
   async getVoucher(voucherId: string): Promise<VoucherView> {
     return withTenant((tx) => this.viewInTx(tx, voucherId));
+  }
+
+  /**
+   * The voucher register — every posted entry, newest first.
+   *
+   * Read-only, and it has to exist: a ledger whose entries can only be reached if you
+   * already know a voucher's id is a ledger nobody can audit. Keyset-paged on
+   * (created_at, id) DESCENDING like every other list on the platform, so a voucher posted
+   * while somebody is reading page two cannot push a row from page two onto page three
+   * unseen — which is exactly the failure that makes offset pagination unusable for a
+   * financial register.
+   */
+  async listVouchers(limit: number, cursor?: string): Promise<CursorPage<VoucherSummary>> {
+    return withTenant(async (tx) => {
+      const keyset = cursor ? decodeCursor(cursor) : null;
+      const rows = await tx
+        .select()
+        .from(journalVoucher)
+        .where(
+          keyset
+            ? or(
+                lt(journalVoucher.createdAt, new Date(keyset.createdAt)),
+                and(
+                  eq(journalVoucher.createdAt, new Date(keyset.createdAt)),
+                  lt(journalVoucher.id, keyset.id),
+                ),
+              )
+            : undefined,
+        )
+        .orderBy(desc(journalVoucher.createdAt), desc(journalVoucher.id))
+        .limit(limit + 1);
+
+      const page = rows.slice(0, limit);
+      const last = page.at(-1);
+      return {
+        items: page.map((v) => ({
+          id: v.id,
+          voucherNo: v.voucherNo,
+          voucherType: v.voucherType,
+          postingDate: v.postingDate,
+          status: v.status,
+          narration: v.narration,
+          totalDebit: v.totalDebit,
+          totalCredit: v.totalCredit,
+          sourceModule: v.sourceModule,
+        })),
+        nextCursor:
+          rows.length > limit && last ? encodeCursor(last.createdAt.toISOString(), last.id) : null,
+      };
+    });
   }
 
   private async viewInTx(tx: Tx, voucherId: string): Promise<VoucherView> {
@@ -623,6 +734,9 @@ export class AccountsService implements AccountsPoster {
       narration: v.narration,
       totalDebit: v.totalDebit,
       totalCredit: v.totalCredit,
+      reversesVoucherId: v.reversesVoucherId,
+      reversedByVoucherId: v.reversedByVoucherId,
+      reversalReason: v.reversalReason,
       lines: lines.map((l) => ({
         lineNo: l.lineNo,
         accountCode: l.accountCode,
