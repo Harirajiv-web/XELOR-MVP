@@ -5,6 +5,7 @@ import { AppShell } from "@spine/shell/app-shell";
 import { useSession } from "@spine/auth/session";
 import { useAccess } from "@spine/access/permissions";
 import { Loading } from "@spine/states";
+import { IdleWatch } from "@spine/presence/activity";
 
 /**
  * THE SHELL LIVES HERE, NOT IN THE PAGES.
@@ -45,5 +46,15 @@ export default function AppLayout({ children }: { children: ReactNode }): React.
   if (status === "loading" || !ready) return <Loading label="Signing you in…" />;
   if (status === "anonymous") return <Loading label="Redirecting to sign-in…" />;
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <>
+      <AppShell>{children}</AppShell>
+      {/* THE SCREEN SAVER, over the whole ERP. Thirty seconds of stillness anywhere inside
+          the product fades the screen into the void and returns to the Brain stance. It
+          holds off while a dialog with typed input is open — see `useHoldsUnsavedWork` —
+          because an idle timer that discards somebody's half-typed purchase order is not a
+          demonstration feature, it is a defect with a stopwatch. */}
+      <IdleWatch />
+    </>
+  );
 }

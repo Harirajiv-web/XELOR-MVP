@@ -659,6 +659,48 @@ table,
    carries on animating is competing with the screen the reader is trying to use to deal
    with the thing it is announcing. The reduced-motion rule above already flattens this to
    nothing for anyone who has asked the operating system to stop moving things. */
+/* ============================================================================
+   THE VOID
+   ============================================================================
+   Two motions, both deliberately slower than anything else in the product.
+
+   The brain BREATHES: a 1.5% scale and a six-pixel drift over eleven seconds, which is
+   near the edge of noticeable and is meant to be. The brief asks for almost still — a
+   figure that visibly bobs reads as a logo animation, and the moment it does, the scene
+   stops being a place and becomes a splash screen.
+
+   A department node DRIFTS on its own clock, so six of them never move as a block. Both
+   are pure transforms, so the compositor runs them and the main thread never sees them.
+   The reduced-motion rule above flattens both to nothing.
+   ============================================================================ */
+@keyframes ind-brain-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+.ind-brain-breathe {
+  animation: ind-brain-breathe 11s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes ind-void-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+.ind-void-drift > g {
+  animation: ind-void-drift 9s ease-in-out infinite;
+  will-change: transform;
+}
+
 @keyframes ind-toast-in {
   from {
     opacity: 0;
