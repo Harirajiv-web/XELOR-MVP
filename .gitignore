@@ -8,3 +8,8 @@ coverage/
 .DS_Store
 *.log
 .pnpm-store/
+
+# Next.js build output and generated types. Committed once by accident when a .gitignore
+# edit silently wrote to the wrong directory; 86 build artefacts went in with the web app.
+.next/
+next-env.d.ts
