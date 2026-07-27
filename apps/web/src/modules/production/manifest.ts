@@ -26,6 +26,8 @@ export const productionManifest: ModuleManifest = {
       path: "orders",
       permission: "production.order.read",
       icon: "Hammer",
+      description:
+        "Every order the plant has been told to make, with how much of it has actually come off the line. Recording output here does NOT move stock — Inventory owns the only path stock can move through, and a supervisor who believes otherwise will count the same parts twice. Quantities change when components are issued or finished goods are received, never by typing a number on this screen.",
     },
     {
       label: "Work order",

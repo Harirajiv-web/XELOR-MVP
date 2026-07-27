@@ -1,11 +1,7 @@
 "use client";
 
-import { use, useEffect } from "react";
-import { AppShell } from "@spine/shell/app-shell";
+import { use } from "react";
 import { DepartmentView } from "@spine/shell/department-view";
-import { useSession } from "@spine/auth/session";
-import { useAccess } from "@spine/access/permissions";
-import { Loading } from "@spine/states";
 
 /**
  * `/department/HEXA` — the department dashboard.
@@ -20,6 +16,9 @@ import { Loading } from "@spine/states";
  * departments exist, which modules they own — and shows only figures the viewer's own
  * permissions already allow, each checked before its request is made. There is nothing
  * here a person could not learn by opening the menu.
+ *
+ * The signed-in gate and the shell both moved to `(app)/layout.tsx`, so this file is now
+ * only the part that is genuinely about departments.
  */
 export default function DepartmentRoute({
   params,
@@ -27,19 +26,5 @@ export default function DepartmentRoute({
   params: Promise<{ code: string }>;
 }): React.JSX.Element {
   const { code } = use(params);
-  const { status, signIn } = useSession();
-  const { ready } = useAccess();
-
-  useEffect(() => {
-    if (status === "anonymous") signIn(window.location.pathname);
-  }, [status, signIn]);
-
-  if (status === "loading" || !ready) return <Loading label="Signing you in…" />;
-  if (status === "anonymous") return <Loading label="Redirecting to sign-in…" />;
-
-  return (
-    <AppShell>
-      <DepartmentView code={code} />
-    </AppShell>
-  );
+  return <DepartmentView code={code} />;
 }

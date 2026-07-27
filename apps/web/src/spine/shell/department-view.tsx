@@ -324,6 +324,7 @@ function ModuleCard({
             <li key={n.path}>
               <Link
                 href={`/${m.key}/${n.path}`}
+                title={n.description ?? n.label}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)]"
               >
                 {n.label}

@@ -48,6 +48,8 @@ export const generalManifest: ModuleManifest = {
       path: "companies",
       permission: "general.company.read",
       icon: "Building2",
+      description:
+        "Every legal entity this tenant trades as, read from the company master, with each GSTIN it holds and the place that registration covers. These are the exact name, CIN and GSTIN that print on your invoices, e-way bills and returns. Nothing can be added or edited here — a company is registered during setup.",
     },
     {
       // The organisation that builds and owns the system, beside the organisation that
@@ -57,6 +59,8 @@ export const generalManifest: ModuleManifest = {
       path: "departments",
       permission: "general.company.read",
       icon: "Users",
+      description:
+        "The six departments and one component that build and own this system, and the written contract at every seam between two of them. The module list under each card is read from the live registry of this build, so a module that was specified and then left out says so rather than being quietly listed. Nothing on this page is about your factory's own data.",
     },
   ],
   screens: {

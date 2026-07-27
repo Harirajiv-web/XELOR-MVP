@@ -40,6 +40,24 @@ export interface NavEntry {
   icon?: string;
   /** Hidden from the sidebar but still routable — for detail screens. */
   hidden?: boolean;
+  /**
+   * WHAT THIS SCREEN SHOWS, in plain language, for somebody who has never seen it.
+   *
+   * Required on every visible entry and checked by `pnpm module-check`, because the screen
+   * that gets forgotten will be somebody's first. Most people arriving here have run this
+   * factory on paper and Tally; two sentences saying what a screen actually contains
+   * prevents the most expensive category of misunderstanding, which is a confident person
+   * reading the wrong thing.
+   *
+   * The house style, learned from what went wrong in review:
+   *   - Say what is IN it, then where the numbers CAME FROM. "Live balances, calculated
+   *     from the stock ledger" tells a storekeeper more than any description of features.
+   *   - Say what it will NOT let you do, when that is the surprising part. "You cannot
+   *     type a stock figure here; stock only moves through a receipt or an issue."
+   *   - No feature words. Not "a comprehensive view of inventory across the enterprise".
+   *   - Never a promise the screen does not keep.
+   */
+  description?: string;
 }
 
 export interface ScreenProps {
@@ -106,6 +124,80 @@ export interface SignalValue {
   }[];
 }
 
+/* ==========================================================================
+   THINGS SOMEBODY NEEDS TO KNOW ABOUT NOW.
+   ==========================================================================
+
+   A machine that has stopped. A purchase order that will not arrive before the line runs
+   out. A dispatch promised for today that has not moved. These are the facts a plant
+   manager currently learns from a phone call, and the whole pitch of this product is that
+   the system notices first.
+
+   Two rules make this trustworthy rather than noisy, and both are structural:
+
+   1. THE VERDICT IS COMPUTED IN CODE; ONLY THE WORDING IS WRITTEN DOWN.
+      `reduce` runs over the module's own rows and decides — with arithmetic, against a
+      date, over a real status column — whether there is a problem. No model is asked
+      whether something is late. A language model asked to judge will sometimes say a thing
+      is fine because the sentence flowed better, and an alert that is wrong in the
+      reassuring direction is worse than no alert at all. The model's job in this product is
+      to phrase and to explain, never to decide, and DECISIONS-V2 §4 says exactly that.
+
+   2. EVERY ALERT CARRIES ITS EVIDENCE AND SOMEWHERE TO GO.
+      `evidence` is the row that caused it, named. `href` is the screen where a person can
+      act. An alert that cannot be checked and cannot be acted on is an interruption
+      wearing a warning's clothes.
+
+   As with signals, the KNOWLEDGE LIVES IN THE MODULE. The spine holds no table of "things
+   that go wrong in a factory" — Maintenance knows what a breakdown is, Purchase knows what
+   late means for a delivery, and deleting either takes its alerts with it.
+   ========================================================================== */
+
+export interface ModuleAlert {
+  /**
+   * Stable across polls for the SAME underlying fact — usually the document number.
+   * This is what lets "I have seen this" survive a refresh. An id containing a timestamp
+   * would make every poll produce brand-new alerts, and a bell that re-announces the same
+   * stopped machine every sixty seconds gets muted within a day, taking the real ones with
+   * it.
+   */
+  id: string;
+  /**
+   * Three levels, because a person can hold three in their head:
+   *   critical  — production is stopped or a statutory deadline has passed
+   *   urgent    — it will stop, or become late, within the working day
+   *   attention — worth knowing before it becomes one of the other two
+   */
+  severity: "critical" | "urgent" | "attention";
+  /** The fact, in one line. "CNC-04 has been down for 3 h 20 m." */
+  title: string;
+  /** The consequence, in one line. Why this is on screen rather than in a report. */
+  body: string;
+  /** Where to go and deal with it, e.g. `/maintenance/breakdowns`. */
+  href?: string;
+  /** ISO timestamp of the underlying event, not of the poll. */
+  at?: string;
+  /**
+   * The rows this was read from, named so it can be checked.
+   * "Breakdown BRK-2026-0041, reported 20-Jul-2026 06:12."
+   */
+  evidence?: string;
+}
+
+export interface ModuleAlertSource {
+  /** Checked BEFORE the request. Never poll on behalf of someone who may not look. */
+  permission: string;
+  /** API path, relative to `/api/v1`. */
+  path: string;
+  query?: Record<string, string | number | boolean>;
+  /**
+   * Zero or more alerts from this response. Runs in a try/catch: a source that throws is
+   * dropped, because a warning system that can take the application down with it is a
+   * larger hazard than the thing it was watching for.
+   */
+  reduce: (data: unknown) => readonly ModuleAlert[];
+}
+
 export interface ModuleManifest {
   /** Stable key. Also the first URL segment: /inventory/stock. */
   key: string;
@@ -132,6 +224,11 @@ export interface ModuleManifest {
    * appears, showing what it is and what screens it has.
    */
   signals?: readonly ModuleSignal[];
+  /**
+   * What this module watches for on everybody's behalf. Optional — a module with nothing
+   * time-critical to say should say nothing.
+   */
+  alerts?: readonly ModuleAlertSource[];
 }
 
 /** Every permission the manifest mentions — used by the consistency check. */

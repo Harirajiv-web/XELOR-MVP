@@ -1,5 +1,5 @@
-import type { ModuleManifest, SignalValue } from "@spine/registry/manifest";
-import { inr } from "@spine/format";
+import type { ModuleAlert, ModuleManifest, SignalValue } from "@spine/registry/manifest";
+import { inr, date as fmtDate } from "@spine/format";
 import { purchaseApi, isLate } from "./api";
 
 /* --------------------------------------------------------------------------------------
@@ -125,12 +125,16 @@ export const purchaseManifest: ModuleManifest = {
       path: "orders",
       permission: "purchase.po.read",
       icon: "FileText",
+      description:
+        "Every order placed on a supplier, with what has been received against it so far. Receiving goods does not happen here — a goods receipt is a separate document, and stock only moves when one is recorded. An order shown as fully received has had its quantity matched, not merely its delivery promised.",
     },
     {
       label: "Vendors",
       path: "vendors",
       permission: "purchase.vendor.read",
       icon: "Truck",
+      description:
+        "The supplier master — who the plant is allowed to buy from, with their GSTIN and terms. A vendor is never deleted, only made inactive, because orders and invoices already point at them and the audit trail has to survive a supplier you stopped using.",
     },
     {
       label: "Purchase order",
@@ -240,4 +244,197 @@ export const purchaseManifest: ModuleManifest = {
       },
     },
   ],
+
+  /* ==========================================================================
+     WHAT PURCHASE INTERRUPTS PEOPLE FOR.
+     ==========================================================================
+
+     A buyer finds out an order is late when the line stops. By then the options are an
+     expensive one and a worse one. Everything below is decided by comparing the vendor's
+     own promised date against today — arithmetic on `expectedDate`, using the same
+     `isLate()` the order screen and the dashboard tile already use, so the bell and the
+     table can never disagree about which orders are late.
+
+     ONE THING IS SAID OUT LOUD RATHER THAN HIDDEN: only the first hundred orders are read.
+     If the API had more, the summary alert says so, because "3 orders are late" from a
+     truncated page is a comfortable number and a false one.
+     ========================================================================== */
+  alerts: [
+    {
+      /**
+       * ALREADY LATE. The vendor's own promise has passed and the goods are not all in.
+       * `urgent` rather than `critical`: nothing has stopped yet. A late delivery becomes a
+       * stopped line through Inventory and Production, and those two modules raise their own
+       * alerts when it does — this one is the warning that precedes theirs.
+       */
+      permission: "purchase.po.read",
+      path: purchaseApi.ordersPath,
+      query: { limit: SIGNAL_PAGE },
+      reduce: (data: unknown): readonly ModuleAlert[] => alertLateOrders(data),
+    },
+    {
+      /**
+       * APPROVED WEEKS AGO AND STILL NOT ACKNOWLEDGED BY THE VENDOR.
+       *
+       * Deliberately NOT raised, and the reason belongs on the record: this build has no
+       * vendor-acknowledgement field and no date on which an order was actually sent. The
+       * only thing a browser could do here is guess from `createdAt`, which would produce a
+       * confident alert about a fact the system does not hold. Left as a gap for the
+       * founder to decide on rather than papered over.
+       */
+      permission: "purchase.po.read",
+      path: purchaseApi.ordersPath,
+      query: { limit: SIGNAL_PAGE },
+      reduce: (data: unknown): readonly ModuleAlert[] => alertStuckApprovals(data),
+    },
+  ],
 };
+
+/* ------------------------------- the watches ------------------------------- */
+
+/** The house cap: what a person will actually read before scrolling past. */
+const ALERT_CAP = 8;
+
+/**
+ * The identifying fields an alert needs, which `PoLite` deliberately does not carry —
+ * signals need three numbers, an alert needs to name a document and a supplier.
+ */
+interface PoNamed {
+  id: string;
+  poNo: string;
+  vendorName: string;
+  status: string;
+  expectedDate: string | null;
+  totalAmount: number;
+}
+
+function namedOrders(data: unknown): readonly PoNamed[] | null {
+  const raw = asArray(data);
+  if (!raw) return null;
+  const out: PoNamed[] = [];
+  for (const entry of raw) {
+    if (entry === null || typeof entry !== "object") continue;
+    const r = entry as Record<string, unknown>;
+    // A row we cannot name is skipped rather than shown as "an order" — an alert nobody can
+    // look up is an interruption with no action attached to it.
+    if (typeof r.poNo !== "string" || typeof r.status !== "string") continue;
+    const amount = Number(r.totalAmount);
+    out.push({
+      id: typeof r.id === "string" ? r.id : r.poNo,
+      poNo: r.poNo,
+      vendorName: typeof r.vendorName === "string" ? r.vendorName : "an unnamed supplier",
+      status: r.status,
+      expectedDate: typeof r.expectedDate === "string" ? r.expectedDate : null,
+      totalAmount: Number.isFinite(amount) ? amount : 0,
+    });
+  }
+  return out;
+}
+
+/** Whole days between a date and today, negative when the date has passed. */
+function daysUntil(iso: string | null): number | null {
+  if (!iso) return null;
+  const due = new Date(iso);
+  if (Number.isNaN(due.getTime())) return null;
+  const t = new Date();
+  const dueMid = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+  const todayMid = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+  return Math.round((dueMid - todayMid) / 86_400_000);
+}
+
+function alertLateOrders(data: unknown): readonly ModuleAlert[] {
+  const rows = namedOrders(data);
+  if (rows === null) return [];
+
+  const late = rows
+    .filter((r) => OPEN_STATUSES.includes(r.status))
+    // NOT an order still awaiting approval, even though `isLate()` would happily call it
+    // late. PO-2627-00003 in the demo data is both 25 days past its date AND unapproved, and
+    // without this line it raises two alerts for one fact — "the supplier is late" and "we
+    // never placed it" — which contradict each other in the same panel. The second watch
+    // below owns that case, because it is the true one: nobody is late except us.
+    .filter((r) => r.status !== "pending_approval")
+    .filter((r) => isLate(r.expectedDate, r.status))
+    .map((r) => ({ r, days: daysUntil(r.expectedDate) ?? 0 }))
+    // Longest overdue first. Not by value: the buyer chasing suppliers works the phone in
+    // order of how long each one has been ignoring us.
+    .sort((a, b) => a.days - b.days);
+
+  const alerts: ModuleAlert[] = late.slice(0, ALERT_CAP).map(({ r, days }) => {
+    const overdue = Math.abs(days);
+    const part = r.status === "partially_received";
+    return {
+      id: `purchase.po.late.${r.poNo}`,
+      severity: "urgent",
+      title: `${r.poNo} is ${overdue} ${overdue === 1 ? "day" : "days"} past the promised date`,
+      body: `${r.vendorName} promised ${fmtDate(r.expectedDate)} for ${inr(r.totalAmount)}. ${
+        part
+          ? "Part of it has been received; the balance has not."
+          : "Nothing has been received against it."
+      }`,
+      href: "/purchase/orders",
+      // The stamp is the date the promise fell due, never the moment of the poll — that is
+      // what lets the panel sort by how long each supplier has been late.
+      at: r.expectedDate ?? undefined,
+      evidence: `Purchase order ${r.poNo} on ${r.vendorName}, expected ${fmtDate(r.expectedDate)}, status ${r.status.replace(/_/g, " ")}.`,
+    };
+  });
+
+  if (late.length > ALERT_CAP) {
+    alerts.push({
+      id: "purchase.po.late.more",
+      severity: "attention",
+      title: `${late.length} purchase orders are past their promised date`,
+      body: `The ${ALERT_CAP} that have been waiting longest are listed above; the orders screen has the rest. Only the first ${SIGNAL_PAGE} orders were read, so this count is a floor, not a total.`,
+      href: "/purchase/orders",
+      evidence: `${late.length} open orders have an expected date earlier than today.`,
+    });
+  }
+  return alerts;
+}
+
+/**
+ * An order sitting with an approver while its own promised date runs out.
+ *
+ * This is the honest version of "an approved order nobody sent". The system does not record
+ * when an order was transmitted to a vendor or whether the vendor acknowledged it, so that
+ * question cannot be answered here. What CAN be answered is narrower and still useful: an
+ * order that is still awaiting approval although the date it was meant to arrive is already
+ * close or past. Nobody is chasing that supplier, because from the supplier's side there is
+ * nothing to chase — the order was never placed.
+ */
+function alertStuckApprovals(data: unknown): readonly ModuleAlert[] {
+  const rows = namedOrders(data);
+  if (rows === null) return [];
+
+  const stuck = rows
+    .filter((r) => r.status === "pending_approval")
+    .map((r) => ({ r, days: daysUntil(r.expectedDate) }))
+    .filter((x): x is { r: PoNamed; days: number } => x.days !== null && x.days <= 3)
+    .sort((a, b) => a.days - b.days);
+
+  const alerts: ModuleAlert[] = stuck.slice(0, ALERT_CAP).map(({ r, days }) => ({
+    id: `purchase.po.unapproved.${r.poNo}`,
+    severity: days < 0 ? "urgent" : "attention",
+    title:
+      days < 0
+        ? `${r.poNo} was due ${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} ago and is still awaiting approval`
+        : `${r.poNo} is due in ${days} ${days === 1 ? "day" : "days"} and is still awaiting approval`,
+    body: `${inr(r.totalAmount)} to ${r.vendorName}. Until somebody approves it the order has not been placed, so the supplier is not late — we are.`,
+    href: "/purchase/orders",
+    at: r.expectedDate ?? undefined,
+    evidence: `Purchase order ${r.poNo}, status pending approval, expected ${fmtDate(r.expectedDate)}.`,
+  }));
+
+  if (stuck.length > ALERT_CAP) {
+    alerts.push({
+      id: "purchase.po.unapproved.more",
+      severity: "attention",
+      title: `${stuck.length} orders are awaiting approval with their delivery date in sight`,
+      body: `The ${ALERT_CAP} closest to their date are listed above.`,
+      href: "/purchase/orders",
+      evidence: `${stuck.length} orders are pending approval with an expected date within three days or already passed.`,
+    });
+  }
+  return alerts;
+}

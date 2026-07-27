@@ -1,5 +1,34 @@
 # IND-CORE MVP prototype — environment notes
 
+## Three things about the web app that are easy to break by accident
+
+**1. The shell lives in a layout, not in the pages.** `src/app/(app)/layout.tsx` renders
+`<AppShell>`, and `(app)` is a route group so the URLs are unchanged. Do **not** put
+`<AppShell>` back into a page. A page is torn down and rebuilt on every navigation, which
+is what previously reset the sidebar's scroll position, collapsed the module tree and wiped
+the copilot conversation on every single click. `callback` and `not-found` stay outside the
+group deliberately — neither should be wrapped in menus.
+
+**2. Colour is never written down in a screen.** Every value is a CSS custom property in
+`globals.css`, and `:root[data-theme="dark"]` redefines the whole set. A screen using
+tokens is themed for free; a screen with a literal hex or a Tailwind palette class
+(`bg-slate-50`, `text-gray-600`) is a light-mode bug waiting for somebody's night shift.
+`text-white` on a coloured chip is correct. The theme is written onto `<html>` before the
+first paint by an inline script (`themeBootScript`), so there is no white flash on the way
+in — do not move it to a component.
+
+**3. A module declares what it shows AND what it watches for.** `ModuleManifest` carries
+`signals` (figures for the department dashboard), `alerts` (things somebody needs to know
+about now, for the topbar bell) and a `description` on every nav entry (the band above each
+screen). All three live in the module, never in the spine — so deleting a module folder
+takes its figures, its watches and its explanations with it, and `pnpm module-check` fails
+the build if a visible nav entry has no description.
+
+**Alerts are decided in code, never by a model.** Late is a date comparison; down is a row
+with no end time. See the reasoning block above `ModuleAlert` in
+`src/spine/registry/manifest.ts`. An alert wrong in the reassuring direction is worse than
+no alert at all.
+
 ## Docker is installed (inside WSL, not on Windows)
 
 Docker Desktop is **not** installed (it needs admin, which this machine lacks). Instead, **Docker Engine runs inside a WSL2 Ubuntu distro**. There is no `C:\Program Files\Docker`. Access Docker by prefixing commands with `wsl -d Ubuntu -u root -e`:

@@ -75,12 +75,16 @@ export const copilotManifest: ModuleManifest = {
       path: "ask",
       permission: "copilot.question.ask",
       icon: "MessageSquare",
+      description:
+        "Type a question about your own factory's data and get the answer back with the rows it was read from. It answers from a fixed list of questions and refuses anything outside it rather than guessing — and nothing you type here can change a record.",
     },
     {
       label: "Question log",
       path: "log",
       permission: "copilot.log.read",
       icon: "History",
+      description:
+        "Every question anyone has asked the copilot, whether it answered or refused, and which tables each answer was read from. Refusals are kept alongside answers on purpose: what the assistant declines to say is the part a buyer should check hardest.",
     },
   ],
   screens: {

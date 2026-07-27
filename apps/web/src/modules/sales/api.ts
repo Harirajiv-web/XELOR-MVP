@@ -144,21 +144,41 @@ export const salesApi = {
 } as const;
 
 /**
- * Is a promised delivery date already behind us?
+ * WHOLE DAYS FROM TODAY TO A PROMISED DATE. Negative when the date is behind us.
  *
- * Compared at DAY granularity against the local day, matching `relativeDays` — an order
- * promised for today is not late at nine in the morning, and a screen that says it is
- * teaches people to ignore the column by lunchtime.
+ * `null` when there is no date or it cannot be read — which is a different answer from
+ * zero, and the callers all treat it that way rather than assuming "today".
+ *
+ * TWO THINGS ARE DELIBERATE HERE.
+ *
+ * A `date` column arrives as the bare string `2026-07-20`, and `new Date("2026-07-20")`
+ * is parsed as MIDNIGHT UTC — which is the 19th in any timezone west of Greenwich. So a
+ * plain `YYYY-MM-DD` is split and rebuilt as a LOCAL date instead. The plant runs on IST
+ * and would never have noticed; a browser in Chicago would have called every order one day
+ * later than it is.
+ *
+ * And the comparison is at DAY granularity against the BROWSER'S today, never a fixed
+ * date. An order promised for today is not late at nine in the morning, and a screen that
+ * says it is teaches people to ignore the column by lunchtime.
  */
+const YMD = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+export function daysUntil(isoDate: string | null | undefined, from: Date = new Date()): number | null {
+  if (!isoDate) return null;
+  const parts = YMD.exec(isoDate.slice(0, 10));
+  const due = parts
+    ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))
+    : new Date(isoDate);
+  if (Number.isNaN(due.getTime())) return null;
+  const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+  const today = new Date(from.getFullYear(), from.getMonth(), from.getDate()).getTime();
+  return Math.round((dueDay - today) / 86_400_000);
+}
+
+/** Is a promised delivery date already behind us? One definition, used by list and tile. */
 export function isPastDue(isoDate: string | null): boolean {
-  if (!isoDate) return false;
-  const due = new Date(isoDate);
-  if (Number.isNaN(due.getTime())) return false;
-  const today = new Date();
-  return (
-    new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime() <
-    new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
-  );
+  const days = daysUntil(isoDate);
+  return days !== null && days < 0;
 }
 
 /**

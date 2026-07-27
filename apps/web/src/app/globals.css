@@ -140,6 +140,15 @@
   --violet: #7c5cd6;
   --violet-soft: #efebfa;
 
+  /* WHAT A CHART'S NEUTRAL RAMP FADES TOWARDS.
+     Shades of the brand are how a chart draws categories that carry no judgement of their
+     own — warehouses, states, causes. On a white page that means fading toward white. On a
+     dark one it must NOT: brand faded toward white-on-dark is fine, but brand faded toward
+     the dark background is a slice that disappears, and a reader counts four causes where
+     there were five. The direction of the fade is therefore a token, so the ramp stays
+     visible on both surfaces without the chart knowing which one it is on. */
+  --ramp-mix: #ffffff;
+
   /* The deck's layout system: sidebar, copilot rail, topbar. */
   --side: 236px;
   --cop: 384px;
@@ -226,6 +235,11 @@
 
   --violet: #9d7fe0;
   --violet-soft: #201a35;
+
+  /* A light steel rather than white: fading toward pure white on a dark page bleaches the
+     far end of the ramp into one indistinguishable glare, which loses the categories just
+     as surely as fading into the background would. */
+  --ramp-mix: #93a7c6;
 }
 
 /* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */
@@ -606,4 +620,20 @@ table,
 }
 .pulse {
   animation: ind-pulse 1.8s infinite;
+}
+
+/* An alert arriving while somebody is working. It slides in from the right and settles —
+   it does not bounce, and it does not keep moving once it has arrived. A message that
+   carries on animating is competing with the screen the reader is trying to use to deal
+   with the thing it is announcing. The reduced-motion rule above already flattens this to
+   nothing for anyone who has asked the operating system to stop moving things. */
+@keyframes ind-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

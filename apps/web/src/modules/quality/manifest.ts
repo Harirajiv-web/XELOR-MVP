@@ -22,6 +22,8 @@ export const qualityManifest: ModuleManifest = {
       path: "inspections",
       permission: "quality.inspection.read",
       icon: "ClipboardCheck",
+      description:
+        "Every lot that has been put in front of an inspector, with the gate it was checked at, the sample size the plan called for, and the verdict the readings produced. The verdict is computed from the readings against the plan — an inspector records what they measured, not whether it passed.",
     },
     {
       label: "Inspection",

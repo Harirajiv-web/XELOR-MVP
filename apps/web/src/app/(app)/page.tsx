@@ -2,10 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "@spine/auth/session";
 import { useAccess } from "@spine/access/permissions";
-import { Empty, Loading } from "@spine/states";
-import { AppShell } from "@spine/shell/app-shell";
+import { Empty } from "@spine/states";
 import { orderedModules } from "@modules/registry";
 import { moduleAvailability, visibleNav } from "@spine/registry/manifest";
 
@@ -15,18 +13,16 @@ import { moduleAvailability, visibleNav } from "@spine/registry/manifest";
  * A dashboard would be the conventional answer and would be a worse one right now: an
  * empty dashboard is the most common way a new ERP makes a first impression of "there is
  * nothing in here". Landing on real data does not have that problem.
+ *
+ * The signed-in gate lives in `(app)/layout.tsx`, so by the time this renders the access
+ * answer has already arrived.
  */
 export default function Home(): React.JSX.Element {
   const router = useRouter();
-  const { status, signIn } = useSession();
   const { ready, can, isLicensed } = useAccess();
 
   useEffect(() => {
-    if (status === "anonymous") signIn("/");
-  }, [status, signIn]);
-
-  useEffect(() => {
-    if (status !== "authenticated" || !ready) return;
+    if (!ready) return;
     for (const m of orderedModules()) {
       if (moduleAvailability(m, { isLicensed, can }) !== null) continue;
       const first = visibleNav(m, can)[0];
@@ -35,16 +31,12 @@ export default function Home(): React.JSX.Element {
         return;
       }
     }
-  }, [status, ready, can, isLicensed, router]);
-
-  if (status !== "authenticated" || !ready) return <Loading label="Signing you in…" />;
+  }, [ready, can, isLicensed, router]);
 
   return (
-    <AppShell>
-      <Empty
-        title="Nothing is available to you yet"
-        body="Your account is signed in, but no module is both licensed for this company and permitted for your role. Your administrator can grant you access."
-      />
-    </AppShell>
+    <Empty
+      title="Nothing is available to you yet"
+      body="Your account is signed in, but no module is both licensed for this company and permitted for your role. Your administrator can grant you access."
+    />
   );
 }

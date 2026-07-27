@@ -1,5 +1,5 @@
 import { date, inr, inrShort, num } from "@spine/format";
-import type { ModuleManifest } from "@spine/registry/manifest";
+import type { ModuleAlert, ModuleManifest } from "@spine/registry/manifest";
 import { accountsApi } from "./api";
 
 /**
@@ -80,12 +80,16 @@ export const accountsManifest: ModuleManifest = {
       path: "trial-balance",
       permission: "accounts.ledger.read",
       icon: "BookOpen",
+      description:
+        "Every journal line posted on or before the as-at date, summed by account. Nothing on this screen is typed in — each figure is the total of vouchers you can open and read. If debits and credits do not agree, that is a fault in the books, not in this page.",
     },
     {
       label: "Vouchers",
       path: "vouchers",
       permission: "accounts.ledger.read",
       icon: "ReceiptText",
+      description:
+        "What was actually written to the general ledger, line by line, on the day it was posted. A posted voucher is never edited or deleted — a correction is a fresh entry — because eight years of audit trail depends on yesterday's books still saying what they said yesterday.",
     },
     {
       // Reached by clicking a row on Vouchers, and from links carrying a voucher id in

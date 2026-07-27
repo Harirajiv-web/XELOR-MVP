@@ -11,6 +11,8 @@ import { orderedModules } from "@modules/registry";
 import { moduleAvailability, visibleNav } from "../registry/manifest";
 import { groupByDepartment } from "../registry/departments";
 import { CopilotRail } from "./copilot-rail";
+import { AlertCentre } from "./alert-centre";
+import { ThemeToggle } from "../theme/theme-toggle";
 
 /**
  * THE APPLICATION FRAME — MAINDECK's three-column shell.
@@ -213,7 +215,17 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                               <li key={href}>
                                 <Link
                                   href={href}
-                                  title={collapsed ? `${m.name} — ${n.label}` : n.label}
+                                  // The description on hover, so somebody can find out what
+                                  // "MRP run" contains without having to open it and guess
+                                  // from a table. The label alone is the one thing a menu
+                                  // cannot explain, and this menu has fifty-three of them.
+                                  title={
+                                    n.description
+                                      ? `${m.name} — ${n.label}\n\n${n.description}`
+                                      : collapsed
+                                        ? `${m.name} — ${n.label}`
+                                        : n.label
+                                  }
                                   aria-current={active ? "page" : undefined}
                                   className={cn(
                                     "flex items-center gap-2.5 rounded-[8px] py-[6px] pr-2.5 text-[12.4px] font-medium transition-all",
@@ -315,6 +327,14 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
               Licence expired — still running
             </span>
           ) : null}
+
+          {/* The bell sits BEFORE the copilot button, and that order is deliberate. This one
+              tells you something has happened whether or not you asked; the copilot answers
+              when you do. A person scanning left to right meets the interruption first,
+              which is the only one of the two that can be time-critical. */}
+          <AlertCentre />
+
+          <ThemeToggle />
 
           <button
             type="button"

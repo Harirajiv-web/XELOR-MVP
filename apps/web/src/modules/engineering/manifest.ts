@@ -55,6 +55,8 @@ export const engineeringManifest: ModuleManifest = {
       path: "items",
       permission: "engineering.item.read",
       icon: "Package",
+      description:
+        "Every part this factory buys, makes or sells — its code, description, unit of measure, standard cost, and whether a bill of material exists for it. The list is read from the item master a page at a time, and the filter box searches only the pages already loaded, so use Load more to search further. Nothing on this screen adds, edits or deletes an item.",
     },
     {
       // There is no list endpoint for bills of material — only `GET /engineering/boms/:id` —
@@ -66,6 +68,11 @@ export const engineeringManifest: ModuleManifest = {
       permission: "engineering.bom.read",
       icon: "ListTree",
       hidden: true,
+      // Hidden entries are not checked by `module-check`, but the route draws this band for
+      // them too — and a detail screen somebody reaches by pasting a URL is exactly the one
+      // that arrives with no context at all.
+      description:
+        "One bill of material, opened from an item row: the components and how much of each, read back from the stored BOM version. The quantities are for the output quantity shown at the top — a BOM that makes ten pumps lists what ten pumps consume, not one. There is no list of bills of material to browse; this screen needs a BOM identifier in the address.",
     },
   ],
   screens: {
@@ -125,4 +132,20 @@ export const engineeringManifest: ModuleManifest = {
       },
     },
   ],
+  /**
+   * NO ALERTS, DELIBERATELY.
+   *
+   * The obvious candidate — an engineering change order sitting unapproved past its
+   * effective date — cannot be raised, because there is no ECR or ECO here yet. The backend
+   * carries four endpoints in total (list and create items, get and create a BOM); there is
+   * no change-control table, no effectivity date and no approval state to compare against
+   * today. An alert has to be arithmetic over a row that exists, and that row does not.
+   *
+   * The other candidates are all the wrong shape for a bell. "This item has no bill of
+   * material" is a fact about a factory that buys the part, not a problem; "this BOM has no
+   * components" is not queryable without a list endpoint; and "an item planned with no
+   * planning policy" is already raised by PLANNING as a `data_warning` exception, where it
+   * belongs. A module with nothing time-critical to say says nothing, rather than
+   * manufacturing an interruption so the bell has something from Engineering in it.
+   */
 };

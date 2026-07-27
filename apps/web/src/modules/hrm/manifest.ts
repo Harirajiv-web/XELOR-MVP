@@ -92,6 +92,8 @@ export const hrmManifest: ModuleManifest = {
       path: "employees",
       permission: "hrm.employee.read",
       icon: "Contact",
+      description:
+        "The employee master — everyone on the roll, with their code, grade and date of joining. Personal identifiers (PAN, Aadhaar, bank account) are never shown in a list, however senior you are; open one person to see how those are held and who may read them.",
     },
     {
       // Reached by clicking a row on Employees. Routable, never in the sidebar — a menu
@@ -106,18 +108,24 @@ export const hrmManifest: ModuleManifest = {
       path: "muster",
       permission: "hrm.attendance.read",
       icon: "CalendarCheck",
+      description:
+        "One row per person for the month: what the punches worked out to after shifts, weekly offs, holidays and approved leave were applied. Paid days here are what payroll will actually use, so a wrong punch shows up as money before anybody argues about it.",
     },
     {
       label: "Leave balances",
       path: "leave",
       permission: "hrm.leave.read",
       icon: "CalendarDays",
+      description:
+        "What one person has in hand this leave year, and how they got there — carried forward, accrued, taken, encashed. The balance is not a stored number that somebody adjusts; it is the sum of those movements, so every figure can be traced to the day it happened.",
     },
     {
       label: "Statutory rates",
       path: "statutory",
       permission: "hrm.statutory.read",
       icon: "Scale",
+      description:
+        "Every PF, ESI, gratuity, overtime and wage-definition rate this system has ever applied, each dated from the day it took effect. Old rates are kept, not overwritten — that is what lets a payslip from last year be recomputed and come out the same.",
     },
   ],
   screens: {

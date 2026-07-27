@@ -101,6 +101,8 @@ export const cspManifest: ModuleManifest = {
       path: "tickets",
       permission: "csp.ticket.read",
       icon: "Ticket",
+      description:
+        "Every service request the desk is holding, with the clock the customer was promised. The clock starts when the customer called, not when somebody got round to typing it in — so a ticket entered late is already showing time spent, which is the honest figure.",
     },
     {
       label: "Ticket",
@@ -114,18 +116,24 @@ export const cspManifest: ModuleManifest = {
       path: "spares",
       permission: "csp.ticket.read",
       icon: "PackageSearch",
+      description:
+        "Parts asked for on service jobs, with the entitlement engine's verdict on whether the customer pays or the warranty does. The verdict is worked out from the contract dates and the part, not decided by whoever raised the request.",
     },
     {
       label: "Service dashboard",
       path: "dashboard",
       permission: "csp.dashboard.read",
       icon: "Gauge",
+      description:
+        "How the desk is doing right now: what is open, what is past its promise, what keeps breaking, and how often the assistant's suggestions have to be corrected. That last figure is deliberately on the same screen as the rest — a suggestion engine nobody is scoring is a suggestion engine nobody should trust.",
     },
     {
       label: "Customer satisfaction",
       path: "csat",
       permission: "csp.dashboard.read",
       icon: "Smile",
+      description:
+        "What customers said after their ticket was closed, how many of them bothered to reply, and how many low scores are still waiting on somebody. The response rate is shown beside the score because an excellent average from four replies is not an excellent service.",
     },
   ],
   screens: {

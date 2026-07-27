@@ -67,10 +67,10 @@ const TONE: Record<string, string> = {
  */
 const RAMP = [
   "var(--brand)",
-  "color-mix(in srgb, var(--brand) 68%, white)",
-  "color-mix(in srgb, var(--brand) 44%, white)",
-  "color-mix(in srgb, var(--brand) 26%, white)",
-  "color-mix(in srgb, var(--brand) 14%, white)",
+  "color-mix(in srgb, var(--brand) 72%, var(--ramp-mix))",
+  "color-mix(in srgb, var(--brand) 50%, var(--ramp-mix))",
+  "color-mix(in srgb, var(--brand) 34%, var(--ramp-mix))",
+  "color-mix(in srgb, var(--brand) 22%, var(--ramp-mix))",
 ];
 
 /** The colour for a slice: the module's tone if it set one, otherwise a silent shade. */

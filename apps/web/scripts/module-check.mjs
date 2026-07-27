@@ -17,6 +17,7 @@
  *   2. no module imports from another module (the rule that makes deletion safe)
  *   3. every permission a manifest names exists in the platform's permission registry
  *   4. every nav entry has a screen, and every screen is reachable from some nav entry
+ *   5. every visible nav entry explains itself in plain language
  */
 
 import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
@@ -114,6 +115,40 @@ if (existsSync(PERMISSION_REGISTRY)) {
   notes.push("platform permission registry not found — permission names were NOT verified.");
 }
 
+/**
+ * The `{ … }` blocks inside a manifest's `nav: [ … ]`, as raw source.
+ *
+ * Braces are counted rather than pattern-matched. A nav entry is a flat object today, but
+ * the first one that gains a nested value would silently stop being seen by a regex — and a
+ * check that quietly stops checking is worse than no check, because everybody believes it
+ * is still running.
+ */
+function navEntries(src) {
+  const start = src.indexOf("nav: [");
+  if (start === -1) return [];
+  let depth = 0;
+  let entryStart = -1;
+  const out = [];
+  for (let i = src.indexOf("[", start); i < src.length; i++) {
+    const c = src[i];
+    if (c === "[") depth++;
+    else if (c === "]") {
+      depth--;
+      if (depth === 0) break;
+    } else if (c === "{") {
+      if (depth === 1) entryStart = i;
+      depth++;
+    } else if (c === "}") {
+      depth--;
+      if (depth === 1 && entryStart !== -1) {
+        out.push(src.slice(entryStart, i + 1));
+        entryStart = -1;
+      }
+    }
+  }
+  return out;
+}
+
 const manifestPerms = new Map();
 for (const moduleKey of folders) {
   const manifestPath = join(MODULES_DIR, moduleKey, "manifest.ts");
@@ -149,6 +184,21 @@ for (const moduleKey of folders) {
       notes.push(
         `src/modules/${moduleKey}: screen "${s}" is registered but no nav entry points at it ` +
           `(fine for a detail screen reached by link).`,
+      );
+    }
+  }
+
+  /* ---- 5. every visible nav entry explains itself ------------------------ */
+  for (const entry of navEntries(src)) {
+    const path = /path:\s*"([a-z0-9-]+)"/.exec(entry)?.[1] ?? "?";
+    // A hidden entry is a detail screen reached from a row, not something anybody picks
+    // out of a menu cold. It arrives with all the context of the row that opened it.
+    if (/hidden:\s*true/.test(entry)) continue;
+    if (!/description:\s*["'`]/.test(entry)) {
+      problems.push(
+        `src/modules/${moduleKey}: nav entry "${path}" has no description. Every screen has ` +
+          `to say what it shows, in plain language, for the person meeting it for the first ` +
+          `time — and the screen that gets forgotten will be somebody's first.`,
       );
     }
   }

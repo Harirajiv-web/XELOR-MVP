@@ -76,46 +76,69 @@ export const aiopsManifest: ModuleManifest = {
       path: "map",
       permission: "aiops.registry.read",
       icon: "Network",
+      description:
+        "Where the AI layer touches the rest of the product, and — just as deliberately — where it does not. Every line on this page is drawn from the code itself: the closed feature registry, the actual call sites, and the copilot's fixed catalogue of questions. Nothing here is a diagram somebody drew.",
+    },
+    {
+      label: "Connectors",
+      path: "connectors",
+      permission: "aiops.registry.read",
+      icon: "Cable",
+      description:
+        "The live operations console for the AI layer: every system it reads evidence from or drafts actions into, what each one is doing right now, and what it has produced today. Systems that are specified but not yet built are shown as not connected rather than left off, because a console that only shows what works is not a console.",
     },
     {
       label: "Feature registry",
       path: "registry",
       permission: "aiops.registry.read",
       icon: "List",
+      description:
+        "Every place this system is allowed to use AI at all, how far each one has been rolled out, and what happens when it is switched off. The list is closed by rule — a feature that is not on it cannot run — so this page is the complete answer to \"what can your AI do\", including the parts we have not built.",
     },
     {
       label: "Providers",
       path: "providers",
       permission: "aiops.registry.read",
       icon: "Server",
+      description:
+        "The model providers this company may route to, which region each one serves from, and whether they have contractually agreed not to train on your data. Nothing on this screen changes routing; it shows what was agreed and where the data physically goes.",
     },
     {
       label: "Evaluations",
       path: "evals",
       permission: "aiops.registry.read",
       icon: "FlaskConical",
+      description:
+        "Every run of a feature against its golden set — a fixed set of questions with known right answers. A run has to beat the plain rules by a declared margin and get every must-pass case right, or the prompt cannot be promoted. Features with no golden set are shown as such rather than as passing.",
     },
     {
       label: "Cost & budget",
       path: "cost",
       permission: "aiops.cost.read",
       icon: "IndianRupee",
+      description:
+        "What every AI feature has cost in this window, and how often a person accepted what it produced. Each call is priced at the rate in force on the day it ran, so a later change to a provider's pricing never rewrites what last month actually cost.",
     },
     {
       label: "Review queue",
       path: "review",
       permission: "aiops.hitl.review",
       icon: "UserCheck",
+      description:
+        "Drafts the AI produced that a person has to confirm before they become anything at all. Nothing in this queue has been written to a business record — that is the whole point of it, and it is why the AI in this product cannot act on its own.",
     },
     {
       label: "AI incidents",
       path: "incidents",
       permission: "aiops.registry.read",
       icon: "ShieldAlert",
+      description:
+        "Everything that has gone wrong with the AI itself — a wrong answer that reached somebody, a guardrail that missed, a provider that degraded — and what was done about it. This page exists to be read by a sceptic; an empty one would mean nothing was being recorded, not that nothing went wrong.",
     },
   ],
   screens: {
     map: () => import("./screens/map"),
+    connectors: () => import("./screens/connectors"),
     registry: () => import("./screens/registry"),
     providers: () => import("./screens/providers"),
     evals: () => import("./screens/evals"),
