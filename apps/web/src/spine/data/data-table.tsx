@@ -70,26 +70,23 @@ export function DataTable<T>({
   if (loading) return <Loading />;
   if (rows.length === 0) return <>{empty ?? <Empty />}</>;
 
-  const cellPad = density === "compact" ? "px-2.5 py-1.5" : "px-3 py-2.5";
-  const rowH = density === "compact" ? "h-8" : "h-11";
+  // MAINDECK's `table.grid`, defined once in globals.css so every one of the sixteen
+  // modules picks up the same treatment without editing fifty-one screens.
+  const compact = density === "compact";
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)]">
+    <div className="card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-[13px]">
+        <table className="grid-table" style={compact ? { fontSize: "12px" } : undefined}>
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <thead>
-            <tr className="border-b border-[var(--border-input)]">
+            <tr>
               {columns.map((c) => (
                 <th
                   key={c.key}
                   scope="col"
-                  className={cn(
-                    "sticky top-0 z-10 bg-[var(--surface)] text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]",
-                    cellPad,
-                    c.numeric ? "text-right" : "text-left",
-                    c.width,
-                  )}
+                  className={cn(c.numeric && "text-right!", c.width)}
+                  style={compact ? { padding: "7px 12px" } : undefined}
                 >
                   {c.header}
                 </th>
@@ -101,20 +98,13 @@ export function DataTable<T>({
               <tr
                 key={rowKey(row, i)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={cn(
-                  rowH,
-                  "border-b border-[var(--border-subtle)] last:border-b-0",
-                  onRowClick && "cursor-pointer hover:bg-[var(--brand-soft-2)]",
-                )}
+                {...(onRowClick ? { "data-clickable": "" } : {})}
               >
                 {columns.map((c) => (
                   <td
                     key={c.key}
-                    className={cn(
-                      cellPad,
-                      "align-middle text-[var(--text-primary)]",
-                      c.numeric && "text-right tabular-nums",
-                    )}
+                    className={cn(c.numeric && "text-right tabular-nums")}
+                    style={compact ? { padding: "6px 12px" } : undefined}
                     {...(c.numeric ? { "data-numeric": "" } : {})}
                   >
                     {c.render(row)}

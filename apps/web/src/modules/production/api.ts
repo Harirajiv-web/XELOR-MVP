@@ -48,9 +48,89 @@ export interface ProductionOrderDetail extends ProductionOrderRow {
   components: ProductionComponentRow[];
 }
 
+/**
+ * What an issue or a completion did to the stock ledger, as the endpoint reported it back.
+ *
+ * READ ONLY, and rendered exactly as received. Production never writes stock: both actions
+ * reach the ledger through Inventory's single write path, inside Production's own
+ * transaction, and this screen only ever prints the receipt. Nothing in this module builds a
+ * stock movement or calls a stock endpoint (DECISIONS-V2 §5.6).
+ */
+export interface StockMovementResult {
+  itemId: string;
+  warehouseId: string;
+  /** Negative on an issue, positive on a receipt. */
+  delta: number;
+  balanceAfter: number;
+}
+
+/** The order as the WRITE paths return it — the module's own columns, without item naming. */
+export interface ProductionOrderCoreResult {
+  id: string;
+  orderNo: string;
+  itemId: string;
+  bomId: string;
+  qtyToProduce: string;
+  producedQty: string;
+  sourceWarehouseId: string;
+  fgWarehouseId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  components: Array<{
+    lineNo: number;
+    componentItemId: string;
+    requiredQty: string;
+    issuedQty: string;
+  }>;
+}
+
+export interface ProductionActionResult {
+  order: ProductionOrderCoreResult;
+  stockMovements: StockMovementResult[];
+}
+
+/**
+ * An item the plant can be told to make. From ENGINEERING's item master, read over HTTP like
+ * any other screen would — never a cross-module import.
+ *
+ * `bomCount` is why this list is filtered rather than shown whole: an order raised against an
+ * item with no active bill of materials is refused by the server every time, so offering it
+ * would be offering a guaranteed rejection.
+ */
+export interface ItemOption {
+  id: string;
+  itemCode: string;
+  name: string;
+  itemType: string;
+  uom: string;
+  bomCount: number;
+  defaultBomId: string | null;
+}
+
+/** A warehouse to issue from or receive into. From INVENTORY's warehouse master. */
+export interface WarehouseOption {
+  id: string;
+  code: string;
+  name: string;
+  warehouseType: string;
+}
+
 export const productionApi = {
   ordersPath: "/production/orders",
   orderPath: (id: string): string => `/production/orders/${id}`,
+  /** Consume every outstanding component line, in one posting. `production.order.execute`. */
+  issuePath: (id: string): string => `/production/orders/${id}/issue`,
+  /** Receive output into finished goods. `production.order.execute`. */
+  completePath: (id: string): string => `/production/orders/${id}/complete`,
+  /**
+   * Masters the create form picks from. Both are GETs against other modules' read
+   * endpoints — the create schema wants two warehouse UUIDs and an item UUID, and typing a
+   * part number into a free-text box is how you get a work order for an item that does not
+   * exist.
+   */
+  itemsPath: "/engineering/items",
+  warehousesPath: "/inventory/warehouses",
 } as const;
 
 /** Outstanding on a line or an order. Subtraction on strings needs a deliberate crossing. */

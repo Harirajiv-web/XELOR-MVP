@@ -135,11 +135,11 @@ export function StatusBadge({
   const { icon: Icon, className: toneClass } = TONES[resolved];
   return (
     <span
-      className={cn(
-        "inline-flex h-6 shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 text-[11px] font-semibold uppercase tracking-[0.04em]",
-        toneClass,
-        className,
-      )}
+      // `.chip` is MAINDECK's own chip geometry — 10.5px, 700 weight, 3px/9px, fully
+      // rounded. The eight tones layer on top of it rather than replacing it, so the badge
+      // reads as the deck's chip while still carrying the state distinctions the deck
+      // collapsed into two.
+      className={cn("chip shrink-0 uppercase", toneClass, className)}
     >
       <Icon className="h-3 w-3 shrink-0" aria-hidden />
       {label ?? humanise(status)}

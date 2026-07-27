@@ -22,33 +22,37 @@ export function PageHeader({
   meta?: ReadonlyArray<{ label: string; value: ReactNode }>;
   actions?: ReactNode;
 }): React.JSX.Element {
+  // MAINDECK's `.mhead` / `.msub`: a 19px title on one line with its actions, the sentence
+  // underneath in muted 12px. The actions sit on the title row rather than below it, so the
+  // primary action of a screen is always in the same place on every screen.
   return (
-    <header className="flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <h1 className="text-[20px] font-bold leading-7 tracking-[-0.01em] text-[var(--text-primary)]">
+    <header>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-[19px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
           {title}
         </h1>
-        {subtitle ? (
-          <p className="mt-0.5 max-w-prose text-[13px] leading-5 text-[var(--text-secondary)]">
-            {subtitle}
-          </p>
-        ) : null}
-        {meta.length > 0 ? (
-          <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
-            {meta.map((m) => (
-              <div key={m.label} className="flex items-baseline gap-1.5">
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]">
-                  {m.label}
-                </dt>
-                <dd className="text-[13px] text-[var(--text-primary)]" data-numeric="">
-                  {m.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
+        <span className="flex-1" />
+        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {subtitle ? (
+        <p className="mt-1 max-w-prose text-[12px] leading-[1.5] text-[var(--text-muted)]">
+          {subtitle}
+        </p>
+      ) : null}
+      {meta.length > 0 ? (
+        <dl className="mt-2.5 flex flex-wrap gap-x-6 gap-y-1">
+          {meta.map((m) => (
+            <div key={m.label} className="flex items-baseline gap-1.5">
+              <dt className="text-[10px] font-bold uppercase tracking-[0.07em] text-[var(--text-muted)]">
+                {m.label}
+              </dt>
+              <dd className="text-[12.5px] font-semibold text-[var(--text-primary)]" data-numeric="">
+                {m.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </header>
   );
 }

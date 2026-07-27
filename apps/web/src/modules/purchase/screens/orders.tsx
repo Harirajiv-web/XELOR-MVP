@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCursorList } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty } from "@spine/states";
+import { Can } from "@spine/access/permissions";
 import { inr, date, relativeDays } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
@@ -13,6 +14,7 @@ import { cn } from "@spine/ui/cn";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { PoSummaryRow } from "../api";
 import { purchaseApi, isLate } from "../api";
+import { NewPurchaseOrderModal } from "../components/new-purchase-order";
 
 /**
  * PURCHASE ORDERS — the list a plant manager opens to answer one question: what is
@@ -60,6 +62,9 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
 
   const [tab, setTab] = useState("all");
   const [filter, setFilter] = useState("");
+  // The create form is mounted only while open, which is what gives each attempt its own
+  // idempotency key — one key per open form, reused across retries within it.
+  const [creating, setCreating] = useState(false);
 
   const rows = useMemo(() => {
     const active = TABS.find((t) => t.key === tab) ?? TABS[0];
@@ -161,6 +166,18 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
             ? [{ label: "Past promised date", value: String(overdue.length) }]
             : []),
         ]}
+        actions={
+          // Drawn only for somebody who can actually raise one. The client-side check decides
+          // what to DRAW, never what is permitted — the API's guard is the one that matters —
+          // but offering a Raise button to a stores clerk who cannot use it wastes a decision
+          // they were never allowed to make.
+          <Can permission="purchase.po.create">
+            <button type="button" className="btn btn-pri" onClick={() => setCreating(true)}>
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              New purchase order
+            </button>
+          </Can>
+        }
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -235,10 +252,31 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
             <Empty
               title="No purchase orders yet"
               body="Purchase orders appear here once one is raised against a vendor — from a planning requisition, or directly by a buyer."
+              action={
+                <Can permission="purchase.po.create">
+                  <button
+                    type="button"
+                    className="btn btn-pri"
+                    onClick={() => setCreating(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" aria-hidden />
+                    New purchase order
+                  </button>
+                </Can>
+              }
             />
           )
         }
       />
+
+      {creating ? (
+        <NewPurchaseOrderModal
+          onClose={() => setCreating(false)}
+          // The form navigates to the new order itself; reloading the list means the row is
+          // already there when the user comes back to it.
+          onCreated={() => reload()}
+        />
+      ) : null}
     </div>
   );
 }

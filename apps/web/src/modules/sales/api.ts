@@ -79,12 +79,68 @@ export interface CustomerRow {
   creditLimit: string;
 }
 
+/**
+ * An item as the New-order form needs it, from ENGINEERING's list endpoint.
+ *
+ * A SALES SCREEN CALLING AN ENGINEERING ENDPOINT IS FINE, and the distinction is worth
+ * stating once because it will come up in every create form after this one. The boundary
+ * rule is about IMPORTS between module FOLDERS — `modules/sales/` may not import
+ * `modules/engineering/`, because that is what would stop either folder from being
+ * deletable. It says nothing about HTTP: an order line names an item, the item master is
+ * Engineering's system of record, and the sanctioned way to read somebody else's master is
+ * to ask their endpoint for it. The alternative — Sales keeping its own copy of the item
+ * list — is the actual boundary violation.
+ *
+ * `GET /engineering/items` does NOT return `hsnCode`, so HSN is typed on the line. See the
+ * note on the form.
+ */
+export interface ItemOption {
+  id: string;
+  itemCode: string;
+  name: string;
+  itemType: string;
+  uom: string;
+}
+
+/** One of the tenant's own GST registrations — GENERAL's `GstRegistrationRow`. */
+export interface GstRegistrationOption {
+  id: string;
+  gstin: string;
+  stateCode: string;
+  /** "Pune-Chakan", "Coimbatore" — the registered place of business, i.e. the plant. */
+  placeName: string;
+}
+
+/** A company with the places it is registered to trade from — GENERAL's list row. */
+export interface CompanyOption {
+  id: string;
+  legalName: string;
+  registrations: GstRegistrationOption[];
+}
+
+/** A warehouse, from INVENTORY. Returned as a bare array, not a cursor page. */
+export interface WarehouseOption {
+  id: string;
+  code: string;
+  name: string;
+  warehouseType: string;
+}
+
 export const salesApi = {
   ordersPath: "/sales/orders",
   orderPath: (id: string): string => `/sales/orders/${id}`,
   customersPath: "/sales/customers",
+  /**
+   * Endpoints the New-order form reads to fill its pickers. Other modules' HTTP surfaces,
+   * deliberately — see `ItemOption` above for why that is not a boundary breach.
+   */
+  itemsPath: "/engineering/items",
+  companiesPath: "/general/companies",
+  warehousesPath: "/inventory/warehouses",
   /** `listQuerySchema` caps `limit` at 100 and rejects anything above it. */
   pageSize: 50,
+  /** Pickers pull the largest page the API allows, then filter what has been loaded. */
+  pickerPageSize: 100,
 } as const;
 
 /**

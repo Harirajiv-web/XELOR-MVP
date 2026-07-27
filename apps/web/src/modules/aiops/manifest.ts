@@ -3,9 +3,10 @@ import type { ModuleManifest } from "@spine/registry/manifest";
 /**
  * AI OPERATIONS (ONYX, cross-cutting).
  *
- * Six read-only screens, and they exist to answer one question a sceptical buyer asks:
- * what stops this thing doing something stupid? What is registered, what it cost, what
- * passed its evaluations, what a human still has to approve, and what can be switched off.
+ * Seven read-only screens, and they exist to answer one question a sceptical buyer asks:
+ * what stops this thing doing something stupid? How the layer is wired to the rest of the
+ * product, what is registered, what it cost, what passed its evaluations, what a human
+ * still has to approve, and what can be switched off.
  *
  * The consequential controls — engaging the kill switch, promoting a prompt, changing a
  * rollout stage, accepting a draft — are deliberately ABSENT from this pass. They are the
@@ -21,6 +22,16 @@ export const aiopsManifest: ModuleManifest = {
   licenceKey: "aiops",
   order: 80,
   nav: [
+    {
+      // First, because it is the screen that answers "what IS this layer" before any of the
+      // others answer "and is it behaving". A buyer who opens Feature registry cold sees a
+      // list of eight keys; the same person who opens the map first sees why there are only
+      // eight and what they are wired to.
+      label: "Connection map",
+      path: "map",
+      permission: "aiops.registry.read",
+      icon: "Network",
+    },
     {
       label: "Feature registry",
       path: "registry",
@@ -59,6 +70,7 @@ export const aiopsManifest: ModuleManifest = {
     },
   ],
   screens: {
+    map: () => import("./screens/map"),
     registry: () => import("./screens/registry"),
     providers: () => import("./screens/providers"),
     evals: () => import("./screens/evals"),

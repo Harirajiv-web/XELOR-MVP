@@ -22,8 +22,18 @@ export const generalManifest: ModuleManifest = {
       permission: "general.company.read",
       icon: "Building2",
     },
+    {
+      // The organisation that builds and owns the system, beside the organisation that
+      // uses it. Anyone who may see the company masters may see how the platform behind
+      // them is organised — it describes structure, not a single row of anybody's data.
+      label: "Departments & agents",
+      path: "departments",
+      permission: "general.company.read",
+      icon: "Users",
+    },
   ],
   screens: {
     companies: () => import("./screens/companies"),
+    departments: () => import("./screens/departments"),
   },
 };

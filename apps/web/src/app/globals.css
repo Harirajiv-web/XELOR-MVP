@@ -31,8 +31,9 @@
   --font-ui: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
 
-  --radius-card: 10px;
-  --radius-control: 6px;
+  /* MAINDECK's radii exactly: --r:12px, --r-sm:8px. */
+  --radius-card: 12px;
+  --radius-control: 8px;
 }
 
 :root {
@@ -99,6 +100,50 @@
   --shadow-md: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.07);
   --shadow-lg: 0 4px 10px rgba(16, 24, 40, 0.08), 0 20px 48px rgba(16, 24, 40, 0.16);
   --shadow-bar: 0 -4px 12px rgba(16, 24, 40, 0.08);
+
+  /* ==========================================================================
+     MAINDECK.html, verbatim.
+     ==========================================================================
+     The deck is the agreed look of this product, so its palette is carried across
+     unchanged rather than re-derived. These are the exact hexes from its `:root`,
+     under the deck's own names, so a value can be compared side by side without
+     translating between two vocabularies.
+
+     `--ok`, `--warn`, `--bad`, `--gold` and `--violet` are FILLS AND ACCENTS — chip
+     backgrounds, rule bars, sparkline strokes, the 3px edge on a decision cell. Used
+     that way they carry the deck's look exactly.
+
+     Two of them fail WCAG AA as SMALL TEXT on white (--ok at 3.45:1, --gold at 3.20:1;
+     AA needs 4.5:1). Rather than change the deck's colours, there is a darkened text-only
+     partner for each. The chip looks identical; the label inside it is legible on a cheap
+     monitor in a factory office, which is where this will actually be read. */
+  --grid: #e9edf2;
+  --mut: #8494a3;
+
+  --ok: #1f9d68;
+  --ok-soft: #e4f4ec;
+  --ok-ink: #116932;
+
+  --warn: #c2410c;
+  --warn-soft: #fceee4;
+  --warn-ink: #92400e;
+
+  --bad: #b91c1c;
+  --bad-soft: #fae7e7;
+  --bad-ink: #991b1b;
+
+  --gold: #b5891d;
+  --gold-soft: #f8f1de;
+  --gold-line: #ecdcae;
+  --gold-ink: #7d5e12;
+
+  --violet: #7c5cd6;
+  --violet-soft: #efebfa;
+
+  /* The deck's layout system: sidebar, copilot rail, topbar. */
+  --side: 236px;
+  --cop: 384px;
+  --top: 60px;
 }
 
 :root[data-theme="dark"] {
@@ -155,6 +200,32 @@
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 24px 56px rgba(0, 0, 0, 0.5);
   --shadow-bar: 0 -4px 12px rgba(0, 0, 0, 0.4);
+
+  /* The deck is a light design and has no dark counterpart. These are the same hues
+     lifted for a dark surface — the hue is preserved so the product still reads as the
+     same product, and only the lightness moves. */
+  --grid: #1b2438;
+  --mut: #93a0b4;
+
+  --ok: #34d399;
+  --ok-soft: #10281a;
+  --ok-ink: #4ade80;
+
+  --warn: #fb923c;
+  --warn-soft: #2b2013;
+  --warn-ink: #e0a542;
+
+  --bad: #f2777a;
+  --bad-soft: #2c1416;
+  --bad-ink: #ef6a6d;
+
+  --gold: #d9ab48;
+  --gold-soft: #2a2313;
+  --gold-line: #4a3d1c;
+  --gold-ink: #e2bb63;
+
+  --violet: #9d7fe0;
+  --violet-soft: #201a35;
 }
 
 /* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */
@@ -183,9 +254,10 @@
    ============================================================================ */
 
 html {
-  /* 13px base, not 14+. At eight hours a day on a stock-balance table, every extra pixel
-     of line-height is a row that fell off the screen. */
-  font-size: 13px;
+  /* 13.5px, matching MAINDECK. The earlier 13px was chosen to fit more rows on a screen;
+     the deck's half-pixel back is worth it for a workforce reading these tables in mixed
+     factory light, and the density is recovered in the row padding instead. */
+  font-size: 13.5px;
 }
 
 body {
@@ -242,4 +314,296 @@ table,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================================================
+   THE DECK'S COMPONENTS
+   ============================================================================
+   Written as real CSS classes rather than repeated utility strings, for one reason:
+   sixteen module folders and fifty-one screens already exist. Restyling them through
+   these six classes changes every screen at once; restyling them by editing screens
+   changes fifty-one files and leaves the fifty-second looking like the old product.
+
+   The class names are the deck's own — `.grid-table`, `.kpi`, `.chip`, `.btn`,
+   `.panel` — so a value can be traced back to MAINDECK.html without a translation step.
+   ============================================================================ */
+
+/* ---- tables: the deck's `table.grid` -------------------------------------- */
+.grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.grid-table th {
+  text-align: left;
+  padding: 9px 16px;
+  font-size: 10.3px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: #fbfcfd;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+:root[data-theme="dark"] .grid-table th {
+  background: var(--surface-sunken);
+}
+.grid-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--grid);
+  color: var(--text-secondary);
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.grid-table tr:last-child td {
+  border-bottom: none;
+}
+.grid-table tbody tr {
+  transition: background 0.12s;
+}
+.grid-table tbody tr:hover {
+  background: var(--brand-soft-2);
+}
+/* The first column is the document's identity — its number, its code, its name. The
+   deck weights it and colours it on hover, which is what makes a row read as a thing
+   you can open rather than a strip of values. */
+.grid-table td:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.grid-table tbody tr[data-clickable]:hover td:first-child {
+  color: var(--brand);
+}
+.grid-table tbody tr[data-clickable] {
+  cursor: pointer;
+}
+
+/* ---- KPI tiles ------------------------------------------------------------ */
+.kgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.kgrid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 980px) {
+  .kgrid,
+  .kgrid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.kpi-l {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.kpi-v {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--text-primary);
+}
+.kpi-v small {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.kpi-d {
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+/* ---- chips ---------------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.chip-ok {
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+.chip-warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+.chip-bad {
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+}
+.chip-info {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.chip-grey {
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+.chip-violet {
+  background: var(--violet-soft);
+  color: var(--ai-text);
+}
+.chip-gold {
+  background: var(--gold-soft);
+  color: var(--gold-ink);
+  border: 1px solid var(--gold-line);
+}
+
+/* ---- buttons -------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 12.5px;
+  transition: all 0.18s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-pri {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.btn-pri:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+.btn-ghost {
+  background: var(--surface);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* The AI gradient. Reserved for AI affordances, never for an ordinary action — the
+   whole product depends on a person being able to tell at a glance whether a human or a
+   machine produced what they are looking at. */
+.btn-ai {
+  background: linear-gradient(120deg, #12294f, var(--brand));
+  color: #fff;
+}
+.btn-ai:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 11.5px;
+  border-radius: 7px;
+}
+
+/* ---- cards and panels ----------------------------------------------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+.panel-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 650;
+  font-size: 13px;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.panel-h-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.panel-b {
+  padding: 16px;
+}
+
+/* ---- form controls -------------------------------------------------------- */
+.field {
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  padding: 8px 11px;
+  outline: none;
+  width: 100%;
+}
+.field:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.field-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 5px;
+}
+.field-req::after {
+  content: " *";
+  color: var(--bad);
+}
+
+/* ---- the pulse the deck uses on a critical marker ------------------------- */
+@keyframes ind-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.pulse {
+  animation: ind-pulse 1.8s infinite;
 }

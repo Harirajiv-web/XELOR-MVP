@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Can } from "@spine/access/permissions";
 import { useCursorList } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty } from "@spine/states";
@@ -12,6 +13,7 @@ import { StatusBadge } from "@spine/ui/status-badge";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { SalesOrderSummary } from "../api";
 import { creditBadge, isPastDue, salesApi, sumAmounts } from "../api";
+import { NewOrderDialog } from "../components/new-order-dialog";
 
 /** Once an order has fully shipped, a date that has passed is history, not a problem. */
 const SETTLED = new Set(["dispatched", "cancelled", "closed"]);
@@ -38,6 +40,9 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
   const { rows, loading, loadingMore, error, hasMore, loadMore, reload } =
     useCursorList<SalesOrderSummary>(salesApi.ordersPath, { limit: salesApi.pageSize });
   const [filter, setFilter] = useState("");
+  // Unmounted when closed, deliberately: the dialog pins ONE Idempotency-Key for its
+  // lifetime, so "closed and reopened" has to mean "a new key, a genuinely new order".
+  const [creating, setCreating] = useState(false);
 
   const shown = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -154,6 +159,19 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
               ]
             : []
         }
+        actions={
+          // Gated, not disabled. Somebody who cannot raise an order is never offered the
+          // button — a control that exists only to refuse you is worse than no control, and
+          // `Can` denies by default while access is still loading rather than flashing it.
+          // The guard here decides what to DRAW; `@RequirePermission("sales.order.create")`
+          // on the endpoint is the one that decides what is allowed.
+          <Can permission="sales.order.create">
+            <button type="button" className="btn btn-pri" onClick={() => setCreating(true)}>
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              New order
+            </button>
+          </Can>
+        }
       />
 
       <div className="relative max-w-sm">
@@ -193,10 +211,31 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
             <Empty
               title="No sales orders yet"
               body="Orders appear here once a customer's purchase order has been entered against a customer in the master."
+              action={
+                <Can permission="sales.order.create">
+                  <button type="button" className="btn btn-pri" onClick={() => setCreating(true)}>
+                    <Plus className="h-3.5 w-3.5" aria-hidden />
+                    Enter the first order
+                  </button>
+                </Can>
+              }
             />
           )
         }
       />
+
+      {creating ? (
+        <NewOrderDialog
+          onClose={() => setCreating(false)}
+          // Close AND GO TO THE ORDER. A form that saves and leaves you looking at the same
+          // empty form teaches people it did not work — so the created document, with its
+          // real SO number and its server-computed tax, is what they see next.
+          onCreated={(order) => {
+            setCreating(false);
+            router.push(`/sales/order/${order.id}`);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

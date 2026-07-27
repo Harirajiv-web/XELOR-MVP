@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { CircleCheckBig, Plus, Search, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Can } from "@spine/access/permissions";
 import { useCursorList } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty } from "@spine/states";
@@ -12,6 +14,7 @@ import { StatusBadge } from "@spine/ui/status-badge";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { ProductionOrderRow } from "../api";
 import { outstanding, productionApi } from "../api";
+import { NewWorkOrderDialog } from "../components/new-order-dialog";
 
 /**
  * WORK ORDERS — what the floor has been told to make.
@@ -23,12 +26,21 @@ import { outstanding, productionApi } from "../api";
  * The text filter narrows what is ALREADY LOADED, which is the honest reading of a
  * cursor-paged list and why the placeholder says so. A filter that quietly searched only the
  * first page while looking like it searched everything would be worse than no filter at all.
+ *
+ * ONE ACTION LIVES HERE: raising a work order, behind `production.order.create`. It creates
+ * a document and moves no stock — issuing components and receiving output are on the order's
+ * own screen, behind their own permission and their own confirmation. There is no edit: the
+ * API has no PATCH for a production order, and this screen does not pretend otherwise.
  */
 export default function ProductionOrdersScreen(_props: ScreenProps): React.JSX.Element {
   const router = useRouter();
   const { rows, loading, loadingMore, error, hasMore, loadMore, reload } =
     useCursorList<ProductionOrderRow>(productionApi.ordersPath);
   const [filter, setFilter] = useState("");
+  const [creating, setCreating] = useState(false);
+  // The order that was just raised, kept so the screen can NAME it. "Saved" alone is not a
+  // confirmation on a shop floor — the number is what gets written on the job card.
+  const [raised, setRaised] = useState<{ id: string; orderNo: string } | null>(null);
 
   const visible = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -116,7 +128,43 @@ export default function ProductionOrdersScreen(_props: ScreenProps): React.JSX.E
               ]
             : []
         }
+        actions={
+          <Can permission="production.order.create">
+            <button
+              type="button"
+              className="btn btn-pri min-h-[42px]"
+              onClick={() => setCreating(true)}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              New work order
+            </button>
+          </Can>
+        }
       />
+
+      {raised ? (
+        <div
+          role="status"
+          className="flex items-center gap-2.5 rounded-[var(--radius-card)] border border-[var(--ok)] bg-[var(--ok-soft)] px-3 py-2.5 text-[13px] text-[var(--ok-ink)]"
+        >
+          <CircleCheckBig className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <b>{raised.orderNo}</b> raised. Nothing has left stores yet — open it to issue
+            components when the material is drawn.
+          </span>
+          <Link href={`/production/order/${raised.id}`} className="btn btn-ghost btn-sm shrink-0">
+            Open {raised.orderNo}
+          </Link>
+          <button
+            type="button"
+            onClick={() => setRaised(null)}
+            aria-label="Dismiss"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-[var(--radius-control)] transition-colors hover:bg-[var(--surface)]"
+          >
+            <X className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        </div>
+      ) : null}
 
       <div className="relative max-w-sm">
         <Search
@@ -155,10 +203,36 @@ export default function ProductionOrdersScreen(_props: ScreenProps): React.JSX.E
             <Empty
               title="No work orders yet"
               body="Work orders appear here once a planned order is firmed, or once one is raised directly against an item that has a bill of materials."
+              action={
+                <Can permission="production.order.create">
+                  <button
+                    type="button"
+                    className="btn btn-pri min-h-[42px]"
+                    onClick={() => setCreating(true)}
+                  >
+                    <Plus className="h-4 w-4" aria-hidden />
+                    Raise the first work order
+                  </button>
+                </Can>
+              }
             />
           )
         }
       />
+
+      {creating ? (
+        <NewWorkOrderDialog
+          onClose={() => setCreating(false)}
+          onCreated={(order) => {
+            setCreating(false);
+            setRaised({ id: order.id, orderNo: order.orderNo });
+            // The list is cursor-paged and ordered by creation, so the new order is on the
+            // LAST page, not the first. Reloading is honest about that rather than pretending
+            // to insert it at the top; the strip above carries the link to it.
+            reload();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

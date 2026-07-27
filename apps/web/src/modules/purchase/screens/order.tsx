@@ -1,16 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty, ErrorState, Loading } from "@spine/states";
+import { Can } from "@spine/access/permissions";
 import { inr, qty, date, relativeDays, num } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
 import type { ScreenProps } from "@spine/registry/manifest";
-import type { PoDetail, PoLineRow } from "../api";
-import { purchaseApi, isLate, shortId } from "../api";
+import type { PoDetail, PoLineRow, PoSubmitResult } from "../api";
+import { purchaseApi, isLate, shortId, canSubmitForApproval } from "../api";
+import { ApprovalRouted, SubmitForApproval } from "../components/submit-for-approval";
 
 /**
  * ONE PURCHASE ORDER.
@@ -30,6 +33,11 @@ export default function OrderScreen(props: ScreenProps): React.JSX.Element {
   const { data, loading, error, reload } = useQuery<PoDetail>(
     id ? purchaseApi.orderPath(id) : null,
   );
+  // Kept after the submit succeeds. The order is no longer a draft by then, so the strip that
+  // did the submitting is gone — and "it worked, and here is where it went" is the half of
+  // the answer that would otherwise disappear with it. Declared above every early return,
+  // because a hook that runs on some renders and not others is a different component.
+  const [routed, setRouted] = useState<PoSubmitResult | null>(null);
 
   if (!id) {
     return (
@@ -170,6 +178,30 @@ export default function OrderScreen(props: ScreenProps): React.JSX.Element {
           { label: "Currency", value: data.currency },
         ]}
       />
+
+      {routed ? <ApprovalRouted result={routed} /> : null}
+
+      {/* ONLY FOR A DRAFT, and only for somebody who may submit one.
+          `submitPo` refuses anything that is not a draft with PO_NOT_DRAFT before it touches
+          the approval engine, so this control on an approved or already-pending order could
+          produce nothing but an error — and a button whose only outcome is a refusal is worse
+          than no button. The permission gate decides what to draw; the API's guard is what
+          actually enforces it. */}
+      {canSubmitForApproval(data.status) ? (
+        <Can permission="purchase.po.submit">
+          <SubmitForApproval
+            po={data}
+            onReload={reload}
+            onSubmitted={(result) => {
+              setRouted(result);
+              // Re-read rather than trusting the response we already hold: the status, the
+              // workflow instance id and anything else the server decided all come back on
+              // the next GET, and this screen should show what the server says it is.
+              reload();
+            }}
+          />
+        </Can>
+      ) : null}
 
       <DataTable
         rows={data.lines}
