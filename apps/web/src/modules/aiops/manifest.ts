@@ -1,4 +1,49 @@
 import type { ModuleManifest } from "@spine/registry/manifest";
+import { FEATURE_CONSUMERS, FEATURE_GOLDEN_SET } from "./api";
+
+/* --------------------------------------------------------------------------
+   READING A RESPONSE WE REFUSE TO ASSUME THE SHAPE OF.
+
+   A signal's `reduce` is handed `unknown` and runs on the department dashboard, which is a
+   page it does not own. Every step below narrows before it reads, and anything unexpected
+   returns null — a dropped tile is a missing decoration, a thrown one would be a blank
+   department page. This controller answers `{ data: [...] }`; `items` and a bare array are
+   tolerated anyway, because a tile is not the place to discover an envelope change.
+   -------------------------------------------------------------------------- */
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function rowsOf(data: unknown): readonly Record<string, unknown>[] | null {
+  let list: unknown = data;
+  if (isRecord(data)) list = data["data"] ?? data["items"];
+  if (!Array.isArray(list)) return null;
+  return list.filter(isRecord);
+}
+
+function textOf(row: Record<string, unknown>, key: string): string | null {
+  const v = row[key];
+  return typeof v === "string" ? v : null;
+}
+
+/**
+ * The rows that are actually FEATURES.
+ *
+ * `GET /aiops/registry` returns ten rows, and one of them — `integrations.no_mvp_ai` — is an
+ * explicit "this module declares no AI" entry rather than a feature. Counting it would
+ * inflate the headline by one, in the direction that flatters us, which is the direction a
+ * governance number must never drift.
+ */
+function featureRows(data: unknown): readonly Record<string, unknown>[] | null {
+  const all = rowsOf(data);
+  if (all === null || all.length === 0) return null;
+  const features = all.filter((r) => textOf(r, "status") !== "no_mvp_ai");
+  return features.length === 0 ? null : features;
+}
+
+/** DECISIONS-V2 §4.2 fixes the MVP portfolio at eight registered features. */
+const REGISTRY_CAP = 8;
 
 /**
  * AI OPERATIONS (ONYX, cross-cutting).
@@ -78,4 +123,92 @@ export const aiopsManifest: ModuleManifest = {
     review: () => import("./screens/review"),
     incidents: () => import("./screens/incidents"),
   },
+  /**
+   * THE FIGURES THIS MODULE IS WILLING TO PUT ON A DASHBOARD.
+   *
+   * All three read `GET /aiops/registry` — the one endpoint that carries both the closed
+   * feature list and this tenant's last evaluation verdict for each entry — and each is
+   * gated on `aiops.registry.read`, the permission that endpoint actually enforces.
+   *
+   * They are deliberately unflattering. A governance console whose dashboard reads healthier
+   * than its own Evaluations screen is not a governance console; it is marketing with a
+   * login. The three numbers here are the same three open items the module already states in
+   * full on its connection map: the registry is over its cap, most features have no golden
+   * set, and two of them have no implementation at all.
+   */
+  signals: [
+    {
+      // The headline that matters more than any usage figure: how many features exist
+      // against a registry §4.2 closed at eight.
+      label: "Registered features",
+      permission: "aiops.registry.read",
+      path: "/aiops/registry",
+      reduce: (data) => {
+        const features = featureRows(data);
+        if (features === null) return null;
+        const over = features.length - REGISTRY_CAP;
+        return {
+          value: String(features.length),
+          hint:
+            over > 0
+              ? `§4.2 closes the registry at ${REGISTRY_CAP}. ${over} more, with no ADR raised.`
+              : `§4.2 closes the registry at ${REGISTRY_CAP}.`,
+          tone: over > 0 ? "warn" : "ok",
+        };
+      },
+    },
+    {
+      // §4.1: nothing ships without a golden set and a passing gate. The fraction is how far
+      // that is from true today, and the hint carries the second half of it — a set on file
+      // is not the same as a gate that passed.
+      label: "Golden sets on file",
+      permission: "aiops.registry.read",
+      path: "/aiops/registry",
+      reduce: (data) => {
+        const features = featureRows(data);
+        if (features === null) return null;
+        const withSet = features.filter((r) => {
+          const key = textOf(r, "key");
+          return key !== null && typeof FEATURE_GOLDEN_SET[key] === "string";
+        }).length;
+        const passing = features.filter((r) => textOf(r, "lastEvalVerdict") === "pass").length;
+        const missing = features.length - withSet;
+        return {
+          value: `${withSet} of ${features.length}`,
+          fraction: withSet / features.length,
+          hint: `${missing} have none · ${passing} passed the gate. §4.1: no golden set, no ship.`,
+          tone: missing > 0 ? "bad" : passing < features.length ? "warn" : "ok",
+        };
+      },
+    },
+    {
+      // The one chart on this card, and it is a funnel rather than a usage split on purpose:
+      // registration is not delivery, delivery is not evaluation, and an evaluation that has
+      // not run proves nothing. Each step reads live keys from the registry; whether a key
+      // has an adapter or a golden set comes from this module's own transcribed source facts,
+      // each of which names the file it was copied from.
+      label: "Registered to shippable",
+      permission: "aiops.registry.read",
+      path: "/aiops/registry",
+      reduce: (data) => {
+        const features = featureRows(data);
+        if (features === null) return null;
+        const keys = features.map((r) => textOf(r, "key")).filter((k): k is string => k !== null);
+        const implemented = keys.filter((k) => (FEATURE_CONSUMERS[k] ?? []).length > 0).length;
+        const withSet = keys.filter((k) => typeof FEATURE_GOLDEN_SET[k] === "string").length;
+        const passing = features.filter((r) => textOf(r, "lastEvalVerdict") === "pass").length;
+        return {
+          value: String(features.length),
+          hint: "Registered",
+          tone: passing < features.length ? "warn" : "ok",
+          series: [
+            { label: "Registered", value: features.length },
+            { label: "Implemented", value: implemented },
+            { label: "Golden set", value: withSet },
+            { label: "Gate passed", value: passing },
+          ],
+        };
+      },
+    },
+  ],
 };

@@ -129,7 +129,19 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                   // The department header carries its four-letter code as a coloured
                   // marker. Not decoration: the code is how this organisation refers to the
                   // owner of everything underneath it, in tickets, branches and blueprints.
-                  <div className="flex items-center gap-2 px-2.5 pb-1 pt-4">
+                  // It is also a LINK — a department is a thing in this product with its own
+                  // dashboard, not merely a caption over some menu items.
+                  <Link
+                    href={`/department/${g.department.code}`}
+                    title={`${g.department.name} — overview`}
+                    aria-current={
+                      pathname === `/department/${g.department.code}` ? "page" : undefined
+                    }
+                    className={cn(
+                      "group flex items-center gap-2 rounded-[8px] px-2.5 py-1 pt-4 transition-colors hover:bg-[var(--bg)]",
+                      pathname === `/department/${g.department.code}` && "bg-[var(--bg)]",
+                    )}
+                  >
                     <span
                       className="rounded-[5px] px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-white"
                       style={{ background: g.department.accent }}
@@ -139,7 +151,11 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                     <span className="truncate text-[9.8px] font-bold uppercase tracking-[0.13em] text-[var(--text-muted)]">
                       {g.department.name}
                     </span>
-                  </div>
+                    <Icons.ArrowRight
+                      className="ml-auto h-3 w-3 shrink-0 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
+                      aria-hidden
+                    />
+                  </Link>
                 ) : (
                   <div className="my-2 border-t border-[var(--border-subtle)]" />
                 )}

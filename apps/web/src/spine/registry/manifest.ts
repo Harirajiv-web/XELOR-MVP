@@ -47,6 +47,65 @@ export interface ScreenProps {
   params: readonly string[];
 }
 
+/**
+ * ONE HEADLINE NUMBER A MODULE IS WILLING TO STAND BEHIND.
+ *
+ * The department dashboard shows live figures from every module underneath it, which means
+ * something has to know that Inventory's headline is a count of stock lines and Accounts'
+ * is whether the ledger foots. That knowledge belongs to the MODULE — the spine must not
+ * grow a table of sixteen endpoints, because then removing a module would leave a dead
+ * entry in the shell and "removable" would quietly stop being true.
+ *
+ * So a module declares its own signals and the dashboard renders whatever it is given. A
+ * module with none simply shows its screens; a module that is deleted takes its signals
+ * with it and nothing else changes.
+ *
+ * `permission` is checked BEFORE the request is made. A tile the viewer may not see is
+ * never fetched and never drawn — no empty card, no 403 in the console, no advertisement
+ * for something they cannot open.
+ */
+export interface ModuleSignal {
+  /** Short label for the tile. "Stock lines", "Open orders", "Debits = credits". */
+  label: string;
+  /** The permission the viewer must hold. Unheld → the tile is not fetched at all. */
+  permission: string;
+  /** API path, relative to `/api/v1`. */
+  path: string;
+  /** Query parameters, if the endpoint needs them. */
+  query?: Record<string, string | number | boolean>;
+  /**
+   * Turn the response into something displayable. Runs in a try/catch — a signal that
+   * throws is dropped rather than taking the dashboard down with it, because a decorative
+   * tile must never be able to break the page it decorates.
+   */
+  reduce: (data: unknown) => SignalValue | null;
+}
+
+export interface SignalValue {
+  /** The number or short string to show large. Already formatted. */
+  value: string;
+  /** One short line under it: what the number means, or what it is out of. */
+  hint?: string;
+  /** Colour intent. Follows the status vocabulary, never invents a new one. */
+  tone?: "neutral" | "ok" | "warn" | "bad";
+  /** 0–1. Draws a proportion bar under the value when present. */
+  fraction?: number;
+  /**
+   * A handful of values to draw as a chart.
+   *
+   * `tone` is the MODULE's to set, never the chart's to guess. A severity breakdown whose
+   * colours were assigned by array position would paint "High" green the moment a bucket
+   * was empty — colour would then be carrying meaning the data never gave it, which is
+   * worse than no colour at all. A series with no tones is drawn in a neutral ramp.
+   */
+  series?: readonly {
+    label: string;
+    value: number;
+    display?: string;
+    tone?: "neutral" | "ok" | "warn" | "bad";
+  }[];
+}
+
 export interface ModuleManifest {
   /** Stable key. Also the first URL segment: /inventory/stock. */
   key: string;
@@ -68,6 +127,11 @@ export interface ModuleManifest {
   nav: readonly NavEntry[];
   /** Screen path → the component. Lazy so an unopened module costs nothing to load. */
   screens: Readonly<Record<string, () => Promise<{ default: ComponentType<ScreenProps> }>>>;
+  /**
+   * Live figures for the department dashboard. Optional — a module without them still
+   * appears, showing what it is and what screens it has.
+   */
+  signals?: readonly ModuleSignal[];
 }
 
 /** Every permission the manifest mentions — used by the consistency check. */
