@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   AIKYANTRA DESIGN TOKENS
+   ============================================================================
+
+   Derived from the palette already shipping in MAINDECK.html — the brand blue
+   #1d5fd1 is kept deliberately, because re-choosing a colour that already works and
+   already appears in two decks buys nothing and costs recognition.
+
+   Three things ARE changed, because they were measurably wrong:
+
+   1. The old muted grey (#8494a3) sits at 3.11:1 on white and fails WCAG AA for any
+      real text. It survives here only as `--text-disabled`, which the standard exempts.
+      A new `--text-muted` at 4.76:1 takes over everywhere text is actually read.
+   2. The old green and gold (#1f9d68, #b5891d) fail as label text at 3.45:1 and 3.20:1.
+      Darkened until they pass.
+   3. THE BIG ONE: the deck collapsed eight document states onto two chips — "on hold",
+      "pending approval", "in progress", "due soon" and three others all rendered the
+      same amber. A plant manager distinguishing "waiting for me" from "waiting for
+      someone else" from "already late" at a glance is the entire value of a status
+      column, so there are now eight, and each carries its own icon.
+
+   COLOUR IS NEVER THE ONLY SIGNAL. Every status ships an icon and, where two share a
+   hue, a different shape or fill treatment. Protanopia and deuteranopia collapse red,
+   amber and green toward each other whatever hex you pick — no palette solves that, so
+   the icon is the mechanism and the colour is the accelerator.
+   ============================================================================ */
+
+@theme {
+  --font-ui: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  --radius-card: 10px;
+  --radius-control: 6px;
+}
+
+:root {
+  /* ---- surfaces ---- */
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1f3f6;
+
+  /* ---- borders ---- */
+  --border-subtle: #e4e9ef;
+  --border-input: #64748b;
+  --border-focus: #1d5fd1;
+
+  /* ---- text ---- */
+  --text-primary: #12202e;
+  --text-secondary: #51606f;
+  --text-muted: #64748b;
+  --text-disabled: #8494a3;
+  --text-on-brand: #ffffff;
+
+  /* ---- brand ---- */
+  --brand: #1d5fd1;
+  --brand-hover: #174db0;
+  --brand-soft: #e9f0fc;
+  --brand-soft-2: #f3f7fe;
+
+  /* ---- the eight document states ---- */
+  --status-draft-text: #374151;
+  --status-draft-border: #94a3b8;
+  --status-draft-bg: #f4f5f7;
+
+  --status-pending-text: #92400e;
+  --status-pending-bg: #fbe9d9;
+
+  --status-approved-text: #174db0;
+  --status-approved-bg: #dfe9f9;
+
+  --status-progress-text: #0d5f58;
+  --status-progress-bg: #dde9e8;
+
+  --status-done-text: #116932;
+  --status-done-bg: #deeae2;
+
+  --status-hold-text: #374151;
+  --status-hold-bg: #e2e5e9;
+
+  --status-rejected-text: #b91c1c;
+  --status-rejected-bg: #f5dfdf;
+
+  --status-overdue-text: #991b1b;
+  --status-overdue-bg: #f1dfdf;
+
+  /* ---- AI / copilot ----
+     Violet is RESERVED for AI affordances and is never a document status. If violet also
+     meant "in progress", every violet badge would need a second look to decide which it
+     was — and the one thing this product cannot afford is ambiguity about whether a human
+     or a machine produced something. */
+  --ai-text: #6d3fc4;
+  --ai-accent: #7c5cd6;
+  --ai-bg: #ede8f9;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.07);
+  --shadow-lg: 0 4px 10px rgba(16, 24, 40, 0.08), 0 20px 48px rgba(16, 24, 40, 0.16);
+  --shadow-bar: 0 -4px 12px rgba(16, 24, 40, 0.08);
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #111a2e;
+  --surface-raised: #16213a;
+  --surface-sunken: #0e1626;
+
+  --border-subtle: #202a42;
+  --border-input: #4a5c82;
+  --border-focus: #5b8def;
+
+  --text-primary: #e7ecf3;
+  --text-secondary: #aab6c6;
+  --text-muted: #93a0b4;
+  --text-disabled: #64738d;
+  --text-on-brand: #ffffff;
+
+  --brand: #5b8def;
+  --brand-hover: #79a3f2;
+  --brand-soft: #16274a;
+  --brand-soft-2: #121c33;
+
+  --status-draft-text: #c3cbd8;
+  --status-draft-border: #4a5c82;
+  --status-draft-bg: #16213a;
+
+  --status-pending-text: #e0a542;
+  --status-pending-bg: #2b2013;
+
+  --status-approved-text: #5b8def;
+  --status-approved-bg: #14213d;
+
+  --status-progress-text: #4fd1c5;
+  --status-progress-bg: #0f2321;
+
+  --status-done-text: #4ade80;
+  --status-done-bg: #10281a;
+
+  --status-hold-text: #c3cbd8;
+  --status-hold-bg: #232e47;
+
+  --status-rejected-text: #f2777a;
+  --status-rejected-bg: #2c1416;
+
+  --status-overdue-text: #ef6a6d;
+  --status-overdue-bg: #301518;
+
+  --ai-text: #b39ce8;
+  --ai-accent: #9d7fe0;
+  --ai-bg: #201a35;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 24px 56px rgba(0, 0, 0, 0.5);
+  --shadow-bar: 0 -4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-input: var(--border-input);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-2: var(--brand-soft-2);
+  --color-ai-text: var(--ai-text);
+  --color-ai-accent: var(--ai-accent);
+  --color-ai-bg: var(--ai-bg);
+}
+
+/* ============================================================================
+   Base
+   ============================================================================ */
+
+html {
+  /* 13px base, not 14+. At eight hours a day on a stock-balance table, every extra pixel
+     of line-height is a row that fell off the screen. */
+  font-size: 13px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* THE NUMERIC RULE. Every digit in this product is lining and tabular, so a quantity
+   column stays in a straight line down the page. The deck this palette came from had
+   `"tnum" 0` — figures were proportional, and columns of numbers drifted. In a ledger
+   that reads as sloppiness, and sloppiness reads as "do not trust the total". */
+table,
+[data-numeric],
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Indic text uses Noto; NUMBERS ALWAYS FALL BACK TO THE UI FONT, whatever script
+   surrounds them, so column alignment survives a Tamil or Hindi label. */
+[lang="hi"],
+.devanagari {
+  font-family: "Noto Sans Devanagari", var(--font-ui);
+}
+[lang="ta"],
+.tamil {
+  font-family: "Noto Sans Tamil", var(--font-ui);
+}
+[data-numeric] {
+  font-family: var(--font-ui);
+}
+
+/* One focus treatment everywhere. Visible, 2px, never removed — a keyboard user in a
+   factory office is often a keyboard user because the mouse is somewhere under a pile of
+   delivery challans. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--text-primary);
+}
+
+/* Respect a user who has asked the operating system to stop moving things. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

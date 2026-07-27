@@ -30,8 +30,15 @@ export interface WarehouseRow {
 }
 export interface OnHandRow {
   itemId: string;
+  /** The code a person reads and quotes. Added because a stock screen keyed only by uuid
+   *  is unreadable — the first screen built on this endpoint showed a column of
+   *  identifiers where the operator expected part numbers. */
+  itemCode: string;
+  itemName: string;
+  uom: string;
   warehouseId: string;
   warehouseCode: string;
+  warehouseName: string;
   batch: string;
   qty: string;
 }
@@ -269,21 +276,32 @@ export class InventoryService implements StockPoster, StockReader {
       if (filter.warehouseId) conds.push(sql`sb.warehouse_id = ${filter.warehouseId}`);
       const rows = await tx.execute<{
         item_id: string;
+        item_code: string;
+        item_name: string;
+        uom: string;
         warehouse_id: string;
         warehouse_code: string;
+        warehouse_name: string;
         batch: string;
         qty: string;
       }>(sql`
-        select sb.item_id, sb.warehouse_id, w.code as warehouse_code, sb.batch, sb.qty
+        select sb.item_id, i.item_code, i.name as item_name, i.uom,
+               sb.warehouse_id, w.code as warehouse_code, w.name as warehouse_name,
+               sb.batch, sb.qty
         from stock_balance sb
         join warehouse w on w.id = sb.warehouse_id
+        join item i on i.id = sb.item_id
         where ${sql.join(conds, sql` and `)}
-        order by w.code, sb.item_id
+        order by i.item_code, w.code
       `);
       return rows.rows.map((r) => ({
         itemId: r.item_id,
+        itemCode: r.item_code,
+        itemName: r.item_name,
+        uom: r.uom,
         warehouseId: r.warehouse_id,
         warehouseCode: r.warehouse_code,
+        warehouseName: r.warehouse_name,
         batch: r.batch,
         qty: r.qty,
       }));

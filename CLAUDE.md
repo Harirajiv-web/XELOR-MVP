@@ -12,9 +12,25 @@ wsl -d Ubuntu -u root -e docker compose version
 - The daemon **auto-starts** via systemd on WSL boot; Docker data lives at `/var/lib/docker` inside WSL.
 - Verify it exists with: `wsl -d Ubuntu -u root -e docker version`
 
-### Windows cannot reach container ports on localhost
+### Windows CAN reach WSL — corrected 26 Jul 2026
 
-The Hyper-V firewall blocks host→WSL inbound (`DefaultInboundAction=Block`), and opening it needs admin. So **anything that talks to a container must run from inside WSL** against `127.0.0.1`, not from Windows against `localhost`.
+This file previously said the Hyper-V firewall blocked host→WSL inbound. **Measured, and it
+does not.** From Windows, all of these answer:
+
+| Target | Kind | Result |
+|---|---|---|
+| `localhost:3000` | WSL **process** (the API) | reachable |
+| `localhost:8080` | **container** (Keycloak) | reachable — issuer `http://localhost:8080/realms/indcore` |
+| `localhost:5432` | **container** (Postgres) | reachable |
+| `172.28.47.144:*` | WSL's own IP | reachable |
+
+The earlier conclusion came from testing too soon after starting a service: a WSL job takes
+~7 s to spawn, and a 4 s wait produced a connection refusal that looked like a firewall.
+**Wait for readiness before concluding a port is blocked.** The WSL IP changes across
+restarts, so prefer `localhost`.
+
+This matters because it is what makes the web app viewable: the browser on Windows reaches
+the API and redirects to Keycloak for sign-in, with no proxy or tunnel.
 
 Bring up Postgres:
 ```powershell
