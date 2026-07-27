@@ -69,6 +69,42 @@ export interface Department {
   icon: string;
   /** A component rather than a department: horizontal, owns no business domain. */
   component?: boolean;
+
+  /* ------------------------------------------------------------------------
+     THE CHARTER, AS THE PITCH DECK STATES IT.
+
+     Transcribed from the Agent Brain view in `AIKYANTRA-Pitch-Deck_2.html` (the `AGENTS`
+     and `ONYX` constants inside its embedded demo). Held here rather than written into a
+     screen for one reason: the deck and the product were saying different things about the
+     same seven agents, and the first investor to open both would find it. There is one
+     description of HEXA now, and this is it.
+
+     Where the deck's demo showed a figure it had invented — events on the bus today,
+     actions awaiting approval — nothing was copied. Those numbers come from endpoints on
+     the dashboard or they do not appear.
+     ------------------------------------------------------------------------ */
+
+  /** The single letter on the agent's node. ONYX is the brain and carries a glyph instead. */
+  letter: string;
+  /** One line, in the deck's voice. "Owns the customer, end to end." */
+  tagline: string;
+  /** The paragraph a first-time reader gets. */
+  blurb: string;
+  /** What it can do: an icon name, a title, and the sentence under it. */
+  capabilities: readonly { icon: string; title: string; detail: string }[];
+  /** The nouns it is the system of record for — chips, not prose. */
+  systemOfRecord: readonly string[];
+  /**
+   * The seams with other agents, named. This is the part of the deck that survives
+   * technical due diligence: a boundary is only real if you can say what crosses it.
+   */
+  contracts: readonly { between: string; through: string }[];
+  /**
+   * Position on the ring, in degrees, -90 being twelve o'clock. Fixed rather than derived
+   * from array order so a department keeps its place on the map when another is added —
+   * people navigate this picture by position within a week of using it.
+   */
+  angle: number;
 }
 
 export const DEPARTMENTS: readonly Department[] = [
@@ -77,7 +113,22 @@ export const DEPARTMENTS: readonly Department[] = [
     name: "AI Operations",
     owns: "The provider-agnostic router, the closed feature registry, prompt lifecycle, eval gates, the cost ledger, PII egress and the kill switch.",
     blueprints: [{ file: "AI-OPERATIONS.md", moduleKey: "aiops" }],
-    accent: "var(--violet)",
+    letter: "✦",
+    angle: 0,
+    tagline: "The brain. Horizontal, not departmental.",
+    blurb:
+      "ONYX is the cross-cutting AI component: a provider-agnostic router, a feature registry, prompt lifecycle and eval gates, a cost ledger, PII egress control and a kill switch. It serves every department and owns no business domain of its own — which is precisely why it is a component and not a department.",
+    capabilities: [
+      { icon: "BrainCircuit", title: "Reasons across every agent", detail: "One question, answered from HEXA's masters, SPAR's ledger, KILN's floor and RASP's books at once." },
+      { icon: "SlidersHorizontal", title: "Provider-agnostic routing", detail: "Local open-weight model by default; cloud burst only for permitted, non-sensitive payloads." },
+      { icon: "FlaskConical", title: "Eval gates before release", detail: "No prompt reaches production without passing its regression set. Versioned, diffable, revertible." },
+      { icon: "OctagonX", title: "Kill switch and budgets", detail: "One toggle suspends every agent. Token budget and PII egress enforced per department." },
+    ],
+    systemOfRecord: ["Provider-agnostic router", "Feature registry", "Prompt lifecycle", "Eval gates", "Cost ledger", "PII egress", "Kill switch"],
+    contracts: [
+      { between: "ONYX ↔ HEXA", through: "AiGovernancePort — opt-out, token budget, kill switch, ai_action_log; the platform AI router sits behind AiPort" },
+    ],
+    accent: "var(--dept-onyx)",
     icon: "BrainCircuit",
     component: true,
   },
@@ -90,7 +141,22 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "ADMINISTRATION.md", moduleKey: "administration" },
       { file: "INTEGRATION.md", moduleKey: "integration" },
     ],
-    accent: "var(--brand)",
+    letter: "H",
+    angle: -90,
+    tagline: "Depends on nobody. Everything depends on it.",
+    blurb:
+      "HEXA ships the ground the whole platform stands on — identity, master data, the workflow engine, the hash-chained audit log and every external connector. No other agent re-implements identity, workflow or audit.",
+    capabilities: [
+      { icon: "KeyRound", title: "Single identity spine", detail: "Keycloak OIDC, role and attribute-based access across every module and every plant." },
+      { icon: "Settings2", title: "One workflow engine", detail: "One approval engine. Any agent can raise a workflow; none of them owns one." },
+      { icon: "Link2", title: "Hash-chained audit", detail: "Every material action written to a tamper-evident chain — regulator-ready on demand." },
+      { icon: "Plug", title: "Connector fabric", detail: "Tally, SAP, WhatsApp, the GST portal, shop-floor gateways — one marketplace, one contract." },
+    ],
+    systemOfRecord: ["Master data", "Identity, RBAC and ABAC", "Workflow engine", "Hash-chained audit", "Event bus / outbox", "External connectors"],
+    contracts: [
+      { between: "HEXA → every agent", through: "WorkflowExecutor port, AiPort, outbox_event, hash-chained audit_log, Keycloak OIDC" },
+    ],
+    accent: "var(--dept-hexa)",
     icon: "Shield",
   },
   {
@@ -101,7 +167,23 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "ENGINEERING.md", moduleKey: "engineering" },
       { file: "PLANNING.md", moduleKey: "planning" },
     ],
-    accent: "#0f766e",
+    letter: "A",
+    angle: 90,
+    tagline: "Owns intent — what we build, and when.",
+    blurb:
+      "AXLE holds the item, BOM and routing masters and the change control that governs them, then turns confirmed demand into MPS, MRP and a finite schedule the floor can actually run.",
+    capabilities: [
+      { icon: "GitBranch", title: "Controlled change", detail: "An ECR is raised, impact-assessed across open orders, then applied as an ECO with an effective date." },
+      { icon: "CalendarRange", title: "Finite scheduling", detail: "Sequenced against real capacity, changeover matrices and shift patterns — not infinite buckets." },
+      { icon: "RefreshCw", title: "Net-change MRP", detail: "Replans only what moved. A deviation from KILN triggers a targeted re-run, not a full regeneration." },
+      { icon: "Ruler", title: "Capacity truth", detail: "Load against available hours per work centre, with the bottleneck named before the week starts." },
+    ],
+    systemOfRecord: ["Item / BOM / routing masters", "ECR → ECO change control", "MPS", "MRP", "Capacity", "Finite scheduling"],
+    contracts: [
+      { between: "AXLE ↔ KILN", through: "Planned orders → work orders · prod.wo.produced / .deviation → net-change replan · eng.eco.applied" },
+      { between: "AXLE ↔ SPAR", through: "planning.pr.created → the Purchase MR queue" },
+    ],
+    accent: "var(--dept-axle)",
     icon: "Component",
   },
   {
@@ -112,7 +194,23 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "PURCHASE.md", moduleKey: "purchase" },
       { file: "INVENTORY.md", moduleKey: "inventory" },
     ],
-    accent: "var(--gold)",
+    letter: "S",
+    angle: 30,
+    tagline: "Owns supplier, material and the stock ledger.",
+    blurb:
+      "SPAR closes the reorder → requisition → RFQ → PO → GRN → invoice → payment loop inside one department, and owns the single write path to the stock ledger. Nobody else touches stock tables.",
+    capabilities: [
+      { icon: "Mail", title: "Compare before you buy", detail: "RFQ with landed-cost comparison, an award trail, and automatic vendor scorecard feedback." },
+      { icon: "Inbox", title: "One write path", detail: "POST /api/stock/entries is the only door into the ledger — every movement is attributable." },
+      { icon: "Package", title: "Right-sized stock", detail: "Reorder points learned from real consumption and supplier lead-time performance." },
+      { icon: "Handshake", title: "Vendor scorecards", detail: "Delivery, quality and price drift scored continuously; risk flagged before it bites." },
+    ],
+    systemOfRecord: ["Supplier master", "PO → GRN → invoice → payment", "Stock ledger", "Bins and locations", "Valuation", "Batches"],
+    contracts: [
+      { between: "SPAR ↔ KILN", through: "POST /api/stock/entries · purchase.grn.submitted · prod.wo.produced — KILN never writes stock tables" },
+      { between: "AXLE ↔ SPAR", through: "planning.pr.created → the MR queue · grn.posted → lead-time learning" },
+    ],
+    accent: "var(--dept-spar)",
     icon: "Truck",
   },
   {
@@ -124,7 +222,23 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "SMBD.md", moduleKey: "sales" },
       { file: "CSP.md", moduleKey: "csp" },
     ],
-    accent: "#1d5fd1",
+    letter: "M",
+    angle: -30,
+    tagline: "Owns the customer, end to end.",
+    blurb:
+      "MICA runs one customer master and one order spine — from first enquiry through quotation, order and tender, then onward into service tickets, complaints and warranty. Sales and service share the same record, so nothing is re-keyed.",
+    capabilities: [
+      { icon: "TrendingUp", title: "One order spine", detail: "Quotation → sales order → dispatch, with win and loss reasons captured at the moment of decision." },
+      { icon: "Ticket", title: "Service that closes the loop", detail: "A customer complaint raises an NCR inside KILN and is tracked until CAPA closes." },
+      { icon: "Tag", title: "Quote intelligence", detail: "Win probability, price-band history and margin-at-risk on every open quotation." },
+      { icon: "ShieldCheck", title: "Warranty and AMC", detail: "Coverage, claims and renewal exposure tied to the serial that left the plant." },
+    ],
+    systemOfRecord: ["Customer master", "Leads and pipeline", "Quotations", "Sales orders", "Tenders", "Tickets and complaints", "Warranty / AMC"],
+    contracts: [
+      { between: "MICA ↔ AXLE", through: "so.confirmed → demand lines" },
+      { between: "MICA ↔ KILN", through: "csp.complaint.created.v1 → qms.ncr.created.v1 → qms.capa.status_changed.v1" },
+    ],
+    accent: "var(--dept-mica)",
     icon: "Handshake",
   },
   {
@@ -137,7 +251,23 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "INSPECTION.md", moduleKey: "quality" },
       { file: "MAINTENANCE.md", moduleKey: "maintenance" },
     ],
-    accent: "var(--warn)",
+    letter: "K",
+    angle: 150,
+    tagline: "Owns execution on the physical spine.",
+    blurb:
+      "KILN runs work orders, material moves, scrap and batch genealogy, with quality gates firing inside the production flow and maintenance downtime feeding straight back into OEE. One item, one work centre, one work order, one asset.",
+    capabilities: [
+      { icon: "Factory", title: "Gated production", detail: "Inspection gates fire inside the production flow — a batch cannot advance past a failed gate." },
+      { icon: "Microscope", title: "Root cause that holds", detail: "Defects linked to machine, batch, shift and parameter — with the evidence attached." },
+      { icon: "Wrench", title: "Condition-led maintenance", detail: "A risk-ranked work queue, spares reserved and an engineer slot booked before the failure." },
+      { icon: "ScrollText", title: "Full genealogy", detail: "Any batch, machine or complaint traced end to end in minutes, not weeks." },
+    ],
+    systemOfRecord: ["Work orders", "Material moves and scrap", "Batch genealogy", "Quality gates", "NCR / CAPA", "Calibration", "Asset uptime"],
+    contracts: [
+      { between: "SPAR ↔ KILN", through: "Production is gated off until Inventory hits its 95–99% stock-accuracy target" },
+      { between: "RASP ↔ KILN", through: "hrm.attendance.day_finalised.v1 and labour-cost/daily → work-order costing" },
+    ],
+    accent: "var(--dept-kiln)",
     icon: "Factory",
   },
   {
@@ -151,7 +281,22 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "EXPENDITURE.md", moduleKey: "expenditure" },
       { file: "ACCOUNTS.md", moduleKey: "accounts", missing: true },
     ],
-    accent: "var(--ok)",
+    letter: "R",
+    angle: 210,
+    tagline: "Owns people and rupees.",
+    blurb:
+      "RASP holds the employee master, shifts, attendance, payroll and Indian statutory compliance on one side, and budgets, claims, indirect spend and the general ledger on the other — with labour cost flowing into work-order costing.",
+    capabilities: [
+      { icon: "Users", title: "Attendance to cost", detail: "A day finalised in HR becomes labour cost on the work order the same night." },
+      { icon: "IndianRupee", title: "GST-native cash view", detail: "GSTR-1, 2B and 3B reconciled invoice by invoice; mismatches flagged early." },
+      { icon: "BarChart3", title: "Budget against actual", detail: "Indirect spend tracked against budget line by line, with commitment visibility." },
+      { icon: "Landmark", title: "Credit readiness", detail: "A live pack a bank can read — receivables ageing tied to real orders and dispatches." },
+    ],
+    systemOfRecord: ["Employee master", "Shifts and attendance", "Payroll and Indian statutory", "Budgets", "Claims", "Indirect spend", "General ledger"],
+    contracts: [
+      { between: "RASP ↔ SPAR", through: "Expenditure raises indirect PRs, then hands off to SPAR's PO engine — it has no PO engine of its own" },
+    ],
+    accent: "var(--dept-rasp)",
     icon: "Landmark",
   },
 ];
@@ -201,6 +346,19 @@ export function groupByDepartment(
       blueprints: [],
       accent: "var(--text-muted)",
       icon: "CircleHelp",
+      // The charter fields say plainly that there is no charter, rather than leaving the
+      // agent map to render a nameless node with empty sections under it.
+      letter: "?",
+      angle: 0,
+      tagline: "Not registered.",
+      blurb:
+        `A module declares "${code}" as its owning department, but no department with that ` +
+        `code is registered. Either the manifest has a typo or a department was removed ` +
+        `without its modules being reassigned. Both are worth fixing; neither should hide ` +
+        `the module.`,
+      capabilities: [],
+      systemOfRecord: [],
+      contracts: [],
     };
     out.push({
       department: dept,

@@ -149,6 +149,26 @@
      visible on both surfaces without the chart knowing which one it is on. */
   --ramp-mix: #ffffff;
 
+  /* ==========================================================================
+     THE SEVEN AGENTS, IN THE DECK'S OWN COLOURS.
+     ==========================================================================
+     Taken verbatim from the Agent Brain map in AIKYANTRA-Pitch-Deck_2.html. The product
+     previously coloured departments from the status palette, which had two faults the deck
+     does not: HEXA and MICA came out the same blue, so two of the seven were
+     indistinguishable on any chart; and RASP was drawn in the same green that means
+     "done" everywhere else in the product, so a department badge could be misread as a
+     document state.
+
+     These seven are chosen to be distinct from each other AND from the status vocabulary.
+     They are the colour of an OWNER, never of an outcome. */
+  --dept-onyx: #0c2340;
+  --dept-hexa: #1b4b8f;
+  --dept-mica: #2e7bc4;
+  --dept-spar: #1f8a70;
+  --dept-axle: #7c5cd6;
+  --dept-kiln: #c2410c;
+  --dept-rasp: #c8912a;
+
   /* The deck's layout system: sidebar, copilot rail, topbar. */
   --side: 236px;
   --cop: 384px;
@@ -240,6 +260,18 @@
      far end of the ramp into one indistinguishable glare, which loses the categories just
      as surely as fading into the background would. */
   --ramp-mix: #93a7c6;
+
+  /* The same seven hues, lifted for a dark surface. ONYX's near-black navy is the only one
+     that had to move materially — a #0c2340 node on a #0b1220 page is invisible, and an
+     agent nobody can see on the map is the one agent the whole page is about. The other six
+     keep their hue exactly and only gain lightness. */
+  --dept-onyx: #6f8fd8;
+  --dept-hexa: #5b8def;
+  --dept-mica: #62a8e8;
+  --dept-spar: #35b696;
+  --dept-axle: #a58bf0;
+  --dept-kiln: #f07f45;
+  --dept-rasp: #e2bb63;
 }
 
 /* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */

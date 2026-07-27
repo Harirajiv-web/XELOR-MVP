@@ -5,7 +5,14 @@ import { useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { api } from "../api/client";
 import { useAccess } from "../access/permissions";
-import { department, installedByDepartment, blueprintStatus } from "../registry/departments";
+import {
+  department,
+  installedByDepartment,
+  blueprintStatus,
+  DEPARTMENTS,
+  type Department,
+} from "../registry/departments";
+import { AgentBrain, type BrainCore, type BrainNode } from "./agent-brain";
 import { visibleNav, type ModuleManifest, type SignalValue } from "../registry/manifest";
 import { CountUp, Meter, Reveal } from "../ui/motion";
 import { BarRows, Donut } from "../ui/charts";
@@ -186,6 +193,23 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
         ))}
       </div>
 
+      {/* ------------------------------- the brain ------------------------------ */}
+      {/* ONYX is the only department whose satellites are OTHER DEPARTMENTS — it is the
+          brain, and the six agents are what it reasons across. Every other department puts
+          its own modules on the ring, in the same shape, so a reader who learned the picture
+          on ONYX can already read HEXA's. */}
+      <Reveal delay={150}>
+        <AgentBrain
+          core={coreOf(dept, modules.length, screens)}
+          satellites={
+            dept.code === "ONYX"
+              ? DEPARTMENTS.filter((d) => d.code !== "ONYX").map(departmentNode)
+              : modules.map((m, i) => moduleNode(m, dept, i, modules.length, can))
+          }
+          mapTitle={dept.code === "ONYX" ? "Agent map" : `Inside ${dept.code}`}
+        />
+      </Reveal>
+
       {/* ------------------------------ the modules ----------------------------- */}
       {busy ? (
         <Loading label="Reading this department's figures…" />
@@ -212,6 +236,122 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
       ) : null}
     </div>
   );
+}
+
+/* ═══════════════════ turning the registry into nodes on a map ═══════════════════ */
+
+/**
+ * The department you are looking at, as the core of its own map.
+ *
+ * Its `sub` and its screen count come from what this VIEWER can actually open, not from the
+ * charter — the picture has to agree with the sidebar beside it, and a map claiming six
+ * modules to somebody who can see two is the kind of small lie that costs a demo.
+ */
+function coreOf(dept: Department, moduleCount: number, _screenCount: number): BrainCore {
+  return {
+    id: dept.code,
+    name: dept.code,
+    letter: dept.letter,
+    role: dept.component ? "the brain" : "the department",
+    sub: `${moduleCount} modules`,
+    accent: dept.accent,
+    angle: 0,
+    icon: dept.icon,
+    kicker: dept.name,
+    tagline: dept.tagline,
+    blurb: dept.blurb,
+    capabilities: dept.capabilities,
+    systemOfRecord: dept.systemOfRecord,
+    contracts: dept.contracts,
+    // The core has no links of its own: everything you can open under this department is on
+    // the satellites, and duplicating it here would give the same screen two doors on one
+    // page. `screenCount` is what the strip above already reports.
+    links: [],
+  };
+}
+
+/** Another department, as a satellite of ONYX. */
+function departmentNode(d: Department): BrainNode {
+  const group = installedByDepartment().find((g) => g.department.code === d.code);
+  const count = group?.modules.length ?? 0;
+  return {
+    id: d.code,
+    name: d.code,
+    letter: d.letter,
+    sub: count === 1 ? "1 module" : `${count} modules`,
+    accent: d.accent,
+    angle: d.angle,
+    icon: d.icon,
+    kicker: d.name,
+    tagline: d.tagline,
+    blurb: d.blurb,
+    capabilities: d.capabilities,
+    systemOfRecord: d.systemOfRecord,
+    contracts: d.contracts,
+    links: [],
+    // From ONYX you can walk into any agent, and the picture there is the same picture one
+    // level down. That is the whole navigational idea: one shape, two depths.
+    descend: { label: `Open ${d.code}`, href: `/department/${d.code}` },
+  };
+}
+
+/**
+ * A module, as a satellite of its own department.
+ *
+ * The charter fields come from the module's own manifest — `summary` is the tagline it
+ * already declares, and each screen's `description` becomes a capability. Nothing here is
+ * written twice: edit a screen's description and this card changes with it.
+ */
+function moduleNode(
+  m: ModuleManifest,
+  dept: Department,
+  index: number,
+  total: number,
+  can: (p: string) => boolean,
+): BrainNode {
+  const entries = visibleNav(m, can);
+  return {
+    id: m.key,
+    name: m.name,
+    // Modules have no four-letter code, so the node carries the first letter of the name.
+    // Two modules under one department starting with the same letter has not happened; if
+    // it does, the name under the circle is what tells them apart, which is why it is there.
+    letter: m.name.slice(0, 1).toUpperCase(),
+    sub: entries.length === 1 ? "1 screen" : `${entries.length} screens`,
+    accent: dept.accent,
+    // Evenly spaced. Derived rather than declared, because modules come and go with a
+    // licence and a hand-written angle would leave a gap in the ring.
+    //
+    // TWO MODULES START AT THREE O'CLOCK, NOT TWELVE. Starting at twelve puts a pair
+    // directly above and below the core, in a column, inside a panel that is wider than it
+    // is tall — the worst use of the space available. Left-and-right fills it. Three or more
+    // start at twelve, which is where a reader expects the first item to be.
+    angle: (total === 2 ? 0 : -90) + (index / Math.max(1, total)) * 360,
+    icon: m.icon,
+    kicker: `${dept.code} · ${dept.name}`,
+    tagline: m.summary,
+    blurb:
+      entries.length > 0
+        ? `${entries.length} screen${entries.length === 1 ? "" : "s"} you can open, listed below. Everything ${m.name} shows is read live from its own endpoints — this module owns those tables and nothing outside it writes to them.`
+        : `${m.name} is installed and licensed, but no screen in it is open to you. That is a permissions question rather than a licensing one.`,
+    // A screen's own description IS the capability. Written once, in the manifest, shown in
+    // the band above the screen, on the sidebar hover, and here.
+    capabilities: entries
+      .filter((n) => n.description)
+      .map((n) => ({
+        icon: n.icon ?? m.icon,
+        title: n.label,
+        detail: n.description ?? "",
+      })),
+    systemOfRecord: [],
+    contracts: [],
+    links: entries.map((n) => ({
+      label: n.label,
+      href: `/${m.key}/${n.path}`,
+      ...(n.icon ? { icon: n.icon } : {}),
+    })),
+    ...(entries[0] ? { descend: { label: `Open ${m.name}`, href: `/${m.key}/${entries[0].path}` } } : {}),
+  };
 }
 
 /* -------------------------------------------------------------------------- */
