@@ -13,6 +13,10 @@ const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:3000"
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Next's floating dev badge sits in the bottom-left corner, exactly on top of the
+  // sidebar's Collapse control. Off — a development affordance that covers a real button
+  // is worse than no affordance, and it appears in every screenshot of the product.
+  devIndicators: false,
   // Type and lint errors fail the build. A UI that compiles with errors is a UI that ships
   // a blank column the day a backend field is renamed.
   typescript: { ignoreBuildErrors: false },
