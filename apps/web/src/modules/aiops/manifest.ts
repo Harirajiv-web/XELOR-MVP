@@ -48,9 +48,9 @@ const REGISTRY_CAP = 8;
 /**
  * AI OPERATIONS (ONYX, cross-cutting).
  *
- * Seven read-only screens, and they exist to answer one question a sceptical buyer asks:
+ * Six read-only screens, and they exist to answer one question a sceptical buyer asks:
  * what stops this thing doing something stupid? How the layer is wired to the rest of the
- * product, what is registered, what it cost, what passed its evaluations, what a human
+ * product and what each connection is doing, what is registered, what it cost, what passed its evaluations, what a human
  * still has to approve, and what can be switched off.
  *
  * The consequential controls — engaging the kill switch, promoting a prompt, changing a
@@ -68,24 +68,17 @@ export const aiopsManifest: ModuleManifest = {
   order: 80,
   nav: [
     {
-      // First, because it is the screen that answers "what IS this layer" before any of the
-      // others answer "and is it behaving". A buyer who opens Feature registry cold sees a
-      // list of eight keys; the same person who opens the map first sees why there are only
-      // eight and what they are wired to.
-      label: "Connection map",
-      path: "map",
-      permission: "aiops.registry.read",
-      icon: "Network",
-      description:
-        "Where the AI layer touches the rest of the product, and — just as deliberately — where it does not. Every line on this page is drawn from the code itself: the closed feature registry, the actual call sites, and the copilot's fixed catalogue of questions. Nothing here is a diagram somebody drew.",
-    },
-    {
+      // ONE PICTURE OF THIS LAYER, NOT TWO. There was a "Connection map" here as well, and
+      // it drew the same architecture a second time in a different shape. A product that
+      // diagrams itself twice has told the reader that neither diagram is the authority.
+      // The map's graph is gone; the facts that were only on it — the chokepoints, what
+      // ONYX takes from HEXA, and the open items — moved onto this screen intact.
       label: "Connectors",
       path: "connectors",
       permission: "aiops.registry.read",
       icon: "Cable",
       description:
-        "The live operations console for the AI layer: every system it reads evidence from or drafts actions into, what each one is doing right now, and what it has produced today. Systems that are specified but not yet built are shown as not connected rather than left off, because a console that only shows what works is not a console.",
+        "The one picture of how the AI layer is wired, and what each connection is doing right now: every system it reads evidence from or drafts actions into, what each one has produced today, and where a call is stopped. Systems that are specified but not yet built are shown as not connected rather than left off, because a console that only shows what works is not a console.",
     },
     {
       label: "Feature registry",
@@ -137,7 +130,6 @@ export const aiopsManifest: ModuleManifest = {
     },
   ],
   screens: {
-    map: () => import("./screens/map"),
     connectors: () => import("./screens/connectors"),
     registry: () => import("./screens/registry"),
     providers: () => import("./screens/providers"),

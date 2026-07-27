@@ -17,6 +17,9 @@ import {
   AI_FEATURE_FACTS,
   FEATURE_CONSUMERS,
   FEATURE_GOLDEN_SET,
+  CHOKEPOINTS,
+  ONYX_DEPENDS_ON_HEXA,
+  OPEN_ITEMS,
   type CostDashboard,
   type Envelope,
   type HitlItem,
@@ -31,10 +34,17 @@ import {
  * THE CONNECTOR CONSOLE — every system the AI layer touches, and what it is doing now.
  * ═══════════════════════════════════════════════════════════════════════════════════
  *
- * The Connection map next door answers "how is this wired". This screen answers the
- * question that comes after it: "and is anything actually happening". They are different
- * questions and they are asked by different people — an architect asks the first, a Head of
- * Operations asks the second on a Monday morning.
+ * THE ONLY PLACE THIS LAYER IS DRAWN. There was a second one — a Connection map screen with
+ * its own graph of the same architecture — and it is gone. A product that diagrams itself
+ * twice, in two shapes, has told the reader that neither drawing is the authority, and the
+ * two will drift apart the first time somebody edits one of them. Everything the map held
+ * that was not a duplicate of this — the chokepoints, what ONYX borrows from HEXA, the open
+ * items — is on this page, unchanged.
+ *
+ * It answers two questions that are usually on two screens: "how is this wired" (the
+ * architect's question) and "is anything actually happening" (the Head of Operations' one,
+ * asked on a Monday morning). They belong together, because the second is unreadable
+ * without the first.
  *
  * ───────────────────────────────────────────────────────────────────────────────────
  * WHAT COUNTS AS A CONNECTOR
@@ -541,6 +551,109 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
         </section>
       </Reveal>
 
+      {/* ───────────────────── where a call is actually stopped ────────────────── */}
+      <Reveal delay={340}>
+        <div className="grid gap-3.5 [grid-template-columns:repeat(2,minmax(0,1fr))] max-[1100px]:[grid-template-columns:minmax(0,1fr)]">
+          <section className="card flex flex-col overflow-hidden">
+            <div className="panel-h">
+              <span className="flex items-center gap-2">
+                <Icons.ShieldCheck className="h-4 w-4 text-[var(--ok)]" aria-hidden />
+                What stops a call
+              </span>
+              <span className="chip chip-grey">{CHOKEPOINTS.length} gates</span>
+            </div>
+            <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
+              The answer to "what stops this thing doing something stupid", and every one of
+              them is a line of code with a file name — not a policy in a document somebody
+              signed.
+            </p>
+            <ul className="divide-y divide-[var(--border-subtle)]">
+              {CHOKEPOINTS.map((k) => (
+                <li key={k.name} className="px-4 py-3">
+                  <p className="font-mono text-[11.5px] font-semibold text-[var(--text-primary)]">
+                    {k.name}
+                  </p>
+                  <p className="mt-1 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
+                    {k.detail}
+                  </p>
+                  <p className="mt-1 truncate font-mono text-[10px] text-[var(--text-muted)]" title={k.file}>
+                    {k.file}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="card flex flex-col overflow-hidden">
+            <div className="panel-h">
+              <span className="flex items-center gap-2">
+                <Icons.Share2 className="h-4 w-4 text-[var(--brand)]" aria-hidden />
+                What ONYX takes from HEXA
+              </span>
+              <span className="chip chip-grey">{ONYX_DEPENDS_ON_HEXA.length} ports</span>
+            </div>
+            <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
+              The AI layer owns no business table and reads no module's rows directly. It
+              borrows these ports from the platform — which is why switching model vendor, or
+              running with no vendor at all, never touches a module.
+            </p>
+            <ul className="divide-y divide-[var(--border-subtle)]">
+              {ONYX_DEPENDS_ON_HEXA.map((d) => (
+                <li key={d.port} className="px-4 py-3">
+                  <p className="font-mono text-[11.5px] font-semibold text-[var(--text-primary)]">
+                    {d.port}
+                  </p>
+                  <p className="mt-1 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
+                    {d.what}
+                  </p>
+                  <p className="mt-1 truncate font-mono text-[10px] text-[var(--text-muted)]" title={d.file}>
+                    {d.file}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </Reveal>
+
+      {/* ───────────────────────── what is still open ──────────────────────────── */}
+      <Reveal delay={350}>
+        <section className="card overflow-hidden">
+          <div className="panel-h">
+            <span className="flex items-center gap-2">
+              <Icons.CircleDashed className="h-4 w-4 text-[var(--warn)]" aria-hidden />
+              Open against this layer
+            </span>
+            <span className="chip chip-warn">{OPEN_ITEMS.length}</span>
+          </div>
+          <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
+            A governance console that hid its own open items would be the first thing to
+            disbelieve on it. Each row names where the fact came from.
+          </p>
+          <ul className="divide-y divide-[var(--border-subtle)]">
+            {OPEN_ITEMS.map((o) => (
+              <li key={o.title} className="flex items-start gap-3 px-4 py-3">
+                <Icons.CircleDot
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--warn)]"
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1">
+                  <b className="text-[12.5px] font-semibold text-[var(--text-primary)]">
+                    {o.title}
+                  </b>
+                  <span className="mt-0.5 block text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
+                    {o.detail}
+                  </span>
+                  <span className="mt-1 block font-mono text-[10px] text-[var(--text-muted)]">
+                    {o.source}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </Reveal>
+
       {/* ─────────────────── the numbers we are refusing to invent ─────────────── */}
       <Reveal delay={360}>
         <section className="card overflow-hidden">
@@ -577,142 +690,330 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
     </div>
   );
 }
-
-/* ══════════════════════════ the mesh graph ══════════════════════════ */
+/* ══════════════════════════ the mesh ══════════════════════════ */
 
 /**
- * ONYX at the centre, its connectors around it.
+ * THE ONE PICTURE OF HOW THIS IS CONNECTED.
  *
- * Hand-authored SVG rather than a graph library, for the same reason the charts are: the
- * layout is fixed and the value of a library here would be a physics simulation nobody
- * asked for. Every node is also written out as text in the cards below, so the picture is
- * an accelerator and never the only way to read this.
+ * There used to be two — a wiring diagram on a Connection map screen and this operational
+ * mesh — and a product that draws its own architecture twice, differently, has told the
+ * reader that neither drawing is authoritative. There is one now, and it is this one.
  *
- * The edge dash travels from the connector towards the centre — evidence flows IN, drafts
- * flow back out — and only on connectors that have actually answered in this window. An
- * animation on a silent edge would be the one thing on this page that says something
- * untrue.
+ * Hand-authored SVG rather than a graph library. The layout is a ring, which is arithmetic,
+ * and what a library would add is a physics simulation that moves the nodes every time the
+ * page loads — so a person who learned "Sales is bottom-left" would have to find it again
+ * on every visit.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────────
+ * WHAT EACH THING ON THE PICTURE MEANS, AND WHY IT IS NOT DECORATION
+ * ─────────────────────────────────────────────────────────────────────────────────
+ *   THE RING     is drawn dashed and faint. It is a guide for the eye, not a connection —
+ *                these modules do not talk to each other through the AI layer, and drawing
+ *                a solid ring would assert a mesh topology that does not exist.
+ *   AN EDGE      is a real call site: a service in that module that calls a registered
+ *                feature through an adapter. Grey when the connector has made no call in
+ *                this window, and DASHED when there is no call site at all.
+ *   A LIT EDGE   with a travelling dot means that connector has actually answered in this
+ *                window. The dot moves INWARD, because that is the direction the evidence
+ *                travels — a module's rows go to the router, and only a draft comes back.
+ *                Nothing animates on a silent edge. An idle connector with a moving dot
+ *                would be the one element on this page saying something untrue.
+ *   THE COLOUR   of a node is its DEPARTMENT's colour, the same one on its sidebar badge
+ *                and its dashboard. HEXA and MICA happen to share a blue, which is why the
+ *                department code is written inside every node and the module name under it:
+ *                colour is the accelerator here and never the only signal.
+ *   THE HALO     marks a connector that is answering right now.
  */
+
+/**
+ * Department accent colours, transcribed from `src/spine/registry/departments.ts`.
+ *
+ * Copied rather than imported on purpose: `departments.ts` imports the module registry, and
+ * a module reaching for it would close a circle — module → spine → registry → module. The
+ * values are the same ones the sidebar badges use, so a node and its badge always match.
+ */
+const DEPARTMENT_ACCENT: Readonly<Record<string, string>> = {
+  ONYX: "var(--violet)",
+  HEXA: "var(--brand)",
+  AXLE: "#0f766e",
+  SPAR: "var(--gold)",
+  MICA: "#1d5fd1",
+  KILN: "var(--warn)",
+  RASP: "var(--ok)",
+};
+
+/** The status line under each node — the word, and the colour of the dot beside it. */
+const NODE_STATE: Record<ConnectorState["status"], { word: string; dot: string }> = {
+  active: { word: "ANSWERING", dot: "var(--ok)" },
+  standing_by: { word: "STANDING BY", dot: "var(--text-muted)" },
+  switched_off: { word: "SWITCHED OFF", dot: "var(--warn)" },
+  no_consumer: { word: "NOT BUILT", dot: "var(--text-disabled)" },
+};
+
 function MeshGraph({ connectors }: { connectors: readonly ConnectorState[] }): React.JSX.Element {
-  const W = 720;
-  const H = 340;
+  const W = 940;
+  const H = 620;
   const cx = W / 2;
-  const cy = H / 2;
-  const rx = W / 2 - 92;
-  const ry = H / 2 - 52;
+  const cy = 292;
+  const rx = 350;
+  const ry = 208;
+  const R = 34; // node radius
+  const CORE = 46; // the centre
 
   const nodes = connectors.map((c, i) => {
-    const angle = (i / Math.max(1, connectors.length)) * Math.PI * 2 - Math.PI / 2;
-    return { c, x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry };
+    // Starting at twelve o'clock, clockwise. Fixed by index rather than by anything that
+    // changes between loads, so a connector keeps its position for good.
+    const a = (i / Math.max(1, connectors.length)) * Math.PI * 2 - Math.PI / 2;
+    return { c, x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry, a };
   });
 
   return (
-    <div className="overflow-x-auto p-3">
+    <div className="overflow-x-auto px-3 pb-2 pt-1">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="h-auto w-full min-w-[620px]"
+        className="h-auto w-full min-w-[760px]"
         role="img"
-        aria-label={`The AI layer is connected to ${connectors.length} modules: ${connectors
-          .map((c) => `${c.name}, ${STATUS_LOOK[c.status].label}`)
+        aria-label={`The AI router is connected to ${connectors.length} modules: ${connectors
+          .map((c) => `${c.name} of ${c.department}, ${NODE_STATE[c.status].word.toLowerCase()}`)
           .join("; ")}.`}
       >
+        <defs>
+          {/* The soft bloom under a node that is answering. Kept very low in opacity — on a
+              dark surface a strong glow bleeds into its neighbours and the ring stops
+              reading as evenly spaced. */}
+          <radialGradient id="mesh-halo">
+            <stop offset="55%" stopColor="var(--ok)" stopOpacity="0.20" />
+            <stop offset="100%" stopColor="var(--ok)" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="mesh-core-halo">
+            <stop offset="50%" stopColor="var(--violet)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--violet)" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* the guide ring — dashed, because it is not a connection */}
+        <ellipse
+          cx={cx}
+          cy={cy}
+          rx={rx}
+          ry={ry}
+          fill="none"
+          stroke="var(--border-subtle)"
+          strokeWidth={1}
+          strokeDasharray="3 7"
+          opacity={0.85}
+        />
+
+        {/* every edge, drawn under the nodes so it disappears cleanly behind them */}
         {nodes.map(({ c, x, y }) => {
-          const busy = c.status === "active";
+          const answering = c.status === "active";
+          const unbuilt = c.status === "no_consumer";
           return (
-            <g key={`edge-${c.key}`}>
-              <line
-                x1={x}
-                y1={y}
-                x2={cx}
-                y2={cy}
-                stroke={busy ? "var(--brand)" : "var(--grid)"}
-                strokeWidth={busy ? 1.6 : 1.1}
-                strokeDasharray={busy ? "5 7" : undefined}
-                opacity={c.status === "no_consumer" ? 0.45 : 1}
-              >
-                {busy ? (
-                  // `values` counts DOWN so the dash travels inward. Twelve is the pattern
-                  // length; anything else makes the dashes stutter at the wrap.
-                  <animate
-                    attributeName="stroke-dashoffset"
-                    values="12;0"
-                    dur="1.4s"
-                    repeatCount="indefinite"
-                  />
-                ) : null}
-              </line>
-            </g>
+            <line
+              key={`edge-${c.key}`}
+              x1={x}
+              y1={y}
+              x2={cx}
+              y2={cy}
+              stroke={answering ? "var(--brand)" : "var(--border-subtle)"}
+              strokeWidth={answering ? 1.8 : 1}
+              strokeDasharray={unbuilt ? "2 6" : undefined}
+              opacity={answering ? 0.95 : unbuilt ? 0.5 : 0.75}
+            />
           );
         })}
 
-        {/* the centre */}
-        <circle cx={cx} cy={cy} r={40} fill="var(--ai-bg)" stroke="var(--ai-accent)" strokeWidth={1.5} />
+        {/* the travelling dot — only where a call genuinely happened */}
+        {nodes
+          .filter(({ c }) => c.status === "active")
+          .map(({ c, x, y }, i) => (
+            <circle key={`pulse-${c.key}`} r={4.5} fill="var(--brand)">
+              {/* From the module inward to the router: evidence goes up, a draft comes back.
+                  Staggered so several live connectors do not beat in unison, which reads as
+                  one animation rather than several independent conversations. */}
+              <animate
+                attributeName="cx"
+                values={`${x};${cx}`}
+                dur="2.1s"
+                begin={`${i * 0.35}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cy"
+                values={`${y};${cy}`}
+                dur="2.1s"
+                begin={`${i * 0.35}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0;1;1;0"
+                keyTimes="0;0.12;0.82;1"
+                dur="2.1s"
+                begin={`${i * 0.35}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          ))}
+
+        {/* ───────────────────────────── the centre ──────────────────────────── */}
+        <circle cx={cx} cy={cy} r={CORE + 30} fill="url(#mesh-core-halo)" />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={CORE + 7}
+          fill="none"
+          stroke="var(--violet)"
+          strokeWidth={1}
+          opacity={0.4}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={CORE}
+          fill="color-mix(in srgb, var(--violet) 14%, var(--surface))"
+          stroke="var(--violet)"
+          strokeWidth={1.8}
+        />
+        <Icons.BrainCircuit
+          x={cx - 15}
+          y={cy - 15}
+          width={30}
+          height={30}
+          color="var(--ai-accent)"
+          strokeWidth={1.5}
+          aria-hidden
+        />
         <text
           x={cx}
-          y={cy - 2}
+          y={cy + CORE + 26}
           textAnchor="middle"
-          className="fill-[var(--ai-text)] text-[13px] font-extrabold"
-          style={{ letterSpacing: "0.08em" }}
+          className="fill-[var(--text-primary)] text-[14px] font-bold"
         >
           ONYX
         </text>
         <text
           x={cx}
-          y={cy + 12}
+          y={cy + CORE + 41}
           textAnchor="middle"
-          className="fill-[var(--text-muted)] text-[8px] font-bold"
-          style={{ letterSpacing: "0.1em" }}
+          className="fill-[var(--ai-text)] text-[9.5px] font-bold"
+          style={{ letterSpacing: "0.14em" }}
         >
           AI ROUTER
         </text>
 
+        {/* ───────────────────────────── the nodes ───────────────────────────── */}
         {nodes.map(({ c, x, y }) => {
-          const look = STATUS_LOOK[c.status];
+          const accent = DEPARTMENT_ACCENT[c.department] ?? "var(--text-muted)";
+          const state = NODE_STATE[c.status];
+          const answering = c.status === "active";
+          const Icon =
+            (Icons as unknown as Record<string, Icons.LucideIcon>)[c.icon] ?? Icons.Circle;
+
           return (
             <g key={`node-${c.key}`}>
+              {answering ? <circle cx={x} cy={y} r={R + 24} fill="url(#mesh-halo)" /> : null}
+              {answering ? (
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={R + 6}
+                  fill="none"
+                  stroke={accent}
+                  strokeWidth={1}
+                  opacity={0.45}
+                />
+              ) : null}
               <circle
                 cx={x}
                 cy={y}
-                r={21}
-                fill="var(--surface)"
-                stroke={look.dot}
-                strokeWidth={1.5}
-                strokeDasharray={c.status === "no_consumer" ? "3 3" : undefined}
+                r={R}
+                fill={`color-mix(in srgb, ${accent} 13%, var(--surface))`}
+                stroke={accent}
+                strokeWidth={1.6}
+                // A connector nobody calls is drawn with a broken outline, so "not built"
+                // is legible without reading the caption or seeing the colour.
+                strokeDasharray={c.status === "no_consumer" ? "4 4" : undefined}
+                opacity={c.status === "no_consumer" ? 0.75 : 1}
+              />
+              <Icon
+                x={x - 11}
+                y={y - 11}
+                width={22}
+                height={22}
+                color={accent}
+                strokeWidth={1.6}
+                aria-hidden
               />
               <text
                 x={x}
-                y={y + 4}
+                y={y + R + 20}
                 textAnchor="middle"
-                className="fill-[var(--text-primary)] text-[9.5px] font-bold"
-              >
-                {c.department}
-              </text>
-              <text
-                x={x}
-                y={y + 36}
-                textAnchor="middle"
-                className="fill-[var(--text-secondary)] text-[9.5px] font-semibold"
+                className="fill-[var(--text-primary)] text-[12.5px] font-semibold"
               >
                 {c.name}
               </text>
+              {/* The department code, because two departments share a blue and the picture
+                  must not depend on telling them apart by hue. */}
               <text
                 x={x}
-                y={y + 47}
+                y={y + R + 34}
                 textAnchor="middle"
-                className="fill-[var(--text-muted)] text-[8px] font-bold"
-                style={{ letterSpacing: "0.06em" }}
+                className="text-[8.5px] font-extrabold"
+                style={{ fill: accent, letterSpacing: "0.14em" }}
               >
-                {c.calls > 0 ? `${num(c.calls)} CALLS` : look.label.toUpperCase()}
+                {c.department}
+              </text>
+              {/* The dot and the word are ONE text node, not a circle positioned beside a
+                  label. The first attempt measured the label with a characters-times-a-guess
+                  formula and placed the circle to its left; letter-spacing made every word
+                  wider than the guess, so the dot landed on top of the S of "SWITCHED OFF".
+                  SVG cannot measure text before it paints — so nothing here tries to. The
+                  bullet is a glyph in the same string, centred with it, and it cannot
+                  collide with anything by construction. */}
+              <text
+                x={x}
+                y={y + R + 47}
+                textAnchor="middle"
+                className="text-[8.5px] font-bold"
+                style={{ fill: state.dot, letterSpacing: "0.13em" }}
+              >
+                <tspan style={{ fontSize: "11px", letterSpacing: "normal" }}>•</tspan>
+                <tspan dx="4">{state.word}</tspan>
               </text>
             </g>
           );
         })}
       </svg>
+
+      {/* The key. A picture whose vocabulary is only in a source comment is a picture that
+          has to be explained by whoever is standing next to it. */}
+      <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[var(--border-subtle)] px-1 pt-2.5 text-[10.5px] text-[var(--text-muted)]">
+        {(["active", "standing_by", "switched_off", "no_consumer"] as const).map((s) => (
+          <li key={s} className="flex items-center gap-1.5">
+            <span
+              className="h-[7px] w-[7px] rounded-full"
+              style={{ background: NODE_STATE[s].dot }}
+            />
+            <span className="font-semibold text-[var(--text-secondary)]">
+              {NODE_STATE[s].word.toLowerCase()}
+            </span>
+            <span>— {STATUS_MEANING[s]}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-/* ══════════════════════════ one connector ══════════════════════════ */
+const STATUS_MEANING: Record<ConnectorState["status"], string> = {
+  active: "made a call in this window",
+  standing_by: "wired up, nothing called it",
+  switched_off: "every feature it holds is off",
+  no_consumer: "registered, but no service calls it",
+};
+
+  /* ══════════════════════════ one connector ══════════════════════════ */
 
 function ConnectorCard({ connector: c }: { connector: ConnectorState }): React.JSX.Element {
   const look = STATUS_LOOK[c.status];
