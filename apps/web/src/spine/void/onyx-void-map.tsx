@@ -32,7 +32,7 @@
  * quietly redraw the architecture around one person's permissions.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DEPARTMENTS, type Department } from "../registry/departments";
 
@@ -60,41 +60,26 @@ export function OnyxVoidMap({
 }): React.JSX.Element {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const wrap = useRef<HTMLDivElement>(null);
 
   /**
-   * PARALLAX, EARNED CHEAPLY.
+   * ───────────────────────────────────────────────────────────────────────────────
+   * THIS MAP HOLDS STILL. It used to drift.
+   * ───────────────────────────────────────────────────────────────────────────────
    *
-   * The cursor's offset from the centre, normalised to ±1, applied as a small translation
-   * to the scene and a larger one to the nodes — the difference between the two layers is
-   * the entire illusion of depth. Read on `pointermove` and written to state, but the
-   * consumer is a `transform`, so nothing lays out.
+   * The nodes floated on individual clocks and the whole scene answered the cursor with a
+   * parallax tilt. It looked alive, and it was wrong: this is not a scene to be admired, it
+   * is a set of six doors, and every one of them was a moving target. Aiming at a thing
+   * that slides away from the pointer is a small tax paid on every single use, and it is
+   * paid hardest by whoever has the least steady hand.
    *
-   * Skipped entirely under reduced motion, and on a machine that would rather not.
+   * A picture that moves is worth having where there is nothing to click. Here there are
+   * six things to click, so it does not move.
+   *
+   * THE GLOW STAYS. Nothing about the light changed — same aurora gradient, same bloom,
+   * same pulses running out along the pathways. What was removed is POSITIONAL motion, the
+   * kind that makes a target hard to hit. Light travelling down a wire moves nothing you
+   * are trying to press.
    */
-  useEffect(() => {
-    if (reduced || lowPower) return;
-    const el = wrap.current;
-    if (!el) return;
-    let frame = 0;
-    const onMove = (e: PointerEvent): void => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        const r = el.getBoundingClientRect();
-        setTilt({
-          x: (e.clientX - r.left - r.width / 2) / (r.width / 2),
-          y: (e.clientY - r.top - r.height / 2) / (r.height / 2),
-        });
-      });
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, [reduced, lowPower]);
 
   const CX = 500;
   const CY = 340;
@@ -114,7 +99,6 @@ export function OnyxVoidMap({
 
   return (
     <div
-      ref={wrap}
       className="relative grid h-full w-full place-items-center"
       style={{
         opacity: visible ? 1 : 0,
@@ -131,8 +115,6 @@ export function OnyxVoidMap({
         className="w-full"
         style={{
           maxWidth: "min(94vw, 1180px)",
-          transform: `translate3d(${(tilt.x * -14).toFixed(2)}px, ${(tilt.y * -10).toFixed(2)}px, 0)`,
-          transition: "transform 700ms cubic-bezier(.22,1,.36,1)",
         }}
       >
         <svg viewBox="0 0 1000 680" className="block w-full" style={{ overflow: "visible" }}>
@@ -247,28 +229,12 @@ export function OnyxVoidMap({
           </g>
 
           {/* ───────────────────────────── the six doors ───────────────────────────── */}
-          {nodes.map(({ dept, x, y, reachable, moduleCount }, i) => {
+          {nodes.map(({ dept, x, y, reachable, moduleCount }) => {
             const on = hovered === dept.code;
-            // Depth: the further a node sits from the centre, the more it answers the
-            // cursor. That difference between layers is what makes the scene feel like a
-            // space rather than a diagram.
-            const depth = reduced || lowPower ? 0 : 1;
-            const px = tilt.x * 26 * depth * ((i % 3) - 1 + 1.4);
-            const py = tilt.y * 18 * depth * ((i % 2) + 0.7);
-
             return (
-              <g
-                key={dept.code}
-                transform={`translate(${(x + px).toFixed(2)},${(y + py).toFixed(2)})`}
-                style={{ transition: "transform 900ms cubic-bezier(.22,1,.36,1)" }}
-                className={reduced ? undefined : "ind-void-drift"}
-              >
-                <g
-                  style={{
-                    animationDelay: `${(i * 1.3).toFixed(1)}s`,
-                    opacity: reachable ? 1 : 0.34,
-                  }}
-                >
+              // Fixed. A node is exactly where it was the last time this person looked.
+              <g key={dept.code} transform={`translate(${x.toFixed(2)},${y.toFixed(2)})`}>
+                <g style={{ opacity: reachable ? 1 : 0.34 }}>
                   <foreignObject x={-92} y={-64} width={184} height={150} overflow="visible">
                     <div className="grid place-items-center">
                       <button
