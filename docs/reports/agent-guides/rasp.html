@@ -1,0 +1,166 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>RASP — XELOR agent guide</title><style>
+  :root { --ink:#132238; --muted:#5f6f83; --line:#dfe5ed; --paper:#fff; --navy:#101d31; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:#dfe4ec; color:var(--ink); font-family:Inter,Arial,sans-serif; }
+  @page { size:A4; margin:0; }
+  .page { width:210mm; height:297mm; padding:17mm 17mm 15mm; margin:8mm auto; background:var(--paper); position:relative; overflow:hidden; page-break-after:always; }
+  .page:last-child { page-break-after:auto; }
+  @media print { html,body{background:#fff}.page{margin:0} }
+  h1,h2,h3,p { margin-top:0; }
+  h1 { font-size:35px; line-height:1.03; letter-spacing:-1.2px; margin-bottom:8px; }
+  h2 { font-size:24px; line-height:1.1; letter-spacing:-.5px; margin-bottom:7px; }
+  h3 { font-size:12.5px; line-height:1.25; margin-bottom:5px; }
+  p,li,td,th { font-size:10.5px; line-height:1.48; }
+  p { color:var(--muted); margin-bottom:8px; }
+  ul { margin:5px 0 0; padding-left:18px; }
+  li { margin-bottom:5px; color:#33445a; }
+  small { font-size:8px; color:#67758a; font-weight:500; }
+  .eyebrow { color:var(--accent); font-size:9px; letter-spacing:1.7px; text-transform:uppercase; font-weight:800; margin-bottom:9px; }
+  .lead { font-size:15px; line-height:1.45; max-width:155mm; color:#34465d; }
+  .rule { height:3px; width:24mm; background:var(--accent); margin:10px 0 16px; border-radius:4px; }
+  .section-head { display:flex; justify-content:space-between; gap:10mm; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:13px; }
+  .section-head p { max-width:74mm; text-align:right; margin:0; }
+  .footer { position:absolute; left:17mm; right:17mm; bottom:7mm; display:flex; justify-content:space-between; color:#8994a5; font-size:7.5px; border-top:1px solid #e7ebf0; padding-top:3px; }
+  .cover { background:linear-gradient(145deg,var(--navy) 0 60%,var(--accent) 60% 100%); color:white; }
+  .cover p { color:#d7dfec; }
+  .cover .eyebrow { color:#fff; opacity:.8; margin-top:15mm; }
+  .cover h1 { font-size:52px; max-width:142mm; margin-top:40mm; }
+  .cover .lead { color:#e8edf5; font-size:17px; max-width:132mm; }
+  .cover .cover-note { position:absolute; bottom:27mm; left:17mm; width:106mm; padding:12px 14px; border:1px solid #ffffff42; border-radius:12px; background:#ffffff0d; font-size:10px; line-height:1.5; }
+  .cover .footer { color:#d6dfed; border-color:#ffffff25; }
+  .big-mark { position:absolute; right:11mm; bottom:18mm; font-size:72px; line-height:.9; font-weight:900; color:#ffffff18; writing-mode:vertical-rl; transform:rotate(180deg); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .card { border:1px solid var(--line); border-radius:10px; padding:10px 11px; background:#fff; break-inside:avoid; }
+  .card h3 { color:var(--accent); }
+  .card p { margin:0; font-size:9.5px; }
+  .tint { background:var(--pale); border-color:color-mix(in srgb,var(--accent) 20%,white); }
+  .callout { border-left:4px solid var(--accent); background:var(--pale); padding:11px 13px; border-radius:0 10px 10px 0; margin:10px 0; }
+  .callout strong { display:block; font-size:11px; margin-bottom:4px; }
+  .callout p { margin:0; }
+  .pills { display:flex; flex-wrap:wrap; gap:5px; margin:7px 0 12px; }
+  .pills span { font-size:8px; font-weight:700; border:1px solid var(--line); border-radius:99px; padding:4px 7px; background:#fff; color:#4b5b70; }
+  .flow { display:flex; align-items:stretch; gap:5px; margin:14px 0; }
+  .flow-block { flex:1; min-width:0; min-height:49px; display:flex; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:8px; padding:6px; font-size:9px; font-weight:750; background:#fff; }
+  .arrow { display:flex; align-items:center; color:var(--accent); font-size:16px; }
+  .swim { display:grid; grid-template-columns:30mm 1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:8px 0; }
+  .swim .who { background:var(--pale); color:var(--accent); font-weight:800; padding:9px; font-size:9px; }
+  .swim .what { padding:9px; font-size:9px; color:#33445a; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
+  th { color:#fff; background:var(--accent); text-align:left; font-size:8px; padding:7px; }
+  td { border-bottom:1px solid var(--line); padding:7px; font-size:8.2px; vertical-align:top; overflow-wrap:anywhere; }
+  tr:nth-child(even) td { background:#f8fafc; }
+  .cap-table th:nth-child(1){width:28%}.cap-table th:nth-child(2){width:11%}.cap-table th:nth-child(3){width:22%}.cap-table th:nth-child(4){width:25%}.cap-table th:nth-child(5){width:14%}
+  .steps { counter-reset:step; display:grid; gap:7px; }
+  .step { display:grid; grid-template-columns:10mm 1fr; gap:8px; align-items:start; border:1px solid var(--line); border-radius:9px; padding:8px; }
+  .step:before { counter-increment:step; content:counter(step); width:8mm; height:8mm; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:9px; }
+  .step p { margin:0; font-size:9.5px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+  .stat { background:var(--navy); color:#fff; border-radius:10px; padding:11px; }
+  .stat b { display:block; font-size:22px; color:#fff; }
+  .stat span { font-size:8px; color:#c8d1de; }
+  .agent-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
+  .agent-card { border:1px solid var(--line); border-left:6px solid var(--c); padding:8px 10px; border-radius:8px; }
+  .agent-card b { color:var(--c); font-size:11px; }
+  .agent-card p { margin:2px 0 0; font-size:8.8px; }
+  .lane { display:grid; grid-template-columns:23mm 1fr; align-items:stretch; border-bottom:1px solid var(--line); }
+  .lane:last-child { border-bottom:0; }
+  .lane-name { padding:7px; font-size:8px; font-weight:800; color:#fff; background:var(--c); display:flex; align-items:center; }
+  .lane-work { padding:7px; display:flex; gap:5px; align-items:center; font-size:8.5px; }
+  .lane-work span { padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  .lane-work i { color:#9aa5b4; font-style:normal; }
+  .stack { display:grid; gap:6px; margin:12px auto; max-width:155mm; }
+  .stack-row { border:1px solid var(--line); border-left:6px solid var(--accent); padding:9px 12px; border-radius:8px; display:flex; justify-content:space-between; gap:15px; }
+  .stack-row b { font-size:10px; }
+  .stack-row span { font-size:8.5px; color:var(--muted); text-align:right; }
+  .truth { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .truth > div { border-radius:10px; padding:12px; border:1px solid var(--line); }
+  .truth .yes { border-top:5px solid #2a9160; }.truth .no { border-top:5px solid #d94b4b; }
+  .glossary td:first-child { width:28%; font-weight:800; color:var(--accent); }
+  .source { font-family:ui-monospace,Menlo,monospace; font-size:7.8px; overflow-wrap:anywhere; }
+  .mini { font-size:8.5px; }
+</style></head><body><section class="page cover" style="--accent:#2a9160;--pale:#ecfaf2">
+    <div class="eyebrow">XELOR agent handbook · implementation-based</div>
+    <h1>RASP<br>Finance &amp; Working Capital</h1><div class="rule"></div>
+    <p class="lead">The money and people-impact specialist. Explains the accounting truth, cash pressure, collections, expenditure and payroll consequences behind an operating decision.</p>
+    <div class="cover-note"><b>Made for:</b> product, engineering, operations and business teams.<br><b>Reading time:</b> about 12 minutes.<br><b>Truth standard:</b> describes the repository as implemented on 1 August 2026.</div>
+    <div class="big-mark">RASP</div><div class="footer"><span>XELOR · RASP agent guide</span><span>01</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">01 · At a glance</div><h2>What RASP is here to do</h2></div><p>A role, not an all-powerful chatbot</p></header>
+    <div class="callout"><strong>In one sentence</strong><p>Explains the accounting truth, cash pressure, collections, expenditure and payroll consequences behind an operating decision.</p></div>
+    <div class="stat-grid">
+      <div class="stat"><b>4</b><span>product areas grouped here</span></div>
+      <div class="stat"><b>6</b><span>registered callable tools</span></div>
+      <div class="stat"><b>5</b><span>allowed capability prefixes</span></div>
+      <div class="stat"><b>0</b><span>agents it may delegate to</span></div>
+    </div>
+    <div class="grid-2"><article class="card"><h3>Receives</h3><p>Ledger and receivable records · Orders, purchasing and inventory pressure · Budget/spend commitments · Payroll and statutory outcomes</p></article><article class="card"><h3>Produces</h3><p>Accounting and cash evidence · Scenario—not prediction—results · Collection priority · Reviewable funding draft or finance work item</p></article></div>
+    <h3 style="margin-top:14px">Allowed capability families</h3><div class="pills"><span>accounts.*</span><span>finance.*</span><span>expenditure.*</span><span>hrm.*</span><span>agent.*</span></div>
+    <div class="callout"><strong>The key distinction</strong><p>The product-area grouping below shows where RASP contributes across XELOR. The callable-tool table later shows the smaller, exact surface Agent OS can invoke today. Product ownership does not automatically create runtime authority.</p></div><div class="footer"><span>XELOR · RASP agent guide</span><span>02</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">02 · Product grouping</div><h2>The business areas under RASP</h2></div><p>Business ownership is broader than today’s Agent OS tools</p></header>
+    <div class="grid-2"><article class="card"><h3>Accounts</h3><p>Append-only journals, general ledger, receivables, settlements and period control.</p></article><article class="card"><h3>Working Capital</h3><p>Cash position, forecast simulation, collection priorities and reviewable funding-pack drafts.</p></article><article class="card"><h3>Employee Spend</h3><p>Budgets, reservations, claims, advances, GST/TDS checks and posting instructions.</p></article><article class="card"><h3>People / HRM</h3><p>Attendance, wages, payroll, statutory calculation and accounting handoff.</p></article></div>
+    <div style="margin-top:15px" class="callout"><strong>How to read this grouping</strong><p>RASP is the named specialist when a mission needs facts or analysis from these areas. Each module still owns its own rules, records and write paths. The agent coordinates through registered services; it does not become the database owner.</p></div>
+    <h3 style="margin-top:15px">What remains true underneath</h3>
+    <ul><li>Each module keeps its own business rules and permissions.</li><li>Cross-module work passes through narrow ports or registered capabilities.</li><li>Tenant isolation, audit and workflow apply regardless of which agent is speaking.</li><li>A readable agent answer never replaces the source record.</li></ul>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>03</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">03 · Runtime contract</div><h2>How RASP participates in a mission</h2></div><p>The mission engine controls order, parallel work and recovery</p></header>
+    <div class="flow"><div class="flow-block">Person or signal</div><span class="arrow">→</span><div class="flow-block">ONYX<br><small>scope + coordinate</small></div><span class="arrow">→</span><div class="flow-block">RASP<br><small>Finance &amp; Working Capital</small></div><span class="arrow">→</span><div class="flow-block">Capability registry<br><small>allow-listed tool</small></div><span class="arrow">→</span><div class="flow-block">Domain service<br><small>business rules</small></div><span class="arrow">→</span><div class="flow-block">Tenant data + audit</div></div>
+    <div class="grid-2">
+      <article class="card tint"><h3>1 · Scope</h3><p>ONYX turns the goal into a versioned graph run with a fixed tenant, user, limits and expected outputs.</p></article>
+      <article class="card tint"><h3>2 · Authorise</h3><p>The capability registry checks that RASP is allowed to call the named tool; RBAC repeats the user permission check.</p></article>
+      <article class="card tint"><h3>3 · Execute safely</h3><p>The registered domain service performs the operation. The agent never receives a general SQL doorway.</p></article>
+      <article class="card tint"><h3>4 · Preserve evidence</h3><p>Inputs, outputs, node events and checkpoints are stored so the mission can be explained or recovered.</p></article>
+    </div>
+    <div class="callout"><strong>Delegation</strong><p>RASP is a specialist and does not delegate to other agents in the current registry.</p></div>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>04</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">04 · Exact callable surface</div><h2>What RASP can call today</h2></div><p>Every row is explicitly registered and permission-checked</p></header>
+    <table class="cap-table"><thead><tr><th>Capability key</th><th>Mode</th><th>Result</th><th>User permission</th><th>Approval?</th></tr></thead><tbody><tr><td>accounts.vouchers.read</td><td>Read</td><td>Accounting vouchers</td><td>accounts.ledger.read</td><td>No</td></tr><tr><td>finance.cash-position.read</td><td>Read</td><td>Cash position</td><td>accounts.ledger.read</td><td>No</td></tr><tr><td>finance.forecast.simulate</td><td>Simulate</td><td>Cash forecast</td><td>accounts.ledger.read</td><td>No</td></tr><tr><td>finance.collections.prioritise</td><td>Analyse</td><td>Collection queue</td><td>accounts.ledger.read</td><td>No</td></tr><tr><td>finance.funding-pack.draft</td><td>Draft</td><td>Funding pack</td><td>accounts.ledger.read</td><td>No</td></tr><tr><td>agent.action.dispatch</td><td>Execute</td><td>Governed work item</td><td>agentos.run.operate</td><td>Yes</td></tr></tbody></table>
+    <div class="callout"><strong>What “dispatch” means</strong><p>If listed, <span class="source">agent.action.dispatch</span> appends a governed work item for a named specialist. It does not directly change a sales order, stock balance, production order, journal, payment or customer message.</p></div>
+    <div class="grid-2">
+      <article class="card"><h3>Read / analyse / simulate</h3><p>Returns evidence or a reproducible view. No business record is changed.</p></article>
+      <article class="card"><h3>Draft</h3><p>Creates reviewable proposed content. A draft is never labelled as an approved or completed business outcome.</p></article>
+      <article class="card"><h3>Execute</h3><p>Effectful at the Agent OS level and therefore requires an approved ancestor node.</p></article>
+      <article class="card"><h3>Permission</h3><p>The agent’s allow-list and the signed-in user’s RBAC must both allow the call.</p></article>
+    </div><div class="footer"><span>XELOR · RASP agent guide</span><span>05</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">05 · Coordination</div><h2>Who RASP works with</h2></div><p>Specialists exchange evidence through ONYX, not hidden side conversations</p></header>
+    <div class="swim"><div class="who">MICA</div><div class="what">Connects customer commitments with credit, invoices and collections.</div></div><div class="swim"><div class="who">SPAR + AXLE + KILN</div><div class="what">Shows the cash effect of supply, planning and plant choices.</div></div><div class="swim"><div class="who">HEXA</div><div class="what">Uses approval and separation-of-duties controls for sensitive money work.</div></div>
+    <h3 style="margin-top:16px">A complete controlled mission</h3>
+    <div class="flow"><div class="flow-block">Goal</div><span class="arrow">→</span><div class="flow-block">Parallel reads</div><span class="arrow">→</span><div class="flow-block">Specialist assessments</div><span class="arrow">→</span><div class="flow-block">ONYX joins</div><span class="arrow">→</span><div class="flow-block">HEXA preflight</div><span class="arrow">→</span><div class="flow-block">Human approval</div><span class="arrow">→</span><div class="flow-block">Work items</div><span class="arrow">→</span><div class="flow-block">Verify + report</div></div>
+    <div class="callout"><strong>Why this structure matters</strong><p>Each agent stays accountable for its own facts. ONYX combines them, HEXA checks control evidence, and a person controls the decision boundary. This prevents one fluent answer from quietly becoming authority over the whole company.</p></div>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>06</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">06 · Worked example</div><h2>What is the cash impact of this operating plan?</h2></div><p>A realistic presentation path from question to controlled outcome</p></header>
+    <div class="steps"><div class="step"><p>RASP reads ledger-backed cash and voucher evidence, then can run a clearly labelled forecast simulation using stated assumptions.</p></div><div class="step"><p>It prioritises collections using reproducible facts and can draft a funding pack. Drafts and scenarios are never presented as booked accounting truth.</p></div><div class="step"><p>Any follow-up dispatch remains an approved work item; journal posting, payment and payroll stay inside their controlled module workflows.</p></div></div>
+    <div class="callout"><strong>What the presenter should say</strong><p>“RASP contributes verified domain evidence, with source references and limitations. It does not claim that a proposed or dispatched action is complete until the controlled system records and verifies the outcome.”</p></div>
+    <h3 style="margin-top:14px">Useful questions to ask during the demo</h3>
+    <ul><li>Which source records support RASP’s answer?</li><li>What permission was checked?</li><li>Is this a fact, a simulation, a draft or a completed result?</li><li>Would this step wait for human approval?</li><li>What happens if a node times out or the service restarts?</li></ul>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>07</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">07 · Safety and boundaries</div><h2>How RASP stays trustworthy</h2></div><p>Controls are enforced in the runtime and modules, not left to prompt wording</p></header>
+    <div class="grid-2"><article class="card"><h3>Control 1</h3><p>Journals are balanced, append-only and reversed rather than edited</p></article><article class="card"><h3>Control 2</h3><p>Closed periods are respected</p></article><article class="card"><h3>Control 3</h3><p>Budget availability includes committed and in-approval money</p></article><article class="card"><h3>Control 4</h3><p>Statutory rate rows are effective-dated and retained</p></article></div>
+    <div class="stack">
+      <div class="stack-row"><b>Identity boundary</b><span>Verified user + tenant</span></div>
+      <div class="stack-row"><b>Authority boundary</b><span>Agent allow-list + user RBAC</span></div>
+      <div class="stack-row"><b>Action boundary</b><span>Approval ancestry for side effects</span></div>
+      <div class="stack-row"><b>Data boundary</b><span>Domain service + tenant-fenced database</span></div>
+      <div class="stack-row"><b>Evidence boundary</b><span>Append-only run, event and audit records</span></div>
+    </div>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>08</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">08 · Implementation truth</div><h2>What is live—and what is not</h2></div><p>This page prevents the demo from overclaiming</p></header>
+    <div class="truth">
+      <div class="yes"><h3>Live in the repository</h3><ul><li>Voucher and cash reads</li><li>Forecast simulation</li><li>Collections prioritisation</li><li>Funding-pack drafting</li><li>Ledger/spend/payroll foundations</li></ul></div>
+      <div class="no"><h3>Deliberate current limits</h3><ul><li>A simulation is not a forecast guarantee</li><li>Funding packs require finance review</li><li>No autonomous posting, payment, collection contact or payroll release</li></ul></div>
+    </div>
+    <div class="callout"><strong>Runtime disclosure</strong><p>Orchestration, ERP reads, approval gates and governed action dispatch are live. Language reasoning is deterministic; no external model API or connector is active.</p></div>
+    <h3 style="margin-top:13px">Primary implementation references</h3>
+    <div class="card source" style="margin:6px 0">apps/api/src/modules/accounts/</div><div class="card source" style="margin:6px 0">apps/api/src/modules/expenditure/</div><div class="card source" style="margin:6px 0">apps/api/src/modules/hrm/</div>
+    <p class="mini" style="margin-top:9px">This guide is a plain-language operating map, not an API contract. The code, migrations and automated tests remain the binding technical source.</p>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>09</span></div></section><section class="page " style="--accent:#2a9160;--pale:#ecfaf2">
+    <header class="section-head"><div><div class="eyebrow">09 · Quick reference</div><h2>RASP in one page</h2></div><p>Use this page when explaining the agent to a new team member</p></header>
+    <div class="grid-2"><article class="card"><h3>Job</h3><p>Explains the accounting truth, cash pressure, collections, expenditure and payroll consequences behind an operating decision.</p></article><article class="card"><h3>Owns</h3><p>Accounts, Working Capital, Employee Spend, People / HRM</p></article><article class="card"><h3>Receives</h3><p>Ledger and receivable records · Orders, purchasing and inventory pressure · Budget/spend commitments · Payroll and statutory outcomes</p></article><article class="card"><h3>Returns</h3><p>Accounting and cash evidence · Scenario—not prediction—results · Collection priority · Reviewable funding draft or finance work item</p></article><article class="card"><h3>Can call</h3><p>accounts.vouchers.read, finance.cash-position.read, finance.forecast.simulate, finance.collections.prioritise, finance.funding-pack.draft, agent.action.dispatch</p></article><article class="card"><h3>Cannot do</h3><p>A simulation is not a forecast guarantee · Funding packs require finance review · No autonomous posting, payment, collection contact or payroll release</p></article></div>
+    <h3 style="margin-top:14px">Plain-language glossary</h3>
+    <table class="glossary"><tbody>
+      <tr><td>Agent</td><td>A named specialist role with an allow-listed set of tools—not a free-roaming process.</td></tr>
+      <tr><td>Capability</td><td>One registered operation with an input, output, owner, mode and required permission.</td></tr>
+      <tr><td>Graph</td><td>A versioned mission recipe showing order, parallel steps, joins and approvals.</td></tr>
+      <tr><td>Checkpoint</td><td>A stored progress snapshot used for explanation and safe recovery.</td></tr>
+      <tr><td>Governed work item</td><td>An append-only assignment created after approval; it is not the final business mutation.</td></tr>
+    </tbody></table>
+  <div class="footer"><span>XELOR · RASP agent guide</span><span>10</span></div></section></body></html>

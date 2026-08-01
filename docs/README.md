@@ -17,5 +17,10 @@ The project documentation is ordered by purpose rather than by creation date.
 1. [Presenter walkthrough](02-investor-demo/01-presenter-walkthrough.md)
 2. [Capability gaps and limitations](02-investor-demo/02-capability-gaps.md)
 
+## 03 — Agent guides
+
+- [Agent guide index](03-agent-guides/README.md) — master system guide plus one
+  plain-language PDF for each of the seven implemented agents.
+
 Conventional discovery files remain at the repository root: `README.md` for project setup
 and `CLAUDE.md` for environment-specific engineering notes.

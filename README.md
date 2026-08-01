@@ -19,7 +19,8 @@ The ordered project documentation starts at [docs/README.md](docs/README.md):
 
 - `00-project/` — technology and architecture;
 - `01-agent-os/` — the three implemented Agent OS phases, in order; and
-- `02-investor-demo/` — the presenter walkthrough and honest capability-gap register.
+- `02-investor-demo/` — the presenter walkthrough and honest capability-gap register; and
+- `03-agent-guides/` — the master Agent System guide and seven detailed agent handbooks.
 
 Repository discovery files remain at the root because tools expect them there:
 `README.md` for project entry and `CLAUDE.md` for environment notes.
