@@ -11,6 +11,9 @@ coverage/
 *.log
 .pnpm-store/
 
+# Local Vercel project links and pulled deployment metadata.
+.vercel/
+
 # Next.js build output and generated types. Committed once by accident when a .gitignore
 # edit silently wrote to the wrong directory; 86 build artefacts went in with the web app.
 .next/
