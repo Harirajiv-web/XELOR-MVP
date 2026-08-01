@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { authConfig, endpoints, TENANT_LABELS } from "./config";
-import { beginPkce, finishPkce } from "./pkce";
+import { beginPkce, clearPkce, finishPkce } from "./pkce";
 import { configureApi } from "../api/client";
 
 /**
@@ -46,7 +46,7 @@ interface SessionValue {
   status: Status;
   user: SessionUser | null;
   error: string | null;
-  signIn: (returnTo?: string) => void;
+  signIn: (returnTo?: string, options?: { force?: boolean }) => void;
   signOut: () => void;
   /** Completes the redirect. Called only by the /callback route. */
   completeSignIn: (code: string, state: string | null) => Promise<string>;
@@ -55,6 +55,42 @@ interface SessionValue {
 const SessionContext = createContext<SessionValue | null>(null);
 
 const TOKEN_KEY = "aikyantra.session";
+const ROOT_ENTRY_HANDOFF_KEY = "aikyantra.auth.root-entry-handoff";
+
+/**
+ * React development mode can mount an entry layout twice. Starting PKCE twice is not merely
+ * wasteful: the second attempt replaces the verifier in sessionStorage while the browser may
+ * already be following the first redirect, so correct credentials fail the state check on
+ * the callback. This module-level single flight survives that diagnostic remount and resets
+ * naturally when navigation loads the Keycloak page.
+ */
+let signInRedirectStarted = false;
+
+/**
+ * The authorization code is single-use. A callback component can genuinely remount while a
+ * development server warms a route, so the exchange must outlive any one component instance.
+ * Every caller awaits the same promise and Keycloak sees the code exactly once.
+ */
+let signInCompletion:
+  | {
+      code: string;
+      promise: Promise<{ session: StoredSession; returnTo: string }>;
+    }
+  | null = null;
+
+/**
+ * The callback leaves a one-use receipt when a root-entry sign-in has just succeeded.
+ * Without it, the root route would immediately demand another sign-in and create a loop.
+ */
+export function consumeRootEntryHandoff(): boolean {
+  try {
+    const handoff = sessionStorage.getItem(ROOT_ENTRY_HANDOFF_KEY) === "complete";
+    if (handoff) sessionStorage.removeItem(ROOT_ENTRY_HANDOFF_KEY);
+    return handoff;
+  } catch {
+    return false;
+  }
+}
 
 interface StoredSession {
   accessToken: string;
@@ -186,21 +222,39 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
     refreshTimer.current = setTimeout(() => void refreshRef.current(), delay);
   }
 
-  const signIn = useCallback((returnTo?: string) => {
-    void (async () => {
-      const target = returnTo ?? window.location.pathname + window.location.search;
-      const { challenge, state } = await beginPkce(target);
-      const url = new URL(endpoints.authorize());
-      url.searchParams.set("client_id", authConfig.clientId);
-      url.searchParams.set("response_type", "code");
-      url.searchParams.set("scope", authConfig.scope);
-      url.searchParams.set("redirect_uri", window.location.origin + authConfig.redirectPath);
-      url.searchParams.set("code_challenge", challenge);
-      url.searchParams.set("code_challenge_method", "S256");
-      url.searchParams.set("state", state);
-      window.location.assign(url.toString());
-    })();
-  }, []);
+  const signIn = useCallback(
+    (returnTo?: string, options?: { force?: boolean }) => {
+      if (signInRedirectStarted) return;
+      signInRedirectStarted = true;
+      signInCompletion = null;
+      if (options?.force) {
+        // Root entry is intentionally a fresh authentication ceremony. Clear the local
+        // token as well as asking Keycloak to ignore its SSO shortcut.
+        clear();
+      }
+      void (async () => {
+        const target = returnTo ?? window.location.pathname + window.location.search;
+        const { challenge, state } = await beginPkce(target);
+        const url = new URL(endpoints.authorize());
+        url.searchParams.set("client_id", authConfig.clientId);
+        url.searchParams.set("response_type", "code");
+        url.searchParams.set("scope", authConfig.scope);
+        url.searchParams.set("redirect_uri", window.location.origin + authConfig.redirectPath);
+        url.searchParams.set("code_challenge", challenge);
+        url.searchParams.set("code_challenge_method", "S256");
+        url.searchParams.set("state", state);
+        if (options?.force) url.searchParams.set("prompt", "login");
+        window.location.assign(url.toString());
+      })().catch(() => {
+        // A browser or crypto failure happens before navigation, so allow an explicit retry
+        // and show a useful state instead of leaving the gateway saying "Signing you in".
+        signInRedirectStarted = false;
+        setError("Sign-in could not start. Please try again.");
+        setStatus("error");
+      });
+    },
+    [clear],
+  );
 
   const signOut = useCallback(() => {
     const refreshToken = sessionRef.current?.refreshToken;
@@ -226,33 +280,27 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
 
   const completeSignIn = useCallback(
     async (code: string, state: string | null): Promise<string> => {
-      const { verifier, returnTo } = finishPkce(state);
-      const res = await fetch(endpoints.token(), {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          client_id: authConfig.clientId,
+      if (!signInCompletion || signInCompletion.code !== code) {
+        const { verifier, returnTo } = finishPkce(state);
+        signInCompletion = {
           code,
-          redirect_uri: window.location.origin + authConfig.redirectPath,
-          code_verifier: verifier,
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`Sign-in failed (${res.status}). ${body.slice(0, 200)}`);
+          promise: exchangeAuthorizationCode(code, verifier, returnTo),
+        };
       }
-      const j = (await res.json()) as {
-        access_token: string;
-        refresh_token?: string;
-        expires_in: number;
-      };
-      apply({
-        accessToken: j.access_token,
-        refreshToken: j.refresh_token ?? null,
-        expiresAt: Date.now() + j.expires_in * 1000,
-      });
-      return returnTo;
+      try {
+        const completed = await signInCompletion.promise;
+        clearPkce(state);
+        apply(completed.session);
+        if (completed.returnTo === "/") {
+          sessionStorage.setItem(ROOT_ENTRY_HANDOFF_KEY, "complete");
+        }
+        return completed.returnTo;
+      } catch (cause) {
+        // A failed request may be retried from the same callback while its tab-scoped PKCE
+        // state is still available. A fresh callback code always starts a fresh flight.
+        if (signInCompletion?.code === code) signInCompletion = null;
+        throw cause;
+      }
     },
     [apply],
   );
@@ -296,4 +344,60 @@ export function useSession(): SessionValue {
   const ctx = useContext(SessionContext);
   if (!ctx) throw new Error("useSession must be used inside <SessionProvider>.");
   return ctx;
+}
+
+async function exchangeAuthorizationCode(
+  code: string,
+  verifier: string,
+  returnTo: string,
+): Promise<{ session: StoredSession; returnTo: string }> {
+  const request = async (attempt: number): Promise<Response> => {
+    try {
+      const response = await fetch(endpoints.token(), {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: authConfig.clientId,
+          code,
+          redirect_uri: window.location.origin + authConfig.redirectPath,
+          code_verifier: verifier,
+        }),
+      });
+      if (attempt === 0 && (response.status === 408 || response.status === 429 || response.status >= 500)) {
+        await delay(250);
+        return request(1);
+      }
+      return response;
+    } catch (cause) {
+      if (attempt === 0) {
+        await delay(250);
+        return request(1);
+      }
+      throw cause;
+    }
+  };
+
+  const res = await request(0);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Sign-in failed (${res.status}). ${body.slice(0, 200)}`);
+  }
+  const payload = (await res.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    expires_in: number;
+  };
+  return {
+    session: {
+      accessToken: payload.access_token,
+      refreshToken: payload.refresh_token ?? null,
+      expiresAt: Date.now() + payload.expires_in * 1000,
+    },
+    returnTo,
+  };
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }

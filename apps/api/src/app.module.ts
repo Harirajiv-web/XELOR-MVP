@@ -23,6 +23,7 @@ import { IntegrationModule } from "./modules/integration/integration.module.js";
 import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
+import { AgentOsModule } from "./agent-os/agent-os.module.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -69,6 +70,9 @@ import { IdentityModule } from "./modules/identity/identity.module.js";
     AiOpsModule,
     // Read-only, last: they depend on nothing and nothing depends on them.
     CopilotModule,
+    // Governed execution layer above the ERP kernel. It calls domain services only through
+    // registered capabilities; models never receive a database handle.
+    AgentOsModule,
     // GET /me — the bootstrap every front end calls before it draws anything.
     IdentityModule,
   ],

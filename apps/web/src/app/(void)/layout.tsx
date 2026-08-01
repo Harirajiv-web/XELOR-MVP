@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { useSession } from "@spine/auth/session";
+import { useEffect, useRef, type ReactNode } from "react";
+import { consumeRootEntryHandoff, useSession } from "@spine/auth/session";
 
 /**
  * THE VOID HAS NO SHELL.
@@ -22,9 +22,16 @@ import { useSession } from "@spine/auth/session";
  */
 export default function VoidLayout({ children }: { children: ReactNode }): React.JSX.Element {
   const { status, signIn } = useSession();
+  const entryHandled = useRef(false);
 
   useEffect(() => {
-    if (status === "anonymous") signIn("/");
+    if (status === "loading" || entryHandled.current) return;
+    entryHandled.current = true;
+
+    // A completed callback gets one pass into the gateway. Every other visit to `/` —
+    // including a refresh with a valid local token — must display the credential screen.
+    if (status === "authenticated" && consumeRootEntryHandoff()) return;
+    signIn("/", { force: true });
   }, [status, signIn]);
 
   if (status !== "authenticated") {

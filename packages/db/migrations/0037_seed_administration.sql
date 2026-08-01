@@ -151,13 +151,13 @@ INSERT INTO feature_flag (id, tenant_id, created_by, updated_by, flag_key, descr
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO licence_record (id, tenant_id, created_by, updated_by, plan, named_seats, modules, valid_from, valid_to, enforcement) VALUES
- ('0192a8c0-0036-7900-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','IND-CORE Plant',25,
+ ('0192a8c0-0036-7900-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','XELOR Plant',25,
   '["general","engineering","inventory","purchase","production","quality","sales","accounts","hrm","maintenance","csp","expenditure","planning","administration"]'::jsonb,
   '2026-04-01','2027-03-31','soft')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO backup_job (id, tenant_id, created_by, updated_by, name, schedule, target, region, encryption, retention_policy, last_run_at, last_run_status, last_size_bytes, last_restore_test_at, restore_preserved_chain) VALUES
- ('0192a8c0-0036-7a00-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','Nightly full + PITR','0 18 * * *','s3://indcore-backups-ap-south-1/trishul','ap-south-1','kms','GFS: 7 daily, 5 weekly, 12 monthly, 8 yearly','2026-07-19T18:30:00Z','success',48213004288,'2026-07-05T06:00:00Z',true)
+ ('0192a8c0-0036-7a00-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','Nightly full + PITR','0 18 * * *','s3://xelor-backups-ap-south-1/trishul','ap-south-1','kms','GFS: 7 daily, 5 weekly, 12 monthly, 8 yearly','2026-07-19T18:30:00Z','success',48213004288,'2026-07-05T06:00:00Z',true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------

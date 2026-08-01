@@ -19,13 +19,13 @@ export function isUuidV7(value: string): boolean {
 }
 
 /**
- * The IND-CORE namespace for name-based ids. Fixed forever — changing it would re-point
+ * The legacy XELOR namespace for name-based ids. Fixed forever — changing it would re-point
  * every derived id and orphan the audit entries already written against the old one.
  */
 const IND_CORE_NAMESPACE = "0192a8c0-0000-7000-8000-00000000ffff";
 
 /**
- * RFC 9562 UUIDv5 (SHA-1, name-based) over the IND-CORE namespace.
+ * RFC 9562 UUIDv5 (SHA-1, name-based) over the fixed XELOR namespace.
  *
  * Some auditable things are not rows: "the June 2026 attendance month", "the FY 2026-27
  * leave accrual". `audit_log.entity_id` is a `uuid NOT NULL` — deliberately, so an entry

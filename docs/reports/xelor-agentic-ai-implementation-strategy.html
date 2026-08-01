@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR Agentic AI Implementation & Market Strategy</title>
+  <style>
+    @page { size:A4; margin:16mm 15mm 18mm; }
+    * { box-sizing:border-box; }
+    :root { --ink:#152039; --muted:#59667b; --violet:#6842db; --blue:#1855d7; --cyan:#12a8bc; --green:#14825f; --amber:#a85e00; --red:#b42318; --line:#d9e0eb; --wash:#f5f6fb; --navy:#07132e; }
+    body { margin:0; color:var(--ink); font:10.2pt/1.45 Arial,Helvetica,sans-serif; }
+    h1,h2,h3,h4 { margin:0 0 8px; line-height:1.16; page-break-after:avoid; }
+    h1 { font-size:30pt; letter-spacing:-1px; }
+    h2 { font-size:19pt; color:var(--navy); border-bottom:2px solid var(--violet); padding-bottom:5px; margin-top:8px; }
+    h3 { font-size:13pt; color:var(--violet); margin-top:14px; }
+    h4 { font-size:10.5pt; color:var(--navy); margin-top:10px; }
+    p { margin:5px 0 9px; } ul,ol { margin:5px 0 10px 20px; padding:0; } li { margin:3px 0; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:8.35pt; page-break-inside:auto; }
+    tr { page-break-inside:avoid; } th { background:var(--navy); color:white; text-align:left; padding:6px; }
+    td { border:1px solid var(--line); padding:5px 6px; vertical-align:top; } tr:nth-child(even) td { background:#f8f9fd; }
+    code { font-family:"SFMono-Regular",Consolas,monospace; color:#42308d; font-size:.92em; }
+    a { color:var(--blue); text-decoration:none; word-break:break-word; }
+    .cover { height:260mm; color:white; background:radial-gradient(circle at 80% 20%,#4431a6 0,#122459 43%,#07132e 78%); margin:-16mm -15mm -18mm; padding:30mm 22mm; position:relative; page-break-after:always; }
+    .cover .mark { display:inline-grid; place-items:center; width:52px; height:52px; border:1px solid #b4a5ff; border-radius:50%; font-size:17pt; font-weight:800; box-shadow:0 0 35px #795cff; }
+    .cover .eyebrow { margin-top:30mm; color:#bdb3ff; font-size:11pt; letter-spacing:2.5px; font-weight:700; }
+    .cover h1 { font-size:38pt; max-width:155mm; margin-top:8px; }
+    .cover .sub { font-size:15pt; color:#dce7ff; max-width:155mm; margin-top:12px; }
+    .cover .meta { position:absolute; bottom:24mm; left:22mm; right:22mm; display:flex; justify-content:space-between; border-top:1px solid #726db5; padding-top:10px; color:#cfd6f7; }
+    .page { page-break-before:always; } .lead { font-size:12pt; color:#35445e; }
+    .callout { border-left:4px solid var(--violet); background:#f0edff; padding:9px 12px; margin:10px 0 14px; page-break-inside:avoid; }
+    .warning { border-left-color:var(--amber); background:#fff7e6; } .good { border-left-color:var(--green); background:#eefaf6; } .bad { border-left-color:var(--red); background:#fff1f0; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:8px 0 12px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:10px; background:white; page-break-inside:avoid; } .card h3 { margin-top:0; }
+    .tag { display:inline-block; border-radius:9px; padding:1px 6px; font-size:7.8pt; font-weight:700; margin-right:4px; }
+    .live { background:#daf3e8; color:#0f684c; } .det { background:#e7e5ff; color:#4f3cad; } .mock { background:#fff0c9; color:#815000; } .future { background:#deefff; color:#1d5399; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; align-items:stretch; margin:12px 0; }
+    .flow div { border:1px solid #aaa2d7; background:#f5f3ff; padding:8px 5px; border-radius:6px; text-align:center; font-size:8pt; font-weight:700; }
+    .flow .arrow { border:0; background:none; display:grid; place-items:center; font-size:16pt; color:var(--violet); padding:0; }
+    .agent-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
+    .agent { border:1px solid #b7afd9; border-radius:8px; padding:8px; background:#faf9ff; page-break-inside:avoid; }
+    .agent b { display:block; color:var(--violet); font-size:11pt; }
+    .small { font-size:8.5pt; color:var(--muted); }
+    .footer-note { border-top:1px solid var(--line); padding-top:6px; color:var(--muted); font-size:8pt; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="mark">O</div>
+    <div class="eyebrow">ONYX · AGENTIC INTELLIGENCE</div>
+    <h1>Agentic AI Implementation &amp; Market Strategy</h1>
+    <div class="sub">Exactly what is implemented, what is deterministic or simulated, and how XELOR can turn governed manufacturing intelligence into a defensible product advantage.</div>
+    <div class="meta"><span>Prepared from source code, database controls and live workflows</span><span>31 July 2026</span></div>
+  </section>
+
+  <section>
+    <h2>1. The honest answer</h2>
+    <p class="lead">XELOR has implemented meaningful agentic infrastructure—not merely a chat box. The application contains a seven-agent registry, versioned bounded graphs, live tenant-scoped ERP capability calls, parallel execution waves, durable run/node state, checkpoints, evidence, human approval pauses, approval ancestry enforcement, action dispatch records, event-triggered missions, an operator-facing Mission Control and a globally discoverable Human Approvals inbox. A cross-industry Decision &amp; Risk Commander now joins current sales, supply, planning, quality and maintenance facts, explains recovery choices, persists evidence relationships and separates estimated exposure from verified outcomes.</p>
+    <div class="callout good"><b>What is real now:</b> orchestration, authorization, ERP reads, persistence, checkpoints, tenant-scoped pending approvals, global pending count, consequence review, mandatory decision notes, Approve/Reject, audit trails, governance switches, deterministic evaluation, Copilot queries and governed internal action dispatch.</div>
+    <div class="callout warning"><b>What is not active in the deployed demo:</b> no hosted LLM is configured; Agent OS language reasoning is deterministic; there are zero live external connectors; a dispatched action creates an internal governed work item and does not autonomously post inventory, money or supplier messages.</div>
+    <div class="grid2">
+      <div class="card"><h3>Why this is a good foundation</h3><ul><li>Models are outside the transaction and permission boundaries.</li><li>Capabilities are a closed allow-list, not arbitrary SQL or APIs.</li><li>Side effects require a successful human-approval ancestor.</li><li>Provider outage degrades to deterministic behavior instead of blocking ERP.</li><li>Every model call and consequential agent act is attributable and auditable.</li></ul></div>
+      <div class="card"><h3>What must improve</h3><ul><li>Connect and benchmark at least one production model provider.</li><li>Add production-grade retrieval, document ingestion and semantic authorization.</li><li>Expand feature-specific golden sets and online evaluation.</li><li>Connect verified external signals through governed adapters.</li><li>Connect approved actions to domain executors only after shadow-mode evidence.</li></ul></div>
+    </div>
+    <p><span class="tag live">LIVE</span> real runtime/data path &nbsp; <span class="tag det">DETERMINISTIC</span> code-generated reasoning/fallback &nbsp; <span class="tag mock">CURATED DEMO</span> clearly labelled scenario data &nbsp; <span class="tag future">FUTURE</span> recommended production capability.</p>
+  </section>
+
+  <section class="page">
+    <h2>2. AI and agentic features implemented today</h2>
+    <table>
+      <thead><tr><th>Capability</th><th>Implementation</th><th>Current truth</th><th>Control boundary</th></tr></thead>
+      <tbody>
+        <tr><td>Shared AI router</td><td>One <code>AiRouterService</code>: validate registry → governance check → provider → hash-chained log → usage ledger</td><td><span class="tag live">LIVE</span></td><td>Unknown/unroutable feature keys fail closed.</td></tr>
+        <tr><td>Provider abstraction</td><td><code>AiProvider</code> contract with deterministic stub and optional Ollama adapter</td><td><span class="tag live">LIVE</span><span class="tag det">STUB DEFAULT</span></td><td>Provider selection is configuration; feature code does not receive provider credentials.</td></tr>
+        <tr><td>AI governance</td><td>Tenant opt-out, per-feature/global kill switches, daily token budget, usage recording</td><td><span class="tag live">LIVE</span></td><td>All shared-router calls meet the same database-backed gate.</td></tr>
+        <tr><td>AI action log</td><td>Per-tenant monotonic append-only SHA-256 hash chain; input/output content hashes, model, tier, usage and degraded state</td><td><span class="tag live">LIVE</span></td><td>Raw prompt/PII is not placed in the AI action chain.</td></tr>
+        <tr><td>Feature portfolio</td><td>Canonical 8-feature portfolio plus an explicit in-evaluation Copilot entry and an Integration null entry</td><td><span class="tag live">LIVE</span></td><td>Status/risk/data class/degraded mode are code-owned.</td></tr>
+        <tr><td>Evaluation harness</td><td>Golden sets, baseline vs candidate, F1/macro-F1, must-pass rules and exit-code ship gate</td><td><span class="tag live">LIVE</span></td><td>A candidate must outperform the deterministic baseline and pass hard cases.</td></tr>
+        <tr><td>Grounding gate</td><td>Feature-specific checks that reject invented identifiers, reversed conclusions and unsupported narration</td><td><span class="tag live">LIVE</span></td><td>Code owns decisions; the model may phrase accepted evidence.</td></tr>
+        <tr><td>ONYX Copilot</td><td>Closed intent router, permission check, hand-written SELECT, template answer, source citation, optional narration</td><td><span class="tag live">LIVE</span></td><td>Read-only by construction; no generated SQL and no business-write path.</td></tr>
+        <tr><td>Agent OS</td><td>Versioned graphs, agents, live capability calls, waves, checkpoints, approvals, verification, cancellation and durable history</td><td><span class="tag live">LIVE</span><span class="tag det">REASONING</span></td><td>Capabilities re-check user RBAC and agent allow-lists.</td></tr>
+        <tr><td>Decision intelligence</td><td>Cross-module risk rules, evidence graph, governed recovery start and estimated-versus-verified outcome ledger</td><td><span class="tag live">LIVE</span><span class="tag det">DETERMINISTIC</span></td><td>Five ERP domains are checked; missing monetary rates remain blank instead of being invented.</td></tr>
+        <tr><td>Human approval inbox</td><td>Global top-bar count, dedicated tenant-scoped queue, exact consequence preview, required note, Approve/Reject and Mission Control handoff</td><td><span class="tag live">LIVE</span></td><td>Only users with <code>agentos.approval.decide</code> see decision controls; server checks the permission again.</td></tr>
+        <tr><td>Working Capital intelligence</td><td>RASP cash-position, forecast simulation, collections and finance-pack capabilities plus a bounded Working Capital Review graph</td><td><span class="tag live">LIVE CONTROLS</span><span class="tag mock">CURATED UI KPIs</span></td><td>RASP cannot move money; simulations do not change invoices, vouchers, payments or bank instructions.</td></tr>
+        <tr><td>QMS &amp; Audit intelligence</td><td>KILN inspection/evidence reads, audit/CAPA/pack drafts plus a bounded QMS &amp; Audit Readiness graph</td><td><span class="tag live">LIVE CONTROLS</span><span class="tag mock">CURATED WIDER QMS</span></td><td>KILN cannot declare compliance, confirm root cause, release documents or close CAPA.</td></tr>
+        <tr><td>Controlled actions</td><td>Six approved <code>governed_work_item</code> dispatches persisted in an append-only ledger</td><td><span class="tag live">LIVE INTERNAL</span></td><td>Engine rejects side effects without an approved ancestor.</td></tr>
+        <tr><td>Signal ingress</td><td>Typed local ERP signal starts an idempotent controlled mission</td><td><span class="tag live">LIVE LOCAL</span></td><td><code>eventId</code> is the replay boundary; no external webhook is claimed.</td></tr>
+        <tr><td>Copilot rail extras</td><td>Alerts, morning brief and action recommendations</td><td><span class="tag mock">CURATED DEMO</span></td><td>Clearly labelled; review links do not claim execution.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>3. The seven-agent operating model</h2>
+    <div class="agent-grid">
+      <div class="agent"><b>ONYX</b>Supervisor; frames missions, delegates, joins evidence and publishes outcomes.</div>
+      <div class="agent"><b>HEXA</b>Governance; verifies boundaries, evidence, permissions and side-effect ancestry.</div>
+      <div class="agent"><b>MICA</b>Commercial; reads sales commitments and proposes commercial recovery work.</div>
+      <div class="agent"><b>SPAR</b>Supply; reads stock and proposes supply-chain actions.</div>
+      <div class="agent"><b>AXLE</b>Planning; reads planned orders and proposes planning actions.</div>
+      <div class="agent"><b>KILN</b>Operations &amp; Quality; reads production/inspection evidence and prepares QMS, audit and controlled plant work.</div>
+      <div class="agent"><b>RASP</b>Finance &amp; Working Capital; reads finance evidence, simulates cash scenarios and prepares controlled work.</div>
+    </div>
+    <h3>Controlled mission sequence</h3>
+    <div class="flow">
+      <div>ONYX<br>bounds goal</div><div class="arrow">→</div><div>6 live ERP reads<br>parallel wave</div><div class="arrow">→</div><div>6 specialist<br>assessments</div>
+    </div>
+    <div class="flow">
+      <div>ONYX<br>joins plan</div><div class="arrow">→</div><div>HEXA<br>preflight</div><div class="arrow">→</div><div>Human approval<br>durable pause</div>
+    </div>
+    <div class="flow">
+      <div>6 approved<br>work items</div><div class="arrow">→</div><div>HEXA verifies<br>approval ancestry</div><div class="arrow">→</div><div>ONYX publishes<br>outcome</div>
+    </div>
+    <h3>Human-in-the-loop control as implemented</h3>
+    <div class="flow">
+      <div>Mission pauses<br>at approval node</div><div class="arrow">→</div><div>Pending count<br>visible globally</div><div class="arrow">→</div><div>Human opens<br>approval inbox</div>
+    </div>
+    <div class="flow">
+      <div>Review exact<br>consequence</div><div class="arrow">→</div><div>Write reason +<br>Approve / Reject</div><div class="arrow">→</div><div>Resume or cancel<br>with audit event</div>
+    </div>
+    <ul>
+      <li><b>The agent cannot self-approve.</b> The approval node remains waiting until a separately authorised user submits a decision.</li>
+      <li><b>Authority is narrow.</b> The person approves the exact proposed action shown in the inbox, not a broad permission grant.</li>
+      <li><b>The reason is evidence.</b> A decision note is mandatory and stored with approver identity and decision time.</li>
+      <li><b>Rejection is real.</b> Rejecting cancels the mission; approval resumes the persisted graph and does not skip verification.</li>
+      <li><b>Discovery is product-wide.</b> The top-bar Approvals control is visible from every workspace and updates when a mission reaches or leaves a human gate.</li>
+    </ul>
+    <h3>Two new bounded specialist missions</h3>
+    <table>
+      <thead><tr><th>Mission</th><th>Specialist evidence</th><th>AI contribution</th><th>Human-only decisions</th></tr></thead>
+      <tbody>
+        <tr><td><b>Working Capital Review</b></td><td>RASP finance position and forecast simulation, MICA customer commitments, SPAR stock position.</td><td>Explain risks, separate facts from assumptions, compare safe options and draft a concise ONYX brief.</td><td>Customer contact, supplier timing, payment, financing submission, bank instruction and ledger posting.</td></tr>
+        <tr><td><b>QMS &amp; Audit Readiness</b></td><td>KILN inspection records, traceable evidence collection and draft evidence-pack manifest.</td><td>Find relevant proof, mark gaps, suggest investigation questions and draft readiness language.</td><td>Compliance verdict, document release, audit conclusion, confirmed root cause, product disposition and CAPA closure.</td></tr>
+      </tbody>
+    </table>
+    <h3>Why this qualifies as agentic</h3>
+    <ul>
+      <li>The system decomposes a bounded objective across specialized identities and executes independent work concurrently.</li>
+      <li>It persists state across steps, waits for external human input, resumes, branches/verifies and records evidence.</li>
+      <li>Agents use registered capabilities, not direct database access, and their authority is narrower than the application’s.</li>
+      <li>Actions are gated on runtime-verified approval ancestry rather than trusting the graph author or model.</li>
+    </ul>
+    <div class="callout"><b>Important nuance:</b> “agentic” describes the orchestration and controlled capability model. It does not mean the current demo uses free-form LLM reasoning at every node.</div>
+  </section>
+
+  <section class="page">
+    <h2>4. ONYX Copilot: how it is actually safe</h2>
+    <div class="flow">
+      <div>User<br>question</div><div class="arrow">→</div><div>Closed intent<br>classification</div><div class="arrow">→</div><div>Permission<br>check</div>
+    </div>
+    <div class="flow">
+      <div>Hand-written<br>tenant query</div><div class="arrow">→</div><div>Template answer<br>from rows</div><div class="arrow">→</div><div>Citation +<br>question log</div>
+    </div>
+    <h3>Six controls in the current implementation</h3>
+    <ol>
+      <li><b>Understand deterministically first.</b> A model may only rescue an unresolved question by choosing from the closed intent catalogue.</li>
+      <li><b>Authorize twice.</b> The user must hold Copilot permission and the permission required by the equivalent business screen.</li>
+      <li><b>Retrieve with registered SQL.</b> Queries are hand-written, row-capped and executed under the caller’s tenant transaction.</li>
+      <li><b>Render from evidence.</b> Numeric answers come from returned rows, not model memory.</li>
+      <li><b>Narrate only when opted in.</b> Narration is off by default; unsupported numbers or claims are rejected and the template answer remains.</li>
+      <li><b>Log every outcome.</b> Answered, clarified, refused and forbidden questions record intent, confidence, sources and row count.</li>
+    </ol>
+    <div class="grid2">
+      <div class="card"><h3>Strong design choice</h3><p>A hosted model can improve language understanding without receiving arbitrary database access. The retrieval surface remains a finite catalogue owned by product code.</p></div>
+      <div class="card"><h3>Current limitation</h3><p>The Copilot answers only pre-registered intents. This makes it safe and predictable, but it is not yet a broad conversational analyst over every workflow or document.</p></div>
+    </div>
+    <h3>Recommended evolution</h3>
+    <p>Keep the same authorization/query boundary. Add semantic intent routing, query composition from approved metrics, authorized document retrieval and multi-turn context gradually; never replace tenant/RBAC filters with prompt instructions.</p>
+  </section>
+
+  <section class="page">
+    <h2>5. Current AI portfolio and maturity</h2>
+    <table>
+      <thead><tr><th>Feature</th><th>Risk posture</th><th>Implemented foundation</th><th>Next production step</th></tr></thead>
+      <tbody>
+        <tr><td>Receipt/document extraction + categorisation</td><td>Draft record; PII-minimised</td><td>Extraction service, arithmetic re-derivation and eval specification</td><td>Vision/document model pilot, field confidence, review UI, dataset by vendor/layout.</td></tr>
+        <tr><td>Master-data duplicate detection</td><td>Draft record; business data</td><td>Deterministic detection, code-owned verdict, optional explanation and grounding gate</td><td>Shadow-test model explanations; add feedback and multilingual/vendor-name cases.</td></tr>
+        <tr><td>Ticket triage + sentiment</td><td>Advisory</td><td>Classifier, golden-set macro-F1 gate, human acceptance distinction</td><td>Run shadow mode, monitor per-class recall—especially statutory/rare categories.</td></tr>
+        <tr><td>Duplicate receipt detection</td><td>Advisory</td><td>Exact hash baseline and registered stretch slot</td><td>Add perceptual/document similarity only after labelled fraud/duplicate cases.</td></tr>
+        <tr><td>HSN/SAC suggestion</td><td>Draft record</td><td>Registered stretch slot and deterministic directory baseline</td><td>Use approved tax catalogue retrieval, confidence thresholds and mandatory review.</td></tr>
+        <tr><td>Reply drafting/thread summary</td><td>Draft only</td><td>Draft service and rule gate against promises/verdicts</td><td>Provider pilot with customer tone library, evidence links and send-time human approval.</td></tr>
+        <tr><td>Payslip explainer</td><td>Advisory only forever</td><td>Template/explainer path</td><td>Ground every sentence to payslip/rate-book lines; never expose cross-employee data.</td></tr>
+        <tr><td>SoD conflict explanation</td><td>Advisory only forever</td><td>Rule-owned conflict with explanation service</td><td>Use model only to explain the rule and remediation choices; never grant/revoke access.</td></tr>
+        <tr><td>Copilot retrieval Q&amp;A</td><td>In evaluation; read only</td><td>Closed intents, registered queries, permissions, citations and refusal</td><td>Hosted semantic router, authorized RAG, live operational feed and online quality metrics.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warning"><b>Registry governance issue to formalize:</b> the code describes a canonical closed set of eight but also contains an explicit ninth in-evaluation Copilot feature. That divergence is documented in source; production governance should require a signed ADR and versioned registry change process.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. What is simulated versus real in the demo</h2>
+    <table>
+      <thead><tr><th>Demo surface</th><th>Real</th><th>Simulated/curated</th><th>How to present it</th></tr></thead>
+      <tbody>
+        <tr><td>Authenticated gateway</td><td>Keycloak login; catalogue call; 7/7 registry status</td><td>Visual topology/animation</td><td>“The topology is visual; the connection status is read from the runtime catalogue.”</td></tr>
+        <tr><td>Mission Control</td><td>Graph start, ERP reads, state, evidence, checkpoint, approval, resume and dispatch ledger</td><td>Language summaries are deterministic</td><td>“The operating controls are live; model reasoning is not enabled in this environment.”</td></tr>
+        <tr><td>Copilot chat</td><td>Permissions, tenant query, template answer, citation and log</td><td>Optional model routing/narration inactive by default</td><td>“Answers come from governed queries; the model is not allowed to invent SQL.”</td></tr>
+        <tr><td>Copilot Alerts/Brief/Actions tabs</td><td>Open the current Decision Commander and live Human Approval inbox</td><td>No permanent scenario cards remain in these tabs</td><td>Fiction is isolated inside an explicitly active guided demo.</td></tr>
+        <tr><td>Guided demo case</td><td>Navigates one canonical seeded Northstar commitment across nine evidence-linked acts and clears instantly through the top Stop demo control</td><td>The guide layer is presentation-only; every named business fact is read from persisted ERP records</td><td>A compact lower-right guide explains each act while a cyan presenter spotlight follows the relevant live row, workspace or screen. The complete journey has automated read-only coverage and makes no hidden writes.</td></tr>
+        <tr><td>Controlled actions</td><td>Append-only approved internal work-item dispatches</td><td>No external supplier/API/financial posting</td><td>“Approval created accountable domain work; external execution is the next integration phase.”</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><b>Never claim:</b> that seven independent LLMs are currently running; that Agent OS autonomously changed ERP ledgers; that external systems were contacted; or that every AI feature uses a production model.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Recommended production AI architecture</h2>
+    <div class="flow">
+      <div>Product UI /<br>ERP event</div><div class="arrow">→</div><div>Intent + policy<br>gateway</div><div class="arrow">→</div><div>Agent graph<br>runtime</div>
+    </div>
+    <div class="flow">
+      <div>Authorized retrieval<br>SQL + documents</div><div class="arrow">→</div><div>Provider router<br>small/large/vision</div><div class="arrow">→</div><div>Structured result<br>schema + grounding</div>
+    </div>
+    <div class="flow">
+      <div>Human approval<br>when consequential</div><div class="arrow">→</div><div>Capability broker<br>domain services</div><div class="arrow">→</div><div>Audit + eval +<br>telemetry loop</div>
+    </div>
+    <h3>Recommended stack additions</h3>
+    <table>
+      <thead><tr><th>Layer</th><th>Recommendation</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Hosted inference</td><td>Add one adapter first: OpenAI Responses API or Amazon Bedrock Converse/Responses access; preserve <code>AiProvider</code></td><td>Structured tools, streaming and production capacity without coupling domains to a vendor.</td></tr>
+        <tr><td>Model portfolio</td><td>Small/fast classifier-router; stronger reasoning model for bounded analysis; vision model for documents/inspection images; embedding model for retrieval</td><td>Route by task, risk, latency and cost rather than using one expensive model everywhere.</td></tr>
+        <tr><td>Retrieval</td><td>PostgreSQL + pgvector first; hybrid lexical/vector search; reranking; document chunks with tenant/role/effectivity metadata</td><td>Uses existing database and keeps authorization close to source records.</td></tr>
+        <tr><td>Document pipeline</td><td>S3/KMS, malware scan, OCR/layout extraction, chunking, embedding, version/effectivity and retention</td><td>Turns SOPs, manuals, certificates and drawings into governed evidence.</td></tr>
+        <tr><td>Prompt/config registry</td><td>Versioned prompt packs and schemas with author/reviewer, model settings and rollback</td><td>Makes AI releases inspectable and independently approvable.</td></tr>
+        <tr><td>Guardrails</td><td>Existing PII scan + provider guardrails/moderation; prompt-injection checks; output schemas; citation/number validation</td><td>Defense in depth; provider controls supplement but do not replace application authorization.</td></tr>
+        <tr><td>Evaluation</td><td>Keep custom deterministic gates; add provider eval jobs, adversarial sets, SME review and online outcome metrics</td><td>Measures business correctness, not just fluent text.</td></tr>
+        <tr><td>Observability</td><td>OpenTelemetry traces with model, feature, latency, usage, retrieval ids, refusal/degradation—without raw sensitive payloads</td><td>Links AI behavior to the same operating view as APIs, queues and approvals.</td></tr>
+        <tr><td>Feedback</td><td>Accept/edit/reject reasons, final human outcome, correction categories and dataset curation workflow</td><td>Creates the proprietary learning loop competitors cannot buy from a model vendor.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>8. Roadmap to an outstanding market position</h2>
+    <h3>Phase A — Safe intelligence pilot (0–90 days)</h3>
+    <ol>
+      <li>Implement a hosted provider adapter and structured output contract; retain deterministic fallback.</li>
+      <li>Enable model use only for Copilot intent rescue, master explanation and ticket triage in shadow mode.</li>
+      <li>Expand golden sets with real Indian manufacturing language, abbreviations, mixed English/Hindi/Tamil and rare compliance categories.</li>
+      <li>Add feature/model/prompt version, latency, cost, refusal and human disposition dashboards.</li>
+      <li>Complete privacy impact assessment, retention controls, provider review and red-team prompt injection.</li>
+    </ol>
+    <h3>Phase B — Evidence-grounded assistants (3–6 months)</h3>
+    <ol>
+      <li>Build authorized ingestion for SOPs, machine manuals, inspection standards, drawings and certificates.</li>
+      <li>Add plant morning brief from live events, not curated cards: exceptions, evidence, owner, due date and link.</li>
+      <li>Launch draft-only document and reply features: receipt extraction, customer reply, RCA evidence pack and supplier follow-up.</li>
+      <li>Introduce a governed metric/semantic catalogue so Copilot can answer cross-module questions without generated SQL.</li>
+    </ol>
+    <h3>Phase C — Controlled action (6–12 months)</h3>
+    <ol>
+      <li>Connect <code>governed_work_item</code> dispatches to domain-specific executors one at a time.</li>
+      <li>Start with reversible/low-risk drafts: purchase requisition draft, maintenance task draft, reschedule proposal, ticket assignment.</li>
+      <li>Require diff previews, policy simulation, named approver, idempotency, postcondition verification and automatic rollback/compensation where possible.</li>
+      <li>Keep inventory posting, payroll, GL posting, statutory submission and supplier payment human-authorized with stricter multi-person controls.</li>
+    </ol>
+    <h3>Phase D — Manufacturing intelligence moat (12–24 months)</h3>
+    <ol>
+      <li>Cross-order risk graph linking demand, material, capacity, quality, maintenance, cash and workforce evidence.</li>
+      <li>Predictive maintenance and quality anomaly models trained on customer-consented operational data.</li>
+      <li>What-if planning copilot that compares scenarios using deterministic solvers and uses the LLM only to explain trade-offs.</li>
+      <li>Benchmark network and anonymized priors only with explicit governance; tenant data never silently trains another tenant’s experience.</li>
+    </ol>
+  </section>
+
+  <section class="page">
+    <h2>9. Highest-value differentiated AI use cases</h2>
+    <table>
+      <thead><tr><th>Use case</th><th>Why customers pay</th><th>Correct technical pattern</th><th>Risk limit</th></tr></thead>
+      <tbody>
+        <tr><td>Decision &amp; risk commander</td><td>Explains delivery, supply, planning, quality and maintenance risks, connected value, causes and recovery choices.</td><td>Live deterministic cross-module analysis + persisted evidence links + governed mission start.</td><td>Live recommendations and approval creation; domain execution remains approval-bound.</td></tr>
+        <tr><td>Planner scenario copilot</td><td>Turns “what if supplier X slips 7 days?” into schedule, inventory and cash consequences.</td><td>MRP/solver owns numbers; model parses request and explains scenario deltas.</td><td>Never let the LLM calculate the production plan itself.</td></tr>
+        <tr><td>Quality investigation assistant</td><td>Builds traceable NCR/8D evidence packs from inspection, batch, machine, supplier and complaint records.</td><td>Authorized retrieval + structured RCA hypotheses + human confirmation.</td><td>Hypotheses are labelled; disposition remains a controlled decision.</td></tr>
+        <tr><td>Maintenance reliability advisor</td><td>Prioritizes likely failure risk and parts/work windows around production commitments.</td><td>Statistical/anomaly model + asset history + approved planning capability.</td><td>No automatic machine shutdown from an LLM recommendation.</td></tr>
+        <tr><td>Document-to-transaction drafting</td><td>Reduces manual entry of receipts, invoices, certificates and orders.</td><td>Vision extraction → schema → deterministic totals/tax/duplicate checks → review.</td><td>Draft only; confidence/field provenance visible.</td></tr>
+        <tr><td>Commercial response assistant</td><td>Produces accurate order/status replies backed by live evidence.</td><td>Template facts + optional controlled narration + send approval.</td><td>No promise, price, date or concession without policy/human approval.</td></tr>
+        <tr><td>Compliance control explainer</td><td>Makes SoD, GST, payroll, audit and security exceptions understandable.</td><td>Rule engine decides; model explains the rule, source and remediation path.</td><td>Never let the model reinterpret statutory calculation or grant access.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Competitive thesis:</b> XELOR should not compete on “having a chatbot.” Its moat can be a verified manufacturing evidence graph plus safe action infrastructure: every answer tied to current plant records, every recommendation tested against deterministic rules, and every consequential act attributable.</div>
+  </section>
+
+  <section class="page">
+    <h2>10. Evaluation and safety system</h2>
+    <h3>Release ladder for every AI feature</h3>
+    <div class="flow">
+      <div>Offline golden set<br>baseline comparison</div><div class="arrow">→</div><div>Grounding +<br>adversarial gate</div><div class="arrow">→</div><div>Shadow mode<br>no user effect</div>
+    </div>
+    <div class="flow">
+      <div>Small pilot<br>human review</div><div class="arrow">→</div><div>Limited release<br>kill switch</div><div class="arrow">→</div><div>Continuous<br>outcome monitor</div>
+    </div>
+    <table>
+      <thead><tr><th>Metric family</th><th>Measure</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td>Task correctness</td><td>Feature-specific result quality against labelled truth</td><td>Macro-F1 per ticket category; field accuracy; retrieval recall; grounded numeric accuracy.</td></tr>
+        <tr><td>Safety</td><td>Forbidden action/data exposure and unsupported claim rate</td><td>Cross-tenant leak = zero; unapproved write = zero; invented identifiers = zero.</td></tr>
+        <tr><td>Human outcome</td><td>What operators accepted, edited, rejected and eventually completed</td><td>Draft acceptance, edit distance, recommendation conversion, false-alert burden.</td></tr>
+        <tr><td>Operations</td><td>Latency, availability, degradation and budget</td><td>p50/p95 response; provider failure; fallback rate; tokens and ₹ per successful outcome.</td></tr>
+        <tr><td>Fairness/coverage</td><td>Quality by language, role, site, category and data sparsity</td><td>Rare statutory tickets, mixed-language questions, smaller plants and new tenants.</td></tr>
+        <tr><td>Drift</td><td>Input/retrieval/outcome change over time</td><td>New terminology, vendor layouts, seasonal plan patterns and model-version regressions.</td></tr>
+      </tbody>
+    </table>
+    <h3>Non-negotiable safety invariants</h3>
+    <ul>
+      <li>Tenant and role authorization is enforced in code/database, never delegated to a prompt.</li>
+      <li>No raw database credentials, generated SQL or broad HTTP tool are exposed to a model.</li>
+      <li>Every tool has a schema, owner, allow-list, idempotency policy and side-effect classification.</li>
+      <li>Consequential execution has a preview, attributable approval and verified postcondition.</li>
+      <li>Provider failure, refusal or budget exhaustion must leave core ERP workflows available.</li>
+      <li>Private chain-of-thought is neither requested nor stored; structured evidence and decision summaries are enough.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>11. Build, buy and framework choices</h2>
+    <table>
+      <thead><tr><th>Decision</th><th>Recommendation</th><th>Reasoning</th></tr></thead>
+      <tbody>
+        <tr><td>Agent orchestration</td><td>Keep XELOR’s graph engine now; evaluate Temporal as the durability substrate when workflow complexity demands it</td><td>The current engine already encodes domain authorization and approval ancestry. Replacing it with a generic agent library would risk weakening the important part.</td></tr>
+        <tr><td>Model provider</td><td>Buy inference; keep a thin multi-provider adapter</td><td>Foundation-model training is not XELOR’s moat. Evaluation data, manufacturing semantics and controlled tools are.</td></tr>
+        <tr><td>Vector store</td><td>Use pgvector first</td><td>It is already present and can keep tenant/effectivity metadata near relational authorization.</td></tr>
+        <tr><td>RAG framework</td><td>Implement a small explicit ingestion/retrieval service before adopting a broad framework</td><td>Authorization, citations, version/effectivity and evals matter more than framework convenience.</td></tr>
+        <tr><td>Guardrails</td><td>Combine XELOR checks with provider guardrails; do not outsource policy</td><td>Provider filters can detect PII/prompt attacks; business permissions and transaction safety remain application responsibilities.</td></tr>
+        <tr><td>Evaluation platform</td><td>Retain code-level ship gates; optionally export runs to managed eval/observability tools</td><td>Critical must-pass cases should remain reproducible in CI and independent of one vendor console.</td></tr>
+        <tr><td>Fine-tuning</td><td>Defer</td><td>Prompt/retrieval/eval quality and proprietary labelled feedback should mature first; tune only for a measured gap.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Principle:</b> buy commodity model capability; build the manufacturing truth layer, permissioned capabilities, evaluation corpus and operator feedback loop.</div>
+  </section>
+
+  <section class="page">
+    <h2>12. Prioritized implementation backlog</h2>
+    <table>
+      <thead><tr><th>Priority</th><th>Deliverable</th><th>Proof of completion</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>Hosted provider adapter with structured outputs, timeout/retry/circuit breaker and deterministic fallback</td><td>Same feature contract passes stub, hosted and provider-failure tests.</td></tr>
+        <tr><td>P0</td><td>AI telemetry and prompt/model/version registry</td><td>Every call has correlation, feature, version, latency, usage, result and degradation without raw sensitive payload.</td></tr>
+        <tr><td>P0</td><td>Registry governance ADR for Copilot addition</td><td>Versioned portfolio change approved by product, security and domain owner.</td></tr>
+        <tr><td>P0</td><td>Expanded red-team and golden sets</td><td>Prompt injection, tenant/role probes, rare classes and multilingual questions pass hard gates.</td></tr>
+        <tr><td>Delivered foundation</td><td>Decision Commander and verified-outcome ledger</td><td>Current cross-module risks link to source evidence; marketing value is not counted as verified value.</td></tr>
+        <tr><td>P1</td><td>Authorized document ingestion/RAG</td><td>Retrieval respects tenant/role/effectivity; source recall and citation accuracy meet threshold.</td></tr>
+        <tr><td>P1</td><td>Human feedback learning workflow</td><td>The live approval inbox already captures attributable reasons; next, curate privacy-reviewed accept/edit/reject outcomes into labelled evaluation cases.</td></tr>
+        <tr><td>P1</td><td>First real controlled executor</td><td>A reversible draft action runs only after approval and passes replay/postcondition tests.</td></tr>
+        <tr><td>P2</td><td>Scenario/planning assistant</td><td>Deterministic engine reproduces plan; model explanation contains no unsupported numbers.</td></tr>
+        <tr><td>P2</td><td>Quality and maintenance intelligence pilots</td><td>Prospective shadow evaluation beats existing rules without increasing missed critical events.</td></tr>
+      </tbody>
+    </table>
+    <h3>Board-level success measures</h3>
+    <ul>
+      <li>Minutes saved per approved workflow, not tokens consumed or chats started.</li>
+      <li>Fewer late orders, expedites, repeated defects and unplanned downtime attributable to earlier evidence.</li>
+      <li>Draft acceptance with low edit distance and no increase in control exceptions.</li>
+      <li>Zero tenant leaks, zero unapproved consequential actions and fast kill-switch recovery.</li>
+      <li>Gross margin contribution after inference/review/operations cost.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>13. Evidence and official references</h2>
+    <h3>Repository evidence inspected</h3>
+    <ul>
+      <li><code>apps/api/src/ai/*</code> — router, governance, providers, action log, feature services and eval harness</li>
+      <li><code>packages/platform/src/ai/*</code> and <code>packages/platform/src/aiops/*</code> — registry, evaluation, privacy and routing primitives</li>
+      <li><code>apps/api/src/modules/copilot/*</code> — intent, permission, retrieval, render, narration and question log</li>
+      <li><code>apps/api/src/agent-os/*</code> and <code>packages/platform/src/agent-os/*</code> — graph runtime, capabilities, repository, controlled actions and authorization</li>
+      <li><code>packages/db/src/schema/agent-os.ts</code> and Agent OS migrations</li>
+      <li><code>apps/web/src/spine/shell/copilot-rail.tsx</code>, global Human Approvals link, ONYX gateway, approval inbox and Mission Control screens</li>
+      <li>Working Capital and QMS &amp; Audit module manifests, RASP/KILN capability registrations and bounded graph definitions</li>
+      <li>Agent OS Phase 1–3 documentation and authenticated browser tests, including start → discover → note → approve → resume</li>
+    </ul>
+    <h3>Official references informing the future architecture</h3>
+    <ul class="small">
+      <li>OpenAI function/tool calling and JSON-schema tools: <a href="https://developers.openai.com/api/docs/guides/function-calling">developers.openai.com/api/docs/guides/function-calling</a></li>
+      <li>OpenAI evaluation guidance/API: <a href="https://developers.openai.com/api/docs/guides/evals">developers.openai.com/api/docs/guides/evals</a></li>
+      <li>OpenAI platform data controls: <a href="https://developers.openai.com/api/docs/guides/your-data">developers.openai.com/api/docs/guides/your-data</a></li>
+      <li>Amazon Bedrock Guardrails: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html">docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html</a></li>
+      <li>Amazon Bedrock evaluations: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html">docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html</a></li>
+      <li>OpenTelemetry JavaScript: <a href="https://opentelemetry.io/docs/languages/js/">opentelemetry.io/docs/languages/js/</a></li>
+    </ul>
+    <h3>Final strategic recommendation</h3>
+    <p class="lead">XELOR should become the manufacturing system that can explain every recommendation, prove every source, and safely turn approved decisions into work. Keep deterministic engines responsible for money, stock, tax, scheduling constraints and control verdicts. Use models for language, extraction, classification, evidence synthesis and hypothesis generation—and let the existing Agent OS make their use bounded, observable and accountable.</p>
+    <p class="footer-note">This report describes the inspected build on 31 July 2026. It deliberately distinguishes live orchestration from deterministic reasoning, isolated demo data, gross value connected to risk and human-verified outcomes. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
+  </section>
+</body>
+</html>

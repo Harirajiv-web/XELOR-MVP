@@ -1,0 +1,1824 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   XELOR sign-in — a 25 / 75 split: identity on white, the factory on black.
+   ═════════════════════════════════════════════════════════════════════════════
+
+   Loaded after Keycloak's own `keycloak.v2` stylesheet, so everything here is an override
+   of PatternFly v5 rather than a layout of its own. No FreeMarker template is forked — a
+   copied `login.ftl` is a fork of the page that handles passwords, and it silently stops
+   receiving upstream security fixes. The markup below is whatever Keycloak shipped; only
+   the surface changed.
+
+   ───────────────────────────────────────────────────────────────────────────────
+   THIS FILE ALONE MAKES THE PAGE USABLE
+   ───────────────────────────────────────────────────────────────────────────────
+   The revolving factory on the right is JavaScript and WebGL, and both are allowed to fail
+   — see `login-loader.ts`. Nothing here depends on the canvas existing: the split, the
+   brand, the form and its contrast all come from CSS. Without the canvas the right panel is
+   simply a deep charcoal field. The hologram is the enhancement, never the foundation.
+
+   ───────────────────────────────────────────────────────────────────────────────
+   THE SPLIT IS PAINTED ON THE PAGE, NOT ON THE PANELS
+   ───────────────────────────────────────────────────────────────────────────────
+   One hard-stop gradient on `<body>` draws both fields. That is deliberate: if the split
+   were two coloured elements, a failure in either one would show the page's own background
+   through a quarter of the screen. A gradient cannot half-fail, needs no extra DOM, and
+   survives the canvas being removed at runtime.
+   ───────────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /*
+   * ───────────────────────────────────────────────────────────────────────────────
+   * THE PRODUCT'S TYPEFACE, NOT KEYCLOAK'S.
+   * ───────────────────────────────────────────────────────────────────────────────
+   * Measured, and it was a genuine split: the sign-in page was rendering in RED HAT TEXT —
+   * PatternFly bundles it as a webfont and the parent theme asks for it — while every screen
+   * behind the sign-in renders in the product's own stack. Two typefaces either side of one
+   * button, on the two screens a first-time viewer sees back to back.
+   *
+   * This string is `--font-ui` from `apps/web/src/app/globals.css`, character for character.
+   * Both sides therefore ask for the same face and fall back the same way, which is the part
+   * that actually matters here: neither side ships Inter as a webfont, so what a given
+   * machine resolves to is a machine fact — and the only defect worth fixing is the two
+   * halves of one product resolving to DIFFERENT machine facts.
+   */
+  --x-font: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+
+  /* Left panel — a black-on-white schema. No colour anywhere in the identity. */
+  --x-paper: #ffffff;
+  --x-ink: #0a0a0a; /* the title, the field borders, the button face */
+  --x-ink-soft: #52525b; /* AIKYANTRA, labels — the second shade that carries hierarchy */
+  --x-line: #18181b; /* fine outlines */
+  --x-line-quiet: #d4d4d8; /* dividers, disabled edges */
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * THE RIGHT PANEL, IN TWO THEMES.
+   * ═══════════════════════════════════════════════════════════════════════════
+   * The LEFT panel is white in both, which is deliberate and is what the brief asks for:
+   * the identity is a black wordmark on paper, and a "dark mode" that inverts it would be a
+   * different brand rather than the same one at night. What changes is the field the
+   * hologram is drawn on.
+   *
+   * These three move together and CANNOT be set independently:
+   *
+   *   --x-void        the field the canvas is composited onto
+   *   --x-void-blend  how it is composited — `screen` on dark, `multiply` on light
+   *   the scene's own clear colour, in `SCENE_PALETTE`
+   *
+   * `screen`'s identity is black and `multiply`'s is white, so each pairing is the one where
+   * an empty frame leaves the panel untouched. Mismatch them and the failure is not a wrong
+   * tint: a canvas cleared white and composited with `screen` is a solid white rectangle over
+   * three quarters of the sign-in page. `floorplan-scene.ts` publishes the blend it chose
+   * onto the host element for exactly this reason.
+   *
+   * Light is the default set here and dark is the override, matching how the product's own
+   * tokens are arranged — one place to look for "what does this page do if nothing decided".
+   */
+  --x-void: #edf4fa;
+  --x-void-blend: multiply;
+  --x-void-ink: #12202e;
+  --x-void-ink-soft: #51606f;
+
+  /*
+   * WHERE THE SPLIT FALLS — and it now falls at zero.
+   *
+   * This was 25%: a white paper column on the left carrying the form, a hologram field on the
+   * right, and a hard architectural cut between them. Three things had to agree to the pixel
+   * (the body gradient, the login grid, the canvas box) and this variable is why they did.
+   *
+   * The composition it produced does not survive contact with a real window. The form was a
+   * 368px strip with a photograph of a robot arm behind it, and "Sign in to your account" was
+   * being read off the arm; the factory scene meanwhile floated in the remaining three
+   * quarters with no relationship to anything, clipped by the right edge.
+   *
+   * At 0% the paper column stops existing, the gradient resolves to one flat field, and the
+   * scene runs the full width of the window. The form is no longer a column — it is a card
+   * standing in the room, which is what the rest of this file below now builds.
+   */
+  --x-split: 0%;
+
+  /* THE CARD. Glass rather than paper: it sits ON the scene, so it has to admit some of the
+     scene through it or it reads as a rectangle pasted over a photograph. */
+  --x-card: rgba(255, 255, 255, 0.955);
+  --x-card-line: rgba(15, 23, 42, 0.12);
+  --x-card-shadow: 0 32px 80px -24px rgba(15, 23, 42, 0.35), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --x-field: rgba(255, 255, 255, 0.9);
+  --x-field-line: rgba(15, 23, 42, 0.18);
+  --x-accent: #0f766e;
+  /*
+   * THE INK ON THE PRIMARY BUTTON, PER THEME, BECAUSE ONE VALUE CANNOT SERVE BOTH.
+   *
+   * This was a single near-black for both, on the reasoning that white type fails on the dark
+   * theme's bright mint. True — and the other half was never checked: near-black on THIS
+   * accent, a dark teal, measures about 1.6:1. That is not a preference, it is a button whose
+   * label cannot be read, and it shipped in the light theme.
+   *
+   * Light: white on #0f766e ≈ 5.3:1.  Dark: #04140f on #3ddc97 ≈ 13:1. Both clear AA.
+   */
+  --x-accent-ink: #ffffff;
+}
+
+html[data-theme="dark"] {
+  --x-void: #030712;
+  --x-void-blend: screen;
+  --x-void-ink: #e8f1f7;
+  --x-void-ink-soft: #8ea6ba;
+
+  /* The card follows the light now. It could not before — it WAS the identity, a black
+     wordmark on paper, and inverting it would have been a different brand. As a card on a
+     scene the argument reverses: a white slab on a near-black room is a hole in the picture. */
+  --x-card: rgba(9, 15, 24, 0.965);
+  --x-card-line: rgba(148, 197, 224, 0.16);
+  --x-card-shadow: 0 40px 90px -28px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(148, 197, 224, 0.04);
+  --x-field: rgba(255, 255, 255, 0.05);
+  --x-field-line: rgba(148, 197, 224, 0.22);
+  --x-accent: #2dd4bf;
+  --x-accent-ink: #031713;
+}
+
+/* ─────────────────────────────── the page split ──────────────────────────────── */
+
+/* PatternFly reads its family from these two variables everywhere — headings, controls,
+   helper text — so redefining them reaches the whole page including the parts this file
+   never names. The direct `font-family` below is the belt to that braces: a few PatternFly
+   rules hard-code the family instead of reading the variable. */
+:root,
+html.login-pf,
+html.login-pf body,
+.pf-v5-c-login,
+.pf-v5-c-form-control,
+.pf-v5-c-button {
+  --pf-v5-global--FontFamily--text: var(--x-font);
+  --pf-v5-global--FontFamily--heading: var(--x-font);
+  --pf-v5-global--FontFamily--redhatfont--sans-serif: var(--x-font);
+  --pf-v5-global--FontFamily--redhatfont--heading--sans-serif: var(--x-font);
+  font-family: var(--x-font);
+}
+
+html.login-pf,
+html.login-pf body,
+body#keycloak-bg {
+  min-height: 100vh;
+  margin: 0;
+  /* Hard stop, not a blend. The two fields are meant to read as an architectural cut. */
+  background: linear-gradient(
+    to right,
+    var(--x-paper) 0,
+    var(--x-paper) var(--x-split),
+    var(--x-void) var(--x-split),
+    var(--x-void) 100%
+  ) !important;
+  background-attachment: fixed !important;
+  color: var(--x-ink);
+  /* The form lives on white now, so the browser's own widgets — autofill, scrollbars,
+     the password reveal — must render light. The parent theme swaps to dark on a system
+     preference; this page cannot follow it, because half of it is paper. */
+  color-scheme: light;
+}
+
+/* The hologram. Only the SAFETY properties are set inline by `login-backdrop.ts`
+   (`position`, `z-index`, `pointer-events`); the box is owned here, so the panel geometry
+   lives in one place with the gradient and the grid that must agree with it. */
+#ind-backdrop {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--x-split);
+  background: var(--x-void);
+  opacity: 0;
+  /*
+   * `isolation` IS LOAD-BEARING AND IT IS NOT A TIDINESS FLAG.
+   *
+   * The canvas composites with `mix-blend-mode: screen`, and a blend mode reaches every
+   * backdrop in its stacking context — which, with no isolation here, is the page root. The
+   * result was the factory wireframe drawing straight through the sign-in card and over the
+   * wordmark: the card was underneath in z-order and the blend went and found it anyway.
+   *
+   * This confines the blend to this element, which is the only place it was ever meant to act.
+   * It costs one stacking context and it is the difference between a card and a ghost.
+   */
+  isolation: isolate;
+  /* The panel changes colour under the canvas when the theme does; the canvas itself fades
+     out and back while it is rebuilt in the new light — see `login-backdrop.ts`. */
+  transition: background-color 600ms ease;
+}
+
+/*
+ * THE GROUND SHADOW, LIGHT PANEL ONLY.
+ *
+ * The brief asks the light panel for "restrained depth… and soft shadows" rather than a flat
+ * wash — and a pale surface genuinely cannot glow, so the depth the dark panel gets from its
+ * bloom pass has to come from somewhere else here.
+ *
+ * A static pseudo-element rather than `filter: drop-shadow()` on the canvas. The canvas
+ * repaints every frame, so a filter on it is a full-surface blur sixty times a second — on
+ * the exact class of machine this file already documents having made the Sign In button stop
+ * responding. This costs one composited layer, once.
+ */
+#ind-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 62% 42% at 50% 64%, rgba(15, 23, 42, 0.12), transparent 70%);
+}
+
+html[data-theme="dark"] #ind-backdrop::before {
+  display: none;
+}
+
+#ind-backdrop canvas {
+  /*
+   * THE BLEND MODE IS LOAD-BEARING, and it is different on each panel.
+   *
+   * `floorplan-scene.ts` clears to its blend mode's IDENTITY rather than to a background
+   * colour, because an opaque clear came out of the bloom chain sRGB-encoded twice and turned
+   * the whole field slate grey — measured at rgb(32,39,57) against the rgb(4,6,12) it was set
+   * to — and merely making the canvas transparent did not help either, since the
+   * post-processing chain writes an opaque alpha regardless.
+   *
+   * So each panel is settled on principle instead of by compensation:
+   *
+   *   DARK    clear BLACK, composite with `screen`.   1-(1-a)(1-b), b=0 → a.
+   *   LIGHT   clear WHITE, composite with `multiply`. a×b, b=1 → a.
+   *
+   * In both cases the empty parts of the frame cannot tint the panel whatever the pipeline
+   * does to them, and the drawn parts change it in the only direction that surface allows —
+   * adding light to black, taking it away from white. The scene publishes which pairing it
+   * chose onto `#ind-backdrop[data-blend]`, so the two can be asserted together rather than
+   * assumed to match.
+   */
+  mix-blend-mode: var(--x-void-blend);
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* An ANIMATION rather than a transition. The class is added in the same task that inserts
+   the element, so there is no style recalculation between the two for a transition to
+   interpolate from — it would simply snap. */
+html.ind-backdrop-live #ind-backdrop {
+  animation: x-hologram-in 1400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes x-hologram-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ════════════════════════ THE APPEARANCE CONTROL ════════════════════════════
+   Injected by `login-loader.ts` — the BLOCKING script — rather than by the scene bundle, and
+   that is a decision rather than an accident. The scene bundle is deliberately never fetched
+   on a machine with no WebGL: the old shop-floor PC, the locked-down terminal, the browser
+   with acceleration off by group policy. Those are also the machines most likely to be sat in
+   a bright plant office needing light mode. A control that ships with the scenery would be
+   handed to everybody who does not need it and withheld from everybody who does.
+
+   It sits on the HOLOGRAM side, top-right — the mirror of the wordmark top-left on the paper
+   side, which is the arrangement the Brain screen uses too. Below the stacking breakpoint the
+   panels reorder and the paper takes the whole top of the page, so it moves onto the paper
+   and takes the paper's inks with it. */
+#ind-theme {
+  position: fixed;
+  z-index: 3;
+  top: clamp(1.25rem, 3.2vh, 2.25rem);
+  right: clamp(1.25rem, 2.4vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  /* Derived from the panel's own ink rather than a fixed grey, so the tray is equally
+     unobtrusive on near-white and on near-black without two hand-picked values. */
+  background: color-mix(in srgb, var(--x-void-ink) 8%, transparent);
+  transition: background-color 600ms ease;
+}
+
+#ind-theme button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--x-void-ink-soft);
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+#ind-theme button:hover {
+  color: var(--x-void-ink);
+}
+
+/* The selected one is picked out in colour and a whisper of fill — not a solid pill. Three
+   filled rectangles in the corner is chrome, and this page has none. */
+#ind-theme button[aria-checked="true"] {
+  color: var(--x-void-ink);
+  background: color-mix(in srgb, var(--x-void-ink) 12%, transparent);
+}
+
+/* Distinct from the selected state, and from anything decorative. A person tabbing here must
+   be able to tell "focused" from "chosen" — they are different facts and both can be true. */
+#ind-theme button:focus-visible {
+  outline: 2px solid var(--x-void-ink);
+  outline-offset: 2px;
+}
+
+/* Stacked layout: the hologram is a band at the BOTTOM and the paper owns the top, so the
+   control follows the paper and switches to the paper's own two inks. */
+@media (max-width: 900px) {
+  #ind-theme {
+    background: color-mix(in srgb, var(--x-ink) 8%, transparent);
+  }
+  #ind-theme button {
+    color: var(--x-ink-soft);
+  }
+  #ind-theme button:hover,
+  #ind-theme button[aria-checked="true"] {
+    color: var(--x-ink);
+  }
+  #ind-theme button[aria-checked="true"] {
+    background: color-mix(in srgb, var(--x-ink) 12%, transparent);
+  }
+  #ind-theme button:focus-visible {
+    outline-color: var(--x-ink);
+  }
+}
+
+/* ═══════════════ THE PAPER SIDE DOES NOT FOLLOW THE SYSTEM THEME ═══════════════
+   The parent template ships an inline script that stamps `pf-v5-theme-dark` onto `<html>`
+   whenever the viewer's OS is in dark mode, and PatternFly then repaints its components
+   for a dark surface. Every other page in Keycloak is right to do that. This one cannot:
+   the left quarter is white paper by design, and a dark-theme text colour on it is not a
+   preference honoured, it is an unreadable page.
+
+   Measured on a dark-mode machine before this block existed: the XELOR wordmark computed
+   to `rgb(224,224,224)` — pale grey on pure white, about 1.2:1. Everything else on the
+   panel happened to survive only because it was already being set explicitly, which is
+   luck rather than design.
+
+   `html.pf-v5-theme-dark` is repeated rather than fought with `!important` so the intent
+   stays legible: these are the paper side's colours, asserted at the same specificity the
+   dark theme uses, for the elements PatternFly repaints. The right panel is genuinely dark
+   and is deliberately absent from this list.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+html.pf-v5-theme-dark #kc-header-wrapper,
+html.pf-v5-theme-dark .pf-v5-c-brand,
+html.pf-v5-theme-dark #kc-page-title,
+html.pf-v5-theme-dark .pf-v5-c-title {
+  color: var(--x-ink);
+}
+
+html.pf-v5-theme-dark .pf-v5-c-form__label,
+html.pf-v5-theme-dark .pf-v5-c-form__label-text,
+html.pf-v5-theme-dark .pf-v5-c-check__label,
+html.pf-v5-theme-dark .pf-v5-c-login__main-footer-band-item {
+  color: var(--x-ink-soft);
+}
+
+html.pf-v5-theme-dark .pf-v5-c-form-control,
+html.pf-v5-theme-dark .pf-v5-c-button.pf-m-control {
+  background: var(--x-paper);
+  border-color: var(--x-line);
+  color: var(--x-ink);
+}
+
+html.pf-v5-theme-dark .pf-v5-c-form-control > input,
+html.pf-v5-theme-dark .pf-v5-c-form-control > select,
+html.pf-v5-theme-dark .pf-v5-c-form-control > textarea {
+  background: transparent;
+  color: var(--x-ink);
+}
+
+html.pf-v5-theme-dark .pf-v5-c-button.pf-m-primary {
+  background: var(--x-ink);
+  border-color: var(--x-ink);
+  color: var(--x-paper);
+}
+
+html.pf-v5-theme-dark a,
+html.pf-v5-theme-dark .pf-v5-c-button.pf-m-link {
+  color: var(--x-ink);
+}
+
+html.pf-v5-theme-dark .pf-v5-c-login__main,
+html.pf-v5-theme-dark .pf-v5-c-login__main-header,
+html.pf-v5-theme-dark .pf-v5-c-login__main-body,
+html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
+  background: transparent;
+}
+
+/* ──────────────────────── the 25 / 75 composition ───────────────────────── */
+
+/*
+ * PatternFly centres the login container in the viewport. Here it must occupy the left
+ * column exactly — so the page becomes a two-column grid and the container is placed in
+ * column one. The right column is deliberately EMPTY: it is the hologram's field, and the
+ * hologram is painted by a fixed element behind the grid rather than placed inside it, so
+ * that the form can never be pushed around by a canvas.
+ */
+.pf-v5-c-login {
+  position: relative;
+  z-index: 1;
+  /* One centred column, not two. The scene behind is the whole window and the card stands in
+     the middle of it — `place-items` rather than a grid template, because there is no longer
+     a second column for anything to be placed against. */
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 2rem 1.5rem;
+  margin: 0;
+  max-width: none;
+  background: transparent;
+}
+
+.pf-v5-c-login__container {
+  /*
+   * THE CARD.
+   *
+   * Capped at 27rem rather than sized to a fraction of the window: a sign-in form has one
+   * correct measure and it does not get better on a 34-inch monitor. `min()` keeps it off both
+   * edges on a phone without a media query.
+   *
+   * `backdrop-filter` is what makes it glass rather than a slab — the scene stays visible
+   * THROUGH it, softened, so the card belongs to the room instead of covering it. Where the
+   * filter is unsupported the card is simply more opaque, which is a fallback rather than a
+   * failure, so it is not worth a support query.
+   */
+  width: min(27rem, 100%);
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 2.75rem 2.5rem 2.5rem;
+  border-radius: 20px;
+  background: var(--x-card);
+  border: 1px solid var(--x-card-line);
+  box-shadow: var(--x-card-shadow);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+  backdrop-filter: blur(28px) saturate(1.35);
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * THE FACTORY PHOTOGRAPH IS GONE, along with the banded veil that made it survivable.
+ *
+ * It was two layers doing a job that should not have existed: a stock photograph behind the
+ * form, and a white gradient over it with four measured bands — protected where the type was,
+ * open where the robot arm was — because a single opacity could not both show the picture and
+ * keep black type legible on it. That was a correct solution to a problem the composition
+ * created. Removing the column removes the problem: the form has a surface of its own now and
+ * nothing has to be read off a photograph.
+ *
+ * `factory-left.jpg` is left in `img/` rather than deleted — it is referenced by
+ * `img/README.md`, and an unreferenced asset is cheaper than a broken document.
+ */
+
+/* ───────────────────────────── the wordmark ──────────────────────────────── */
+
+#kc-header,
+.pf-v5-c-login__header {
+  flex: 0 0 auto;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+}
+
+/* Renders the realm's display name — XELOR. Uppercase, black, and confident: it is the
+   first thing on the page and the only thing above the fold on the paper side. */
+#kc-header-wrapper,
+.pf-v5-c-brand {
+  display: block;
+  max-width: none;
+  padding: 0;
+  /*
+   * `!important`, and it is the only one in this file that overrides a colour.
+   *
+   * The parent theme declares `color: var(--pf-v5-global--Color--light-100) !important` on
+   * this exact element, because the stock Keycloak login page puts its brand on a dark hero
+   * image. Ours sits on white paper. No amount of specificity beats an `!important` — this
+   * is not a shortcut around the cascade, it is the documented way to answer one.
+   *
+   * Measured before this: the wordmark computed to rgb(224,224,224) on pure white. Roughly
+   * 1.2:1, which is not low contrast, it is an invisible product name.
+   */
+  color: var(--x-ink) !important;
+  font-size: clamp(1.5rem, 2.1vw, 2rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+/*
+ * The byline is decorative brand furniture and belongs to the wordmark, not to the form —
+ * which is why it is here rather than in the realm's display name. The display name also
+ * becomes the browser tab title, and "XELOR BY AIKYANTRA" in a tab is a company shouting
+ * in a space meant for wayfinding.
+ *
+ * The SECOND SHADE is what carries the hierarchy. No colour is introduced — the pair reads
+ * as one identity at two weights rather than as two competing marks.
+ */
+#kc-header-wrapper::after {
+  content: "BY AIKYANTRA";
+  display: block;
+  margin-top: 0.85rem;
+  color: var(--x-ink-soft);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  line-height: 1;
+}
+
+/* ────────────────────────────── the login form ───────────────────────────── */
+
+/*
+ * `margin-block: auto` inside the flex column is what centres the form in the space LEFT
+ * OVER by the brand, rather than in the panel as a whole. Centring it in the panel would
+ * put it visually high, because the brand occupies the top and nothing balances it at the
+ * bottom.
+ */
+.pf-v5-c-login__main {
+  flex: 0 0 auto;
+  margin-block: auto;
+  width: 100%;
+  max-width: 24rem;
+  /*
+   * NOT A CARD. The brief asks for a clean white surface with fine black outlines, and a
+   * panel on a panel is exactly the heaviness it rules out — a card needs a background
+   * that differs from what is behind it, and here there is nothing to differ from.
+   * The fields carry the structure; the surface carries none.
+   */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.pf-v5-c-login__main-header,
+.pf-v5-c-login__main-body,
+.pf-v5-c-login__main-footer {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.pf-v5-c-login__main-header {
+  margin-bottom: 1.6rem;
+}
+
+#kc-page-title,
+.pf-v5-c-title {
+  color: var(--x-ink);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.pf-v5-c-form {
+  gap: 1.05rem;
+}
+
+.pf-v5-c-form__group {
+  margin: 0;
+}
+
+/* ───────────────────────────────── the fields ────────────────────────────── */
+
+.pf-v5-c-form__label,
+.pf-v5-c-form__label-text {
+  color: var(--x-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pf-v5-c-form__label-required {
+  color: #b91c1c;
+}
+
+.pf-v5-c-form-control {
+  background: var(--x-paper);
+  /* The fine black outline the brief calls for. 1px, full strength — a grey hairline would
+     read as disabled on paper this bright. */
+  border: 1px solid var(--x-line);
+  border-radius: 2px;
+  color: var(--x-ink);
+  transition: box-shadow 140ms ease, border-color 140ms ease;
+}
+
+/* PatternFly draws the field's focus underline with a pseudo-element: a 2px bar under a
+   box that now has four real sides. It reads as damage rather than as focus. */
+.pf-v5-c-form-control::before,
+.pf-v5-c-form-control::after {
+  display: none !important;
+}
+
+/*
+ * 44px, AND IT IS A USE FIX RATHER THAN A CONFORMANCE ONE.
+ *
+ * WCAG 2.2's target-size minimum is 24×24, which the previous ~36px field already cleared —
+ * so nothing here was failing. What the brief asks for is the 44px PREFERENCE on primary
+ * controls, and the people signing in to this product do it on a shared terminal in a plant
+ * office, often standing, frequently with a glove half off.
+ *
+ * `box-sizing` is stated because the padding was carrying the height before this: under
+ * `content-box` the min-height and the padding would add together and the field would grow
+ * to about 64px.
+ */
+.pf-v5-c-form-control > input,
+.pf-v5-c-form-control > select,
+.pf-v5-c-form-control > textarea {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  background: transparent;
+  color: var(--x-ink);
+  padding: 0.62rem 0.8rem;
+  font-size: 0.94rem;
+}
+
+.pf-v5-c-form-control > input::placeholder {
+  color: #a1a1aa;
+}
+
+/*
+ * FOCUS. Doubled on purpose — the border goes to 2px AND a ring is drawn outside it.
+ *
+ * Restyling a form is the easiest way in the world to make a keyboard user's position on
+ * it invisible, and this is a password field. On white, a single black border thickening
+ * by one pixel is not a state change anybody notices; the offset ring is.
+ */
+.pf-v5-c-form-control:focus-within {
+  border-color: var(--x-ink);
+  box-shadow:
+    0 0 0 1px var(--x-ink),
+    0 0 0 4px rgba(10, 10, 10, 0.14);
+}
+
+/*
+ * AUTOFILL. Chrome paints its own pale-blue background into a filled field and it cannot be
+ * overridden with `background` at all — only by an inset shadow thick enough to cover the
+ * box. Left alone, the single most common way anybody signs in tints two of the three
+ * controls on an otherwise pure-white panel.
+ */
+.pf-v5-c-form-control > input:-webkit-autofill,
+.pf-v5-c-form-control > input:-webkit-autofill:hover,
+.pf-v5-c-form-control > input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--x-ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--x-paper) inset;
+  caret-color: var(--x-ink);
+}
+
+/* The show/hide-password control sits inside the field group and must read as part of the
+   same object, not as a second control bolted onto it. */
+.pf-v5-c-input-group,
+.pf-v5-c-input-group__item {
+  background: transparent;
+}
+
+/*
+ * THE SHOW / HIDE CONTROL IS ALREADY A REAL BUTTON — it just was not a real SIZE.
+ *
+ * Keycloak renders it with its own `aria-label` flipping between "Show password" and "Hide
+ * password", so the accessible name is correct upstream and no template fork is needed. What
+ * was wrong was the box: it inherited the field's old height and PatternFly's narrow control
+ * padding, putting a ~36×34 target immediately beside a text field — the two most commonly
+ * mis-tapped neighbours on any sign-in page. Squared to the field it belongs to, so the pair
+ * reads as one object rather than a control bolted onto another.
+ */
+.pf-v5-c-button.pf-m-control {
+  box-sizing: border-box;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  background: var(--x-paper);
+  border: 1px solid var(--x-line);
+  border-left: 0;
+  border-radius: 0 2px 2px 0;
+  color: var(--x-ink-soft);
+}
+
+.pf-v5-c-button.pf-m-control:hover {
+  background: #f4f4f5;
+  color: var(--x-ink);
+}
+
+/* ───────────────────────────── the primary action ────────────────────────── */
+
+/*
+ * Solid black on white. The strongest contrast pair available (about 19:1), which is what
+ * makes it read as the primary action without needing a colour, a gradient or a glow to
+ * say so.
+ */
+.pf-v5-c-button.pf-m-primary {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  background: var(--x-ink);
+  border: 1px solid var(--x-ink);
+  border-radius: 2px;
+  color: var(--x-paper);
+  font-weight: 600;
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-block: 0.72rem;
+  margin-top: 0.55rem;
+  transition: background-color 140ms ease, transform 100ms ease;
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+  background: #262626;
+}
+
+.pf-v5-c-button.pf-m-primary:active {
+  transform: translateY(1px);
+}
+
+/* ──────────────────────── links, checkbox, messages ──────────────────────── */
+
+.pf-v5-c-check__label,
+.pf-v5-c-login__main-footer-band,
+.pf-v5-c-login__main-footer-band-item {
+  color: var(--x-ink-soft);
+  font-size: 0.82rem;
+}
+
+.pf-v5-c-check__input {
+  accent-color: var(--x-ink);
+}
+
+a,
+.pf-v5-c-button.pf-m-link {
+  color: var(--x-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+
+a:hover,
+.pf-v5-c-button.pf-m-link:hover {
+  color: var(--x-ink-soft);
+}
+
+/* A failed sign-in is the one message on this page somebody actually has to read. It gets
+   the loudest treatment here, not the quietest — and it is the only place colour appears
+   on the paper side, because "wrong" is the one thing black-on-white cannot say. */
+.pf-v5-c-alert {
+  background: #fef2f2;
+  border: 1px solid #dc2626;
+  border-radius: 2px;
+  color: #7f1d1d;
+}
+
+.pf-v5-c-alert.pf-m-success {
+  background: #f0fdf4;
+  border-color: #16a34a;
+  color: #14532d;
+}
+
+.pf-v5-c-alert.pf-m-warning {
+  background: #fffbeb;
+  border-color: #d97706;
+  color: #78350f;
+}
+
+.pf-v5-c-alert__title,
+.pf-v5-c-alert__description {
+  color: inherit;
+}
+
+.pf-v5-c-helper-text__item-text.pf-m-error,
+.kc-feedback-text {
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+/* ───────────────────────────── focus, everywhere ─────────────────────────── */
+
+/* `:focus-visible` so a mouse click does not draw it, but a keyboard-only user is never
+   lost. Non-negotiable on a page whose entire job is taking a password. */
+:focus-visible {
+  outline: 2px solid var(--x-ink);
+  outline-offset: 3px;
+}
+
+/* ──────────────────────────────── reflow ─────────────────────────────────── */
+
+/*
+ * Below the landscape composition the split stops being architecture and starts being a
+ * squeeze: a quarter of a 900px viewport is 225px, which is narrower than the form itself.
+ * So the panels STACK — paper on top with the brand and the form at full width, the
+ * hologram as a band beneath it.
+ *
+ * The gradient turns through 90°, and the canvas is repositioned rather than resized, so
+ * the scene reframes itself to the new box on its own (it fits to whatever element it is
+ * given). The container gains bottom padding equal to the band, because the canvas is
+ * `position: fixed` and would otherwise sit over the sign-in button.
+ */
+@media (max-width: 900px) {
+  html.login-pf,
+  html.login-pf body,
+  body#keycloak-bg {
+    background: linear-gradient(
+      to bottom,
+      var(--x-paper) 0,
+      var(--x-paper) 66%,
+      var(--x-void) 66%,
+      var(--x-void) 100%
+    ) !important;
+  }
+
+  #ind-backdrop {
+    top: 66%;
+    left: 0;
+  }
+
+  .pf-v5-c-login {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .pf-v5-c-login__container {
+    min-height: 66vh;
+    padding: 2.5rem 2rem calc(34vh + 2.5rem);
+    align-items: flex-start;
+  }
+
+  .pf-v5-c-login__main {
+    margin-block: 2.5rem auto;
+    max-width: 26rem;
+  }
+}
+
+/*
+ * On a phone the band would leave the form perhaps 300px of height on a landscape handset.
+ * The brief is explicit that brand and login usability come first, so below this width the
+ * hologram is not reduced — it is dropped, and the page is paper end to end.
+ */
+@media (max-width: 560px) {
+  html.login-pf,
+  html.login-pf body,
+  body#keycloak-bg {
+    background: var(--x-paper) !important;
+  }
+
+  #ind-backdrop {
+    display: none;
+  }
+
+  .pf-v5-c-login__container {
+    min-height: 100vh;
+    padding: 2rem 1.4rem 3rem;
+  }
+
+  .pf-v5-c-login__main {
+    max-width: none;
+  }
+
+  #kc-header-wrapper,
+  .pf-v5-c-brand {
+    font-size: 1.35rem;
+    letter-spacing: 0.16em;
+  }
+}
+
+/* Short landscape windows — the form must not be pushed off the bottom by the brand. */
+@media (min-width: 901px) and (max-height: 620px) {
+  .pf-v5-c-login__container {
+    padding-block: 2rem;
+  }
+
+  .pf-v5-c-login__main-header {
+    margin-bottom: 1.1rem;
+  }
+}
+
+/* ─────────────────────────────── reduced motion ──────────────────────────── */
+
+/* A person who asked their machine to stop moving things gets a still page. The hologram is
+   not removed — the scene holds a frame, which it arranges for itself — but nothing here
+   fades, slides or eases. */
+@media (prefers-reduced-motion: reduce) {
+  html.ind-backdrop-live #ind-backdrop {
+    animation: none;
+    opacity: 1;
+  }
+
+  .pf-v5-c-form-control,
+  .pf-v5-c-button.pf-m-primary {
+    transition: none;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE CARD'S OWN LIGHT — everything below supersedes the paper-column styling above.
+   ═════════════════════════════════════════════════════════════════════════════
+
+   The rules earlier in this file were written for a WHITE panel that deliberately did not
+   follow the system theme, and there is a whole section arguing why: the identity was a black
+   wordmark on paper, so a dark mode that inverted it would have been a different brand.
+
+   That argument was sound and it belonged to a design where the form WAS the left quarter of
+   the page. As a card standing on the scene it inverts — a white slab on a near-black room is
+   a hole punched in the picture, not restraint. So the card now takes the same light as
+   everything behind it, and these rules exist to beat `html.pf-v5-theme-dark …` from that
+   section without deleting the reasoning that explains where it came from.
+
+   Selectors are prefixed with `html.login-pf body` purely to out-specify it. That is the only
+   reason; nothing here depends on the body element. */
+
+/* ─────────────────────────── type inside the card ─────────────────────────── */
+
+html.login-pf body #kc-header-wrapper,
+html.login-pf body .pf-v5-c-brand {
+  color: var(--x-void-ink);
+}
+
+html.login-pf body #kc-page-title,
+html.login-pf body .pf-v5-c-title {
+  color: var(--x-void-ink);
+  /* Smaller and quieter than the wordmark above it. "Sign in to your account" is an
+     instruction, not a headline, and it was competing with the brand. */
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+html.login-pf body .pf-v5-c-form__label,
+html.login-pf body .pf-v5-c-form__label-text,
+html.login-pf body .pf-v5-c-check__label,
+html.login-pf body .pf-v5-c-login__main-footer-band-item {
+  color: var(--x-void-ink-soft);
+}
+
+/* ────────────────────────────── the controls ────────────────────────────── */
+
+html.login-pf body .pf-v5-c-form-control,
+html.login-pf body .pf-v5-c-button.pf-m-control {
+  background: var(--x-field);
+  border: 1px solid var(--x-field-line);
+  border-radius: 10px;
+  box-shadow: none;
+  /* The 44px floor. It was already here for the previous design and it is still the number
+     that matters: a control shorter than this is one somebody's thumb misses. */
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+html.login-pf body .pf-v5-c-form-control > input,
+html.login-pf body .pf-v5-c-form-control > select,
+html.login-pf body .pf-v5-c-form-control > textarea {
+  background: transparent;
+  color: var(--x-void-ink);
+  min-height: 2.75rem;
+  padding-inline: 0.9rem;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+html.login-pf body .pf-v5-c-form-control > input::placeholder {
+  color: var(--x-void-ink-soft);
+  opacity: 0.6;
+}
+
+/* FOCUS IS A RING, NOT A THICKER BORDER. A border that grows on focus reflows the control by
+   a pixel and the label above it twitches; a ring is painted outside the box and moves
+   nothing. It is also the one state that must survive on both fields at once. */
+html.login-pf body .pf-v5-c-form-control:focus-within {
+  border-color: var(--x-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--x-accent) 26%, transparent);
+}
+
+/* The reveal toggle sits INSIDE the field's outline rather than beside it, so the two read as
+   one control. Without this it is a second bordered box abutting the first, which is what the
+   password row looked like. */
+html.login-pf body .pf-v5-c-input-group {
+  background: var(--x-field);
+  border: 1px solid var(--x-field-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+html.login-pf body .pf-v5-c-input-group .pf-v5-c-form-control,
+html.login-pf body .pf-v5-c-input-group .pf-v5-c-button.pf-m-control {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+html.login-pf body .pf-v5-c-input-group:focus-within {
+  border-color: var(--x-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--x-accent) 26%, transparent);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-control {
+  min-width: 2.75rem;
+  color: var(--x-void-ink-soft);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-control:hover {
+  color: var(--x-void-ink);
+  background: color-mix(in srgb, var(--x-void-ink) 8%, transparent);
+}
+
+/* ───────────────────────────── the primary action ───────────────────────────── */
+
+html.login-pf body .pf-v5-c-button.pf-m-primary {
+  background: var(--x-accent);
+  color: var(--x-accent-ink);
+  border: 0;
+  border-radius: 10px;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--x-accent) 70%, transparent);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 12px 30px -10px color-mix(in srgb, var(--x-accent) 80%, transparent);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary:active {
+  transform: translateY(1px);
+  filter: brightness(0.96);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary:focus-visible {
+  outline: 2px solid var(--x-void-ink);
+  outline-offset: 3px;
+}
+
+html.login-pf body a,
+html.login-pf body .pf-v5-c-button.pf-m-link {
+  color: var(--x-accent);
+}
+
+/* ─────────────────────────── the card's own surfaces ─────────────────────────── */
+
+/* PatternFly paints its own background on these four. Inside a glass card they would each be
+   an opaque rectangle stacked on it, which is what turns a card back into a slab. */
+html.login-pf body .pf-v5-c-login__main,
+html.login-pf body .pf-v5-c-login__main-header,
+html.login-pf body .pf-v5-c-login__main-body,
+html.login-pf body .pf-v5-c-login__main-footer {
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  padding-inline: 0;
+}
+
+/* An alert has to stay legible on glass in both themes, and PatternFly's own danger surface
+   is a pale pink that vanishes on the dark card. */
+html.login-pf body .pf-v5-c-alert {
+  background: color-mix(in srgb, #dc2626 14%, transparent);
+  border: 1px solid color-mix(in srgb, #dc2626 40%, transparent);
+  border-radius: 10px;
+  color: var(--x-void-ink);
+}
+
+/* ────────────────────────────── narrow windows ────────────────────────────── */
+
+@media (max-width: 30rem) {
+  html.login-pf body .pf-v5-c-login__container {
+    padding: 2rem 1.5rem 1.75rem;
+    border-radius: 16px;
+  }
+}
+
+/* ─────────────────── the card has to win against the scene ─────────────────── */
+
+/* A SCRIM, SIZED TO THE CARD AND SOFTER THAN IT.
+   The scene is full-bleed now and it is busy exactly where the form is — the plant sits in
+   the middle of the window because that is where a centred camera puts it. Darkening the
+   whole scene to fix that would waste the thing being shown; this darkens only the halo the
+   card sits in, so the form has quiet around it and the plant keeps its corners. */
+html.login-pf body .pf-v5-c-login::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 42% 58% at 50% 50%,
+    color-mix(in srgb, var(--x-void) 88%, transparent) 0%,
+    color-mix(in srgb, var(--x-void) 62%, transparent) 45%,
+    transparent 78%
+  );
+}
+
+/* The wordmark is the first thing on the card and it was the least visible thing on it —
+   inheriting an ink meant for black-on-paper while sitting on dark glass. */
+html.login-pf body #kc-header-wrapper,
+html.login-pf body .pf-v5-c-brand {
+  color: var(--x-void-ink);
+  opacity: 1;
+}
+
+html.login-pf body .pf-v5-c-login__header {
+  margin-bottom: 0.35rem;
+}
+
+/* THE WORDMARK CARRIES `!important` FURTHER UP THIS FILE, and for a good reason: the parent
+   theme declares `color: … light-100 !important` on it, so the only way to hold the ink was
+   to answer in kind. That answer pinned it to `--x-ink` — near-black, correct on paper and
+   invisible on the dark card. It has to be re-answered rather than merely overridden. */
+html.login-pf body #kc-header-wrapper,
+html.login-pf body .pf-v5-c-brand {
+  color: var(--x-void-ink) !important;
+}
+
+html.login-pf body #kc-header-wrapper::after {
+  color: var(--x-void-ink-soft);
+}
+
+/* The card is very nearly opaque, and that is a decision rather than a default.
+   `backdrop-filter` is declared above and WebKit declines to apply it here — the backdrop it
+   would sample is a canvas compositing with `mix-blend-mode`, and the blur is silently
+   dropped. A 10%-transparent card over an unblurred wireframe is not glass, it is a legibility
+   fault: sharp white lines run straight through the labels. So the card holds its own surface
+   and the glass reading comes from the hairline border and the scrim around it instead. */
+
+/* The parent theme paints its own focus outline on the field and it lands as a heavy dark
+   rectangle on the light card — two focus indicators disagreeing about the same control. The
+   ring declared above is the one this design intends, so the other is stood down. */
+html.login-pf body .pf-v5-c-form-control:focus-within,
+html.login-pf body .pf-v5-c-form-control > input:focus,
+html.login-pf body .pf-v5-c-input-group:focus-within {
+  outline: none;
+}
+
+html.login-pf body .pf-v5-c-form-control > input:focus-visible {
+  outline: none;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   CINEMATIC DIGITAL-TWIN ARRIVAL — researched, layered, and still security-safe.
+
+   Keycloak continues to own the form markup. The visual system is made from:
+   - the existing Three.js/WebGL factory and bloom pipeline;
+   - a translucent, backdrop-filtered authentication surface;
+   - compositor-only CSS light fields, grid lines and pointer parallax;
+   - inert brand context injected by the tiny loader, never by a template fork.
+
+   If JavaScript, WebGL or backdrop-filter disappears, this collapses to a readable form on
+   a solid field. The richer frame never becomes a dependency of the door it decorates.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --x-pointer-x: 50%;
+  --x-pointer-y: 50%;
+  --x-card: rgba(246, 250, 255, 0.76);
+  --x-card-line: rgba(80, 112, 140, 0.24);
+  --x-card-shadow:
+    0 45px 120px -48px rgba(18, 43, 72, 0.58),
+    0 18px 45px -28px rgba(18, 43, 72, 0.32),
+    inset 0 1px rgba(255, 255, 255, 0.88);
+  --x-field: rgba(255, 255, 255, 0.58);
+  --x-field-line: rgba(53, 83, 111, 0.22);
+  --x-accent: #0f766e;
+  --x-aurora-a: rgba(20, 184, 166, 0.18);
+  --x-aurora-b: rgba(59, 130, 246, 0.17);
+  --x-aurora-c: rgba(99, 102, 241, 0.12);
+}
+
+html[data-theme="dark"] {
+  --x-card: rgba(6, 13, 23, 0.7);
+  --x-card-line: rgba(150, 210, 235, 0.2);
+  --x-card-shadow:
+    0 52px 140px -54px rgba(0, 0, 0, 0.94),
+    0 0 0 1px rgba(113, 226, 204, 0.04),
+    inset 0 1px rgba(255, 255, 255, 0.07);
+  --x-field: rgba(255, 255, 255, 0.065);
+  --x-field-line: rgba(160, 211, 233, 0.18);
+  --x-aurora-a: rgba(45, 212, 191, 0.16);
+  --x-aurora-b: rgba(56, 189, 248, 0.17);
+  --x-aurora-c: rgba(129, 140, 248, 0.13);
+}
+
+html.login-pf,
+html.login-pf body,
+html.login-pf body#keycloak-bg {
+  background:
+    radial-gradient(circle at 78% 18%, var(--x-aurora-b), transparent 32%),
+    radial-gradient(circle at 62% 84%, var(--x-aurora-a), transparent 34%),
+    radial-gradient(circle at 18% 14%, var(--x-aurora-c), transparent 30%),
+    var(--x-void) !important;
+  overflow: hidden;
+}
+
+/* A responsive light field follows the pointer without moving the model or the form. */
+#ind-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle 24rem at var(--x-pointer-x) var(--x-pointer-y),
+      color-mix(in srgb, var(--x-aurora-a) 72%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.035) 48%, transparent 70%);
+  transition: background 120ms linear;
+}
+
+html[data-theme="dark"] #ind-backdrop::after {
+  mix-blend-mode: screen;
+}
+
+/* The scene remains full-bleed, but the composition is asymmetric: a working door on the
+   left and the product promise on the right. */
+html.login-pf body .pf-v5-c-login {
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center start;
+  padding: clamp(2rem, 5.5vw, 6.5rem);
+}
+
+html.login-pf body .pf-v5-c-login::before {
+  background:
+    radial-gradient(
+      ellipse 34rem 40rem at clamp(17rem, 23vw, 29rem) 50%,
+      color-mix(in srgb, var(--x-void) 82%, transparent) 0%,
+      color-mix(in srgb, var(--x-void) 52%, transparent) 52%,
+      transparent 82%
+    );
+}
+
+/* Fine perspective grid: enough technical structure to hold the hologram, faint enough to
+   disappear when the eye moves to the credentials. */
+html.login-pf body .pf-v5-c-login::after {
+  content: "";
+  position: fixed;
+  inset: 42% -18% -28% 22%;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--x-void-ink) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--x-void-ink) 9%, transparent) 1px, transparent 1px);
+  background-size: 52px 52px;
+  transform: perspective(620px) rotateX(66deg) translateY(16%);
+  transform-origin: center bottom;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 10%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, #000 10%, transparent 72%);
+  opacity: 0.54;
+  animation: x-grid-drift 22s linear infinite;
+}
+
+html.login-pf body .pf-v5-c-login__container {
+  width: min(29rem, calc(100vw - 3rem));
+  justify-self: start;
+  align-self: center;
+  padding: clamp(2rem, 4vh, 3rem) clamp(1.75rem, 3vw, 2.75rem) clamp(2rem, 4vh, 2.75rem);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), transparent 42%),
+    var(--x-card);
+  border: 1px solid var(--x-card-line);
+  box-shadow: var(--x-card-shadow);
+  -webkit-backdrop-filter: blur(34px) saturate(1.38);
+  backdrop-filter: blur(34px) saturate(1.38);
+  overflow: hidden;
+  animation: x-card-arrive 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+html.login-pf body .pf-v5-c-login__container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 12% 0%, var(--x-aurora-a), transparent 32%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.07), transparent 42%);
+  background-size: 130% 130%, 100% 100%;
+  opacity: 0.62;
+  animation: x-glass-light 8s ease-in-out infinite alternate;
+}
+
+html.login-pf body .pf-v5-c-login__container::after {
+  content: "SECURE ACCESS  /  OIDC + PKCE";
+  position: absolute;
+  right: 1.25rem;
+  bottom: 0.9rem;
+  color: var(--x-void-ink-soft);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  opacity: 0.72;
+}
+
+html.login-pf body #kc-header-wrapper,
+html.login-pf body .pf-v5-c-brand {
+  font-size: clamp(1.72rem, 2.15vw, 2.2rem);
+  letter-spacing: 0.24em;
+  text-shadow: 0 8px 28px color-mix(in srgb, var(--x-void) 36%, transparent);
+}
+
+html.login-pf body #kc-header-wrapper::after {
+  margin-top: 0.75rem;
+  letter-spacing: 0.42em;
+}
+
+html.login-pf body .pf-v5-c-login__main {
+  max-width: none;
+}
+
+html.login-pf body .pf-v5-c-login__main-header {
+  margin-top: 2.4rem;
+  margin-bottom: 1.55rem;
+}
+
+html.login-pf body #kc-page-title,
+html.login-pf body .pf-v5-c-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+html.login-pf body .pf-v5-c-form-control,
+html.login-pf body .pf-v5-c-input-group,
+html.login-pf body .pf-v5-c-button.pf-m-control {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary {
+  min-height: 3rem;
+  border-radius: 12px;
+  background:
+    linear-gradient(110deg, color-mix(in srgb, var(--x-accent) 82%, #112fb8), var(--x-accent));
+  box-shadow:
+    0 15px 34px -16px color-mix(in srgb, var(--x-accent) 86%, transparent),
+    inset 0 1px rgba(255, 255, 255, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -35%;
+  width: 22%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.login-pf body .pf-v5-c-button.pf-m-primary:hover::after {
+  animation: x-button-sheen 720ms ease-out;
+}
+
+/* Local demo access sits inside the form so it remains visible when the visual scene is
+   removed on a small or low-power device. The primary ENTER XELOR control below is the only
+   action required; this strip makes that deliberately relaxed demo behavior unambiguous. */
+#ind-demo-access {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--x-accent) 28%, var(--x-field-line));
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--x-accent) 9%, var(--x-field));
+  text-align: center;
+}
+
+#ind-demo-access span,
+#ind-demo-access b,
+#ind-demo-access small {
+  display: block;
+}
+
+#ind-demo-access b {
+  color: var(--x-void-ink);
+  font-size: 0.67rem;
+  letter-spacing: 0.06em;
+}
+
+#ind-demo-access small {
+  margin-top: 0.16rem;
+  color: var(--x-void-ink-soft);
+  font: 700 0.72rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+#ind-demo-access button {
+  min-height: 2rem;
+  flex: none;
+  padding: 0.38rem 0.65rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--x-accent);
+  color: var(--x-accent-ink);
+  font: 750 0.66rem/1 var(--x-font);
+  cursor: pointer;
+  transition: filter 140ms ease, transform 140ms ease;
+}
+
+#ind-demo-access button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+#ind-demo-access button:focus-visible {
+  outline: 2px solid var(--x-void-ink);
+  outline-offset: 2px;
+}
+
+/* Product context on the visual side. No links, no controls, and therefore no way to
+   interfere with Keycloak's focus order or authentication semantics. */
+#ind-stage-copy {
+  position: fixed;
+  z-index: 2;
+  right: clamp(2.5rem, 6vw, 7.5rem);
+  bottom: clamp(2.5rem, 7vh, 6.5rem);
+  width: min(32rem, 38vw);
+  color: var(--x-void-ink);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+html.ind-experience-ready #ind-stage-copy {
+  animation: x-stage-arrive 900ms 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.ind-stage-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.15rem;
+  color: var(--x-void-ink-soft);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ind-stage-eyebrow > span {
+  width: 2.6rem;
+  height: 1px;
+  background: var(--x-accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--x-accent) 75%, transparent);
+}
+
+#ind-stage-copy h1 {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--x-void-ink);
+  font-size: clamp(2.35rem, 4vw, 4.25rem);
+  font-weight: 720;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+}
+
+#ind-stage-copy h1 em {
+  color: transparent;
+  background: linear-gradient(90deg, var(--x-accent), color-mix(in srgb, var(--x-accent) 46%, #5876ff));
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-style: normal;
+  background-size: 180% 100%;
+  animation: x-title-spectrum 7s ease-in-out infinite alternate;
+}
+
+#ind-stage-copy > p {
+  max-width: 42ch;
+  margin: 1.35rem 0 0;
+  color: var(--x-void-ink-soft);
+  font-size: clamp(0.86rem, 1.05vw, 1rem);
+  line-height: 1.7;
+}
+
+.ind-stage-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1.45rem;
+}
+
+.ind-stage-pills span {
+  padding: 0.48rem 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--x-void-ink) 16%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--x-void) 58%, transparent);
+  color: var(--x-void-ink);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  animation: x-pill-arrive 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.ind-stage-pills span:nth-child(1) {
+  animation-delay: 520ms;
+}
+
+.ind-stage-pills span:nth-child(2) {
+  animation-delay: 610ms;
+}
+
+.ind-stage-pills span:nth-child(3) {
+  animation-delay: 700ms;
+}
+
+.ind-stage-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+  color: var(--x-void-ink);
+}
+
+.ind-stage-status > span:last-child {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.ind-stage-status b {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ind-stage-status small {
+  color: var(--x-void-ink-soft);
+  font-size: 0.65rem;
+}
+
+.ind-stage-status-dot {
+  width: 0.58rem;
+  height: 0.58rem;
+  border-radius: 50%;
+  background: var(--x-accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--x-accent) 14%, transparent), 0 0 18px var(--x-accent);
+  animation: x-status-breathe 2.6s ease-in-out infinite;
+}
+
+/* A quiet instrument overlay makes the factory read as a live operating model rather than
+   background decoration. It is inert and sits behind both the form and the product copy. */
+#ind-scene-hud {
+  position: fixed;
+  inset: 1.5rem 1.8rem;
+  z-index: 1;
+  color: var(--x-void-ink-soft);
+  pointer-events: none;
+  opacity: 0;
+  font-family: var(--x-font);
+}
+
+html.ind-experience-ready #ind-scene-hud {
+  animation: x-hud-arrive 900ms 680ms ease-out forwards;
+}
+
+.ind-hud-live {
+  position: absolute;
+  top: 0;
+  left: 52%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.ind-hud-live > span:last-child {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.ind-hud-live b,
+.ind-hud-metrics b {
+  color: var(--x-void-ink);
+  font-size: 0.61rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.ind-hud-live small,
+.ind-hud-metrics small {
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.75;
+}
+
+.ind-hud-crosshair {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--x-accent) 68%, transparent);
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--x-accent), var(--x-accent)) center / 1px 100% no-repeat,
+    linear-gradient(90deg, var(--x-accent), var(--x-accent)) center / 100% 1px no-repeat;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--x-accent) 34%, transparent);
+  animation: x-crosshair 12s linear infinite;
+}
+
+.ind-hud-metrics {
+  position: absolute;
+  top: 0;
+  /* Reserve the top-right appearance control; telemetry must never sit under a button. */
+  right: 5.4rem;
+  display: flex;
+  gap: 1.6rem;
+}
+
+.ind-hud-metrics > span {
+  display: grid;
+  gap: 0.12rem;
+  padding-left: 0.7rem;
+  border-left: 1px solid color-mix(in srgb, var(--x-void-ink) 14%, transparent);
+}
+
+.ind-hud-scan {
+  position: absolute;
+  left: 53%;
+  top: 47%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.ind-hud-scan > span {
+  width: 2.8rem;
+  height: 1px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--x-void-ink) 14%, transparent);
+}
+
+.ind-hud-scan > span::after {
+  content: "";
+  display: block;
+  width: 48%;
+  height: 100%;
+  background: var(--x-accent);
+  box-shadow: 0 0 10px var(--x-accent);
+  animation: x-scan-progress 2.4s ease-in-out infinite;
+}
+
+@keyframes x-card-arrive {
+  from { opacity: 0; transform: translateX(-20px) scale(0.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes x-stage-arrive {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes x-status-breathe {
+  50% { opacity: 0.62; box-shadow: 0 0 0 8px transparent, 0 0 10px var(--x-accent); }
+}
+
+@keyframes x-grid-drift {
+  to { background-position: 0 52px, 52px 0; }
+}
+
+@keyframes x-glass-light {
+  from { background-position: 0% 0%, 0 0; }
+  to { background-position: 80% 70%, 0 0; }
+}
+
+@keyframes x-button-sheen {
+  0% { left: -35%; opacity: 0; }
+  20% { opacity: 0.8; }
+  100% { left: 120%; opacity: 0; }
+}
+
+@keyframes x-title-spectrum {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+@keyframes x-pill-arrive {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes x-hud-arrive {
+  from { opacity: 0; }
+  to { opacity: 0.82; }
+}
+
+@keyframes x-crosshair {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes x-scan-progress {
+  0% { transform: translateX(-5%); opacity: 0.45; }
+  50% { transform: translateX(110%); opacity: 1; }
+  100% { transform: translateX(-5%); opacity: 0.45; }
+}
+
+@media (max-width: 1180px) {
+  html.login-pf body .pf-v5-c-login {
+    place-items: center;
+  }
+
+  html.login-pf body .pf-v5-c-login__container {
+    justify-self: center;
+  }
+
+  #ind-stage-copy {
+    display: none;
+  }
+
+  #ind-scene-hud {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  html.login-pf,
+  html.login-pf body,
+  html.login-pf body#keycloak-bg {
+    background:
+      radial-gradient(circle at 76% 16%, var(--x-aurora-b), transparent 38%),
+      radial-gradient(circle at 22% 82%, var(--x-aurora-a), transparent 40%),
+      var(--x-void) !important;
+  }
+
+  #ind-backdrop {
+    display: block;
+    inset: 0;
+  }
+
+  html.login-pf body .pf-v5-c-login {
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+
+  html.login-pf body .pf-v5-c-login__container {
+    min-height: 0;
+    padding: 2.25rem 2rem 2.5rem;
+  }
+
+  html.login-pf body .pf-v5-c-login__main {
+    margin-block: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  #ind-backdrop {
+    display: block;
+    opacity: 0.42;
+  }
+
+  html.login-pf body .pf-v5-c-login {
+    padding: 1rem;
+  }
+
+  html.login-pf body .pf-v5-c-login__container {
+    width: 100%;
+    min-height: 0;
+    padding: 2rem 1.45rem 2.5rem;
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.login-pf body .pf-v5-c-login__container,
+  html.ind-experience-ready #ind-stage-copy,
+  html.ind-experience-ready #ind-scene-hud,
+  .ind-stage-status-dot,
+  .ind-hud-crosshair,
+  .ind-hud-scan > span::after,
+  #ind-stage-copy h1 em,
+  .ind-stage-pills span,
+  html.login-pf body .pf-v5-c-login::after,
+  html.login-pf body .pf-v5-c-login__container::before {
+    animation: none;
+  }
+
+  #ind-stage-copy,
+  #ind-scene-hud {
+    opacity: 1;
+    transform: none;
+  }
+}

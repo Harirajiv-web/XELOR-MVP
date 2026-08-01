@@ -5,7 +5,7 @@ import { newId, currentTenant, type AiUsage } from "@ind-core/platform";
 import { AuditLogService } from "../common/audit-log.service.js";
 import type { AiGovernance, AiGovernanceDecision } from "./governance.port.js";
 
-const { aiFeatureState, aiOptOut } = schema;
+const { aiFeatureState, aiOptOut, aiKillSwitch } = schema;
 
 /** Default daily token budget per tenant; a per-tenant override lives in the ledger. */
 const DEFAULT_DAILY_LIMIT = Number(process.env.AI_DAILY_TOKEN_BUDGET ?? 2_000_000);
@@ -36,6 +36,17 @@ export class DbAiGovernance implements AiGovernance {
         .from(aiOptOut)
         .limit(1);
       if (oo?.optedOut) return { allowed: false, reason: "opt_out" };
+
+      // AI Operations owns the operator-facing switch. The shared router used to read only
+      // ai_feature_state, which meant the console could display an engaged switch while a
+      // real model call continued. Both control surfaces now converge at this chokepoint.
+      const opsKills = await tx
+        .select({ featureKey: aiKillSwitch.featureKey })
+        .from(aiKillSwitch)
+        .where(eq(aiKillSwitch.engaged, true));
+      if (opsKills.some((row) => row.featureKey === null || row.featureKey === featureKey)) {
+        return { allowed: false, reason: "kill_switch" };
+      }
 
       const killed = await tx
         .select({ featureKey: aiFeatureState.featureKey })

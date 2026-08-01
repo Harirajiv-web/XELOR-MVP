@@ -1,4 +1,4 @@
-import { index, integer, numeric, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { index, integer, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { tenantScopedColumns } from "./columns.js";
 
 /**
@@ -39,4 +39,36 @@ export const productionOrderComponent = pgTable(
     issuedQty: numeric("issued_qty", { precision: 18, scale: 3 }).notNull().default("0"),
   },
   (t) => [unique("uq_prodcomp_order_line").on(t.tenantId, t.orderId, t.lineNo)],
+);
+
+/**
+ * The executable route through a production order. Operations are deliberately owned by
+ * Production (not Maintenance): they describe how a product is made, who ran each step,
+ * and the measured output/reject quantity at that step. The timestamps and evidence note
+ * make the route useful in a demo without pretending to be a machine-data integration.
+ */
+export const productionOperation = pgTable(
+  "production_operation",
+  {
+    ...tenantScopedColumns,
+    orderId: uuid("order_id").notNull(), // intra-module FK -> production_order
+    sequence: integer("sequence").notNull(),
+    operationCode: text("operation_code").notNull(),
+    operationName: text("operation_name").notNull(),
+    workCenterRef: text("work_center_ref"),
+    status: text("status").notNull().default("queued"), // queued | in_progress | completed | blocked
+    plannedStart: timestamp("planned_start", { withTimezone: true }),
+    plannedEnd: timestamp("planned_end", { withTimezone: true }),
+    actualStart: timestamp("actual_start", { withTimezone: true }),
+    actualEnd: timestamp("actual_end", { withTimezone: true }),
+    operatorRef: text("operator_ref"),
+    inputQty: numeric("input_qty", { precision: 18, scale: 3 }),
+    outputQty: numeric("output_qty", { precision: 18, scale: 3 }).notNull().default("0"),
+    rejectedQty: numeric("rejected_qty", { precision: 18, scale: 3 }).notNull().default("0"),
+    evidenceNote: text("evidence_note"),
+  },
+  (t) => [
+    unique("uq_prodop_order_sequence").on(t.tenantId, t.orderId, t.sequence),
+    index("ix_prodop_tenant_status").on(t.tenantId, t.status),
+  ],
 );

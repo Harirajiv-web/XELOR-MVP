@@ -5,6 +5,7 @@ import { useState } from "react";
 import * as Icons from "lucide-react";
 import { cn } from "../ui/cn";
 import { Reveal } from "../ui/motion";
+import { Disclosure } from "../ui/disclosure";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -432,15 +433,6 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
               {node.kicker}
             </span>
           </div>
-          <span
-            className="chip shrink-0"
-            style={{
-              background: `color-mix(in srgb, ${node.accent} 13%, transparent)`,
-              color: node.accent,
-            }}
-          >
-            {node.letter === "✦" ? "BRAIN · cross-cutting" : `AGENT · ${node.letter}`}
-          </span>
         </header>
 
         <div className="flex flex-1 flex-col gap-3.5 p-4">
@@ -450,11 +442,17 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
           >
             {node.tagline}
           </p>
-          <p className="text-[12.5px] leading-[1.6] text-[var(--text-secondary)]">{node.blurb}</p>
+          {node.blurb ? (
+            <Disclosure title="Overview">
+              <p>{node.blurb}</p>
+            </Disclosure>
+          ) : null}
 
           {node.capabilities.length > 0 ? (
-            <>
-              <SectionLabel>What it can do</SectionLabel>
+            <Disclosure
+              title="What this area can do"
+              hint={`${node.capabilities.length} items`}
+            >
               <ul className="flex flex-col gap-2">
                 {node.capabilities.map((c) => {
                   const CapIcon =
@@ -482,12 +480,14 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
                   );
                 })}
               </ul>
-            </>
+            </Disclosure>
           ) : null}
 
           {node.systemOfRecord.length > 0 ? (
-            <>
-              <SectionLabel>System of record · owns</SectionLabel>
+            <Disclosure
+              title="What this area manages"
+              hint={`${node.systemOfRecord.length} items`}
+            >
               <ul className="flex flex-wrap gap-1.5">
                 {node.systemOfRecord.map((o) => (
                   <li
@@ -503,13 +503,13 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
                   </li>
                 ))}
               </ul>
-            </>
+            </Disclosure>
           ) : null}
 
           {node.links.length > 0 ? (
             <>
               <SectionLabel>
-                Screens you can open <span className="chip chip-grey">{node.links.length}</span>
+                Pages <span className="chip chip-grey">{node.links.length}</span>
               </SectionLabel>
               <ul className="grid grid-cols-2 gap-1.5 max-[560px]:grid-cols-1">
                 {node.links.map((l) => {
@@ -535,10 +535,10 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
           ) : null}
 
           {node.contracts.length > 0 ? (
-            <>
-              {/* THE SECTION THAT SURVIVES DUE DILIGENCE. Anybody can draw boxes; a boundary
-                  is only real if you can say what crosses it and through which port. */}
-              <SectionLabel>Contracts with other agents</SectionLabel>
+            <Disclosure
+              title="How it works with other areas"
+              hint={`${node.contracts.length} connections`}
+            >
               <ul className="flex flex-col gap-1.5">
                 {node.contracts.map((c) => (
                   <li
@@ -548,13 +548,13 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
                     <b className="block text-[11px] font-extrabold tracking-[0.04em] text-[var(--text-primary)]">
                       {c.between}
                     </b>
-                    <span className="mt-0.5 block font-mono text-[10.5px] leading-[1.5] text-[var(--text-muted)]">
+                    <span className="mt-0.5 block text-[11px] leading-[1.5] text-[var(--text-muted)]">
                       {c.through}
                     </span>
                   </li>
                 ))}
               </ul>
-            </>
+            </Disclosure>
           ) : null}
 
           {node.descend ? (

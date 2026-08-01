@@ -2,6 +2,8 @@ import { Global, Module } from "@nestjs/common";
 import { QualityController } from "./quality.controller.js";
 import { QualityService } from "./quality.service.js";
 import { INSPECTION_GATE } from "../../ports/inspection.port.js";
+import { QmsWorkflowController } from "./qms-workflow.controller.js";
+import { QmsWorkflowService } from "./qms-workflow.service.js";
 
 /**
  * INSPECTION / QMS (KILN, Module 06) — the quality system of record.
@@ -15,8 +17,8 @@ import { INSPECTION_GATE } from "../../ports/inspection.port.js";
  */
 @Global()
 @Module({
-  controllers: [QualityController],
-  providers: [QualityService, { provide: INSPECTION_GATE, useExisting: QualityService }],
+  controllers: [QualityController, QmsWorkflowController],
+  providers: [QualityService, QmsWorkflowService, { provide: INSPECTION_GATE, useExisting: QualityService }],
   exports: [QualityService, INSPECTION_GATE],
 })
 export class QualityModule {}

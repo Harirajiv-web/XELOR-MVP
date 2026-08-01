@@ -4,6 +4,7 @@ import * as Icons from "lucide-react";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { PageHeader } from "@spine/shell/page-header";
 import { cn } from "@spine/ui/cn";
+import { Disclosure } from "@spine/ui/disclosure";
 import type { ModuleManifest, ScreenProps } from "@spine/registry/manifest";
 import {
   DEPARTMENTS,
@@ -295,12 +296,6 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
 
       {/* ---------------------------- the seven ---------------------------- */}
       <section className="flex flex-col gap-2">
-        <p className="max-w-prose text-[12px] leading-[1.5] text-[var(--text-muted)]">
-          <b className="text-[var(--text-secondary)]">In this build</b> is the module registry
-          as installed. It is not filtered by what your company licensed or by what you
-          personally may open — this page describes how the product is organised, not what is
-          on your menu.
-        </p>
         <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
           {ordered.map((d) => (
             <DepartmentCard key={d.code} dept={d} modules={byCode.get(d.code) ?? []} />
@@ -309,6 +304,7 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
       </section>
 
       {/* --------------------- why the lines are drawn --------------------- */}
+      <Disclosure title="How departments are organised">
       <section className="card">
         <div className="panel-h">
           <span>Why the lines are drawn here</span>
@@ -332,8 +328,10 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
           </p>
         </div>
       </section>
+      </Disclosure>
 
       {/* --------------------------- the treaties -------------------------- */}
+      <Disclosure title="Connections between departments" hint={`${TREATIES.length} connections`}>
       <section className="flex flex-col gap-2">
         <div>
           <h2 className="text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
@@ -353,8 +351,10 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
           caption="Cross-department contracts: the seam, the contract that governs it, and why it exists"
         />
       </section>
+      </Disclosure>
 
       {/* ------------------------- the naming rules ------------------------ */}
+      <Disclosure title="How the department names work">
       <section className="card">
         <div className="panel-h">
           <span>How the names work</span>
@@ -402,6 +402,7 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
           </p>
         </div>
       </section>
+      </Disclosure>
     </div>
   );
 }
@@ -436,17 +437,12 @@ function DepartmentCard({
       </div>
       <div className="panel-b flex flex-1 flex-col gap-3">
         {isComponent ? (
-          // Said plainly and near the top, because it is the thing most often got wrong.
-          // ONYX is horizontal: it serves the six and owns no business domain of its own,
-          // which is precisely why it is a component and not a seventh department.
-          <div>
-            <span className="chip chip-violet">Component, not a department</span>
-            <p className="mt-2 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
-              Horizontal. It serves modules inside the other departments and owns no business
-              domain of its own — no customer, no order, no stock. That is exactly why it is a
-              component: there is nothing here for it to be the system of record for.
+          <Disclosure title="About ONYX">
+            <p>
+              ONYX works across all departments. It helps them work together but does not
+              own customers, orders or stock.
             </p>
-          </div>
+          </Disclosure>
         ) : null}
 
         <div>
@@ -454,6 +450,7 @@ function DepartmentCard({
           <p className="text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">{dept.owns}</p>
         </div>
 
+        <Disclosure title="Build details" hint={`${modules.length} modules`}>
         <div>
           <p className="field-label">Blueprints — what it was specified to own</p>
           {blueprints.length === 0 ? (
@@ -522,6 +519,7 @@ function DepartmentCard({
             practice.
           </p>
         ) : null}
+        </Disclosure>
       </div>
     </article>
   );

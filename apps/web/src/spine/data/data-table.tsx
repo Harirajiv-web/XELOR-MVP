@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "../ui/cn";
 import { Empty, ErrorState, Loading } from "../states";
 
@@ -75,7 +75,7 @@ export function DataTable<T>({
   const compact = density === "compact";
 
   return (
-    <div className="card overflow-hidden">
+    <div className="x-data-card card overflow-hidden" data-demo-target="workspace">
       <div className="overflow-x-auto">
         <table className="grid-table" style={compact ? { fontSize: "12px" } : undefined}>
           {caption ? <caption className="sr-only">{caption}</caption> : null}
@@ -97,6 +97,9 @@ export function DataTable<T>({
             {rows.map((row, i) => (
               <tr
                 key={rowKey(row, i)}
+                className="x-data-row"
+                data-demo-target={i === 0 ? "record" : undefined}
+                style={{ "--x-row-delay": `${Math.min(i, 12) * 26}ms` } as CSSProperties}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 {...(onRowClick ? { "data-clickable": "" } : {})}
               >
@@ -120,8 +123,8 @@ export function DataTable<T>({
         {/* Honest about what is on screen. "Showing 50" when there are 4,000 is a lie of
             omission that an operator only discovers by scrolling and finding nothing. */}
         <span>
-          Showing {rows.length} {rows.length === 1 ? "row" : "rows"}
-          {hasMore ? " — more available" : ""}
+          {rows.length} {rows.length === 1 ? "record" : "records"} shown
+          {hasMore ? " · more available" : ""}
         </span>
         {hasMore && onLoadMore ? (
           <button

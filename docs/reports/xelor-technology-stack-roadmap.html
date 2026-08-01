@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR Technology Stack & Production Roadmap</title>
+  <style>
+    @page { size: A4; margin: 16mm 15mm 18mm; }
+    * { box-sizing: border-box; }
+    :root {
+      --ink:#14213d; --muted:#58657a; --blue:#1646d8; --cyan:#18a6c9;
+      --green:#138a63; --amber:#b26a00; --red:#b42318; --line:#d8e0eb;
+      --wash:#f4f7fb; --navy:#07142f;
+    }
+    body { margin:0; color:var(--ink); font:10.2pt/1.45 Arial, Helvetica, sans-serif; }
+    h1,h2,h3,h4 { margin:0 0 8px; line-height:1.16; page-break-after:avoid; }
+    h1 { font-size:30pt; letter-spacing:-1px; }
+    h2 { font-size:19pt; color:var(--navy); border-bottom:2px solid var(--blue); padding-bottom:5px; margin-top:8px; }
+    h3 { font-size:13pt; color:var(--blue); margin-top:14px; }
+    h4 { font-size:10.5pt; color:var(--navy); margin-top:10px; }
+    p { margin:5px 0 9px; }
+    ul,ol { margin:5px 0 10px 20px; padding:0; }
+    li { margin:3px 0; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:8.4pt; page-break-inside:auto; }
+    tr { page-break-inside:avoid; }
+    th { background:var(--navy); color:white; text-align:left; padding:6px; }
+    td { border:1px solid var(--line); padding:5px 6px; vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    code { font-family:"SFMono-Regular", Consolas, monospace; color:#173b79; font-size:0.92em; }
+    a { color:var(--blue); text-decoration:none; word-break:break-word; }
+    .cover { height:260mm; color:white; background:linear-gradient(145deg,#06132f 0%,#102e73 58%,#1686b4 100%); margin:-16mm -15mm -18mm; padding:30mm 22mm; position:relative; page-break-after:always; }
+    .cover .mark { display:inline-grid; place-items:center; width:52px; height:52px; border:1px solid #72d9ff; border-radius:12px; font-size:17pt; font-weight:800; }
+    .cover .eyebrow { margin-top:30mm; color:#8fe5ff; font-size:11pt; letter-spacing:2.5px; font-weight:700; }
+    .cover h1 { font-size:38pt; max-width:150mm; margin-top:8px; }
+    .cover .sub { font-size:15pt; color:#d8efff; max-width:150mm; margin-top:12px; }
+    .cover .meta { position:absolute; bottom:24mm; left:22mm; right:22mm; display:flex; justify-content:space-between; border-top:1px solid #70a5dc; padding-top:10px; color:#c9def5; }
+    .page { page-break-before:always; }
+    .no-break { page-break-inside:avoid; }
+    .lead { font-size:12pt; color:#34445d; }
+    .callout { border-left:4px solid var(--blue); background:#eef4ff; padding:9px 12px; margin:10px 0 14px; page-break-inside:avoid; }
+    .warning { border-left-color:var(--amber); background:#fff7e6; }
+    .good { border-left-color:var(--green); background:#eefaf6; }
+    .bad { border-left-color:var(--red); background:#fff1f0; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:8px 0 12px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:10px; background:white; page-break-inside:avoid; }
+    .card h3 { margin-top:0; }
+    .tag { display:inline-block; border-radius:9px; padding:1px 6px; font-size:7.8pt; font-weight:700; margin-right:4px; }
+    .live { background:#daf3e8; color:#0f684c; }
+    .partial { background:#fff0c9; color:#815000; }
+    .planned { background:#dfe9ff; color:#254f9d; }
+    .reserved { background:#ece8ff; color:#5b3ca5; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; align-items:stretch; margin:12px 0; }
+    .flow div { border:1px solid #9bb2d6; background:#f4f7fc; padding:8px 5px; border-radius:6px; text-align:center; font-size:8pt; font-weight:700; }
+    .flow .arrow { border:0; background:none; display:grid; place-items:center; font-size:16pt; color:var(--blue); padding:0; }
+    .kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
+    .kpi div { background:var(--navy); color:white; padding:9px; border-radius:7px; }
+    .kpi b { display:block; font-size:16pt; color:#77d9ff; }
+    .small { font-size:8.5pt; color:var(--muted); }
+    .footer-note { border-top:1px solid var(--line); padding-top:6px; color:var(--muted); font-size:8pt; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="mark">XE</div>
+    <div class="eyebrow">XELOR · TECHNICAL STRATEGY</div>
+    <h1>Technology Stack &amp; Production Roadmap</h1>
+    <div class="sub">What the demo actually runs, what production still needs, the extension points already reserved, and a pragmatic target stack for a dependable manufacturing product.</div>
+    <div class="meta"><span>Prepared from the running repository and live workflow audit</span><span>31 July 2026</span></div>
+  </section>
+
+  <section>
+    <h2>1. Executive decision</h2>
+    <p class="lead">XELOR has a strong product-engineering foundation for a demo: a TypeScript monorepo, a boundary-enforced modular monolith, PostgreSQL with forced tenant isolation, Keycloak identity, durable approval/audit patterns, event delivery, a real Next.js application, and a governed AI spine. The current build also includes a cross-industry Decision &amp; Risk Commander, durable evidence links and a verified-outcome ledger. The right production move is to harden and operate this architecture—not rewrite it or split it into microservices.</p>
+    <div class="callout good"><b>Recommended direction:</b> retain the modular monolith through product-market fit; deploy separate Web, API and Worker containers; move state to managed AWS services in Mumbai; add observability, recovery, security automation and CI/CD; close the manufacturing workflow gaps before adding architectural complexity.</div>
+    <div class="callout warning"><b>Security and reliability reality:</b> no honest architecture is unbreachable or incapable of failure. The production target is a resilient, recoverable, least-privilege system with defence in depth, small blast radii, tested restoration, continuous detection and measurable service objectives.</div>
+    <div class="grid2">
+      <div class="card"><h3>What is unusually good</h3><ul><li>Tenant context is derived from verified identity and reinforced by PostgreSQL FORCE RLS.</li><li>Ledger-critical writes stay transactional and use controlled write paths.</li><li>Audit, approvals and AI actions are append-only and tamper-evident.</li><li>Domain boundaries and provider ports leave credible exit paths.</li><li>The demo is deterministic and rebuildable instead of relying on fragile fake screens.</li></ul></div>
+      <div class="card"><h3>What blocks production</h3><ul><li>No production cloud deployment, autoscaling or managed recovery is implemented.</li><li>Telemetry, alerting, incident response and SLOs are not yet operational.</li><li>Several core manufacturing workflows remain incomplete.</li><li>Backup claims need automated restore drills and evidence.</li><li>Security assurance, load testing, accessibility and release governance need formal gates.</li></ul></div>
+    </div>
+    <h3>Status language used in this report</h3>
+    <p><span class="tag live">LIVE</span> wired and exercised in the prototype &nbsp; <span class="tag partial">PARTIAL</span> real foundation but incomplete production behavior &nbsp; <span class="tag reserved">RESERVED</span> a deliberate interface/schema extension point &nbsp; <span class="tag planned">RECOMMENDED</span> proposed after the demo.</p>
+    <div class="kpi">
+      <div><b>4</b>workspace packages/apps</div>
+      <div><b>26</b>NestJS controller surfaces</div>
+      <div><b>228</b>migration CREATE TABLE declarations</div>
+      <div><b>7/7</b>Agent OS identities connected</div>
+    </div>
+    <p class="small">Counts are repository observations, not a claim that every table or endpoint is complete for commercial production.</p>
+  </section>
+
+  <section class="page">
+    <h2>2. Stack used to build and run the demo</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Technology in repository</th><th>Status</th><th>What it does today</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime &amp; language</td><td>Node.js 22; TypeScript 5.7; ESM</td><td><span class="tag live">LIVE</span></td><td>One language across browser, API, platform rules, tests and workers.</td></tr>
+        <tr><td>Monorepo</td><td>pnpm 9 workspaces</td><td><span class="tag live">LIVE</span></td><td>Coordinates <code>apps/web</code>, <code>apps/api</code>, <code>packages/platform</code> and <code>packages/db</code>.</td></tr>
+        <tr><td>Web application</td><td>Next.js 15 App Router; React 19; Tailwind CSS 4; Radix UI; Lucide; Three.js</td><td><span class="tag live">LIVE</span></td><td>Authenticated XELOR shell, horizontal module tabs, global Human Approvals entry with live pending count, dedicated approval inbox, department gateway, ONYX rail, Mission Control and an adaptive 3-D digital-twin sign-in scene.</td></tr>
+        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 26 controller surfaces.</td></tr>
+        <tr><td>Validation</td><td>Zod 3</td><td><span class="tag live">LIVE</span></td><td>Validates most request bodies and agent capability inputs; a few documented endpoints still bypass the pattern.</td></tr>
+        <tr><td>Database</td><td>PostgreSQL 17; pgvector; pg_trgm; btree_gist</td><td><span class="tag live">LIVE</span></td><td>Transactional ERP system of record, vector-ready columns, fuzzy master matching and constraint-backed invariants.</td></tr>
+        <tr><td>Data access</td><td>Drizzle ORM 0.36; SQL migrations; node-postgres</td><td><span class="tag live">LIVE</span></td><td>Typed schema access plus explicit migrations and operational checks.</td></tr>
+        <tr><td>Tenancy</td><td>AsyncLocalStorage context + <code>SET LOCAL</code> + PostgreSQL FORCE RLS</td><td><span class="tag live">LIVE</span></td><td>Fail-closed shared-schema tenant isolation; portal adds customer-account scoping.</td></tr>
+        <tr><td>Identity</td><td>Keycloak 26; OIDC Authorization Code + PKCE; jose/JWKS; in-app RBAC</td><td><span class="tag live">LIVE</span></td><td>Signed tenant claims, personas and permissions. The callback exchange is single-flight and retains tab-scoped PKCE state until success. The visibly labelled local demo theme provides one-action ENTER XELOR access on both initial and repeat authentication screens, mapping arbitrary or empty fields to an isolated seeded presenter identity; production retains strict IdP authentication.</td></tr>
+        <tr><td>Queue &amp; cache</td><td>Valkey 8; BullMQ 5; ioredis</td><td><span class="tag live">LIVE</span></td><td>Outbox relay and idempotent asynchronous consumption; local cache/broker foundation.</td></tr>
+        <tr><td>Audit &amp; workflow</td><td>Hash chains; append-only tables; W1 approval engine; Agent OS human gates</td><td><span class="tag live">LIVE</span></td><td>Tenant-scoped pending inbox, permission-checked Approve/Reject, mandatory decision note, identity/time attribution, durable pause/resume and tamper evidence.</td></tr>
+        <tr><td>AI</td><td>Thin provider router; deterministic stub; optional Ollama; custom eval harness; Agent OS; Decision Commander</td><td><span class="tag partial">PARTIAL</span></td><td>Cross-module analysis, missions and approvals are live; language reasoning remains deterministic and no hosted provider is active.</td></tr>
+        <tr><td>Decision data</td><td>PostgreSQL evidence-link graph and outcome metrics with RLS, audit and explicit verification state</td><td><span class="tag live">LIVE</span></td><td>Estimated exposure and verified value are stored and reported separately; verification requires observed data, method and named reviewer.</td></tr>
+        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>Unit/pure-rule tests, boundary checks and authenticated browser workflows, including all 13 guided-demo journeys and 110 presenter steps with a no-write assertion.</td></tr>
+        <tr><td>Local infrastructure</td><td>Docker Compose; Keycloak; PostgreSQL; Valkey; Gotenberg</td><td><span class="tag live">LIVE</span></td><td>Reproducible local services. This is not yet a production deployment topology.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warning"><b>Branding note:</b> internal package, database and Keycloak realm identifiers still use the historical deployment slug in places. They are technical contracts, not rendered product copy. Renaming them is possible but should be a separately rehearsed infrastructure migration—not a search-and-replace during demo hardening.</div>
+  </section>
+
+  <section class="page">
+    <h2>3. Architecture that exists now</h2>
+    <div class="flow">
+      <div>Next.js / React<br>Web shell</div><div class="arrow">→</div><div>NestJS<br>modular API</div><div class="arrow">→</div><div>PostgreSQL 17<br>FORCE RLS</div>
+    </div>
+    <div class="flow">
+      <div>Keycloak<br>OIDC + claims</div><div class="arrow">→</div><div>Tenant + RBAC<br>guards</div><div class="arrow">→</div><div>Domain services<br>single write paths</div>
+    </div>
+    <div class="flow">
+      <div>Transactional<br>outbox</div><div class="arrow">→</div><div>Valkey + BullMQ<br>relay/worker</div><div class="arrow">→</div><div>Idempotent<br>consumer effect</div>
+    </div>
+    <h3>Human-in-the-loop architecture now visible in the product</h3>
+    <div class="flow">
+      <div>Agent reaches<br>consequence gate</div><div class="arrow">→</div><div>Durable pending<br>approval row</div><div class="arrow">→</div><div>Global counter +<br>approval inbox</div>
+    </div>
+    <div class="flow">
+      <div>Human reviews<br>exact consequence</div><div class="arrow">→</div><div>Written note +<br>Approve / Reject</div><div class="arrow">→</div><div>Audit event +<br>resume or cancel</div>
+    </div>
+    <ul>
+      <li><b>Discoverable everywhere:</b> authorised users see a labelled Approvals control in the global top bar; pending work carries a count and attention state.</li>
+      <li><b>One real source:</b> the counter and inbox read the tenant-scoped Agent OS approval table, not a second presentation-only queue.</li>
+      <li><b>Deliberate decision:</b> approval requires a written note; the user identity, note, decision and time are retained in the operational and audit records.</li>
+      <li><b>Narrow authority:</b> approval releases only the exact proposed action. It does not grant wider agent access or approve future missions.</li>
+      <li><b>Fail-safe behavior:</b> rejection cancels the mission; approval resumes from the persisted graph state and side-effect ancestry is verified again.</li>
+    </ul>
+    <h3>New domain operating surfaces</h3>
+    <table>
+      <thead><tr><th>Module</th><th>Agent owner</th><th>Implemented user surface</th><th>Current data truth</th></tr></thead>
+      <tbody>
+        <tr><td><b>Working Capital</b></td><td>RASP Finance &amp; Working Capital</td><td>Overview, money in/out, stock holding cash, margins, 13-week forecast, scenarios and finance readiness pack.</td><td>Agent capabilities read tenant-scoped Accounts data; module KPIs and action stories remain curated demo scenarios until forecast/collection persistence is added.</td></tr>
+        <tr><td><b>QMS &amp; Audit</b></td><td>KILN Operations &amp; Quality</td><td>Overview, live inspections, NCR, containment, root cause, CAPA, controlled documents, audits, training and evidence packs.</td><td>Inspections and the Northstar NCR/CAPA thread are persisted system-of-record reads; document/audit breadth remains explicitly illustrative.</td></tr>
+        <tr><td><b>Human Approvals</b></td><td>HEXA governance + named human</td><td>Global counter, dedicated inbox, consequence preview, mandatory note, Approve/Reject and Mission Control handoff.</td><td>Live Agent OS pending records and decision API; permission and tenant checks are enforced server-side.</td></tr>
+      </tbody>
+    </table>
+    <h3>Why the modular monolith is the correct near-term shape</h3>
+    <ul>
+      <li>Manufacturing transactions cross inventory, quality, production, purchasing and accounts; keeping correctness in one transactional boundary is currently more valuable than independent service scaling.</li>
+      <li>Module boundaries are already explicit. Cross-module access uses ports/services or outbox events, giving a future extraction path without paying distributed-systems cost now.</li>
+      <li>API, web and worker processes can scale independently even while sharing one codebase and database.</li>
+      <li>The current team can debug one deployment and one data model while the product and workflows are still moving quickly.</li>
+    </ul>
+    <h3>Production topology recommended after the demo</h3>
+    <div class="flow">
+      <div>CloudFront + WAF<br>public edge</div><div class="arrow">→</div><div>ALB<br>TLS routing</div><div class="arrow">→</div><div>ECS Fargate<br>Web / API / Worker</div>
+    </div>
+    <div class="flow">
+      <div>Keycloak HA<br>or managed IdP</div><div class="arrow">→</div><div>RDS PostgreSQL<br>Multi-AZ</div><div class="arrow">→</div><div>S3 + KMS<br>documents/backups</div>
+    </div>
+    <div class="flow">
+      <div>Valkey managed<br>queue/cache</div><div class="arrow">→</div><div>OTel Collector<br>traces/metrics</div><div class="arrow">→</div><div>CloudWatch/Grafana<br>alerting</div>
+    </div>
+    <div class="callout"><b>Do not introduce Kubernetes yet.</b> ECS/Fargate fits three container workloads without a control-plane burden. Reconsider EKS only when team size, workload diversity, GPU scheduling, multi-region policy or platform engineering requirements justify it.</div>
+  </section>
+
+  <section class="page">
+    <h2>4. Stack needed immediately after the demo</h2>
+    <table>
+      <thead><tr><th>Capability</th><th>Recommended stack</th><th>Why it is required</th><th>Exit criterion</th></tr></thead>
+      <tbody>
+        <tr><td>Container delivery</td><td>Docker multi-stage images, Amazon ECR, ECS/Fargate, ALB, CloudFront, WAF</td><td>Immutable releases, health checks, horizontal scaling and safe external exposure.</td><td>Rolling or blue/green release with tested rollback and no manual server mutation.</td></tr>
+        <tr><td>Managed database</td><td>RDS PostgreSQL Multi-AZ, encrypted storage, PITR, parameter groups; RDS Proxy or PgBouncer only after measurement</td><td>Failover, backups and operational ownership suitable for a system of record.</td><td>Documented RPO/RTO met in a restore/failover exercise.</td></tr>
+        <tr><td>Managed broker</td><td>Amazon ElastiCache for Valkey or an equivalent managed Valkey service</td><td>Removes single-host queue/cache risk while preserving BullMQ semantics.</td><td>Queue replay, poison message and broker-failover tests pass.</td></tr>
+        <tr><td>Object/document storage</td><td>S3, KMS, presigned upload/download, antivirus scan queue, lifecycle policies</td><td>Receipts, certificates, drawings, exports and evidence must not live on container disks.</td><td>Every document has tenant ownership, checksum, retention and access audit.</td></tr>
+        <tr><td>Secrets</td><td>AWS Secrets Manager + KMS; short-lived workload identity; no static cloud keys</td><td>Database, OIDC and connector credentials need rotation and access evidence.</td><td>Production contains no secret in source, image, task definition or developer shell history.</td></tr>
+        <tr><td>Infrastructure as code</td><td>OpenTofu modules; remote encrypted state; environment/account separation</td><td>Reproducible Mumbai primary and Hyderabad recovery environments.</td><td>A clean account can be built from reviewed code.</td></tr>
+        <tr><td>CI/CD</td><td>GitHub Actions with OIDC federation; build, SBOM, signing, tests, migration check, deploy and rollback</td><td>Turns the existing local quality gates into release policy.</td><td>No production deploy bypasses the pipeline; provenance is retained.</td></tr>
+        <tr><td>Observability</td><td>OpenTelemetry Node instrumentation and Collector; CloudWatch/Grafana; Sentry or equivalent error tracking</td><td>Correlates browser, API, database, queue and AI behavior without reading raw production data.</td><td>SLO dashboards and actionable alerts cover the critical workflows.</td></tr>
+        <tr><td>Security edge</td><td>WAF, Shield baseline, private subnets, VPC endpoints, GuardDuty, Security Hub, CloudTrail</td><td>Reduces attack surface and supplies security evidence.</td><td>Threat model, penetration test and critical finding remediation completed.</td></tr>
+        <tr><td>Notifications</td><td>SES/SNS initially; provider abstraction for WhatsApp/SMS vendors</td><td>Approvals, escalations, customer/service events and operational alerts need reliable delivery.</td><td>Templated, tenant-aware, consent-aware delivery with bounce/retry evidence.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>5. Space deliberately left for future stacks</h2>
+    <table>
+      <thead><tr><th>Existing extension point</th><th>Current implementation</th><th>What can plug in later</th><th>Trigger to adopt</th></tr></thead>
+      <tbody>
+        <tr><td><code>AiProvider</code> / thin router</td><td>Deterministic stub or Ollama by configuration</td><td>OpenAI Responses API adapter, Amazon Bedrock Converse, Gemini or another approved provider</td><td>A feature passes its eval/grounding/privacy gate and has an agreed data-processing posture.</td></tr>
+        <tr><td><code>WorkflowExecutor</code></td><td>In-house W1 approvals</td><td>Temporal for long-running, cross-system workflows</td><td>Workflows last days, require many compensations/signals, or W1 operations become costly.</td></tr>
+        <tr><td>Outbox/event envelope</td><td>PostgreSQL → BullMQ/Valkey</td><td>Kafka/MSK, EventBridge or CDC for higher fan-out and independent consumers</td><td>Sustained throughput/fan-out or external analytics proves the current relay insufficient.</td></tr>
+        <tr><td>Domain ports</td><td>In-process Nest services</td><td>Extracted services behind HTTP/gRPC/events</td><td>A module needs independent ownership, scaling, release cadence or isolation—and the cost is measured.</td></tr>
+        <tr><td>pgvector columns/indexes</td><td>Extension enabled; knowledge-base vector field provisioned</td><td>Authorized RAG over manuals, drawings, SOPs and cases; external vector DB only if scale requires</td><td>Document ingestion, permissions and retrieval evals are ready.</td></tr>
+        <tr><td>Gotenberg</td><td>Local HTML-to-PDF container</td><td>Production document service with templates, signatures and archival</td><td>Quotes, invoices, payslips, certificates and compliance exports require governed rendering.</td></tr>
+        <tr><td>Keycloak OIDC</td><td>Local realm, personas and custom theme</td><td>SAML/LDAP federation, enterprise organizations, MFA/WebAuthn, SCIM provisioning</td><td>First enterprise customer identity requirements.</td></tr>
+        <tr><td>Integration/webhook module</td><td>Signed webhooks, retry/DLQ, statutory demo connectors</td><td>GSP, bank, logistics, payment and supplier adapters through connector workers</td><td>Contract, sandbox certification and reconciliation design are complete.</td></tr>
+        <tr><td>Analytics read path</td><td>Operational queries on PostgreSQL</td><td>Read replica, CDC to S3/Iceberg and a warehouse/query engine</td><td>BI queries materially affect ERP latency or cross-tenant analytics is required.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Architectural advantage:</b> the repository already contains more credible exit paths than the demo needs. The discipline is to adopt each new stack only when its operational trigger occurs.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. Product gaps that matter more than new infrastructure</h2>
+    <p>The repository’s capability-gap register was produced by trying to execute the Northstar story. These are product workflow issues, not presentation polish.</p>
+    <table>
+      <thead><tr><th>Priority</th><th>Gap</th><th>Production impact</th><th>Recommended treatment</th></tr></thead>
+      <tbody>
+        <tr><td>Resolved</td><td>Batch/lot consumption</td><td>FIFO allocation now consumes batch-tracked receipts through the single stock write path and records explicit splits.</td><td>Keep the allocation and insufficiency regression tests in the release gate; extend genealogy reporting for production.</td></tr>
+        <tr><td>Resolved</td><td>Idempotency/validation consistency</td><td>Database conflicts map to safe 409 responses; the identified maintenance and expenditure paths validate and deduplicate requests.</td><td>Retain conformance probes in the 87-check investor acceptance matrix.</td></tr>
+        <tr><td>P1</td><td>Quotation and opportunity</td><td>The commercial process starts at a committed sales order.</td><td>Add lead/opportunity, quote revisions, validity, approvals and quote-to-order conversion.</td></tr>
+        <tr><td>Resolved</td><td>Production operations</td><td>Northstar production reports four predecessor-gated operations with operator, time, quantities and evidence.</td><td>Deepen labour/machine booking and WIP analytics for production deployments.</td></tr>
+        <tr><td>Resolved</td><td>Persisted NCR/CAPA</td><td>The rejected inspection has a persisted NCR, containment, root cause and CAPA whose effectiveness review remains human-owned.</td><td>Extend toward full 8D, attachment lifecycle and customer-specific approval routes.</td></tr>
+        <tr><td>P1</td><td>Supplier invoice/AP/payment</td><td>Direct-material purchase cycle stops at goods receipt.</td><td>Supplier invoice, three-way match, exceptions, AP ageing and controlled payment run.</td></tr>
+        <tr><td>P1</td><td>Engineering change control</td><td>BOM version exists but change intent, impact and effectivity are not governed.</td><td>ECR/ECO, where-used impact, stock disposition, approvals and effective-from revisions.</td></tr>
+        <tr><td>Resolved</td><td>Employee Spend UI</td><td>Claims and budget decisions are operable in a registered, permission-checked web module.</td><td>Expand travel/advance/indirect-spend screens as pilot scope requires.</td></tr>
+        <tr><td>P2</td><td>Cost-centre master</td><td>Employee and budget vocabularies do not align.</td><td>Create one governed organizational/cost-centre master referenced by both modules.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><b>Keep the boundary explicit.</b> Quotation/opportunity, engineering change control and supplier AP remain production-roadmap gaps; do not claim end-to-end manufacturing ERP completeness yet.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Phased production roadmap</h2>
+    <h3>Phase 0 — Demo confidence (now to 4 weeks)</h3>
+    <ul><li>Keep the authenticated route crawl, real Keycloak login, Decision Commander and end-to-end approval-inbox tests in the release suite.</li><li>Measure pending-approval age, decision turnaround, recovery outcome and rejection reasons; add escalation without bypassing authority.</li><li>Extend the evidence graph through governed connectors while retaining source ownership and tenant fencing.</li><li>Produce signed container builds and keep the isolated top-level demo reset as a release check.</li><li>Define data classification, tenant onboarding/offboarding and a minimum threat model.</li></ul>
+    <h3>Phase 1 — Pilot-ready foundation (1 to 3 months)</h3>
+    <ul><li>Deploy Web/API/Worker on ECS/Fargate in Mumbai with RDS Multi-AZ, managed Valkey, S3/KMS and Secrets Manager.</li><li>Implement OpenTofu, CI/CD, SBOM/signing, migrations-as-a-gate and environment promotion.</li><li>Add OpenTelemetry, error tracking, database/queue dashboards and on-call runbooks.</li><li>Enable MFA, session policy, rate limits, WAF, audit exports, restore drills and customer-isolated test environments.</li><li>Close quotation/opportunity so a pilot follows the commercial process before commitment.</li></ul>
+    <h3>Phase 2 — Controlled production (3 to 9 months)</h3>
+    <ul><li>Deepen operation execution and NCR/CAPA breadth; add AP/three-way match and engineering change control.</li><li>Add document/object lifecycle, connector certification, reconciliation queues and customer notification channels.</li><li>Run performance, chaos/failover, accessibility, mobile-responsiveness and penetration-test programs.</li><li>Introduce a hosted AI provider only for features that pass offline and shadow-mode evaluation.</li></ul>
+    <h3>Phase 3 — Scale and ecosystem (9 to 18 months)</h3>
+    <ul><li>Add read replicas/analytics CDC only after workload evidence; introduce Temporal only for workflows that exceed W1.</li><li>Enterprise federation, SCIM, dedicated-tenant deployment option and multi-region recovery rehearsal.</li><li>Public partner APIs, connector SDK/contracts, metering/billing and customer-facing status/audit exports.</li></ul>
+  </section>
+
+  <section class="page">
+    <h2>8. Production quality gates and operating targets</h2>
+    <table>
+      <thead><tr><th>Area</th><th>Minimum gate before commercial production</th><th>Example target</th></tr></thead>
+      <tbody>
+        <tr><td>Availability</td><td>Multi-AZ services, health-based replacement, tested rollback and failover</td><td>Start with 99.9% monthly for core API; increase only with evidence and support capacity.</td></tr>
+        <tr><td>Recovery</td><td>Encrypted PITR plus quarterly full restore and audit-chain verification</td><td>RPO ≤ 15 minutes; RTO ≤ 4 hours for initial pilots, contractually reviewed.</td></tr>
+        <tr><td>Performance</td><td>Representative tenant/data load tests and slow-query budget</td><td>p95 read API &lt; 500 ms and mutation &lt; 1 s excluding deliberate approvals/external calls.</td></tr>
+        <tr><td>Security</td><td>Threat model, SAST/SCA/secret scanning, SBOM, signed artifacts, penetration test</td><td>Zero unresolved critical/high exploitable findings at release.</td></tr>
+        <tr><td>Tenancy</td><td>Automated two-tenant leak probes for every schema/policy change</td><td>Zero cross-tenant visibility at API and SQL layers.</td></tr>
+        <tr><td>Data correctness</td><td>Property/invariant tests for inventory, GL, tax, payroll, approvals and numbering</td><td>No ledger mutation outside the canonical transactional service.</td></tr>
+        <tr><td>Accessibility</td><td>Keyboard, focus, screen-reader and contrast tests for critical workflows</td><td>WCAG 2.2 AA target for the customer-facing and core operational paths.</td></tr>
+        <tr><td>AI</td><td>Feature-specific eval, grounding, privacy review, shadow mode, kill switch and rollback</td><td>No model-written financial/inventory transaction; 100% consequential actions attributable to approval.</td></tr>
+      </tbody>
+    </table>
+    <h3>Operational runbooks required</h3>
+    <div class="grid2">
+      <div class="card"><h4>Platform</h4><ul><li>Database saturation/failover</li><li>Queue backlog and poison message</li><li>Keycloak outage/signing-key rotation</li><li>Bad migration and application rollback</li><li>Object store or KMS denial</li></ul></div>
+      <div class="card"><h4>Business integrity</h4><ul><li>Broken stock/GL invariant</li><li>Duplicate statutory submission</li><li>Audit-chain verification failure</li><li>Tenant isolation incident</li><li>AI kill switch and provider incident</li></ul></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>9. What not to add yet</h2>
+    <table>
+      <thead><tr><th>Tempting stack</th><th>Why not now</th><th>Adopt when…</th></tr></thead>
+      <tbody>
+        <tr><td>Kubernetes/EKS</td><td>Three primary workloads do not justify cluster platform operations.</td><td>There are many independently owned workloads, GPU scheduling or multi-cluster policy needs.</td></tr>
+        <tr><td>Microservices</td><td>Would distribute transactions and debugging before domain/product boundaries have stabilized.</td><td>A measured module-level scaling, release or isolation constraint exists.</td></tr>
+        <tr><td>Kafka/MSK</td><td>BullMQ/outbox is adequate for current volume and simpler to operate.</td><td>Replayable high-volume streams, many consumer teams or analytics fan-out require it.</td></tr>
+        <tr><td>Separate vector database</td><td>pgvector is co-located with permissions and sufficient for the first authorized RAG workloads.</td><td>Index size/latency/recall measurements exceed PostgreSQL’s practical envelope.</td></tr>
+        <tr><td>General-purpose agent framework</td><td>XELOR already has a domain-bounded graph runtime with stronger approval ancestry than generic wrappers provide.</td><td>A framework supplies a concrete missing capability without weakening controls or duplicating state.</td></tr>
+        <tr><td>Data lake/warehouse on day one</td><td>Creates governance and duplicated-data burden before operational query load is known.</td><td>BI workloads harm ERP performance or historical/cross-tenant analytics has a funded owner.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>A “perfect running product” is not a stack list.</b> It is an architecture that stays understandable, restores correctly, preserves business invariants, exposes its failures, and can be changed safely. The recommendation above optimizes for those properties.</div>
+  </section>
+
+  <section class="page">
+    <h2>10. Evidence and reference basis</h2>
+    <h3>Repository evidence inspected</h3>
+    <ul>
+      <li><code>package.json</code> and all workspace package manifests</li>
+      <li><code>infra/docker-compose.yml</code>, Keycloak realm/theme and PostgreSQL initialization</li>
+      <li><code>packages/db</code> schemas, migrations, RLS/permission checks and demo reset</li>
+      <li><code>apps/api</code> domain modules, common guards, worker/outbox, workflow, AI and Agent OS</li>
+      <li><code>apps/web</code> module manifests, shell, Copilot rail and Playwright workflows</li>
+      <li><code>docs/02-investor-demo/02-capability-gaps.md</code></li>
+      <li>Authenticated browser audit of the running XELOR application on 31 July 2026</li>
+    </ul>
+    <h3>Official external references used for future recommendations</h3>
+    <ul class="small">
+      <li>Amazon ECS architecture and Fargate: <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/application_architecture.html">docs.aws.amazon.com/AmazonECS/latest/developerguide/application_architecture.html</a></li>
+      <li>Amazon RDS for PostgreSQL and Multi-AZ: <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html">docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html</a></li>
+      <li>OpenTelemetry JavaScript/Node.js: <a href="https://opentelemetry.io/docs/languages/js/getting-started/nodejs/">opentelemetry.io/docs/languages/js/getting-started/nodejs/</a></li>
+      <li>Temporal durable execution (future trigger, not immediate recommendation): <a href="https://docs.temporal.io/temporal">docs.temporal.io/temporal</a></li>
+      <li>Three.js post-processing and WebGPU renderer guidance: <a href="https://threejs.org/manual/en/post-processing.html">threejs.org/manual/en/post-processing.html</a> and <a href="https://threejs.org/manual/en/webgpurenderer">threejs.org/manual/en/webgpurenderer</a></li>
+      <li>React Three Fiber performance scaling: <a href="https://r3f.docs.pmnd.rs/advanced/scaling-performance">r3f.docs.pmnd.rs/advanced/scaling-performance</a></li>
+      <li>Browser glass and motion-accessibility primitives: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/backdrop-filter">MDN backdrop-filter</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using_for_accessibility">MDN reduced-motion guidance</a></li>
+    </ul>
+    <h3>Final recommendation</h3>
+    <p class="lead">Keep the core stack. Invest next in managed operations, observability, recovery, security and the missing manufacturing workflows. Use the ports already present to introduce hosted AI, durable workflow or higher-scale event infrastructure only when a tested product need calls for them.</p>
+    <p class="footer-note">This report describes the repository and local deployment inspected on 31 July 2026. “Live” means implemented and exercised in the prototype; it does not imply production certification, contractual availability or regulatory approval.</p>
+  </section>
+</body>
+</html>

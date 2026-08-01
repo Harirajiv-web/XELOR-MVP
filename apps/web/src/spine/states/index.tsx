@@ -14,6 +14,7 @@ import {
 import type { ReactNode } from "react";
 import { cn } from "../ui/cn";
 import { AppError } from "../api/errors";
+import { Disclosure } from "../ui/disclosure";
 
 /**
  * THE FOUR WAYS A SCREEN CAN FAIL, AND WHY THEY LOOK DIFFERENT.
@@ -37,7 +38,7 @@ import { AppError } from "../api/errors";
 
 export function Loading({ label = "Loading…" }: { label?: string }): React.JSX.Element {
   return (
-    <div className="flex items-center justify-center gap-2 py-16 text-[var(--text-muted)]">
+    <div className="x-loading-state flex items-center justify-center gap-2 py-16 text-[var(--text-muted)]">
       {/* Spinner, not a shimmering skeleton. On a cheap office machine a skeleton that
           animates for three seconds reads as "broken", not as "premium". */}
       <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -66,7 +67,7 @@ function Frame({
         ? "text-[var(--status-pending-text)]"
         : "text-[var(--text-muted)]";
   return (
-    <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+    <div className="x-state-frame flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <div className={cn("[&>svg]:h-8 [&>svg]:w-8", toneClass)}>{icon}</div>
       <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">{title}</h2>
       {body ? (
@@ -110,7 +111,7 @@ export function ErrorState({
         icon={<WifiOff />}
         title="Could not reach the server"
         tone="warning"
-        body="The request never left this machine, or the server did not answer. Check the connection and try again."
+        body="Check your connection and try again."
         action={onRetry ? <RetryButton onRetry={onRetry} /> : null}
       />
     );
@@ -126,18 +127,20 @@ export function ErrorState({
       title="Something went wrong"
       tone="danger"
       body={
-        <>
-          <p>{message}</p>
-          {appError?.traceId ? (
-            <p className="mt-2 text-[var(--text-muted)]">
-              Reference{" "}
-              <code className="rounded bg-[var(--surface-sunken)] px-1.5 py-0.5 font-[var(--font-mono)] text-[12px]">
-                {appError.traceId}
-              </code>
-              {" — quote this to support and they can find the exact request."}
-            </p>
-          ) : null}
-        </>
+        <div className="w-full max-w-[520px]">
+          <p>Try again. If the problem continues, contact support.</p>
+          <Disclosure title="Technical details" className="mt-3 text-left">
+            <p>{message}</p>
+            {appError?.traceId ? (
+              <p className="mt-2 text-[var(--text-muted)]">
+                Support reference{" "}
+                <code className="rounded bg-[var(--surface-sunken)] px-1.5 py-0.5 font-[var(--font-mono)] text-[12px]">
+                  {appError.traceId}
+                </code>
+              </p>
+            ) : null}
+          </Disclosure>
+        </div>
       }
       action={onRetry ? <RetryButton onRetry={onRetry} /> : null}
     />
@@ -166,19 +169,21 @@ export function Forbidden({
       title={what ? `You don't have access to ${what}` : "You don't have access to this"}
       body={
         list.length > 0 ? (
-          <>
-            <p>Ask your administrator to grant:</p>
-            <p className="mt-2 flex flex-wrap justify-center gap-1.5">
-              {list.map((p) => (
-                <code
-                  key={p}
-                  className="rounded bg-[var(--surface-sunken)] px-1.5 py-0.5 font-[var(--font-mono)] text-[12px] text-[var(--text-primary)]"
-                >
-                  {p}
-                </code>
-              ))}
-            </p>
-          </>
+          <div className="w-full max-w-[460px]">
+            <p>Ask your administrator for access.</p>
+            <Disclosure title="Access details" className="mt-3 text-left">
+              <p className="flex flex-wrap gap-1.5">
+                {list.map((p) => (
+                  <code
+                    key={p}
+                    className="rounded bg-[var(--surface-sunken)] px-1.5 py-0.5 font-[var(--font-mono)] text-[12px] text-[var(--text-primary)]"
+                  >
+                    {p}
+                  </code>
+                ))}
+              </p>
+            </Disclosure>
+          </div>
         ) : (
           <p>Ask your administrator for access.</p>
         )
@@ -203,13 +208,14 @@ export function NotLicensed({
       icon={<ShoppingBag />}
       title={`${moduleName} is not part of your plan`}
       body={
-        <>
-          {summary ? <p>{summary}</p> : null}
-          <p className="mt-2">
-            This is a licensing question rather than a permissions one — your administrator
-            cannot switch it on. Talk to whoever manages your AIKYANTRA subscription.
-          </p>
-        </>
+        <div className="w-full max-w-[480px]">
+          <p>Contact the person who manages your XELOR subscription.</p>
+          {summary ? (
+            <Disclosure title="Module details" className="mt-3 text-left">
+              <p>{summary}</p>
+            </Disclosure>
+          ) : null}
+        </div>
       }
     />
   );

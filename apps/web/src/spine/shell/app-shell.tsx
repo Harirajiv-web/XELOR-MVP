@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import * as Icons from "lucide-react";
 import { cn } from "../ui/cn";
 import { useSession } from "../auth/session";
@@ -12,7 +12,10 @@ import { moduleAvailability, visibleNav } from "../registry/manifest";
 import { groupByDepartment } from "../registry/departments";
 import { CopilotRail } from "./copilot-rail";
 import { AlertCentre } from "./alert-centre";
+import { HumanApprovalLink } from "./human-approval-link";
+import { DemoLauncher } from "../demo/demo-launcher";
 import { ThemeToggle } from "../theme/theme-toggle";
+import { plainDepartmentName } from "../ui/plain-language";
 
 /**
  * THE APPLICATION FRAME — MAINDECK's three-column shell.
@@ -23,9 +26,10 @@ import { ThemeToggle } from "../theme/theme-toggle";
  *
  * THE SIDEBAR IS ASSEMBLED, NEVER WRITTEN DOWN. It is the module registry filtered by what
  * this company licensed and what this person may open, grouped under the department that
- * owns each module. There is no menu file, so there is no menu file to forget to update
- * when a module is removed — the class of bug where a deleted feature leaves a dead link
- * cannot occur here.
+ * owns each module. Module rows are destinations, not disclosure controls: the screens
+ * within the active module live in the horizontal workbench navigation above the page.
+ * That keeps the left rail as an orientation map and gives sibling screens the width they
+ * need to be scanned and switched between.
  *
  * GROUPED BY DEPARTMENT, because that is the organising fact of the whole system.
  * Departments are cut by system-of-record ownership, which is the same line the module
@@ -47,22 +51,15 @@ function Icon({ name, className }: { name?: string; className?: string }): React
 
 export function AppShell({ children }: { children: ReactNode }): React.JSX.Element {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, signOut } = useSession();
   const { can, isLicensed, licence, identity } = useAccess();
   const [collapsed, setCollapsed] = useState(false);
-  const [railOpen, setRailOpen] = useState(true);
-  /**
-   * Which modules are showing their screens. Keyed by module, and DELIBERATELY SPARSE: a
-   * module with no entry falls back to "open if you are inside it", so the tree opens
-   * itself where you are and stays quiet everywhere else. Storing a value for all sixteen
-   * up front would mean the sidebar had an opinion about modules the user has never
-   * touched, and would have to be reconciled every time one is added or removed.
-   *
-   * The department and module rows are ALWAYS visible; only the screens fold away. The
-   * point of this tree is that you can see HEXA owns Administration, Organisation and
-   * Integration without opening anything.
-   */
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [railOpen, setRailOpen] = useState(false);
+
+  useEffect(() => {
+    if (pathname.startsWith("/agentos/")) setRailOpen(false);
+  }, [pathname]);
 
   const modules = orderedModules().filter(
     (m) => moduleAvailability(m, { isLicensed, can }) === null,
@@ -70,7 +67,11 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
   const groups = groupByDepartment(modules);
 
   const current = modules.find((m) => pathname.startsWith(`/${m.key}/`));
-  const currentEntry = current?.nav.find((n) => pathname === `/${current.key}/${n.path}`);
+  const currentEntries = current ? visibleNav(current, can) : [];
+  const currentEntry = currentEntries.find((n) => {
+    const href = `/${current?.key}/${n.path}`;
+    return pathname === href || pathname.startsWith(href + "/");
+  });
   const currentDept = groups.find((g) => g.modules.some((m) => m.key === current?.key));
 
   const initials = (user?.displayName ?? "?")
@@ -79,9 +80,38 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
 
+  /**
+   * Native view transitions keep the workbench spatially continuous while the shell stays
+   * fixed. The fallback is the Link's normal navigation plus the CSS route entrance, and a
+   * person asking for reduced motion always gets that immediate path.
+   */
+  const navigate = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>, href: string): void => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        pathname === href ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
+      const transitionDocument = document as Document & {
+        startViewTransition?: (update: () => void) => unknown;
+      };
+      if (!transitionDocument.startViewTransition) return;
+      event.preventDefault();
+      transitionDocument.startViewTransition(() => router.push(href));
+    },
+    [pathname, router],
+  );
+
   return (
     <div
-      className="grid h-screen bg-[var(--bg)]"
+      className="x-app-shell grid h-screen bg-[var(--bg)]"
       style={{
         gridTemplateColumns: `${collapsed ? "64px" : "var(--side)"} minmax(0,1fr) ${railOpen ? "var(--cop)" : "0px"}`,
         gridTemplateRows: "var(--top) minmax(0,1fr)",
@@ -92,17 +122,17 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       {/* ---------------------------- sidebar ---------------------------- */}
       <aside
         style={{ gridArea: "side" }}
-        className="z-40 flex h-screen flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--surface)]"
+        className="x-shell-sidebar z-40 flex h-screen flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--surface)]"
       >
         <div className="flex min-h-[var(--top)] items-center gap-2.5 border-b border-[var(--border-subtle)] px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#12294f,var(--brand))] text-[11px] font-extrabold tracking-[0.02em] text-white">
-              AK
+            <span className="x-brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#12294f,var(--brand))] text-[11px] font-extrabold tracking-[0.02em] text-white">
+              XE
             </span>
             {!collapsed ? (
               <span className="min-w-0">
                 <b className="block truncate text-[14.5px] font-bold tracking-[0.02em] text-[var(--text-primary)]">
-                  IND<span className="text-[var(--brand)]">-CORE</span>
+                  XELOR
                 </b>
                 <span className="block text-[9.5px] tracking-[0.1em] text-[var(--text-muted)]">
                   BY AIKYANTRA
@@ -135,7 +165,8 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                   // dashboard, not merely a caption over some menu items.
                   <Link
                     href={`/department/${g.department.code}`}
-                    title={`${g.department.name} — overview`}
+                    onClick={(event) => navigate(event, `/department/${g.department.code}`)}
+                    title={`${plainDepartmentName(g.department.code, g.department.name)} — overview`}
                     aria-current={
                       pathname === `/department/${g.department.code}` ? "page" : undefined
                     }
@@ -151,7 +182,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                       {g.department.code}
                     </span>
                     <span className="truncate text-[9.8px] font-bold uppercase tracking-[0.13em] text-[var(--text-muted)]">
-                      {g.department.name}
+                      {plainDepartmentName(g.department.code, g.department.name)}
                     </span>
                     <Icons.ArrowRight
                       className="ml-auto h-3 w-3 shrink-0 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
@@ -164,94 +195,37 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
                 {openable.map(({ m, entries }) => {
                   const inModule = pathname.startsWith(`/${m.key}/`);
-                  const open = collapsed || (expanded[m.key] ?? inModule);
+                  const first = entries[0];
+                  if (!first) return null;
                   return (
-                    <div key={m.key}>
-                      {/* THE MODULE, as its own level.
-                          Departments own modules and modules own screens, and flattening
-                          the middle one hid the fact the whole architecture rests on: that
-                          Administration, Organisation and Integration are three separate
-                          removable things HEXA happens to own, not one long list of
-                          platform screens. The module row also gives the tree a place to
-                          collapse, which is what keeps sixteen modules and fifty-three
-                          screens navigable in a 236px column. */}
+                    <Link
+                      key={m.key}
+                      href={`/${m.key}/${first.path}`}
+                      onClick={(event) => navigate(event, `/${m.key}/${first.path}`)}
+                      data-module-key={m.key}
+                      title={`${m.name}\n\n${m.summary}`}
+                      aria-current={inModule ? "page" : undefined}
+                      aria-label={collapsed ? `${m.name} module` : undefined}
+                      className={cn(
+                        "x-module-link group mt-0.5 flex items-center gap-2.5 rounded-[9px] px-2.5 py-[7px] text-[12.4px] font-semibold transition-colors",
+                        collapsed && "justify-center px-0",
+                        inModule
+                          ? "bg-[var(--brand-soft)] text-[var(--brand)]"
+                          : "text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
+                      )}
+                    >
+                      <Icon name={m.icon} className="h-[15px] w-[15px] shrink-0" />
+                      {!collapsed ? <span className="truncate">{m.name}</span> : null}
                       {!collapsed ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpanded((e) => ({ ...e, [m.key]: !(e[m.key] ?? inModule) }))
-                          }
-                          aria-expanded={open}
-                          title={m.summary}
+                        <Icons.ArrowUpRight
                           className={cn(
-                            "mt-0.5 flex w-full items-center gap-2 rounded-[8px] px-2.5 py-[6px] text-left text-[12px] font-semibold transition-colors",
-                            inModule
-                              ? "text-[var(--text-primary)]"
-                              : "text-[var(--text-secondary)] hover:bg-[var(--bg)]",
+                            "ml-auto h-3 w-3 shrink-0 transition-opacity",
+                            inModule ? "opacity-70" : "opacity-0 group-hover:opacity-70",
                           )}
-                        >
-                          <Icons.ChevronRight
-                            className={cn(
-                              "h-3 w-3 shrink-0 text-[var(--text-muted)] transition-transform",
-                              open && "rotate-90",
-                            )}
-                            aria-hidden
-                          />
-                          <Icon name={m.icon} className="h-[15px] w-[15px] shrink-0" />
-                          <span className="truncate">{m.name}</span>
-                          <span className="ml-auto text-[9.5px] font-bold tabular-nums text-[var(--text-muted)]">
-                            {entries.length}
-                          </span>
-                        </button>
+                          aria-hidden
+                        />
                       ) : null}
-
-                      {open ? (
-                        <ul className="space-y-0.5">
-                          {entries.map((n) => {
-                            const href = `/${m.key}/${n.path}`;
-                            const active =
-                              pathname === href || pathname.startsWith(href + "/");
-                            return (
-                              <li key={href}>
-                                <Link
-                                  href={href}
-                                  // The description on hover, so somebody can find out what
-                                  // "MRP run" contains without having to open it and guess
-                                  // from a table. The label alone is the one thing a menu
-                                  // cannot explain, and this menu has fifty-three of them.
-                                  title={
-                                    n.description
-                                      ? `${m.name} — ${n.label}\n\n${n.description}`
-                                      : collapsed
-                                        ? `${m.name} — ${n.label}`
-                                        : n.label
-                                  }
-                                  aria-current={active ? "page" : undefined}
-                                  className={cn(
-                                    "flex items-center gap-2.5 rounded-[8px] py-[6px] pr-2.5 text-[12.4px] font-medium transition-all",
-                                    // Indented under its module, with a hairline rail so
-                                    // the eye can follow which module a screen belongs to
-                                    // without counting pixels.
-                                    collapsed
-                                      ? "justify-center px-0"
-                                      : "ml-[17px] border-l border-[var(--border-subtle)] pl-[13px]",
-                                    active
-                                      ? "bg-[var(--brand-soft)] font-semibold text-[var(--brand)]"
-                                      : "text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
-                                  )}
-                                >
-                                  <Icon
-                                    name={n.icon ?? m.icon}
-                                    className="h-[14px] w-[14px] shrink-0"
-                                  />
-                                  {!collapsed ? <span className="truncate">{n.label}</span> : null}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      ) : null}
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -261,7 +235,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
         {!collapsed ? (
           <div className="border-t border-[var(--border-subtle)] px-4 py-2.5 text-[10px] leading-[1.5] text-[var(--text-muted)]">
-            <b className="text-[var(--text-secondary)]">IND-CORE · by AIKYANTRA</b>
+            <b className="text-[var(--text-secondary)]">XELOR · by AIKYANTRA</b>
             <br />
             {identity?.organisation?.name ?? "—"}
           </div>
@@ -281,7 +255,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       {/* ---------------------------- topbar ----------------------------- */}
       <header
         style={{ gridArea: "top" }}
-        className="z-30 flex items-center gap-2.5 border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4"
+        className="x-shell-topbar z-30 flex items-center gap-2.5 border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4"
       >
         {/* The tenant, always on screen. In a product whose whole security story is that
             one factory cannot see another's data, "whose data am I looking at" must never
@@ -294,8 +268,10 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
         </span>
 
         <p className="hidden min-w-0 truncate text-[13px] text-[var(--text-muted)] lg:block">
-          IND-CORE
-          {currentDept ? ` / ${currentDept.department.name}` : ""}
+          XELOR
+          {currentDept
+            ? ` / ${plainDepartmentName(currentDept.department.code, currentDept.department.name)}`
+            : ""}
           {current ? " / " : ""}
           {current ? (
             <b className="font-semibold text-[var(--text-primary)]">
@@ -305,20 +281,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           ) : null}
         </p>
 
-        <span className="chip chip-gold shrink-0">DEMO</span>
-
         <div className="ml-auto flex items-center gap-2.5">
-          {licence ? (
-            <span className="hidden text-right lg:block">
-              <span className="block text-[11px] font-semibold leading-4 text-[var(--text-secondary)]">
-                {licence.plan}
-              </span>
-              <span className="block text-[10px] leading-4 text-[var(--text-muted)]">
-                {licence.modules.length} modules licensed
-              </span>
-            </span>
-          ) : null}
-
           {licence?.expired ? (
             // Soft enforcement, said out loud. A plant does not stop because a licence
             // lapsed on a Friday evening — but nobody should be able to say they were not told.
@@ -332,6 +295,10 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
               tells you something has happened whether or not you asked; the copilot answers
               when you do. A person scanning left to right meets the interruption first,
               which is the only one of the two that can be time-critical. */}
+          <DemoLauncher />
+
+          <HumanApprovalLink />
+
           <AlertCentre />
 
           <ThemeToggle />
@@ -376,8 +343,59 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       </header>
 
       {/* ----------------------------- work ------------------------------ */}
-      <main style={{ gridArea: "main" }} className="min-w-0 overflow-y-auto px-6 py-5">
-        {children}
+      <main
+        style={{ gridArea: "main" }}
+        className="x-shell-main flex min-w-0 flex-col overflow-hidden"
+      >
+        {current && currentEntries.length > 0 ? (
+          <nav
+            aria-label={`${current.name} screens`}
+            className="x-workbench-tabs relative z-20 shrink-0 border-b border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] px-6 backdrop-blur-xl"
+          >
+            <div className="flex min-w-0 items-stretch gap-1 overflow-x-auto">
+              <span className="mr-3 flex shrink-0 items-center gap-2 border-r border-[var(--border-subtle)] pr-4 text-[11px] font-bold uppercase tracking-[0.13em] text-[var(--text-muted)]">
+                <Icon name={current.icon} className="h-4 w-4 text-[var(--brand)]" />
+                {current.name}
+              </span>
+              {currentEntries.map((entry) => {
+                const href = `/${current.key}/${entry.path}`;
+                const active = pathname === href || pathname.startsWith(href + "/");
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={(event) => navigate(event, href)}
+                    title={entry.description}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "x-workbench-tab group relative flex min-h-12 shrink-0 items-center gap-2 rounded-t-[8px] px-3.5 text-[12.5px] font-semibold transition-colors",
+                      active
+                        ? "bg-[var(--brand-soft)] text-[var(--brand)]"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    <Icon
+                      name={entry.icon ?? current.icon}
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
+                    {entry.label}
+                    <span
+                      className={cn(
+                        "absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-[var(--brand)] transition-opacity",
+                        active ? "opacity-100" : "opacity-0 group-hover:opacity-30",
+                      )}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
+        <div className="x-workspace-scroll min-h-0 flex-1 overflow-y-auto">
+          <div key={pathname} className="x-workspace-page px-6 py-5">
+            {children}
+          </div>
+        </div>
       </main>
 
       {/* -------------------------- copilot rail ------------------------- */}

@@ -77,9 +77,48 @@ export interface InspectionRow {
   dispositions: Disposition[];
 }
 
+export interface QualityFinding {
+  id: string;
+  findingNo: string;
+  sourceType: string;
+  sourceRef: string;
+  inspectionId: string | null;
+  inspectionNo: string | null;
+  title: string;
+  description: string;
+  severity: string;
+  status: string;
+  ownerRef: string;
+  dueDate: string | null;
+  containment: string | null;
+  rootCause: string | null;
+  createdAt: string;
+}
+
+export interface CorrectiveAction {
+  id: string;
+  capaNo: string;
+  findingNo: string;
+  findingTitle: string;
+  title: string;
+  actionPlan: string;
+  ownerRef: string;
+  dueDate: string;
+  status: string;
+  effectivenessCriteria: string;
+  completionEvidence: string | null;
+  effectivenessResult: string;
+  effectivenessEvidence: string | null;
+  verifiedBy: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
 export const qualityApi = {
   inspectionsPath: "/quality/inspections",
   inspectionPath: (id: string): string => `/quality/inspections/${id}`,
+  findingsPath: "/quality/findings",
+  correctiveActionsPath: "/quality/corrective-actions",
 } as const;
 
 /** How a reading reads to a person: the measurement, or the go/no-go, or nothing recorded. */

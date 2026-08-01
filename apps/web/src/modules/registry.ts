@@ -13,9 +13,12 @@ import { qualityManifest } from "./quality/manifest";
 import { maintenanceManifest } from "./maintenance/manifest";
 import { hrmManifest } from "./hrm/manifest";
 import { accountsManifest } from "./accounts/manifest";
+import { expenditureManifest } from "./expenditure/manifest";
+import { workingCapitalManifest } from "./working-capital/manifest";
 import { aiopsManifest } from "./aiops/manifest";
 import { administrationManifest } from "./administration/manifest";
 import { integrationManifest } from "./integration/manifest";
+import { agentosManifest } from "./agentos/manifest";
 
 /**
  * THE INSTALLED MODULES. This list is the whole of "which modules does this build contain".
@@ -60,6 +63,9 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   maintenanceManifest,
   hrmManifest,
   accountsManifest,
+  expenditureManifest,
+  workingCapitalManifest,
+  agentosManifest,
   aiopsManifest,
   administrationManifest,
   integrationManifest,

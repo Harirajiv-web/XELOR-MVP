@@ -10,7 +10,7 @@
 -- That is the gate working correctly. It is also exactly the drift this project has been
 -- bitten by before: a fact with more than one home, and nothing comparing the copies.
 --
--- Trishul (IND-CORE Plant) gets all three. Kaveri (IND-CORE Essentials) deliberately does
+-- Trishul (XELOR Plant) gets all three. Kaveri (XELOR Essentials) deliberately does
 -- NOT — its five-module entitlement is what makes the licence gate demonstrable on screen
 -- rather than merely asserted in a slide.
 --

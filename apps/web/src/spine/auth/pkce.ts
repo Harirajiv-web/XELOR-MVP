@@ -73,10 +73,6 @@ export function finishPkce(returnedState: string | null): PkceFinish {
   const verifier = sessionStorage.getItem(VERIFIER_KEY);
   const returnTo = sessionStorage.getItem(RETURN_KEY) ?? "/";
 
-  sessionStorage.removeItem(STATE_KEY);
-  sessionStorage.removeItem(VERIFIER_KEY);
-  sessionStorage.removeItem(RETURN_KEY);
-
   if (!expected || !returnedState || expected !== returnedState) {
     throw new Error("Sign-in could not be verified. Please try again.");
   }
@@ -84,4 +80,20 @@ export function finishPkce(returnedState: string | null): PkceFinish {
     throw new Error("Sign-in state was lost. Please try again.");
   }
   return { verifier, returnTo };
+}
+
+/**
+ * Consume PKCE state only after Keycloak has accepted the authorization code.
+ *
+ * Removing it before the network exchange completed made a transient connection failure or
+ * a real callback remount unrecoverable: the first attempt lost its verifier, while the
+ * second ceremony worked. Keeping it for the few milliseconds of the exchange does not
+ * weaken PKCE—the verifier remains tab-scoped and is cleared immediately after success.
+ */
+export function clearPkce(returnedState: string | null): void {
+  const expected = sessionStorage.getItem(STATE_KEY);
+  if (expected && returnedState && expected !== returnedState) return;
+  sessionStorage.removeItem(STATE_KEY);
+  sessionStorage.removeItem(VERIFIER_KEY);
+  sessionStorage.removeItem(RETURN_KEY);
 }

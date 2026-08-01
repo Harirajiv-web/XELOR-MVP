@@ -63,7 +63,7 @@ const OUTCOMES: readonly { code: string; label: string }[] = [
  */
 export const copilotManifest: ModuleManifest = {
   key: "copilot",
-  name: "Copilot",
+  name: "ONYX Copilot",
   summary: "Ask questions about your own data. It reads, cites what it read, and cannot change anything.",
   department: "ONYX",
   icon: "Sparkles",

@@ -31,6 +31,6 @@ import { PlanNumberingService } from "./plan-numbering.service.js";
     PlanExceptionService,
     PlanScheduleService,
   ],
-  exports: [MrpService, PlannedOrderService],
+  exports: [MrpService, PlannedOrderService, PlanExceptionService],
 })
 export class PlanningModule {}

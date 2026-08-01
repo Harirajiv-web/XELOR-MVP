@@ -99,6 +99,19 @@ const reviseSchema = z.object({
   acknowledgeConflicts: z.boolean().optional(),
 });
 
+const budgetConsumptionQuerySchema = z.object({
+  costCentreRef: z.string().min(1),
+  expenseHeadCode: z.string().min(1),
+  // Budget's canonical key is the compact Indian FY code used in the stored master (2627).
+  fiscalYear: z.string().regex(/^\d{4}$/),
+});
+
+const budgetCheckQuerySchema = z.object({
+  costCentreRef: z.string().min(1),
+  expenseHeadCode: z.string().min(1),
+  onDate: z.string().regex(DATE),
+});
+
 function parse<S extends z.ZodTypeAny>(schema: S, body: unknown): z.output<S> {
   const r = schema.safeParse(body);
   if (!r.success) {
@@ -137,22 +150,18 @@ export class ExpenditureController {
 
   @Get("budget-check")
   @RequirePermission("expenditure.budget.read")
-  async budgetCheck(
-    @Query("costCentreRef") costCentreRef: string,
-    @Query("expenseHeadCode") expenseHeadCode: string,
-    @Query("onDate") onDate: string,
-  ) {
-    return this.budgets.availabilityFor(costCentreRef, expenseHeadCode, onDate);
+  async budgetCheck(@Query() query: unknown) {
+    const input = parse(budgetCheckQuerySchema, query);
+    return this.budgets.availabilityFor(input.costCentreRef, input.expenseHeadCode, input.onDate);
   }
 
   @Get("budgets/consumption")
   @RequirePermission("expenditure.budget.read")
   async consumption(
-    @Query("costCentreRef") costCentreRef: string,
-    @Query("expenseHeadCode") expenseHeadCode: string,
-    @Query("fiscalYear") fiscalYear: string,
+    @Query() query: unknown,
   ) {
-    return this.budgets.consumption(costCentreRef, expenseHeadCode, fiscalYear);
+    const input = parse(budgetConsumptionQuerySchema, query);
+    return this.budgets.consumption(input.costCentreRef, input.expenseHeadCode, input.fiscalYear);
   }
 
   /** A revision that would cut a line below what is already spent returns 409 with the

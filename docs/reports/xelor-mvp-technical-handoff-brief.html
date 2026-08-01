@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR MVP Technical Handoff & Implementation Brief</title>
+  <style>
+    @page { size:A4; margin:16mm 15mm 18mm; }
+    * { box-sizing:border-box; }
+    :root {
+      --ink:#13213b; --muted:#59677d; --navy:#07152f; --blue:#1d4ed8;
+      --cyan:#0891b2; --green:#087a55; --amber:#a85d00; --red:#b42318;
+      --violet:#6d28d9; --line:#d7dfeb; --wash:#f4f7fb; --soft:#eef4ff;
+    }
+    html { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    body { margin:0; color:var(--ink); font:9.7pt/1.44 Arial, Helvetica, sans-serif; }
+    h1,h2,h3,h4 { margin:0 0 8px; line-height:1.16; page-break-after:avoid; }
+    h1 { font-size:34pt; letter-spacing:-1.2px; }
+    h2 { margin-top:7px; padding-bottom:5px; border-bottom:2px solid var(--blue); color:var(--navy); font-size:19pt; }
+    h3 { margin-top:13px; color:var(--blue); font-size:13pt; }
+    h4 { margin-top:10px; color:var(--navy); font-size:10.5pt; }
+    p { margin:5px 0 9px; }
+    ul,ol { margin:5px 0 10px 19px; padding:0; }
+    li { margin:3px 0; }
+    table { width:100%; margin:8px 0 13px; border-collapse:collapse; font-size:8.25pt; page-break-inside:auto; }
+    tr { page-break-inside:avoid; }
+    th { padding:6px; background:var(--navy); color:white; text-align:left; }
+    td { padding:5px 6px; border:1px solid var(--line); vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    code { color:#173d82; font:0.91em "SFMono-Regular", Consolas, monospace; overflow-wrap:anywhere; }
+    pre { margin:7px 0 12px; padding:9px 11px; border-radius:7px; background:#07152f; color:#dce9ff; font:7.8pt/1.5 "SFMono-Regular", Consolas, monospace; white-space:pre-wrap; page-break-inside:avoid; }
+    .cover { height:260mm; margin:-16mm -15mm -18mm; padding:28mm 22mm; color:white; background:radial-gradient(circle at 80% 18%,#1f7aa7 0,transparent 30%),linear-gradient(145deg,#050f25 0%,#112d6b 58%,#5b21b6 125%); position:relative; page-break-after:always; }
+    .mark { display:grid; width:55px; height:55px; place-items:center; border:1px solid #79ddff; border-radius:13px; font-size:17pt; font-weight:800; }
+    .eyebrow { margin-top:27mm; color:#8de5ff; font-size:10pt; font-weight:700; letter-spacing:2.2px; }
+    .cover h1 { max-width:160mm; margin-top:9px; font-size:39pt; }
+    .cover .sub { max-width:157mm; margin-top:13px; color:#dbeeff; font-size:14pt; line-height:1.45; }
+    .cover .scope { max-width:158mm; margin-top:16px; padding:10px 12px; border:1px solid #6ea6dc; border-radius:8px; background:#ffffff10; color:#d9e9fb; }
+    .cover .meta { position:absolute; right:22mm; bottom:23mm; left:22mm; display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #6b9bcc; color:#c9ddf4; font-size:9pt; }
+    .page { page-break-before:always; }
+    .no-break { page-break-inside:avoid; }
+    .lead { color:#34445d; font-size:11.7pt; }
+    .small { color:var(--muted); font-size:8.25pt; }
+    .callout { margin:9px 0 13px; padding:9px 11px; border-left:4px solid var(--blue); background:#edf4ff; page-break-inside:avoid; }
+    .good { border-left-color:var(--green); background:#ebf9f4; }
+    .warn { border-left-color:var(--amber); background:#fff6e5; }
+    .bad { border-left-color:var(--red); background:#fff0ef; }
+    .violet { border-left-color:var(--violet); background:#f4f0ff; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:8px 0 12px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:8px 0 12px; }
+    .card { padding:9px; border:1px solid var(--line); border-radius:8px; background:white; page-break-inside:avoid; }
+    .card h3,.card h4 { margin-top:0; }
+    .kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0 13px; }
+    .kpi div { min-height:60px; padding:9px; border-radius:7px; background:var(--navy); color:white; }
+    .kpi b { display:block; color:#77d9ff; font-size:16pt; }
+    .tag { display:inline-block; margin-right:3px; padding:1px 6px; border-radius:10px; font-size:7.5pt; font-weight:700; }
+    .live { background:#d8f3e8; color:#0d6649; }
+    .demo { background:#e3eaff; color:#254b98; }
+    .human { background:#eee6ff; color:#5b36a5; }
+    .roadmap { background:#fff0cb; color:#7c4d00; }
+    .flow { display:grid; grid-template-columns:1fr 26px 1fr 26px 1fr; gap:4px; align-items:stretch; margin:10px 0; }
+    .flow > div { display:grid; min-height:45px; place-items:center; padding:7px 5px; border:1px solid #9db3d7; border-radius:6px; background:#f4f7fc; text-align:center; font-size:8pt; font-weight:700; }
+    .flow .arrow { border:0; background:none; color:var(--blue); font-size:15pt; }
+    .relation { display:grid; grid-template-columns:1fr 32px 1fr 32px 1fr; gap:3px; align-items:center; margin:8px 0 11px; }
+    .relation div { padding:7px; border:1px solid var(--line); border-radius:6px; background:#f8fafd; text-align:center; font-size:8pt; font-weight:700; }
+    .relation .arrow { border:0; background:none; color:var(--blue); font-size:14pt; }
+    .toc { columns:2; column-gap:22px; margin-top:12px; }
+    .toc p { margin:0 0 7px; break-inside:avoid; }
+    .num { display:inline-grid; width:22px; height:22px; place-items:center; margin-right:6px; border-radius:6px; background:var(--blue); color:white; font-size:8pt; font-weight:800; }
+    .check { color:var(--green); font-weight:700; }
+    .footer-note { margin-top:10px; padding-top:6px; border-top:1px solid var(--line); color:var(--muted); font-size:7.8pt; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="mark">XE</div>
+    <div class="eyebrow">XELOR · ENGINEERING HANDOFF</div>
+    <h1>MVP Technical Handoff &amp; Implementation Brief</h1>
+    <div class="sub">What XELOR is, how it handles the complete operating loop, what was changed, how the investor demo works, how to rebuild and verify it, and what the technical team should do next.</div>
+    <div class="scope"><b>Snapshot:</b> investor-demo build based on the live Northstar PX-400 workflow.<br><b>Audience:</b> engineering, product, QA, DevOps and technical leadership.<br><b>Repository:</b> <code style="color:#bdeaff">MVP_PROTOTYPE_1</code> · local production build verified on 1 August 2026.</div>
+    <div class="meta"><span>Prepared from the running application, migrations, API contracts and automated checks</span><span>1 August 2026</span></div>
+  </section>
+
+  <section>
+    <h2>1. Handoff summary</h2>
+    <p class="lead">The MVP was changed from a broad collection of screens and fictional presenter stories into one controlled, evidence-backed investor demonstration. The central story is a real seeded customer commitment that crosses Sales, Planning, Purchase, Inventory, Production, Quality, Maintenance, Employee Spend, Accounts and Agent OS without pretending that unfinished production features are complete.</p>
+    <div class="callout good"><b>Current result:</b> the build is demo-ready, deterministic, locally reproducible and protected by automated evidence. The application is not being represented as production-complete; its remaining gaps are named in this document.</div>
+    <div class="kpi">
+      <div><b>87 / 87</b>live acceptance checks</div>
+      <div><b>17 / 17</b>browser journeys</div>
+      <div><b>712</b>executable unit tests</div>
+      <div><b>19</b>registered web modules</div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>The product claim now demonstrated</h3><p>XELOR can connect one operating decision across departmental records, calculate deterministic facts, show the evidence, require a named human decision and retain an attributable audit trail.</p></div>
+      <div class="card"><h3>The product claim deliberately not made</h3><p>The local build does not claim autonomous external execution, seven independent LLMs, production cloud readiness, complete quotation/AP/ECO workflows or AI authority to approve its own work.</p></div>
+    </div>
+    <h3>Document map</h3>
+    <div class="toc">
+      <p><span class="num">2</span>What XELOR is and how it works</p>
+      <p><span class="num">3</span>Design principles and before/after</p>
+      <p><span class="num">4</span>Runtime architecture</p>
+      <p><span class="num">5</span>Canonical Northstar dataset</p>
+      <p><span class="num">6</span>Nine-act investor journey</p>
+      <p><span class="num">7</span>Domain changes</p>
+      <p><span class="num">8</span>Database and API changes</p>
+      <p><span class="num">9</span>Identity, security and governance</p>
+      <p><span class="num">10</span>UI and presentation changes</p>
+      <p><span class="num">11</span>Seed and rebuild process</p>
+      <p><span class="num">12</span>Test and acceptance evidence</p>
+      <p><span class="num">13</span>Local engineering runbook</p>
+      <p><span class="num">14</span>Investor presentation script</p>
+      <p><span class="num">15</span>Known boundaries</p>
+      <p><span class="num">16</span>Recommended next work</p>
+      <p><span class="num">17</span>File map and handoff checklist</p>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>2. What XELOR is and how it handles the whole operating loop</h2>
+    <p class="lead">XELOR is a manufacturing intelligence and ERP operating system. It keeps the normal systems of record—customers, orders, materials, production, inspections, assets, people and accounting—but adds a governed coordination layer that recognises when records in different departments are actually part of one business decision.</p>
+    <div class="callout good"><b>In one sentence:</b> XELOR turns a factory event into a permission-checked, evidence-linked decision; lets deterministic software calculate the facts; lets AI organise and explain them; requires a human for consequential approval; and records the result for audit and learning.</div>
+    <h3>The problem XELOR is designed to solve</h3>
+    <p>A conventional ERP stores departmental truth but usually makes people assemble the operating picture through calls, spreadsheets and experience. A delayed material, failed inspection, machine outage, credit decision and customer promise can sit in five correct modules while nobody sees that they have become one urgent decision. XELOR keeps those modules separate for ownership and control, then connects their evidence through ONYX and the seven-agent operating model.</p>
+    <h3>The seven-agent operating model</h3>
+    <table>
+      <thead><tr><th>Agent</th><th>Business responsibility</th><th>What it contributes</th><th>What it cannot do alone</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX</b></td><td>Cross-company coordinator</td><td>Recognises one decision, scopes the mission, joins evidence and prepares the decision brief.</td><td>Cannot grant itself permissions or approve governed work.</td></tr>
+        <tr><td><b>MICA</b></td><td>Sales and customer</td><td>Customer commitment, order, credit context, service impact and commercial options.</td><td>Cannot bypass credit or promise unsupported dates.</td></tr>
+        <tr><td><b>SPAR</b></td><td>Purchase and inventory</td><td>Supply, stock, batch position, supplier options and material movement evidence.</td><td>Cannot invent stock or silently change reservations.</td></tr>
+        <tr><td><b>AXLE</b></td><td>Engineering and planning</td><td>BOM, routing, MRP, capacity, dependency and schedule calculations.</td><td>Cannot treat an AI narrative as a planning calculation.</td></tr>
+        <tr><td><b>KILN</b></td><td>Production, quality and maintenance</td><td>Operation execution, inspection, quarantine, NCR/CAPA, equipment and downtime evidence.</td><td>Cannot release failed material or self-certify CAPA effectiveness.</td></tr>
+        <tr><td><b>RASP</b></td><td>Finance, working capital and spend</td><td>Posted value, budget position, cash/credit context and financial consequence.</td><td>Cannot call an unsupported estimate a verified loss.</td></tr>
+        <tr><td><b>HEXA</b></td><td>Governance and compliance</td><td>Authority checks, policy, approval boundary, audit and verification requirements.</td><td>Cannot replace the accountable human approver.</td></tr>
+      </tbody>
+    </table>
+    <h3>How XELOR handles a business event from start to finish</h3>
+    <ol>
+      <li><b>Record:</b> a human, machine, integration or business transaction creates a normal ERP record such as an order, inspection, downtime event or receipt.</li>
+      <li><b>Validate:</b> request schemas, permissions, idempotency keys and database constraints refuse invalid or duplicated work.</li>
+      <li><b>Calculate:</b> deterministic engines calculate tax, stock, MRP, dates, limits, disposition, balances and policy outcomes.</li>
+      <li><b>Detect:</b> Decision Commander and Agent OS identify that records across departments now form one risk or decision.</li>
+      <li><b>Gather:</b> specialist agents read only the evidence allowed by the user's tenant, role and module permissions.</li>
+      <li><b>Explain:</b> ONYX assembles the facts, causes, options, owners and evidence links. It distinguishes verified value from estimated exposure.</li>
+      <li><b>Approve:</b> if the proposal can create a meaningful consequence, a named person reviews the exact boundary and writes an approval or rejection note.</li>
+      <li><b>Execute:</b> approved internal work is written through the owning domain service, with idempotency and an attributable ancestor.</li>
+      <li><b>Propagate:</b> the transaction writes an outbox event; the worker relays it without making the original ledger write dependent on an external call.</li>
+      <li><b>Verify and learn:</b> outcome records and hash-linked audit evidence show what happened, who decided and whether the expected result was achieved.</li>
+    </ol>
+    <div class="flow">
+      <div>ERP signal<br>owned by a module</div><div class="arrow">→</div><div>Rules + agents<br>connect evidence</div><div class="arrow">→</div><div>Human decision<br>then verified action</div>
+    </div>
+    <h3>The four layers the team must keep separate</h3>
+    <table>
+      <thead><tr><th>Layer</th><th>Owns</th><th>Examples</th><th>Engineering rule</th></tr></thead>
+      <tbody>
+        <tr><td><b>1 · Transactional core</b></td><td>The legal and operational record.</td><td>Orders, stock ledger, inspections, production operations, vouchers and employees.</td><td>Only the owning domain service writes it; database constraints and RLS remain authoritative.</td></tr>
+        <tr><td><b>2 · Decision intelligence</b></td><td>Recognition, evidence joining and options.</td><td>Decision Commander, ONYX brief, agent evidence packets and exposure estimates.</td><td>May read and propose within permission scope; must cite source records and label uncertainty.</td></tr>
+        <tr><td><b>3 · Governed execution</b></td><td>The exact approved work boundary.</td><td>Approval inbox, decision note, specialist work item and idempotent mutation.</td><td>No consequential action without an authorised ancestor; retries must not duplicate effects.</td></tr>
+        <tr><td><b>4 · Proof and learning</b></td><td>What happened and whether it worked.</td><td>Audit chain, action ledger, CAPA effectiveness, outcome metrics and reconciliations.</td><td>Observed outcomes stay separate from forecasts; verification needs evidence and a named reviewer.</td></tr>
+      </tbody>
+    </table>
+    <h3>What XELOR does not replace</h3>
+    <ul>
+      <li>It does not replace the domain engines that calculate tax, MRP, inventory, payroll or accounting.</li>
+      <li>It does not replace accountable managers, inspectors, engineers, buyers or finance approvers.</li>
+      <li>It does not turn an AI response into source data; ERP records and evidence remain the truth.</li>
+      <li>It does not imply an external action occurred unless a governed connector confirms and reconciles it.</li>
+    </ul>
+    <h3>How the Northstar example demonstrates the model</h3>
+    <p>Northstar's order starts in MICA's Sales records. AXLE calculates material/capacity needs. SPAR supplies and traces material. KILN executes four operations, records a failed inspection, quarantines twelve units and connects Furnace 02 downtime. RASP follows the credit and accounting consequences. HEXA prevents the recovery proposal and CAPA from approving themselves. ONYX presents the entire case as one decision while every department remains owner of its own source record.</p>
+    <div class="callout violet"><b>The key technical distinction:</b> XELOR is not one chatbot sitting above an ERP. The ERP transactions, permissions, calculations and constraints remain authoritative. The intelligence layer is allowed to read, connect, explain and propose within those boundaries; it does not become a second system of record.</div>
+  </section>
+
+  <section class="page">
+    <h2>3. Design principles and before/after</h2>
+    <p>The hardening work followed four rules. These rules should remain release criteria for future changes.</p>
+    <div class="grid2">
+      <div class="card"><h3>One story, not a feature tour</h3><p>Every major screen now supports one customer promise: Northstar's PX-400 order. An investor can follow cause, consequence, decision and proof without mentally joining unrelated sample records.</p></div>
+      <div class="card"><h3>Persisted facts, not narration</h3><p>Named quantities, dates, values, operators, readings, tasks and approvals exist in the database and are read through authenticated APIs. Illustrative screens identify themselves.</p></div>
+      <div class="card"><h3>AI coordinates; people decide</h3><p>ONYX and specialist agents gather and connect evidence. A graph cannot reach governed action nodes until an authorised human approves the exact boundary with a recorded note.</p></div>
+      <div class="card"><h3>Failure must be understandable</h3><p>Invalid input, duplicate requests, missing idempotency and insufficient stock return controlled responses. The demo does not depend on hiding server errors.</p></div>
+    </div>
+    <table>
+      <thead><tr><th>Area</th><th>Before hardening</th><th>Current implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Presenter journey</td><td>Thirteen selectable scenarios, many based on narration-only records.</td><td>One selectable nine-act Northstar journey backed by seeded ERP records.</td></tr>
+        <tr><td>Production</td><td>Production order stored only an overall quantity/status.</td><td>Four ordered operations with predecessor rules, operator, timestamps, output/reject quantity and evidence.</td></tr>
+        <tr><td>Quality</td><td>Complaint fields could contain NCR/CAPA text references, but no quality workflow records existed.</td><td>Persisted NCR, containment, root cause, CAPA completion and separately controlled effectiveness verification.</td></tr>
+        <tr><td>Batch stock</td><td>Batch receipts could be visible but unnamed issues could not reliably consume them.</td><td>FIFO allocation locks eligible batches, records explicit splits and refuses insufficient aggregate stock before posting.</td></tr>
+        <tr><td>Employee Spend</td><td>Extensive backend existed but no registered web module exposed it.</td><td>Live claims and budget views appear as the nineteenth module.</td></tr>
+        <tr><td>Credit decision</td><td>Decision-time snapshots were written but not visible to API/UI users.</td><td>Limit, prior exposure and exposure including this order are displayed separately.</td></tr>
+        <tr><td>Demo provenance</td><td>Some curated UI could be mistaken for live calculations.</td><td>Live, illustrative, deterministic and human-owned boundaries are labelled in the interface.</td></tr>
+        <tr><td>Inactivity</td><td>Thirty seconds without input navigated an authenticated user back toward the gateway/sign-in.</td><td>The idle redirect and its unused form-hold hooks are removed. Sessions refresh normally and screens remain in place.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>4. Runtime architecture</h2>
+    <div class="flow">
+      <div>Next.js 15 / React 19<br>authenticated web app<br><code>:3001</code></div><div class="arrow">→</div><div>NestJS 11<br>modular API<br><code>:3000/api/v1</code></div><div class="arrow">→</div><div>PostgreSQL 17<br>system of record<br><code>:5432</code></div>
+    </div>
+    <div class="flow">
+      <div>Keycloak 26<br>OIDC + PKCE<br><code>:8080</code></div><div class="arrow">→</div><div>Tenant + RBAC guards<br>138 route permissions</div><div class="arrow">→</div><div>FORCE RLS<br>224 tenant tables</div>
+    </div>
+    <div class="flow">
+      <div>Transactional outbox<br>domain events</div><div class="arrow">→</div><div>Valkey + worker<br><code>:6379</code></div><div class="arrow">→</div><div>Idempotent consumers<br>attributable effects</div>
+    </div>
+    <div class="flow">
+      <div>Deterministic rules<br>and evidence reads</div><div class="arrow">→</div><div>ONYX / Agent OS<br>decision coordination</div><div class="arrow">→</div><div>Human approval<br>before governed action</div>
+    </div>
+    <h3>Component responsibilities</h3>
+    <table>
+      <thead><tr><th>Component</th><th>Responsibility</th><th>Important implementation boundary</th></tr></thead>
+      <tbody>
+        <tr><td><code>apps/web</code></td><td>Product shell, 19 modules, presenter guide, ONYX surfaces and authentication callback.</td><td>UI permission checks improve usability; API guards remain authoritative.</td></tr>
+        <tr><td><code>apps/api</code></td><td>Domain services, controllers, Agent OS, audit, validation and worker entrypoint.</td><td>Ledger and workflow writes remain inside tenant-scoped transactions.</td></tr>
+        <tr><td><code>packages/platform</code></td><td>Permissions, error types, deterministic business rules, Agent OS contracts.</td><td>No browser or database coupling; pure rules remain unit-testable.</td></tr>
+        <tr><td><code>packages/db</code></td><td>Drizzle schema, SQL migrations, tenancy checks, reset and migration tooling.</td><td>PostgreSQL constraints and FORCE RLS defend invariants below the API.</td></tr>
+        <tr><td>Keycloak</td><td>Real OIDC tokens, tenant/persona claims and local presentation theme.</td><td>Arbitrary credentials are rejected; the known presenter shortcut is demo-only.</td></tr>
+        <tr><td>Worker</td><td>Relays outbox events and executes idempotent demo consumers.</td><td>API success does not depend on silently dropping asynchronous work.</td></tr>
+        <tr><td>Gotenberg</td><td>Local document-rendering service available on <code>:3002</code>.</td><td>It is infrastructure availability, not a claim that every module exports governed PDFs.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout violet"><b>Architecture choice:</b> keep the modular monolith through product-market fit. Manufacturing transactions need strong cross-domain consistency; separate web, API and worker processes provide operational scaling without introducing premature distributed transactions.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. Canonical Northstar dataset</h2>
+    <p class="lead">The demo is anchored to one commitment rather than a collection of disconnected examples. The following facts are seeded, read back through APIs and asserted by the acceptance matrix.</p>
+    <div class="grid3">
+      <div class="card"><h3>Customer promise</h3><p><b>Northstar Process Systems</b><br>Customer PO: <code>NPS/PO/10482</code><br>120 × PX-400 pumps<br>₹74.34 lakh<br>Promise: 04-Sep-2026</p></div>
+      <div class="card"><h3>Current position</h3><p>40 produced<br>28 passed and dispatched<br>12 quarantined<br>80 still remaining<br>Finished-goods balance: 0 after dispatch</p></div>
+      <div class="card"><h3>Control position</h3><p>Credit override has snapshots<br>Inspection failed on evidence<br>CAPA not self-closed<br>Human approval required<br>Audit chain remains verifiable</p></div>
+    </div>
+    <table>
+      <thead><tr><th>Business record</th><th>Seeded fact</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>Sales order</td><td>120 PX-400, ₹74.34 lakh, IGST, 04-Sep-2026; 28 dispatched and 80 remaining.</td><td>Defines the customer commitment and commercial exposure.</td></tr>
+        <tr><td>Credit decision</td><td>Limit snapshot and existing exposure preserved separately from order-inclusive exposure.</td><td>Shows what the human knew at the decision point.</td></tr>
+        <tr><td>Planning run</td><td>Three-level BOM explosion with material and capacity exceptions.</td><td>Dates and shortages are deterministic planning outputs, not AI guesses.</td></tr>
+        <tr><td>Production order</td><td>Four completed operations; 40 units received.</td><td>Proves accountable shop-floor execution.</td></tr>
+        <tr><td>Inspection</td><td>0.034 mm shaft runout against a 0.020 mm limit; rejected.</td><td>Connects measured evidence to product disposition.</td></tr>
+        <tr><td>Disposition</td><td>28 passed units available for dispatch; 12 moved to quarantine.</td><td>Prevents “produced” from automatically meaning “usable”.</td></tr>
+        <tr><td>NCR/CAPA</td><td><code>NC-2627-00001</code> and <code>CAPA-2627-00001</code>; action complete, effectiveness pending.</td><td>Shows separation between doing corrective work and proving that it worked.</td></tr>
+        <tr><td>Maintenance</td><td>Furnace 02 vacuum failure, 4.5 hours downtime, three signed tasks, ₹1,855.14 labour.</td><td>Connects the constrained asset to delivery feasibility.</td></tr>
+        <tr><td>Employee Spend</td><td>Witness-test travel claim with three lines and an FY 2026-27 budget decision.</td><td>Makes employee spend visible inside the product rather than API-only.</td></tr>
+        <tr><td>Accounts</td><td>Partial dispatch created a posted accounting voucher and trial balance remains balanced.</td><td>Links operating execution to recorded finance evidence.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Reconciliation:</b> 40 produced = 28 dispatched + 12 quarantined. No passed PX-400 remains in finished-goods stock after the dispatch. This equality is explicitly tested.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. The nine-act investor journey</h2>
+    <table>
+      <thead><tr><th>#</th><th>Route</th><th>What the presenter proves</th><th>Primary evidence</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>/agentos/commander</code></td><td>Open one decision rather than six disconnected modules.</td><td>Five live source families, current promise, causes, exposure basis and recovery options.</td></tr>
+        <tr><td>2</td><td><code>/sales/orders</code></td><td>Prove the exact customer commitment and recorded credit override context.</td><td>Quantity, value, date, dispatch position and three credit snapshot values.</td></tr>
+        <tr><td>3</td><td><code>/planning/exceptions</code></td><td>Separate deterministic planning facts from AI explanation.</td><td>MRP exception set, shortages, dates and capacity dependencies.</td></tr>
+        <tr><td>4</td><td><code>/quality/inspections</code></td><td>Show that failed units remain traceable and unavailable.</td><td>0.034 measurement, 0.020 limit, rejection and 12-unit quarantine.</td></tr>
+        <tr><td>5</td><td><code>/maintenance/work-orders</code></td><td>Connect the sole annealing route and downtime to the order promise.</td><td>Furnace 02, 4.5 hours, accountable tasks and labour evidence.</td></tr>
+        <tr><td>6</td><td><code>/accounts/vouchers</code></td><td>Follow the recorded financial consequence without inventing loss.</td><td>Posted voucher from partial dispatch; unsupported loss remains “not available”.</td></tr>
+        <tr><td>7</td><td><code>/agentos/approvals</code></td><td>Show the exact human decision boundary.</td><td>Named approver, evidence, proposed work, reversibility and mandatory note.</td></tr>
+        <tr><td>8</td><td><code>/agentos/command</code></td><td>Dispatch approved internal work in parallel with ownership.</td><td>Six specialist work items, approved ancestry and verification steps.</td></tr>
+        <tr><td>9</td><td><code>/administration/audit</code></td><td>Finish on proof rather than animation.</td><td>Hash-chain verification that detects edited, replaced or deleted audit history.</td></tr>
+      </tbody>
+    </table>
+    <h3>Presenter guide behaviour</h3>
+    <ul>
+      <li>The guide navigates between existing screens and performs no business mutations.</li>
+      <li>A cyan spotlight points to the relevant screen evidence; expanded notes provide a simple explanation, facts and a presenter line.</li>
+      <li>The dock states <b>“Live ERP evidence · guide makes no writes”</b>.</li>
+      <li>The top control says <b>Stop demo</b>, not Reset demo, because it only removes the presentation layer.</li>
+      <li>Refreshing or stopping the guide returns the user to normal product use without altering the ERP record.</li>
+    </ul>
+    <div class="callout warn"><b>Important distinction:</b> the guided layer contains explanatory vocabulary. The business quantities and named records underneath are live seeded data. Static future-workspace screens retain a visible “Illustrative workspace” boundary.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Domain changes — operational workflows</h2>
+    <h3>7.1 Sales and credit evidence</h3>
+    <ul>
+      <li>Sales order views now expose the decision-time <code>creditLimitSnapshot</code> and <code>creditExposureSnapshot</code>.</li>
+      <li>The order screen separately presents credit limit, exposure before this order and exposure including this order.</li>
+      <li>Partially dispatched orders remain visible in Decision Commander even when the original commitment is older than the earlier 14-day window.</li>
+      <li>The canonical Northstar order remains <code>part_dispatched</code>; the demo does not pretend the remaining 80 are complete.</li>
+    </ul>
+    <h3>7.2 FIFO batch allocation</h3>
+    <p>When a withdrawal does not nominate a batch, Inventory now locks eligible batch balances, sorts oldest first and creates an explicit allocation split. It validates the aggregate quantity before any ledger posting.</p>
+    <div class="relation"><div>Batch A<br>oldest eligible</div><div class="arrow">→</div><div>Requested quantity<br>allocated in order</div><div class="arrow">→</div><div>Stock ledger<br>one line per split</div></div>
+    <ul>
+      <li>Zero balances are ignored.</li>
+      <li>One issue can consume multiple batches and retain each split.</li>
+      <li>Insufficient total stock fails before a partial posting.</li>
+      <li>Advisory locking prevents two withdrawals from allocating the same balance concurrently.</li>
+    </ul>
+    <h3>7.3 Executable production route</h3>
+    <p>Migration <code>0065_production_operations.sql</code> adds <code>production_operation</code>. The API supports adding, starting and completing operations. Completion checks ordered predecessors, requires an operator and stores quantities plus an evidence note.</p>
+    <div class="relation"><div>Kit verification</div><div class="arrow">→</div><div>Rotating assembly</div><div class="arrow">→</div><div>Pump assembly<br>then hydro pretest</div></div>
+    <ul>
+      <li>Valid states: queued, in progress, completed and blocked.</li>
+      <li>Planned and actual time windows are constraint-checked.</li>
+      <li>A production order cannot complete while any routed operation is incomplete.</li>
+      <li>The production detail UI shows route evidence, operator, time and accepted/rejected quantity.</li>
+    </ul>
+    <h3>7.4 Maintenance integrity</h3>
+    <ul>
+      <li>Work-order start and task addition require idempotency keys.</li>
+      <li>Employee references, task values and budget queries are zod-validated before service execution.</li>
+      <li>The Northstar work order stores three measurable signed tasks, including a 0–0.05 mbar vacuum bound.</li>
+      <li>Labour is opened once on start and closed/valued on completion; retries no longer duplicate it.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>7. Domain changes — quality, spend and decision intelligence</h2>
+    <h3>7.5 Persisted NCR and CAPA</h3>
+    <p>Migration <code>0064_quality_corrective_workflow.sql</code> introduces <code>qms_finding</code> and <code>qms_corrective_action</code>, both tenant-fenced, non-deletable to the application role and protected by database checks.</p>
+    <div class="relation"><div>Rejected inspection</div><div class="arrow">→</div><div>NCR<br>containment + cause</div><div class="arrow">→</div><div>CAPA<br>completion ≠ proof</div></div>
+    <ul>
+      <li>Finding sources include inspection, audit, complaint, supplier and manual.</li>
+      <li>Containment must exist after the finding leaves <code>new</code>.</li>
+      <li>Root cause requires an attributable confirmer and timestamp.</li>
+      <li>CAPA completion evidence is required before effectiveness review.</li>
+      <li>A CAPA may close only after an effective verdict with evidence, verifier and timestamp.</li>
+      <li>The Northstar CAPA intentionally remains in effectiveness review for a human.</li>
+    </ul>
+    <h3>7.6 Employee Spend module</h3>
+    <ul>
+      <li>A registered <code>expenditure</code> web module now exposes claims and budget decisions.</li>
+      <li>The Northstar witness-test claim is visible with three lines and reconciled totals.</li>
+      <li>Budget consumption accepts the canonical compact Indian FY code <code>2627</code>.</li>
+      <li>Malformed budget queries now return a validation response rather than a server failure.</li>
+    </ul>
+    <h3>7.7 Decision Commander</h3>
+    <ul>
+      <li>Joins current sales, planning, purchase, quality and maintenance reads.</li>
+      <li>Shows source references, dates and values as decision facts.</li>
+      <li>Uses explicit trust chips: Live ERP records, Deterministic risk rules, No hidden writes and Human approval required.</li>
+      <li>Calls unsupported monetary consequence <b>exposure</b>, never verified loss.</li>
+      <li>Leaves amounts blank when a defensible rate is unavailable.</li>
+    </ul>
+    <h3>7.8 Agent OS and ONYX</h3>
+    <ul>
+      <li>Seven governed identities are registered: ONYX, MICA, SPAR, AXLE, KILN, RASP and HEXA.</li>
+      <li>Evidence waves may run in parallel, but action nodes sit behind a durable human checkpoint.</li>
+      <li>Approved actions are internal accountable work items; no external supplier, payment or customer system is claimed to have been contacted.</li>
+      <li>One PostgreSQL client-concurrency warning was removed by making tenant-pinned Agent OS reads sequential inside their transaction.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>8. Database and API changes</h2>
+    <h3>New persisted structures</h3>
+    <table>
+      <thead><tr><th>Migration / schema</th><th>Main structure</th><th>Key invariants</th></tr></thead>
+      <tbody>
+        <tr><td><code>0064_quality_corrective_workflow.sql</code></td><td><code>qms_finding</code>, <code>qms_corrective_action</code>, NC/CAPA document series.</td><td>Tenant uniqueness, idempotency, containment/cause/closure checks, separate effectiveness verification, FORCE RLS, no application DELETE.</td></tr>
+        <tr><td><code>0065_production_operations.sql</code></td><td><code>production_operation</code> linked to <code>production_order</code>.</td><td>Unique sequence per order, valid time windows, accountable started/completed states, FORCE RLS, no application DELETE.</td></tr>
+        <tr><td>Production Drizzle schema</td><td>Typed operation relation returned with order detail.</td><td>API and UI compile against one field definition.</td></tr>
+        <tr><td>Quality Drizzle schema</td><td>Typed finding and CAPA records.</td><td>Status and effectiveness values remain constrained in TypeScript and SQL.</td></tr>
+      </tbody>
+    </table>
+    <h3>New/extended API surface</h3>
+    <table>
+      <thead><tr><th>Method and route</th><th>Purpose</th><th>Control</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /quality/findings</code></td><td>List persisted NCR findings.</td><td><code>quality.inspection.read</code></td></tr>
+        <tr><td><code>POST /quality/findings</code></td><td>Create a source-linked finding.</td><td>Execute permission + idempotency + zod</td></tr>
+        <tr><td><code>POST /quality/findings/:no/contain</code></td><td>Record containment.</td><td>Disposition permission + idempotency</td></tr>
+        <tr><td><code>POST /quality/findings/:no/root-cause</code></td><td>Confirm attributable root cause.</td><td>Disposition permission + idempotency</td></tr>
+        <tr><td><code>GET/POST /quality/corrective-actions</code></td><td>List or create CAPA.</td><td>Read/decision permission as appropriate</td></tr>
+        <tr><td><code>POST /quality/corrective-actions/:no/complete</code></td><td>Store completion evidence.</td><td>Does not close effectiveness</td></tr>
+        <tr><td><code>POST /quality/corrective-actions/:no/verify</code></td><td>Record effective/ineffective human result.</td><td>Evidence + attributable actor</td></tr>
+        <tr><td><code>POST /production/orders/:id/operations</code></td><td>Add an ordered operation.</td><td>Create permission + idempotency</td></tr>
+        <tr><td><code>POST .../operations/:sequence/start</code></td><td>Start with operator and optional input quantity.</td><td>Execute permission + predecessor checks</td></tr>
+        <tr><td><code>POST .../operations/:sequence/complete</code></td><td>Complete with output, rejects and evidence.</td><td>Execute permission + validation</td></tr>
+        <tr><td><code>GET /production/orders/:id</code></td><td>Return order and operation route.</td><td>Read permission + tenant scope</td></tr>
+      </tbody>
+    </table>
+    <h3>Cross-cutting response behaviour</h3>
+    <ul>
+      <li>Mutations in the changed paths require <code>Idempotency-Key</code>; missing keys fail before writes.</li>
+      <li>Direct and ORM-wrapped PostgreSQL <code>23505</code> conflicts map to a safe canonical HTTP 409 response.</li>
+      <li>Zod failures produce field-specific validation output instead of positional-field 500 errors.</li>
+      <li>Unknown production orders return clean not-found responses.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>9. Identity, security and governance</h2>
+    <h3>Authentication</h3>
+    <ul>
+      <li>The application uses real Keycloak OIDC Authorization Code + PKCE.</li>
+      <li>The local presenter identity is <code>hari</code>; arbitrary credentials no longer become an administrator.</li>
+      <li>Blank fields are allowed only as an explicitly labelled local presenter shortcut and resolve to the seeded demo account.</li>
+      <li>Malformed bearer tokens and unauthenticated reads are rejected.</li>
+      <li>The browser refreshes the access token before expiry.</li>
+      <li>The former 30-second inactivity redirect is removed. Inactivity no longer navigates away or discards presentation context.</li>
+    </ul>
+    <h3>Authorisation and tenancy</h3>
+    <div class="flow">
+      <div>Verified Keycloak token<br>tenant + subject</div><div class="arrow">→</div><div>Route permission guard<br>deny by default</div><div class="arrow">→</div><div>PostgreSQL SET LOCAL<br>FORCE RLS policy</div>
+    </div>
+    <ul>
+      <li>138 permissions are both registered and demanded by routes.</li>
+      <li>The permission catalogue covers two seeded tenants with no uncatalogued grants.</li>
+      <li>224 tenant-scoped tables pass the FORCE RLS/policy check.</li>
+      <li>The stores persona is explicitly denied the administration role registry.</li>
+      <li>UI navigation contains 150 permission references and fails validation if a module invents an undefined permission.</li>
+    </ul>
+    <h3>Human and audit controls</h3>
+    <ul>
+      <li>Approvals retain actor, time, written note, exact proposed consequence and outcome.</li>
+      <li>Approval grants only the exact action boundary; it is not a broad agent privilege.</li>
+      <li>Audit and AI action chains are append-only and hash-linked.</li>
+      <li>CAPA effectiveness, credit override and Agent OS action gates remain human-owned.</li>
+      <li>“No hidden writes” is a product rule and a tested property of the guided demo.</li>
+    </ul>
+    <div class="callout bad"><b>Production warning:</b> local demo credentials, local realm configuration and development infrastructure must never be reused as production security configuration. Production needs MFA, secret management, WAF, restore drills, monitoring and a formal threat model.</div>
+  </section>
+
+  <section class="page">
+    <h2>10. Web product and presentation changes</h2>
+    <h3>Module architecture</h3>
+    <ul>
+      <li>Employee Spend is registered as module 19.</li>
+      <li>Quality now exposes live findings and corrective actions beside inspections.</li>
+      <li>Production order detail renders the operation route and evidence.</li>
+      <li>Sales order detail renders the three decision-time credit facts.</li>
+      <li>Module isolation tooling prevents cross-module imports and validates manifests.</li>
+    </ul>
+    <h3>Investor trust design</h3>
+    <table>
+      <thead><tr><th>UI change</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Decision Commander title changed to “Live operating decision room”.</td><td>Frames the screen around current operating evidence rather than an abstract dashboard.</td></tr>
+        <tr><td>Trust chips label live records, deterministic rules, no hidden writes and human approval.</td><td>Makes the operating boundary visible without requiring technical explanation.</td></tr>
+        <tr><td>Static future workspaces show an “Illustrative workspace” banner.</td><td>Prevents a curated scenario from being mistaken for a ledger calculation.</td></tr>
+        <tr><td>One Northstar story replaces the old catalogue.</td><td>Removes contradictory fictional numbers and makes the pitch memorable.</td></tr>
+        <tr><td>Guided dock displays live record reference and step-specific evidence.</td><td>Lets the presenter point to proof instead of reading generic narration.</td></tr>
+        <tr><td>“Stop demo” replaces “Reset demo”.</td><td>The button stops navigation guidance; it does not clear business data.</td></tr>
+        <tr><td>Copilot Alerts/Brief/Actions link to current governed screens.</td><td>Removes permanent sample cards from the normal product shell.</td></tr>
+        <tr><td>30-second screen saver removed.</td><td>An investor or operator can pause on a screen without being returned to sign-in.</td></tr>
+      </tbody>
+    </table>
+    <h3>Login behaviour</h3>
+    <p>The cinematic sign-in remains responsive on desktop and phone, supports dark mode and reduced motion, and uses real Keycloak access. Returning deliberately to the root/sign-out path still requires credentials; ordinary inactivity no longer does.</p>
+    <div class="callout good"><b>Presentation safety:</b> the normal shell stays operational underneath the guide. Stopping, finishing or refreshing removes the guide layer and does not alter the business record.</div>
+  </section>
+
+  <section class="page">
+    <h2>11. Deterministic seed and rebuild process</h2>
+    <p>The demo database can be rebuilt from source rather than repaired manually before each meeting.</p>
+    <div class="flow">
+      <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>64 migration files<br>through 0065</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
+    </div>
+    <div class="flow">
+      <div>Northstar story<br>98 successful steps</div><div class="arrow">→</div><div>Worker drains<br>transactional outbox</div><div class="arrow">→</div><div>87-check matrix<br>must pass</div>
+    </div>
+    <h3>Normal rebuild commands</h3>
+    <pre>corepack enable
+pnpm install
+pnpm db:demo-reset --yes
+pnpm db:migrate
+pnpm demo:seed
+pnpm demo:northstar
+pnpm demo:verify</pre>
+    <h3>Seeder guarantees</h3>
+    <ul>
+      <li>The reset tool validates the target database and requires an explicit demo reset flag.</li>
+      <li>Base and Northstar seeders check every expected response rather than silently continuing after failure.</li>
+      <li>Maintenance task mutations carry idempotency keys and no longer multiply labour/task rows on retries.</li>
+      <li>The quality action completes but is intentionally left before human effectiveness closure.</li>
+      <li>Audit and AI chains are verified at the end of seeding.</li>
+      <li>The final story facts are asserted again by API after browser testing.</li>
+    </ul>
+    <div class="callout warn"><b>Do not reset a shared or production database.</b> The demo reset intentionally drops and recreates the public schema. Keep the target isolated, inspect <code>DATABASE_URL</code>, and rely on the guard rather than bypassing it.</div>
+  </section>
+
+  <section class="page">
+    <h2>12. Verification and acceptance evidence</h2>
+    <h3>Live investor acceptance matrix — 87/87</h3>
+    <table>
+      <thead><tr><th>Check family</th><th>Examples</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime and identity</td><td>Web, Keycloak realm, OIDC discovery, admin/stores tokens, unauthenticated and malformed-token rejection.</td><td class="check">PASS</td></tr>
+        <tr><td>Authenticated surfaces</td><td>29 operational reads across masters, orders, stock, QMS, spend, accounting, Agent OS and administration.</td><td class="check">PASS</td></tr>
+        <tr><td>Northstar commercial facts</td><td>120 units, ₹74.34 lakh, 04-Sep-2026, 28 dispatched, 80 remaining and credit snapshots.</td><td class="check">PASS</td></tr>
+        <tr><td>Production and quality</td><td>Four complete operations, 40 received, 0.034/0.020 rejection, 12 quarantine, 28 + 12 reconciliation.</td><td class="check">PASS</td></tr>
+        <tr><td>NCR/CAPA and maintenance</td><td>Inspection link, non-self-closing CAPA, Furnace 02, accountable work order and 4.5-hour downtime.</td><td class="check">PASS</td></tr>
+        <tr><td>Spend and finance</td><td>Expense claim reconciliation, employee attribution, posted voucher and balanced trial balance.</td><td class="check">PASS</td></tr>
+        <tr><td>Decision and governance</td><td>Five source families, partially dispatched promise, exposure labelling and seven registered agents.</td><td class="check">PASS</td></tr>
+        <tr><td>Negative/error paths</td><td>Persona denial, invalid pagination, missing idempotency, unknown order and malformed spend query.</td><td class="check">PASS</td></tr>
+      </tbody>
+    </table>
+    <h3>Browser verification — 17/17 full suite</h3>
+    <ul>
+      <li>Administrator traverses more than 40 application routes and uses ONYX evidence.</li>
+      <li>All nine Northstar steps navigate to a visible target without business mutations.</li>
+      <li>Agent OS runs the seven-agent controlled-autonomy flow and human approval boundary.</li>
+      <li>Specialist personas see only their departments and the API enforces the same wall.</li>
+      <li>Desktop, phone, dark mode and reduced-motion sign-in variants render correctly.</li>
+      <li>Unknown credentials are rejected; the labelled presenter flow works repeatedly.</li>
+      <li>A dedicated regression leaves Sales Orders untouched for 32 seconds and confirms no redirect.</li>
+    </ul>
+    <h3>Static and policy gates</h3>
+    <div class="kpi">
+      <div><b>695</b>platform tests</div>
+      <div><b>17</b>API tests</div>
+      <div><b>224</b>RLS tables</div>
+      <div><b>138 / 138</b>route permissions</div>
+    </div>
+    <ul>
+      <li>Lint passes with zero warnings.</li>
+      <li>TypeScript checks pass in web, API, platform and database packages.</li>
+      <li>Production Next.js and NestJS builds succeed.</li>
+      <li>Database naming check passes across 234 tables.</li>
+      <li>All 19 module manifests and 150 navigation permissions pass validation.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>13. Local engineering runbook</h2>
+    <h3>Prerequisites</h3>
+    <ul><li>Node.js 22</li><li>Corepack / pnpm 9</li><li>Docker with Compose support</li><li>Ports 3000, 3001, 3002, 5432, 6379 and 8080 available</li></ul>
+    <h3>First-time setup</h3>
+    <pre>cd "MVP_PROTOTYPE_1"
+corepack enable
+pnpm install
+cp .env.example .env
+docker compose -f infra/docker-compose.yml up -d
+pnpm db:migrate
+pnpm demo:seed
+pnpm demo:northstar
+pnpm build</pre>
+    <h3>Start the application</h3>
+    <pre># Terminal 1 — API
+pnpm --filter @ind-core/api start
+
+# Terminal 2 — asynchronous outbox worker
+pnpm --filter @ind-core/api worker
+
+# Terminal 3 — production web build
+pnpm --filter @ind-core/web start</pre>
+    <table>
+      <thead><tr><th>Service</th><th>URL / port</th><th>Expected check</th></tr></thead>
+      <tbody>
+        <tr><td>Web</td><td><code>http://localhost:3001</code></td><td>HTTP 200 and XELOR sign-in.</td></tr>
+        <tr><td>API</td><td><code>http://localhost:3000/api/v1</code></td><td>Unauthenticated business read returns 401.</td></tr>
+        <tr><td>Keycloak</td><td><code>http://localhost:8080</code></td><td>Realm discovery returns 200.</td></tr>
+        <tr><td>Gotenberg</td><td><code>http://localhost:3002/health</code></td><td>Chromium and LibreOffice report up.</td></tr>
+        <tr><td>PostgreSQL</td><td><code>localhost:5432</code></td><td>Container healthy; migrations current.</td></tr>
+        <tr><td>Valkey</td><td><code>localhost:6379</code></td><td>Container healthy; worker connected.</td></tr>
+      </tbody>
+    </table>
+    <h3>Verify before any presentation</h3>
+    <pre>pnpm demo:verify
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm db:rls-check
+pnpm db:perm-check
+pnpm --filter @ind-core/db naming-check
+pnpm --filter @ind-core/web module-check
+pnpm --filter @ind-core/web exec playwright test</pre>
+    <div class="callout good"><b>Presenter login:</b> open <code>http://localhost:3001</code> and use <code>hari</code> / <code>1234</code>, or leave the labelled local presenter fields blank and press Enter XELOR.</div>
+  </section>
+
+  <section class="page">
+    <h2>14. Eight-to-ten-minute presentation script</h2>
+    <ol>
+      <li><b>Sign in and open the Brain.</b> Say: “Seven governed departmental agents are connected; this local build uses deterministic reasoning so we can prove every result.”</li>
+      <li><b>Press Start Demo → Protect the Northstar delivery.</b> Say: “One order is now the thread through the company.”</li>
+      <li><b>Decision Commander.</b> Show the five source families and trust chips. Say: “The system recognises one decision; it does not call exposure a verified loss.”</li>
+      <li><b>Sales.</b> Show 120 pumps, ₹74.34 lakh, the date, partial dispatch and the three credit facts.</li>
+      <li><b>Planning and production.</b> Explain that MRP calculates dates and shortages; then show the four accountable operations.</li>
+      <li><b>Quality.</b> Show 0.034 against 0.020, the 12 quarantined units, NCR and CAPA. Emphasise that completion is not effectiveness.</li>
+      <li><b>Maintenance.</b> Show Furnace 02, 4.5 hours, signed measurable tasks and labour value.</li>
+      <li><b>Finance.</b> Show the posted voucher. Say: “Where a defensible valuation is unavailable, XELOR says so.”</li>
+      <li><b>Approval.</b> Show that a person reviews exact evidence and writes the decision note before work is dispatched.</li>
+      <li><b>Audit close.</b> End with the hash-chain verifier and the reconciliation 40 = 28 + 12.</li>
+    </ol>
+    <h3>Questions the technical team should be ready to answer</h3>
+    <table>
+      <thead><tr><th>Question</th><th>Short truthful answer</th></tr></thead>
+      <tbody>
+        <tr><td>“Is this data real?”</td><td>It is deterministic seeded ERP data persisted in PostgreSQL and read through authenticated APIs; it is not a production customer's data.</td></tr>
+        <tr><td>“Did AI change the ledger?”</td><td>No. ONYX gathers and explains evidence. Governed actions require a human gate, and the demo does not claim external execution.</td></tr>
+        <tr><td>“Are seven LLMs running?”</td><td>No. Seven governed agent identities and workflows are live; language reasoning is deterministic in this environment.</td></tr>
+        <tr><td>“How is tenant isolation enforced?”</td><td>Verified identity establishes tenant context, route guards enforce permissions and PostgreSQL FORCE RLS provides the final fail-closed boundary.</td></tr>
+        <tr><td>“Can the demo be rebuilt?”</td><td>Yes. Guarded reset, migrations, two seeders and the 87-check matrix reproduce and verify it.</td></tr>
+        <tr><td>“Is it production-ready?”</td><td>No. The core architecture is credible, but cloud operations, security assurance and named workflow gaps remain roadmap work.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>15. Known boundaries and unresolved product scope</h2>
+    <table>
+      <thead><tr><th>Boundary</th><th>Current truth</th><th>Required production work</th></tr></thead>
+      <tbody>
+        <tr><td>Opportunity and quotation</td><td>Sales starts at a committed order.</td><td>Lead/opportunity pipeline, quote revisions, validity, approval and quote-to-order conversion.</td></tr>
+        <tr><td>Supplier AP/payment</td><td>Direct-material purchase cycle reaches goods receipt; employee/indirect spend is separate.</td><td>Supplier invoice, three-way match, AP ageing, exceptions and controlled payment runs.</td></tr>
+        <tr><td>Engineering change control</td><td>BOM revision exists, but formal change intent/effectivity is not governed.</td><td>ECR/ECO, where-used analysis, approvals, effectivity and old-stock disposition.</td></tr>
+        <tr><td>Production depth</td><td>Operation execution is real for the demo path.</td><td>Deeper WIP, labour/machine costing, terminal UX, rework and dispatch sequencing.</td></tr>
+        <tr><td>QMS breadth</td><td>NCR/CAPA is real for the Northstar thread; several document/audit workspaces remain illustrative.</td><td>Full 8D, attachments, document lifecycle, audit programme persistence and customer-specific routes.</td></tr>
+        <tr><td>AI provider</td><td>Deterministic stub; no hosted model active.</td><td>Provider security/privacy review, eval gates, shadow mode, cost controls and rollback before activation.</td></tr>
+        <tr><td>Infrastructure</td><td>Local processes and containers.</td><td>CI/CD, managed database/broker, object storage, secrets, observability, backup restore, HA and incident response.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><b>Do not market around these boundaries.</b> The demo is strong because it is precise about what it proves. Adding unsupported claims would reduce technical credibility more than adding another screen would increase it.</div>
+  </section>
+
+  <section class="page">
+    <h2>16. Recommended next engineering work</h2>
+    <h3>Next 30 days — turn the demo into a governed release</h3>
+    <ul>
+      <li>Review and commit the current large working tree in small, domain-labelled changes; preserve the two new migrations and acceptance tooling.</li>
+      <li>Add the 87-check matrix and the critical Playwright journeys to CI.</li>
+      <li>Build immutable Web/API/Worker containers and run migrations as a deployment gate.</li>
+      <li>Introduce structured logs, correlation IDs across browser/API/worker and basic error tracking.</li>
+      <li>Move repeated module modals into a shared spine component and retain focus/locked-write behaviour.</li>
+      <li>Formalise demo reset/runbook ownership and a pre-meeting checklist.</li>
+    </ul>
+    <h3>Days 31–60 — pilot foundation</h3>
+    <ul>
+      <li>Deploy a non-production cloud environment with managed PostgreSQL, managed Valkey, object storage, KMS/secrets and TLS.</li>
+      <li>Add backup restore drills, database migration rollback rehearsals and environment promotion.</li>
+      <li>Enable MFA, production Keycloak policy, secret rotation, rate limits, WAF and audit export.</li>
+      <li>Add observability dashboards for latency, error rate, queue lag, database saturation and approval age.</li>
+      <li>Complete accessibility and performance budgets for the core investor/pilot paths.</li>
+    </ul>
+    <h3>Days 61–90 — close workflow gaps for a design partner</h3>
+    <ul>
+      <li>Prioritise quotation/opportunity because it is the most visible commercial workflow gap.</li>
+      <li>Implement supplier invoice, three-way match and AP ageing before claiming end-to-end purchasing.</li>
+      <li>Add formal engineering change control for revision/effectivity traceability.</li>
+      <li>Deepen operation costing/WIP and QMS attachment/8D support based on the first design partner.</li>
+      <li>Evaluate a hosted AI provider only after deterministic baselines, privacy controls and shadow-mode metrics are approved.</li>
+    </ul>
+    <div class="callout violet"><b>Recommended ownership:</b> one engineer owns demo determinism and acceptance; domain owners own workflow depth; platform/security owners own tenancy, identity, audit and deployment gates. Do not make the demo seeder the only place where cross-domain behaviour is understood.</div>
+  </section>
+
+  <section class="page">
+    <h2>17. File map and handoff checklist</h2>
+    <h3>Primary implementation locations</h3>
+    <table>
+      <thead><tr><th>Area</th><th>Primary files/directories</th></tr></thead>
+      <tbody>
+        <tr><td>Northstar data</td><td><code>apps/api/scripts/demo/01-seed-base-world.mjs</code><br><code>apps/api/scripts/demo/02-seed-northstar-story.mjs</code></td></tr>
+        <tr><td>Acceptance matrix</td><td><code>apps/api/scripts/diagnostics/investor-demo-matrix.mjs</code></td></tr>
+        <tr><td>NCR/CAPA API</td><td><code>apps/api/src/modules/quality/qms-workflow.controller.ts</code><br><code>qms-workflow.service.ts</code></td></tr>
+        <tr><td>Production operations API</td><td><code>apps/api/src/modules/production/production.controller.ts</code><br><code>production.service.ts</code></td></tr>
+        <tr><td>FIFO inventory</td><td><code>apps/api/src/modules/inventory/inventory.service.ts</code><br><code>inventory.service.test.ts</code></td></tr>
+        <tr><td>Database</td><td><code>packages/db/migrations/0064_quality_corrective_workflow.sql</code><br><code>0065_production_operations.sql</code><br><code>packages/db/src/schema/quality.ts</code><br><code>production.ts</code></td></tr>
+        <tr><td>Guided demo</td><td><code>apps/web/src/spine/demo/demo-scenarios.ts</code><br><code>demo-launcher.tsx</code><br><code>demo-presenter.ts</code></td></tr>
+        <tr><td>Decision Commander / Agent OS</td><td><code>apps/api/src/agent-os/</code><br><code>apps/web/src/modules/agentos/</code></td></tr>
+        <tr><td>Employee Spend UI</td><td><code>apps/web/src/modules/expenditure/</code></td></tr>
+        <tr><td>Browser verification</td><td><code>apps/web/e2e/</code><br><code>apps/web/playwright.config.ts</code></td></tr>
+        <tr><td>Identity/theme</td><td><code>apps/web/src/spine/auth/</code><br><code>infra/keycloak/realm-indcore.json</code><br><code>infra/keycloak-themes/</code></td></tr>
+      </tbody>
+    </table>
+    <h3>Technical handoff checklist</h3>
+    <ul>
+      <li>☐ Every engineer can rebuild the demo database and reach 87/87.</li>
+      <li>☐ QA can run the Playwright suite and identify the nine canonical acts.</li>
+      <li>☐ Backend owners understand the new operation and NCR/CAPA state machines.</li>
+      <li>☐ Database owners review the RLS, no-delete and constraint choices in migrations 0064/0065.</li>
+      <li>☐ Frontend owners understand live versus illustrative provenance labels.</li>
+      <li>☐ Security owners replace local presenter credentials before any shared deployment.</li>
+      <li>☐ DevOps owners run API and worker separately and monitor outbox lag.</li>
+      <li>☐ Product owners accept the named quotation, supplier AP and ECO roadmap gaps.</li>
+      <li>☐ The team keeps the inactivity-redirect regression test so the 30-second behaviour does not return.</li>
+      <li>☐ No one claims external autonomous execution or production-grade hosted AI from this build.</li>
+    </ul>
+    <div class="callout good"><b>Definition of a safe handoff:</b> another engineer can start the stack, rebuild the data, run every gate, present the Northstar story and explain each product boundary without relying on undocumented knowledge from the original implementer.</div>
+    <p class="footer-note">Companion documents: <code>docs/02-investor-demo/01-presenter-walkthrough.md</code>, <code>docs/02-investor-demo/02-capability-gaps.md</code>, the technology roadmap report and the Agentic AI implementation strategy.</p>
+  </section>
+</body>
+</html>

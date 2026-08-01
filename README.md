@@ -1,4 +1,4 @@
-# IND-CORE Manufacturing ERP — MVP Prototype 1
+# XELOR Manufacturing Intelligence — MVP Prototype 1
 
 A **boundary-enforced modular monolith** built strictly to **`DECISIONS-V2.md`**
 (binding). This scaffold makes its §1/§4/§5 conventions *executable* rather than
@@ -12,6 +12,17 @@ RLS** · Drizzle ORM · Valkey + BullMQ · Keycloak 26 OIDC · pgvector/pg_trgm 
 Gotenberg · pnpm workspace. Provider-agnostic AI router — an offline deterministic stub by
 default, a **local model (EDGE tier)** with `AI_PROVIDER=ollama`, and a hosted provider
 swappable in by the same config.
+
+## Documentation
+
+The ordered project documentation starts at [docs/README.md](docs/README.md):
+
+- `00-project/` — technology and architecture;
+- `01-agent-os/` — the three implemented Agent OS phases, in order; and
+- `02-investor-demo/` — the presenter walkthrough and honest capability-gap register.
+
+Repository discovery files remain at the root because tools expect them there:
+`README.md` for project entry and `CLAUDE.md` for environment notes.
 
 > **Scope now:** platform foundation + Identity/RBAC + W1 approval engine + the shared
 > AI spine + **Module 01 GENERAL** (company master with a duplicate-detection brain) +

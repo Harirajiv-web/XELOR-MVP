@@ -27,7 +27,7 @@ INSERT INTO licence_record (
   '0192a8c0-0000-7000-8000-000000000002',
   '0192a8c0-0000-7000-8000-0000000000ff',
   '0192a8c0-0000-7000-8000-0000000000ff',
-  'IND-CORE Essentials',
+  'XELOR Essentials',
   8,
   '["general","engineering","inventory","sales","administration"]'::jsonb,
   '2026-04-01', '2027-03-31',

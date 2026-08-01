@@ -182,7 +182,8 @@ export const ROLLOUT_TONE: Readonly<Record<string, "draft" | "pending" | "progre
 
 /**
  * Module key → owning department code.
- * Source: each module's `manifest.ts` (`department:`), and `MVP FILES/NAME.md` §3 for the
+ * Source: each module's `manifest.ts` (`department:`), and
+ * `docs/00-governance/02-departments-and-agent-ownership.md` §3 for the
  * three backend-only modules the web app has no folder for (`expenditure`) or spells
  * differently (`integrations` / `integration`).
  */

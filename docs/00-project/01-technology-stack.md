@@ -1,4 +1,4 @@
-# IND-CORE — Technology Stack
+# XELOR — Technology stack and architecture
 
 *India-first, AI-native manufacturing ERP for MSMEs. Stack is normative per
 `DECISIONS-V2.md` §2 + Appendix A (pinned July 2026); every choice survived an

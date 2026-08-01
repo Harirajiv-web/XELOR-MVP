@@ -46,6 +46,22 @@ export class ErrorEnvelopeFilter implements ExceptionFilter {
       return;
     }
 
+    // node-postgres errors can arrive directly or wrapped as `cause` by an ORM. A unique
+    // collision is a caller-visible conflict, never an opaque server failure. Do not expose
+    // the constraint or DETAIL string: both can reveal table and tenant data.
+    const database = postgresError(exception);
+    if (database?.code === "23505") {
+      const envelope: ErrorEnvelope = {
+        error: {
+          code: "CONFLICT",
+          message: "This request conflicts with a record that already exists.",
+          traceId,
+        },
+      };
+      res.status(409).json(envelope);
+      return;
+    }
+
     // Genuinely unexpected. Log WITH the traceId so the opaque response can be found.
     console.error(`Unhandled error [trace ${traceId}]:`, exception);
     const envelope: ErrorEnvelope = {
@@ -53,6 +69,25 @@ export class ErrorEnvelopeFilter implements ExceptionFilter {
     };
     res.status(500).json(envelope);
   }
+}
+
+interface PostgresErrorShape {
+  code?: string;
+  cause?: unknown;
+}
+
+/** Find a PostgreSQL error through the shallow wrapper chain used by pg/Drizzle. */
+export function postgresError(exception: unknown): PostgresErrorShape | null {
+  let value = exception;
+  const seen = new Set<unknown>();
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof value !== "object" || value === null || seen.has(value)) return null;
+    seen.add(value);
+    const candidate = value as PostgresErrorShape;
+    if (typeof candidate.code === "string" && /^23\d{3}$/.test(candidate.code)) return candidate;
+    value = candidate.cause;
+  }
+  return null;
 }
 
 /** Status → the canonical SCREAMING_SNAKE code the envelope contract promises (§5.3). */

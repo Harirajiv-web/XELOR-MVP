@@ -140,6 +140,9 @@ export interface SalesOrderView {
   roundOff: string;
   grandTotal: string;
   creditStatus: string;
+  /** The exact figures used by the credit gate at confirmation time. */
+  creditLimitSnapshot: string | null;
+  creditExposureSnapshot: string | null;
   status: string;
   lines: SalesOrderLineView[];
 }
@@ -1056,6 +1059,8 @@ export class SalesService implements DemandSource {
       roundOff: r.roundOff,
       grandTotal: r.grandTotal,
       creditStatus: r.creditStatus,
+      creditLimitSnapshot: r.creditLimitSnapshot,
+      creditExposureSnapshot: r.creditExposureSnapshot,
       status: r.status,
       lines: lines.map((l) => {
         const spec = itemById.get(l.itemId) ?? null;

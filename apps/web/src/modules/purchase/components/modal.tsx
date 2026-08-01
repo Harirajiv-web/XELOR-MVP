@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
-import { useHoldsUnsavedWork } from "@spine/presence/activity";
 import { X } from "lucide-react";
 
 /**
@@ -49,11 +48,6 @@ export function Modal({
   children: ReactNode;
   labelledById?: string;
 }): React.JSX.Element {
-  // A dialog is open, and everything in it is unsaved. Hold the thirty-second screen
-  // saver off until it closes — returning to the Brain stance mid-form would throw away
-  // typed work, and a destructive confirmation must never be dismissed by a timer.
-  useHoldsUnsavedWork(true);
-
   const cardRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusTo = useRef<Element | null>(null);
 

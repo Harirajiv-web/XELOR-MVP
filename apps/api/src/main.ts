@@ -11,7 +11,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new ErrorEnvelopeFilter());
   const port = Number(process.env.API_PORT ?? 3000);
   await app.listen(port);
-  console.log(`IND-CORE API on :${port} (prefix /api/v1)`);
+  console.log(`XELOR API on :${port} (prefix /api/v1)`);
 }
 
 void bootstrap();

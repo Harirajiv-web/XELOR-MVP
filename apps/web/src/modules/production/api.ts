@@ -44,8 +44,26 @@ export interface ProductionComponentRow extends ItemNaming {
   issuedQty: string;
 }
 
+export interface ProductionOperationRow {
+  sequence: number;
+  operationCode: string;
+  operationName: string;
+  workCenterRef: string | null;
+  status: string;
+  plannedStart: string | null;
+  plannedEnd: string | null;
+  actualStart: string | null;
+  actualEnd: string | null;
+  operatorRef: string | null;
+  inputQty: string | null;
+  outputQty: string;
+  rejectedQty: string;
+  evidenceNote: string | null;
+}
+
 export interface ProductionOrderDetail extends ProductionOrderRow {
   components: ProductionComponentRow[];
+  operations: ProductionOperationRow[];
 }
 
 /**
@@ -83,6 +101,7 @@ export interface ProductionOrderCoreResult {
     requiredQty: string;
     issuedQty: string;
   }>;
+  operations: ProductionOperationRow[];
 }
 
 export interface ProductionActionResult {
@@ -123,6 +142,11 @@ export const productionApi = {
   issuePath: (id: string): string => `/production/orders/${id}/issue`,
   /** Receive output into finished goods. `production.order.execute`. */
   completePath: (id: string): string => `/production/orders/${id}/complete`,
+  addOperationPath: (id: string): string => `/production/orders/${id}/operations`,
+  startOperationPath: (id: string, sequence: number): string =>
+    `/production/orders/${id}/operations/${sequence}/start`,
+  completeOperationPath: (id: string, sequence: number): string =>
+    `/production/orders/${id}/operations/${sequence}/complete`,
   /**
    * Masters the create form picks from. Both are GETs against other modules' read
    * endpoints — the create schema wants two warehouse UUIDs and an item UUID, and typing a

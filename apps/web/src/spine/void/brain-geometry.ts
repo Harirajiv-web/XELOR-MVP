@@ -165,23 +165,135 @@ export const BRAIN_POINTS: readonly Vec3[] = [
  * a modelling tool, which is precisely the "gaming look" the brief rules out. Two links per
  * point gives a wandering, organic web that still describes the surface.
  */
-export const BRAIN_EDGES: readonly (readonly [number, number])[] = (() => {
+const NEIGHBOURS = 3;
+
+const dist2 = (a: Vec3, b: Vec3): number =>
+  (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
+
+/**
+ * The mesh, in two passes: nearest neighbours, then a repair that guarantees ONE piece.
+ *
+ * ───────────────────────────────────────────────────────────────────────────────
+ * WHY THREE — AND WHAT WAS ACTUALLY WRONG WITH TWO
+ * ───────────────────────────────────────────────────────────────────────────────
+ * The obvious diagnosis for a silhouette that looks broken is that the graph is in pieces.
+ * Measured over these 202 points, that was NOT the problem:
+ *
+ *     k = 1   150 edges   52 components   broken
+ *     k = 2   258 edges    1 component    whole
+ *     k = 3   365 edges    1 component    whole
+ *
+ * Two neighbours already produced a single connected object. What it did not produce was a
+ * COHESIVE one: 258 filaments over 202 points is barely more than a spanning path, so most
+ * points sat on a thread with one way in and one way out. Connected is a property of the
+ * graph; cohesive is a property of the picture, and a thin wandering thread reads as gaps
+ * and floating fragments however provably joined it is.
+ *
+ * Three neighbours adds a hundred more filaments and closes the lattice into something that
+ * holds an edge from any angle — without filling it in, which is the other failure mode.
+ *
+ * ───────────────────────────────────────────────────────────────────────────────
+ * THE REPAIR PASS IS A GUARANTEE, NOT A FIX
+ * ───────────────────────────────────────────────────────────────────────────────
+ * Union-find finds any components that remain and stitches each to the rest by its single
+ * shortest crossing edge — the fewest lines that can make the figure whole. On the current
+ * geometry it adds ZERO, because k = 3 was already connected. It is kept because whether a
+ * point set is connected at a given k is a property of that point set: tune the anatomy and
+ * the guarantee still holds, instead of a silent island appearing at one rotation angle.
+ *
+ * `BRAIN_MESH` reports the outcome and the Brain publishes it to the DOM, so the harness
+ * checks facts rather than inferring them from a picture.
+ */
+const buildMesh = (): { edges: [number, number][]; components: number; repaired: number } => {
   const out = new Set<string>();
+  const key = (a: number, b: number): string => (a < b ? `${a}:${b}` : `${b}:${a}`);
+
   BRAIN_POINTS.forEach((p, i) => {
-    const near = BRAIN_POINTS.map((q, j) => ({
-      j,
-      d: (p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2,
-    }))
+    const near = BRAIN_POINTS.map((q, j) => ({ j, d: dist2(p, q) }))
       .filter((n) => n.j !== i)
       .sort((a, b) => a.d - b.d)
-      .slice(0, 2);
-    for (const n of near) out.add(i < n.j ? `${i}:${n.j}` : `${n.j}:${i}`);
+      .slice(0, NEIGHBOURS);
+    for (const n of near) out.add(key(i, n.j));
   });
-  return [...out].map((k) => {
+
+  // ── union-find ──────────────────────────────────────────────────────────────
+  const parent = BRAIN_POINTS.map((_, i) => i);
+  const find = (i: number): number => {
+    let r = i;
+    while (parent[r] !== r) r = parent[r] as number;
+    let c = i;
+    while (parent[c] !== r) {
+      const next = parent[c] as number;
+      parent[c] = r;
+      c = next;
+    }
+    return r;
+  };
+  const union = (a: number, b: number): boolean => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra === rb) return false;
+    parent[rb] = ra;
+    return true;
+  };
+  for (const k of out) {
     const [a, b] = k.split(":");
-    return [Number(a), Number(b)] as const;
+    union(Number(a), Number(b));
+  }
+
+  const componentsBefore = new Set(BRAIN_POINTS.map((_, i) => find(i))).size;
+
+  // ── repair: stitch each remaining component by its shortest crossing edge ────
+  let repaired = 0;
+  let guard = 0;
+  while (new Set(BRAIN_POINTS.map((_, i) => find(i))).size > 1 && guard++ < BRAIN_POINTS.length) {
+    let bestA = -1;
+    let bestB = -1;
+    let bestD = Infinity;
+    for (let i = 0; i < BRAIN_POINTS.length; i++) {
+      const pi = BRAIN_POINTS[i];
+      if (!pi) continue;
+      for (let j = i + 1; j < BRAIN_POINTS.length; j++) {
+        const pj = BRAIN_POINTS[j];
+        if (!pj || find(i) === find(j)) continue;
+        const d = dist2(pi, pj);
+        if (d < bestD) {
+          bestD = d;
+          bestA = i;
+          bestB = j;
+        }
+      }
+    }
+    if (bestA < 0 || bestB < 0) break;
+    out.add(key(bestA, bestB));
+    union(bestA, bestB);
+    repaired++;
+  }
+
+  const edges = [...out].map((k) => {
+    const [a, b] = k.split(":");
+    return [Number(a), Number(b)] as [number, number];
   });
-})();
+  return { edges, components: componentsBefore, repaired };
+};
+
+const MESH = buildMesh();
+
+export const BRAIN_EDGES: readonly (readonly [number, number])[] = MESH.edges;
+
+/**
+ * What the mesh actually came out as. Published to the DOM by the Brain so connectivity can
+ * be asserted rather than eyeballed — a broken silhouette is invisible from most angles and
+ * obvious from one, which is the worst way for a defect to behave.
+ */
+export const BRAIN_MESH = {
+  nodes: BRAIN_POINTS.length,
+  edges: MESH.edges.length,
+  /** Components BEFORE the repair. Reported for interest; after the repair it is always 1. */
+  componentsBeforeRepair: MESH.components,
+  /** Edges the repair had to add to make the figure one object. */
+  repairEdges: MESH.repaired,
+} as const;
 
 /**
  * The brainstem, as a short chain of points hanging below and behind the mass. Three
@@ -192,6 +304,42 @@ export const BRAIN_STEM: readonly Vec3[] = [
   { x: 0.34, y: -0.92, z: 0.03 },
   { x: 0.36, y: -1.12, z: 0.04 },
 ];
+
+/**
+ * A viewBox that centres the figure on what it actually SWEEPS, not on the origin.
+ *
+ * The geometry is not symmetric about (0,0): the cerebellum is offset behind and below, the
+ * frontal pole drops, and the brainstem hangs underneath. So a hand-written viewBox centred
+ * on the origin puts the drawing off-centre — and the correction is not a constant, because
+ * the silhouette changes shape as the model turns.
+ *
+ * Sampling the projection right around one revolution and framing the UNION is what makes it
+ * sit still: centring each frame individually would keep the figure nailed to the middle
+ * while its outline visibly slid around inside it, which is a worse artefact than a fixed
+ * offset. This is the same reasoning the floor plan's camera fit uses.
+ */
+export function brainViewBox(scale: number, fov: number, pad = 1.06): string {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  const all = [...BRAIN_POINTS, ...BRAIN_STEM];
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 36) {
+    for (const p of all) {
+      const q = project(p, a, scale, fov);
+      if (q.x < minX) minX = q.x;
+      if (q.x > maxX) maxX = q.x;
+      if (q.y < minY) minY = q.y;
+      if (q.y > maxY) maxY = q.y;
+    }
+  }
+  // One square box around the union, so the figure keeps its proportions inside a square
+  // button and the breathing animation has room at every edge.
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const half = (Math.max(maxX - minX, maxY - minY) / 2) * pad;
+  return `${(cx - half).toFixed(1)} ${(cy - half).toFixed(1)} ${(half * 2).toFixed(1)} ${(half * 2).toFixed(1)}`;
+}
 
 /** Rotate about the vertical axis, then project through a simple perspective camera. */
 export function project(

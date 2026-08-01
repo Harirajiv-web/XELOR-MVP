@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { pageSummary, plainTitle } from "../ui/plain-language";
 
 /**
  * The header every screen starts with: what you are looking at, and the facts that qualify
@@ -22,21 +23,22 @@ export function PageHeader({
   meta?: ReadonlyArray<{ label: string; value: ReactNode }>;
   actions?: ReactNode;
 }): React.JSX.Element {
+  const shownTitle = plainTitle(title);
   // MAINDECK's `.mhead` / `.msub`: a 19px title on one line with its actions, the sentence
   // underneath in muted 12px. The actions sit on the title row rather than below it, so the
   // primary action of a screen is always in the same place on every screen.
   return (
-    <header>
+    <header className="x-page-header" data-demo-target="screen">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-[19px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
-          {title}
+          {shownTitle}
         </h1>
         <span className="flex-1" />
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>
       {subtitle ? (
-        <p className="mt-1 max-w-prose text-[12px] leading-[1.5] text-[var(--text-muted)]">
-          {subtitle}
+        <p className="mt-1 text-[12px] leading-[1.5] text-[var(--text-muted)]">
+          {pageSummary(title)}
         </p>
       ) : null}
       {meta.length > 0 ? (

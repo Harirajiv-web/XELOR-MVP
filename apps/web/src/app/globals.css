@@ -171,8 +171,18 @@
 
   /* The deck's layout system: sidebar, copilot rail, topbar. */
   --side: 236px;
-  --cop: 384px;
+  --cop: 420px;
   --top: 60px;
+
+  /* ---- motion and atmospheric depth ---- */
+  --motion-fast: 140ms;
+  --motion-base: 260ms;
+  --motion-slow: 520ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ambient-brand: rgba(29, 95, 209, 0.075);
+  --ambient-ai: rgba(124, 92, 214, 0.055);
+  --surface-glass: rgba(255, 255, 255, 0.86);
 }
 
 :root[data-theme="dark"] {
@@ -272,6 +282,10 @@
   --dept-axle: #a58bf0;
   --dept-kiln: #f07f45;
   --dept-rasp: #e2bb63;
+
+  --ambient-brand: rgba(91, 141, 239, 0.11);
+  --ambient-ai: rgba(157, 127, 224, 0.08);
+  --surface-glass: rgba(17, 26, 46, 0.86);
 }
 
 /* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */
@@ -359,6 +373,280 @@ table,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   XELOR MOTION & DEPTH SYSTEM
+
+   Motion communicates hierarchy and continuity: the workspace enters as one unit, rows
+   resolve in reading order, active navigation settles into place, and interactive controls
+   answer the pointer. Everything uses transform/opacity where possible and the global
+   reduced-motion rule above collapses the entire layer.
+   ============================================================================ */
+
+.x-app-shell {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 36% -12%, var(--ambient-brand), transparent 34rem),
+    radial-gradient(circle at 86% 108%, var(--ambient-ai), transparent 38rem),
+    var(--bg);
+}
+
+.x-shell-sidebar,
+.x-shell-topbar {
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.x-shell-sidebar {
+  box-shadow: 10px 0 34px -32px color-mix(in srgb, var(--text-primary) 28%, transparent);
+}
+
+.x-shell-topbar {
+  box-shadow: 0 10px 32px -30px color-mix(in srgb, var(--text-primary) 30%, transparent);
+  animation: x-topbar-arrive var(--motion-slow) var(--ease-emphasized) both;
+}
+
+.x-brand-mark {
+  position: relative;
+  box-shadow:
+    0 8px 18px -10px color-mix(in srgb, var(--brand) 80%, transparent),
+    inset 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.x-brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, transparent);
+  border-radius: 12px;
+  opacity: 0;
+  transform: scale(0.82);
+  animation: x-brand-orbit 5.2s ease-in-out infinite;
+}
+
+.x-module-link {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    transform var(--motion-base) var(--ease-emphasized),
+    box-shadow var(--motion-base) ease;
+}
+
+.x-module-link:hover {
+  transform: translateX(3px);
+}
+
+.x-module-link[aria-current="page"] {
+  box-shadow: inset 3px 0 var(--brand);
+}
+
+.x-module-link svg,
+.x-workbench-tab svg {
+  transition:
+    transform var(--motion-base) var(--ease-emphasized),
+    color var(--motion-base) ease;
+}
+
+.x-module-link:hover svg {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.x-workbench-tabs {
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: 0 10px 28px -30px color-mix(in srgb, var(--text-primary) 32%, transparent);
+}
+
+.x-workbench-tab {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    transform var(--motion-base) var(--ease-emphasized);
+}
+
+.x-workbench-tab:hover {
+  transform: translateY(-1px);
+}
+
+.x-workbench-tab[aria-current="page"] svg {
+  animation: x-icon-settle 440ms var(--ease-emphasized);
+}
+
+.x-workspace-scroll {
+  scroll-behavior: smooth;
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 35%, transparent) transparent;
+}
+
+.x-workspace-page {
+  min-height: 100%;
+  animation: x-route-arrive var(--motion-slow) var(--ease-emphasized) both;
+}
+
+/* Modern browsers can snapshot just the changing workspace while the navigation, tenant and
+   Copilot stay perfectly still. Older browsers retain the route-entry animation above. */
+@supports (view-transition-name: none) {
+  .x-workspace-page {
+    view-transition-name: x-workspace;
+    animation: none;
+  }
+
+  ::view-transition-group(x-workspace) {
+    animation-duration: 420ms;
+    animation-timing-function: var(--ease-emphasized);
+  }
+
+  ::view-transition-old(x-workspace) {
+    animation: x-view-old 180ms ease both;
+  }
+
+  ::view-transition-new(x-workspace) {
+    animation: x-view-new 420ms var(--ease-emphasized) both;
+  }
+}
+
+.x-page-header {
+  position: relative;
+  padding-left: 14px;
+}
+
+.x-page-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 3px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--brand), var(--ai-accent));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--brand) 28%, transparent);
+  transform-origin: top;
+  animation: x-header-rule var(--motion-slow) var(--ease-emphasized) both;
+}
+
+.x-page-header h1 {
+  background: linear-gradient(
+    100deg,
+    var(--text-primary) 0%,
+    var(--text-primary) 74%,
+    color-mix(in srgb, var(--brand) 72%, var(--text-primary)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.x-copilot-rail {
+  box-shadow: -18px 0 44px -38px color-mix(in srgb, var(--brand) 55%, transparent);
+  animation: x-rail-arrive 420ms var(--ease-emphasized) both;
+}
+
+.x-state-frame > :first-child {
+  animation: x-state-icon 580ms var(--ease-emphasized) both;
+}
+
+.x-loading-state {
+  animation: x-soft-arrive var(--motion-base) ease both;
+}
+
+[role="dialog"] {
+  animation: x-dialog-arrive 380ms var(--ease-emphasized) both;
+  transform-origin: center top;
+}
+
+.fixed.inset-0:has(> [role="dialog"]) {
+  animation: x-scrim-arrive 220ms ease both;
+}
+
+.x-data-card {
+  box-shadow:
+    var(--shadow-sm),
+    0 18px 48px -44px color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+.x-data-row {
+  animation: x-row-arrive 400ms var(--ease-emphasized) both;
+  animation-delay: var(--x-row-delay, 0ms);
+}
+
+.x-data-row[data-clickable]:active {
+  transform: scale(0.998);
+}
+
+@keyframes x-topbar-arrive {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes x-brand-orbit {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.84); }
+  82% { opacity: 0.55; }
+  94% { opacity: 0; transform: scale(1.18); }
+}
+
+@keyframes x-icon-settle {
+  0% { transform: scale(0.82) rotate(-8deg); }
+  65% { transform: scale(1.1) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes x-route-arrive {
+  from { opacity: 0; transform: translateY(9px) scale(0.998); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes x-view-old {
+  to { opacity: 0; transform: translateY(-4px) scale(0.998); }
+}
+
+@keyframes x-view-new {
+  from { opacity: 0; transform: translateY(10px) scale(0.998); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes x-header-rule {
+  from { opacity: 0; transform: scaleY(0); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes x-rail-arrive {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes x-row-arrive {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes x-state-icon {
+  from { opacity: 0; transform: scale(0.76) rotate(-6deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes x-dialog-arrive {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes x-scrim-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes x-soft-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(x-workspace),
+  ::view-transition-old(x-workspace),
+  ::view-transition-new(x-workspace) {
+    animation-duration: 0.01ms !important;
   }
 }
 
@@ -451,12 +739,34 @@ table,
   position: relative;
   overflow: hidden;
   transition:
-    transform 0.18s,
-    box-shadow 0.18s;
+    transform var(--motion-base) var(--ease-emphasized),
+    box-shadow var(--motion-base) ease,
+    border-color var(--motion-base) ease;
+}
+.kpi::after {
+  content: "";
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  right: -42px;
+  top: -48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ambient-brand), transparent 68%);
+  transform: scale(0.7);
+  opacity: 0;
+  transition:
+    transform var(--motion-slow) var(--ease-emphasized),
+    opacity var(--motion-base) ease;
+  pointer-events: none;
 }
 .kpi:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--brand) 24%, var(--border-subtle));
+}
+.kpi:hover::after {
+  transform: scale(1);
+  opacity: 1;
 }
 .kpi-l {
   font-size: 10.5px;
@@ -538,7 +848,13 @@ table,
   border-radius: 9px;
   font-weight: 600;
   font-size: 12.5px;
-  transition: all 0.18s;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    box-shadow var(--motion-base) ease,
+    filter var(--motion-fast) ease;
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -557,6 +873,8 @@ table,
 }
 .btn-pri:hover:not(:disabled) {
   background: var(--brand-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 .btn-ghost {
   background: var(--surface);
@@ -567,6 +885,8 @@ table,
 .btn-ghost:hover:not(:disabled) {
   border-color: var(--brand);
   color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 /* The AI gradient. Reserved for AI affordances, never for an ordinary action — the
    whole product depends on a person being able to tell at a glance whether a human or a
@@ -577,6 +897,8 @@ table,
 }
 .btn-ai:hover:not(:disabled) {
   filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--brand) 74%, transparent);
 }
 .btn-sm {
   padding: 5px 10px;
@@ -590,6 +912,15 @@ table,
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--motion-base) ease,
+    box-shadow var(--motion-base) ease;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--brand) 13%, var(--border-subtle));
+  box-shadow:
+    var(--shadow-sm),
+    0 18px 42px -42px color-mix(in srgb, var(--brand) 48%, transparent);
 }
 .panel-h {
   display: flex;
@@ -621,6 +952,10 @@ table,
   padding: 8px 11px;
   outline: none;
   width: 100%;
+  transition:
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-base) ease,
+    background-color var(--motion-fast) ease;
 }
 .field:focus {
   border-color: var(--brand);
@@ -687,18 +1022,250 @@ table,
   will-change: transform;
 }
 
-@keyframes ind-void-drift {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-9px);
-  }
+/* ============================================================================
+   THE VOID, IN BOTH THEMES
+   ============================================================================
+   The Brain and the ONYX map used to be near-black unconditionally, which had a
+   consequence nobody had looked for: a viewer whose product theme was LIGHT got the
+   light-surface department colours on a black field. Measured on that path, HEXA's
+   `#1b4b8f` letter came out at 2.36:1 — under the 3:1 floor for large text — and ONYX's
+   `#0c2340` was effectively black on black. The first fix was to force the dark hues for
+   this subtree. That was right while the void had only one colour, and is now wrong: the
+   void has two, and it follows the theme like every other surface in the product.
+
+   ---------------------------------------------------------------------------
+   WHY THE SEVEN AGENT HUES ARE RESTATED HERE RATHER THAN INHERITED
+   ---------------------------------------------------------------------------
+   The dark set is inherited verbatim — it is the identical seven from
+   `:root[data-theme="dark"]`, which is why the map matches the department badges a
+   dark-theme user sees everywhere else.
+
+   The LIGHT set is not, and the reason is measurement rather than taste. The product's
+   light hues are authored for chips and badges, where the colour is a FILL behind white
+   text. Here the same value is INK — a letter drawn on a pale field — and three of the
+   seven do not survive that change of job. Against this background:
+
+       RASP  #c8912a   2.48:1   fails 3:1 outright
+       SPAR  #1f8a70   3.79:1   passes, with nothing to spare
+       MICA  #2e7bc4   3.95:1   passes, with nothing to spare
+
+   Each keeps its hue and loses lightness until it clears 4.5:1, so the map is legible on a
+   sunlit plant-office monitor and the seven are still recognisably the same seven. The
+   three that had margin already (ONYX, HEXA, KILN) are untouched.
+
+   ---------------------------------------------------------------------------
+   THE AURORA IS A DIFFERENT RAMP IN EACH THEME, NOT THE SAME ONE DIMMED
+   ---------------------------------------------------------------------------
+   The dark ramp is the 400-level of each hue: it has to GLOW on near-black, and a glow is
+   a bright thing. On near-white a bright thing is invisible — cyan-400 measures 1.5:1 on
+   this field — so the light ramp is the 600/700 level of the same five hues, which is the
+   same gradient sweeping the same way and is legible for the opposite reason. Worst pair
+   on the light field is 4.79:1; on the dark field, 9.1:1.
+
+   The two inks are the sign-in page's own pair in each theme, carried across so the login
+   screen, the Brain and the map read as one identity: a confident mark, and one calmer
+   shade beneath it. */
+.ind-void {
+  --void-bg: #eaeff5;
+  --void-ink: #12202e;
+  --void-ink-soft: #51606f;
+
+  /* The five aurora stops, in gradient order. */
+  --void-aurora-1: #0e7490;
+  --void-aurora-2: #0f766e;
+  --void-aurora-3: #4f46e5;
+  --void-aurora-4: #7c3aed;
+  --void-aurora-5: #a21caf;
+
+  /*
+   * ───────────────────────────────────────────────────────────────────────────
+   * THE AMBIENT LAYERS ARE FAR WEAKER HERE, AND NOT BY TASTE
+   * ───────────────────────────────────────────────────────────────────────────
+   * The soft volume under the ONYX hub and the two enormous Gateway washes carry the same
+   * alphas in both themes in the obvious version of this. Measured, that obvious version put
+   * a visible grey disc behind ONYX: the two layers together darkened the light field by
+   * TWENTY-FOUR levels, from rgb(234,239,245) to rgb(210,221,237).
+   *
+   * The identical alpha on the dark field moves it from rgb(4,6,12) by about the same
+   * absolute amount — and is a barely-there glow, because near black the eye reads a small
+   * absolute step as almost nothing while near white it reads the same step as grey. An
+   * ambient layer is supposed to be felt and not seen; on a pale surface it has roughly a
+   * third of the budget.
+   *
+   * Cut to about a third, which measures ~9 levels. The harness caps this rather than
+   * eyeballing it — a smudge behind the hub is exactly the kind of thing that creeps back.
+   */
+  --void-core-a: rgba(13, 148, 136, 0.045);
+  --void-core-b: rgba(79, 70, 229, 0.028);
+  --void-wash-a: radial-gradient(
+    circle,
+    rgba(13, 148, 136, 0.028) 0%,
+    rgba(79, 70, 229, 0.02) 38%,
+    transparent 66%
+  );
+  --void-wash-b: radial-gradient(circle, rgba(124, 58, 237, 0.025) 0%, transparent 62%);
+  --void-focus: #0e7490;
+
+  /*
+   * THE MARK GLOW, tuned per theme — see `.ind-mark-glow`.
+   *
+   * Light cannot be added to a pale field; the brief asks for "a crisp, gentle coloured
+   * halo or shadow" there, and a shadow is what a light surface actually has. So light mode
+   * gets a tight, slightly offset drop shadow that reads as the mark sitting a millimetre
+   * above the page, and dark mode gets a centred halo that reads as the mark emitting.
+   */
+  --mark-glow-dy: 1px;
+  --mark-glow-blur: 3px;
+  --mark-glow-mix: 42%;
+
+  /*
+   * ───────────────────────────────────────────────────────────────────────────
+   * HOW THE BRAIN EXPRESSES DEPTH, PER PANEL.
+   * ───────────────────────────────────────────────────────────────────────────
+   * The figure fades its far side to imply volume: a filament's opacity is
+   * `base + span × depth`. Those two numbers are not a style, they are a statement about
+   * how much of the surface's dynamic range is available — and the two panels have very
+   * different amounts.
+   *
+   * On near-black a filament at 6% is a faint grey line, clearly there and clearly behind.
+   * On near-white 6% is nothing at all: the far half of the figure simply vanishes and the
+   * form stops reading as hollow, which is the one thing it has to do. So the light panel
+   * starts higher and travels further — 0.20 to 0.84 against 0.06 to 0.48 — and the depth
+   * cue survives on a surface with a fraction of the room for it.
+   *
+   * Read by `brain.tsx` at draw time rather than hard-coded there, so the values stay here
+   * with every other colour decision in this product.
+   */
+  --brain-edge-base: 0.2;
+  --brain-edge-span: 0.64;
+  --brain-node-base: 0.42;
+  --brain-node-span: 0.55;
+
+  /*
+   * ───────────────────────────────────────────────────────────────────────────
+   * NO BLOOM ON A PALE FIELD — the same rule the hologram already follows.
+   * ───────────────────────────────────────────────────────────────────────────
+   * Both SVG scenes wrap their strokes in `feGaussianBlur` + `feMerge`: a blurred copy laid
+   * back over the original. On near-black that is a glow, because a blurred bright line ADDS
+   * light around itself. On near-white it is the opposite — a blurred DARK line spreads
+   * darkness — and the ONYX ring duly smeared into a grey cloud filling the whole hub.
+   * Measured at 40 px from the centre: rgb(138,168,180) against a rgb(234,239,245) field.
+   *
+   * This was already worked out for the three.js hologram, where `SCENE_PALETTE.light` sets
+   * `bloom: false` for exactly this reason. It was not carried across to the two SVG scenes,
+   * which is how a defect survives being understood: the insight was written down in the
+   * wrong file.
+   *
+   * The marks keep their light in both themes — `.ind-mark-glow` is a drop shadow, and a
+   * shadow is what a pale surface actually has.
+   */
+  --brain-bloom: none;
+  --map-bloom: none;
+
+  /*
+   * ───────────────────────────────────────────────────────────────────────────
+   * THE HOVER HALO IS MUCH FAINTER HERE, BECAUSE A DARK ACCENT CANNOT TINT.
+   * ───────────────────────────────────────────────────────────────────────────
+   * Approaching a node lays its own accent behind it as a soft disc. On the dark panel the
+   * accents are LIGHT — ONYX is #6f8fd8 — so 16% of one over near-black is a coloured glow,
+   * which is exactly the intent.
+   *
+   * On the light panel the same accents are DARK by necessity, because they have to be ink
+   * on a pale field. ONYX is #0c2340, and 16% of a near-black navy over near-white is not a
+   * blue halo — it is rgb(199,206,216), a grey blob. Measured, and it was easy to miss for a
+   * dull reason: the harness clicked at the centre of the viewport, so every screenshot taken
+   * of this scene had the hub under the cursor and nobody had photographed it at rest.
+   *
+   * No amount of tinting fixes it — a dark hue at any coverage moves a pale surface towards
+   * grey. So the light panel takes the other reading of the brief's "gentle coloured halo OR
+   * shadow": less than half the coverage, which lands as a soft shadow under the ring rather
+   * than a wash behind it, and lets the thickened ring and the mark's own drop shadow carry
+   * the response.
+   */
+  --hub-halo-alpha: 0.07;
+  --node-halo-alpha: 0.06;
+
+  --dept-onyx: #0c2340;
+  --dept-hexa: #1b4b8f;
+  --dept-mica: #1f6aae;
+  --dept-spar: #15735d;
+  --dept-axle: #6344c4;
+  --dept-kiln: #c2410c;
+  --dept-rasp: #9a6a14;
 }
-.ind-void-drift > g {
-  animation: ind-void-drift 9s ease-in-out infinite;
-  will-change: transform;
+
+:root[data-theme="dark"] .ind-void {
+  /* Near-black rather than pure: #000 on an OLED panel is a hole with hard edges where the
+     glow stops. */
+  --void-bg: #04060c;
+  --void-ink: #e8f1f7;
+  --void-ink-soft: #8ea6ba;
+
+  --void-aurora-1: #22d3ee;
+  --void-aurora-2: #2dd4bf;
+  --void-aurora-3: #818cf8;
+  --void-aurora-4: #a78bfa;
+  --void-aurora-5: #d946ef;
+
+  --void-core-a: rgba(94, 234, 212, 0.15);
+  --void-core-b: rgba(129, 140, 248, 0.05);
+  --void-wash-a: radial-gradient(
+    circle,
+    rgba(45, 212, 191, 0.055) 0%,
+    rgba(129, 140, 248, 0.035) 38%,
+    transparent 66%
+  );
+  --void-wash-b: radial-gradient(circle, rgba(167, 139, 250, 0.05) 0%, transparent 62%);
+  --void-focus: #5eead4;
+
+  --mark-glow-dy: 0px;
+  --mark-glow-blur: 7px;
+  --mark-glow-mix: 55%;
+
+  /* The original curve, unchanged. See the light block above for why it is not shared. */
+  --brain-edge-base: 0.06;
+  --brain-edge-span: 0.42;
+  --brain-node-base: 0.2;
+  --brain-node-span: 0.75;
+
+  /* On black, a blurred bright line adds light around itself, which is the entire glow. */
+  --brain-bloom: url(#ind-bloom);
+  --map-bloom: url(#ind-void-bloom);
+
+  /* The accents are light here, so a disc of one genuinely glows. See the light block. */
+  --hub-halo-alpha: 0.16;
+  --node-halo-alpha: 0.13;
+
+  --dept-onyx: #6f8fd8;
+  --dept-hexa: #5b8def;
+  --dept-mica: #62a8e8;
+  --dept-spar: #35b696;
+  --dept-axle: #a58bf0;
+  --dept-kiln: #f07f45;
+  --dept-rasp: #e2bb63;
+}
+
+/* ----------------------------------------------------------------------------
+   THE MARK GLOW.
+   ----------------------------------------------------------------------------
+   Applied to a department's letter and to the ONYX wordmark. It reads `currentColor`, so
+   one rule serves all seven and the colour comes from the mark itself — nothing here needs
+   to know which agent it is drawing.
+
+   Deliberately SMALL. The brief asks for a glow "close to the logo edge" that does not blur
+   typography or flood the background, and the failure mode of this effect is a soft
+   coloured mush where a letter used to be. Three pixels of blur in light, seven in dark, at
+   under sixty percent — enough to say the mark is lit, not enough to soften its edge.
+
+   It is a `filter`, so it is composited on the GPU and costs the main thread nothing. It is
+   also visibly NOT a focus ring: the focus ring is a hard two-pixel stroke in the scene's
+   own accent, offset clear of the mark, and it has to stay distinguishable from decoration
+   for the same reason a link has to be distinguishable from bold text. */
+.ind-mark-glow {
+  filter: drop-shadow(
+    0 var(--mark-glow-dy) var(--mark-glow-blur)
+      color-mix(in srgb, currentColor var(--mark-glow-mix), transparent)
+  );
 }
 
 @keyframes ind-toast-in {
@@ -708,6 +1275,2364 @@ table,
   }
   to {
     opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   AGENT OS — ONYX MISSION CONTROL
+   ============================================================================
+
+   The stylesheet for the orchestration theatre in
+   `src/modules/agentos/screens/command.tsx`. Five regions, laid out along the
+   direction work travels: command bar, strategy rail, runway, evidence rail,
+   synthesis dock.
+
+   THREE RULES THIS BLOCK NOW OBEYS THAT THE PREVIOUS ONE DID NOT
+   ─────────────────────────────────────────────────────────────────────────────
+   1. NO LITERAL COLOUR. The old block wrote `#0d1530`, `#a5b4fc`, `#34d399`,
+      `#3b82f6` and `#94a3b8` into the hero, the metrics and three status dots —
+      so this screen had no dark mode at all, and its agent hues disagreed with
+      the seven `--dept-*` values the pitch deck and the void map both use. Every
+      value below is a token or a `color-mix` of tokens.
+
+   2. NOTHING SMALLER THAN 10.5px. The old block ran to 7.5px labels, which is
+      not "technical", it is unreadable in mixed factory light — and this surface
+      is the one an operator watches while a mission runs. The density that lost
+      is recovered in spacing, not in type size.
+
+   3. MOTION EXPLAINS A STATE CHANGE OR IT DOES NOT EXIST. The old radial diagram
+      animated six dots along six spokes for ever, whether or not anything was
+      running. What moves here is: the live dot on a working lane, a packet
+      settling in when it is created, an evidence tile settling in when it
+      arrives, and one review scan when HEXA passes. Everything else is still.
+      All of it stops under `prefers-reduced-motion`.
+   ============================================================================ */
+
+.agent-command {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding-bottom: 28px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   A · THE MISSION COMMAND BAR
+
+   Slim, themed, and made of facts. It replaced a 26px-padded marketing hero
+   with a hard-coded midnight gradient — which looked expensive and told an
+   operator nothing about the mission they were watching.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-bar {
+  position: relative;
+  display: grid;
+  /* Copy left, six stats right, until the stats need more room than the bar can spare —
+     see the 1400px rule, where this becomes a two-row stack rather than six squeezed
+     columns. Information density is reduced last, decorative space first (§12). */
+  grid-template-columns: minmax(0, 1fr) minmax(340px, auto);
+  align-items: center;
+  gap: 18px 24px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ai-accent) 22%, var(--border-subtle));
+  border-radius: 14px;
+  padding: 16px 18px;
+  background:
+    radial-gradient(
+      circle at 6% 0%,
+      color-mix(in srgb, var(--ai-accent) 12%, transparent),
+      transparent 46%
+    ),
+    var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.agent-bar-copy {
+  min-width: 0;
+}
+
+.agent-eyebrow,
+.agent-panel-kicker {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.agent-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ai-text);
+}
+
+.agent-live-dot {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ok);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 14%, transparent);
+  animation: agent-live-pulse 2.4s ease-in-out infinite;
+}
+
+/* The surface's own one-line claim. Deliberately no longer hero-sized: it is a
+   title, and above a live mission a 42px sentence is the loudest thing on a
+   screen whose loudest thing should be the mission. */
+.agent-bar h1 {
+  margin-top: 8px;
+  color: var(--text-primary);
+  font-size: clamp(17px, 1.5vw, 21px);
+  font-weight: 750;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+}
+
+.agent-bar-mission-label {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.agent-bar-mission {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 3px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ── THE CONNECTION BOUNDARY (§10) ────────────────────────────────────────
+   Three chips: what is live, what is deterministic, how many external systems are
+   connected. They are chips rather than a sentence because the three facts get read at
+   different moments — and because "zero external connections" is the one an investor
+   checks first, so it must survive being skimmed. */
+
+.agent-boundary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.agent-boundary li {
+  font-weight: 650;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.agent-bar-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 8px;
+}
+
+.agent-stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: var(--surface-sunken);
+}
+
+.agent-stat > svg {
+  grid-row: 1 / span 2;
+  color: var(--ai-text);
+}
+
+.agent-stat dt {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.agent-stat dd {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* A status word carries its tone as a chip rather than as coloured text, so it
+   stays legible when the tone is the pale one. */
+.agent-stat dd.agent-stat-toned {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.agent-stat small {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.agent-bar-cancel {
+  grid-column: 2;
+  justify-self: end;
+}
+
+.agent-error {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid color-mix(in srgb, var(--bad) 28%, var(--border-subtle));
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--bad-ink);
+  background: color-mix(in srgb, var(--bad) 8%, var(--surface));
+  font-size: 12.5px;
+}
+
+.agent-error span {
+  flex: 1;
+}
+
+.agent-error button {
+  min-height: 28px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE THEATRE — runway on the left, dock on the right
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-theatre {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(330px, 0.68fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.agent-theatre-main,
+.agent-theatre-side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.agent-panel {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 13px;
+  padding: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.agent-panel-head {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.agent-panel-kicker {
+  color: var(--ai-text);
+}
+
+.agent-panel-head h2 {
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 14.5px;
+  font-weight: 730;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+}
+
+.agent-runtime-chip,
+.agent-status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+}
+
+.agent-runtime-chip {
+  border: 1px solid color-mix(in srgb, var(--ok) 28%, var(--border-subtle));
+  color: var(--ok-ink);
+  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+}
+
+/* ── THE FIVE TONES ───────────────────────────────────────────────────────
+   Used as a chip (text + fill) and as a bare mark (`i`, a dot). Colour is the
+   accelerator; in every place these appear the component also renders a word
+   and a glyph, because red / amber / green collapse toward each other under
+   the two common colour deficiencies whatever hexes are picked. */
+
+.agent-status-ok {
+  color: var(--ok-ink);
+  background: color-mix(in srgb, var(--ok) 13%, var(--surface));
+}
+
+.agent-status-live {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.agent-status-wait {
+  color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn) 14%, var(--surface));
+}
+
+.agent-status-bad {
+  color: var(--bad-ink);
+  background: color-mix(in srgb, var(--bad) 12%, var(--surface));
+}
+
+.agent-status-idle {
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+}
+
+.agent-legend-mark,
+.agent-history-mark,
+.agent-step-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.agent-legend-mark.agent-status-ok,
+.agent-history-mark.agent-status-ok,
+.agent-step-dot.agent-status-ok {
+  background: var(--ok);
+}
+
+.agent-legend-mark.agent-status-live,
+.agent-history-mark.agent-status-live,
+.agent-step-dot.agent-status-live {
+  background: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+.agent-legend-mark.agent-status-wait,
+.agent-history-mark.agent-status-wait,
+.agent-step-dot.agent-status-wait {
+  background: var(--warn);
+}
+
+.agent-legend-mark.agent-status-bad,
+.agent-history-mark.agent-status-bad,
+.agent-step-dot.agent-status-bad {
+  background: var(--bad);
+}
+
+.agent-legend-mark.agent-status-idle,
+.agent-history-mark.agent-status-idle,
+.agent-step-dot.agent-status-idle {
+  background: var(--text-disabled);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   B · THE ONYX STRATEGY RAIL
+
+   A command surface across the top of the theatre, not a giant circle in the
+   middle of it. The left edge carries ONYX's own accent so the region is
+   identifiable at a glance without a heading being read.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-rail {
+  border-left: 3px solid var(--dept-onyx);
+}
+
+.agent-rail-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 13px;
+  margin-bottom: 15px;
+}
+
+.agent-rail-glyph {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--agent-color) 46%, var(--border-subtle));
+  border-radius: 12px;
+  color: var(--agent-color);
+  background: color-mix(in srgb, var(--agent-color) 11%, var(--surface));
+  font-size: 17px;
+  line-height: 1;
+}
+
+.agent-rail-head h2 {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.agent-rail-role {
+  max-width: 68ch;
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.agent-phase {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ── THE PHASE TRACK ──────────────────────────────────────────────────────
+   Six named steps. The word is always present — a filled pip on its own is a
+   state communicated by colour alone, which this product does not do. */
+
+.agent-phase-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface-sunken);
+}
+
+.agent-phase-track li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-disabled);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.agent-phase-track li i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--border-input);
+  border-radius: 999px;
+}
+
+.agent-phase-track li[data-reached] {
+  color: var(--text-secondary);
+}
+
+.agent-phase-track li[data-reached] i {
+  border-color: var(--ai-accent);
+  background: var(--ai-accent);
+}
+
+.agent-phase-track li[aria-current="step"] {
+  color: var(--ai-text);
+}
+
+.agent-phase-track li[aria-current="step"] i {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ai-accent) 18%, transparent);
+}
+
+.agent-rail-decision {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-left: 2px solid color-mix(in srgb, var(--ai-accent) 40%, transparent);
+  padding: 2px 0 2px 11px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.agent-rail-decision svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--ai-text);
+}
+
+.agent-rail-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.agent-rail-facts > div {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: var(--surface-sunken);
+}
+
+.agent-rail-facts small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.agent-rail-facts b {
+  display: block;
+  margin: 6px 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 760;
+  line-height: 1.15;
+}
+
+/* When the figure IS a status the chip shrinks to fit its word rather than
+   spanning the tile, so a long label wraps as prose instead of stretching a
+   pill across the card. */
+.agent-rail-facts b.agent-status {
+  display: inline-flex;
+  font-size: 11.5px;
+  /* These chips carry a short SENTENCE, not a status word. The shared chip rule capitalises
+     every word, which turned "No write before approval" into "No Write Before Approval" —
+     a headline where a statement was meant. */
+  text-transform: none;
+}
+
+.agent-rail-fact-note {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+/* ── TASK PACKETS ─────────────────────────────────────────────────────────
+   What ONYX decomposed the mission into, one per specialist, sitting between
+   the rail and the runway so the reader sees them enter it. */
+
+.agent-packets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 8px;
+}
+
+.agent-packet {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--agent-color) 28%, var(--border-subtle));
+  border-top: 2px solid var(--agent-color);
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: var(--surface);
+  animation: agent-packet-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.agent-packet[data-state="not_connected"],
+.agent-packet[data-state="idle"] {
+  border-top-color: var(--border-input);
+  opacity: 0.62;
+}
+
+.agent-packet header {
+  display: flex;
+  /* WRAP, DO NOT CLIP. "Waiting for dependency" is the longest of the eleven state labels
+     and it does not fit beside a monogram and a four-letter agent name in a 148px packet —
+     rendered, it ran past the card edge and the shorter cards truncated it to "Waiting for
+     dep…". Truncating a state label is the one thing this screen must not do: the whole
+     point of the eleven states is that they are distinguishable, and three of them start
+     with "Waiting". Wrapping to a second line costs a few pixels of height and keeps the
+     word. */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.agent-packet-mark {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-on-brand);
+  background: var(--agent-color);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.agent-packet header b {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* The lane below carries the full state label, so the packet's chip may ellipse
+   rather than wrap — it is a repeat, not the only place the state is stated. */
+.agent-packet-state {
+  display: inline-flex;
+  overflow: hidden;
+  max-width: 100%;
+  /* Shrinkable, so it wraps rather than forcing the header wider than the card. */
+  flex: 0 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 3px 6px;
+  font-size: 10.5px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-packet > p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 8px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.agent-packet footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.agent-packet footer span:last-child {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-plan-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   C · THE ORCHESTRATION RUNWAY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-follow {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.agent-follow input,
+.agent-filter-check input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--brand);
+}
+
+.agent-runway {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.agent-lane {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  /* The lane's owner, on its leading edge. Four pixels rather than a tint over
+     the whole row: a coloured row competes with the status chip inside it. */
+  border-left: 4px solid color-mix(in srgb, var(--agent-color) 60%, var(--border-subtle));
+  border-radius: 10px;
+  background: var(--surface);
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+
+.agent-lane:not([data-connected]) {
+  opacity: 0.6;
+}
+
+.agent-lane[data-state="working"],
+.agent-lane[data-state="collaborating"] {
+  border-left-color: var(--agent-color);
+  background: color-mix(in srgb, var(--agent-color) 4%, var(--surface));
+}
+
+.agent-lane[data-state="failed_safely"] {
+  border-color: color-mix(in srgb, var(--bad) 30%, var(--border-subtle));
+}
+
+.agent-lane-open {
+  border-color: color-mix(in srgb, var(--agent-color) 34%, var(--border-subtle));
+  box-shadow: var(--shadow-sm);
+}
+
+/* THE WHOLE HEAD IS THE CONTROL — 52px, comfortably past the 44px preference,
+   so nobody has to hit a chevron. */
+.agent-lane-head {
+  display: grid;
+  grid-template-columns:
+    28px minmax(74px, auto) minmax(140px, auto)
+    minmax(0, 1.5fr) minmax(84px, 0.55fr) auto 16px;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-lane-head:hover {
+  background: color-mix(in srgb, var(--agent-color) 5%, transparent);
+}
+
+.agent-lane-head:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.agent-lane-glyph {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--agent-color) 46%, var(--border-subtle));
+  border-radius: 8px;
+  color: var(--agent-color);
+  background: color-mix(in srgb, var(--agent-color) 11%, var(--surface));
+  font-size: 12.5px;
+  font-weight: 850;
+}
+
+.agent-lane-id b,
+.agent-lane-id small,
+.agent-lane-task b,
+.agent-lane-task small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-lane-id b {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.agent-lane-id small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.agent-lane-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.agent-lane-task b {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.agent-lane-task small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+}
+
+.agent-lane-progress small {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+/* The lane's completion bar. This is the ONE class the screen referenced and this file never
+   defined, so the markup rendered as two bare inline spans: no track, no fill, nothing —
+   `width: 62%` on a span with no layout has nothing to be 62% of. The figure beside it was
+   carrying the whole reading. */
+.agent-lane-bar {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.agent-lane-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  /* `--agent-color` is set on `.agent-lane` from the department token, so the fill is the
+     agent's own colour — the same identity the glyph and the left border already carry. */
+  background: var(--agent-color, var(--ai-accent));
+  transition: width 260ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-lane-bar > span {
+    transition: none;
+  }
+}
+
+.agent-lane-meta {
+  display: flex;
+  flex: none;
+  gap: 10px;
+}
+
+.agent-lane-meta small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.agent-lane-chevron {
+  flex: none;
+  color: var(--text-muted);
+  transition: transform 200ms ease;
+}
+
+.agent-lane-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* THE HANDOFF BRIDGE. A named row rather than a light travelling down a curve:
+   a person has to be able to repeat what moved and where to a colleague. */
+.agent-lane-bridge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px dashed color-mix(in srgb, var(--agent-color) 34%, var(--border-subtle));
+  padding: 7px 11px 8px 47px;
+  color: var(--agent-color);
+  background: color-mix(in srgb, var(--agent-color) 5%, transparent);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.agent-lane-body {
+  border-top: 1px solid var(--border-subtle);
+  padding: 13px 14px 14px;
+  background: var(--surface-sunken);
+}
+
+.agent-lane-purpose {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.agent-lane-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  border-left: 2px solid color-mix(in srgb, var(--agent-color) 45%, transparent);
+  padding-left: 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.agent-lane-summary svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--agent-color);
+}
+
+.agent-lane-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.agent-lane-findings li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.agent-lane-findings svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ok-ink);
+}
+
+.agent-lane-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.agent-lane-steps li {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--surface);
+}
+
+.agent-lane-steps b {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 680;
+}
+
+.agent-lane-steps code {
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  font: 11px var(--font-mono);
+}
+
+.agent-lane-steps em {
+  color: var(--warn-ink);
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.agent-lane-steps p {
+  flex-basis: 100%;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* The lane's work events. COMPACT EVENTS FROM THE RUN LOG — never invented
+   terminal text. Each row is one recorded state change with the clock time it
+   was recorded at. */
+.agent-lane-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.agent-lane-events li {
+  display: flex;
+  gap: 9px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.agent-lane-events time {
+  flex: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.agent-lane-quiet {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.agent-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 11px;
+}
+
+.agent-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   D · THE SHARED EVIDENCE AND MEMORY RAIL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: var(--surface-sunken);
+}
+
+.agent-filters > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.agent-filters select {
+  min-height: 30px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  padding: 3px 7px;
+  color: var(--text-primary);
+  background: var(--surface);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.agent-filters select:focus-visible,
+.agent-filters input:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.agent-filter-check {
+  cursor: pointer;
+}
+
+.agent-evidence {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 8px;
+}
+
+.agent-evidence-tile {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  min-width: 0;
+  align-items: start;
+  gap: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: var(--surface-sunken);
+  animation: agent-tile-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.agent-evidence-tile[data-kind="check"] {
+  border-color: color-mix(in srgb, var(--ok) 26%, var(--border-subtle));
+}
+
+.agent-evidence-tile[data-kind="decision"],
+.agent-evidence-tile[data-kind="artifact"] {
+  border-color: color-mix(in srgb, var(--ai-accent) 26%, var(--border-subtle));
+}
+
+.agent-evidence-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--ai-text);
+  background: var(--ai-bg);
+}
+
+.agent-evidence-kind {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 7px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.agent-evidence-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.agent-evidence-tile b {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 660;
+  line-height: 1.4;
+}
+
+.agent-evidence-tile small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+/* MANY MARKS, NOT MANY TILES. Four specialists sharing one retrieval is four
+   marks on one tile — four identical tiles would claim four sources. */
+.agent-evidence-marks {
+  display: flex;
+  flex: none;
+}
+
+.agent-evidence-marks i {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid var(--surface);
+  border-radius: 6px;
+  color: var(--text-on-brand);
+  background: var(--agent-color);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.agent-evidence-marks i + i {
+  margin-left: -5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   E · THE SYNTHESIS AND REVIEW DOCK
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-dock {
+  border-left: 3px solid var(--dept-onyx);
+}
+
+/* THE SYNTHESIS STACK. Six capsules landing in a layered pile — not six lines
+   merging into a glowing orb. A stack keeps every contribution individually
+   identifiable right up to publication, which is the claim being made. */
+.agent-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.agent-stack-row {
+  display: grid;
+  grid-template-columns: 22px auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: var(--surface-sunken);
+  opacity: 0.66;
+  transition:
+    opacity 240ms ease,
+    border-color 240ms ease,
+    transform 240ms ease;
+}
+
+.agent-stack-row-in {
+  border-color: color-mix(in srgb, var(--agent-color) 34%, var(--border-subtle));
+  background: var(--surface);
+  opacity: 1;
+}
+
+.agent-stack-mark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-on-brand);
+  background: var(--agent-color);
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+.agent-stack-row b {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.agent-stack-row small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-dock-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.agent-dock-facts > div {
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 8px 9px;
+  background: var(--surface-sunken);
+}
+
+.agent-dock-facts dt {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.agent-dock-facts dd {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 760;
+  line-height: 1.1;
+}
+
+.agent-conflicts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.agent-conflicts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--warn) 26%, var(--border-subtle));
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: color-mix(in srgb, var(--warn) 7%, var(--surface));
+}
+
+.agent-conflicts svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn-ink);
+}
+
+.agent-conflicts b,
+.agent-conflicts small {
+  display: block;
+}
+
+.agent-conflicts b {
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.agent-conflicts small {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* THE REVIEW GATE. One scan across the outputs, once, on the frame HEXA
+   passes — not a border that glows for as long as the tab is open. */
+.agent-review-gate {
+  position: relative;
+  overflow: hidden;
+  margin-top: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: var(--surface-sunken);
+}
+
+.agent-review-gate > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 750;
+}
+
+.agent-review-gate > p:first-child svg {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.agent-review-gate ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 9px;
+}
+
+.agent-review-gate li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.agent-review-gate li svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.agent-review-computed {
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.agent-review-gate-passed {
+  border-color: color-mix(in srgb, var(--ok) 30%, var(--border-subtle));
+  background: color-mix(in srgb, var(--ok) 7%, var(--surface));
+}
+
+.agent-review-gate-passed > p:first-child,
+.agent-review-gate-passed li svg {
+  color: var(--ok-ink);
+}
+
+.agent-review-gate-passed::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ok) 20%, transparent),
+    transparent
+  );
+  content: "";
+  pointer-events: none;
+  animation: agent-scan 900ms ease-out 1 both;
+}
+
+.agent-review-gate-failed {
+  border-color: color-mix(in srgb, var(--bad) 30%, var(--border-subtle));
+  background: color-mix(in srgb, var(--bad) 7%, var(--surface));
+}
+
+.agent-review-gate-failed > p:first-child {
+  color: var(--bad-ink);
+}
+
+.agent-result {
+  margin-top: 12px;
+  border: 1px solid color-mix(in srgb, var(--ai-accent) 26%, var(--border-subtle));
+  border-radius: 11px;
+  padding: 13px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--ai-accent) 10%, transparent),
+      transparent 52%
+    ),
+    var(--surface);
+}
+
+.agent-result h3 {
+  margin: 6px 0 0;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+/* The reasoner's own sentence, attributed rather than promoted. See the note in
+   `command.tsx`: it is machine-composed text, so it is shown as text. */
+.agent-result-summary {
+  margin-top: 7px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.5;
+}
+
+.agent-result-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0 14px;
+}
+
+.agent-result-findings li {
+  position: relative;
+  padding-left: 13px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.agent-result-findings li::before {
+  position: absolute;
+  top: 0.62em;
+  left: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ai-accent);
+  content: "";
+}
+
+.agent-contributions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.agent-contributions li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+}
+
+.agent-contributions li > span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-on-brand);
+  background: var(--agent-color);
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+.agent-contributions b {
+  display: block;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.agent-contributions small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* The honesty note, and it is not boilerplate: it is the reason there is no
+   percentage anywhere on this panel. */
+.agent-result-quality {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.agent-result-quality svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE TRACE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-trace {
+  display: flex;
+  max-height: 320px;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+}
+
+.agent-trace li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 9px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 6px 2px;
+}
+
+.agent-trace time {
+  color: var(--text-muted);
+  font: 10.5px var(--font-mono);
+}
+
+.agent-trace b {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.agent-trace small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-trace-note {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE MISSION COMPOSER — the product's existing mission input, unchanged in
+   contract and only resized to the new rail.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-launcher textarea,
+.agent-graph-select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 10px 11px;
+  color: var(--text-primary);
+  background: var(--surface-sunken);
+  font-size: 12.5px;
+  font-family: inherit;
+  line-height: 1.55;
+}
+
+.agent-launcher textarea {
+  resize: vertical;
+}
+
+.agent-graph-select {
+  font-weight: 650;
+}
+
+.agent-launcher textarea:focus-visible,
+.agent-graph-select:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.agent-goal-label {
+  display: block;
+  margin: 12px 0 6px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.agent-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0 13px;
+}
+
+.agent-presets button {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 9px 10px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  text-align: left;
+  font-size: 11.5px;
+  line-height: 1.45;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.agent-presets button:hover {
+  border-color: color-mix(in srgb, var(--ai-accent) 34%, var(--border-subtle));
+  background: var(--ai-bg);
+}
+
+.agent-presets button:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.agent-presets span {
+  flex: none;
+  color: var(--ai-text);
+  font: 750 10.5px/1.4 var(--font-mono);
+}
+
+.agent-primary-action,
+.agent-signal-action,
+.agent-approve,
+.agent-reject {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.agent-primary-action {
+  color: var(--text-on-brand);
+  background: var(--brand);
+}
+
+.agent-primary-action:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.agent-signal-action {
+  margin-top: 8px;
+  border: 1px solid color-mix(in srgb, var(--ai-accent) 34%, var(--border-subtle));
+  color: var(--ai-text);
+  background: var(--ai-bg);
+}
+
+.agent-signal-action:hover:not(:disabled) {
+  border-color: var(--ai-accent);
+}
+
+.agent-primary-action:hover:not(:disabled),
+.agent-approve:hover:not(:disabled),
+.agent-reject:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.agent-primary-action:active:not(:disabled),
+.agent-approve:active:not(:disabled),
+.agent-reject:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.agent-primary-action:focus-visible,
+.agent-signal-action:focus-visible,
+.agent-approve:focus-visible,
+.agent-reject:focus-visible,
+.agent-quiet-action:focus-visible,
+.agent-icon-action:focus-visible,
+.agent-history-row:focus-visible,
+.agent-plan-toggle:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.agent-primary-action:disabled,
+.agent-signal-action:disabled,
+.agent-approve:disabled,
+.agent-reject:disabled,
+.agent-quiet-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
+.agent-signal-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.agent-permission-note {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.agent-disclosure {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 11px;
+  border-radius: 9px;
+  padding: 10px;
+  color: var(--ai-text);
+  background: var(--ai-bg);
+}
+
+.agent-disclosure svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.agent-disclosure p {
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE APPROVAL GATE, THE LEDGER, THE HISTORY — unchanged behaviour, retuned
+   type sizes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-approval {
+  border: 1px solid color-mix(in srgb, var(--warn) 26%, var(--border-subtle));
+  border-radius: 11px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--warn) 7%, var(--surface));
+}
+
+.agent-risk {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn) 15%, var(--surface));
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.agent-approval h3 {
+  margin-top: 9px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.agent-approval p {
+  margin: 6px 0 12px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.agent-approve {
+  color: var(--text-on-brand);
+  background: var(--ok);
+}
+
+.agent-reject {
+  border: 1px solid color-mix(in srgb, var(--bad) 28%, var(--border-subtle));
+  color: var(--bad-ink);
+  background: var(--surface);
+}
+
+.agent-quiet-action,
+.agent-icon-action {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.agent-quiet-action {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.agent-quiet-action:hover:not(:disabled),
+.agent-icon-action:hover {
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+.agent-icon-action {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+}
+
+.agent-history {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.agent-history-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--text-muted);
+  text-align: left;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.agent-history-row:hover,
+.agent-history-row-active {
+  border-color: var(--border-subtle);
+  background: var(--surface-sunken);
+}
+
+.agent-history-row b,
+.agent-history-row small {
+  display: block;
+}
+
+.agent-history-row b {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-history-row small {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
+
+.agent-action-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agent-action-ledger li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 9px;
+  background: var(--surface-sunken);
+}
+
+.agent-action-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--agent-color) 50%, var(--border-subtle));
+  border-radius: 999px;
+  color: var(--agent-color);
+  background: color-mix(in srgb, var(--agent-color) 10%, var(--surface));
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.agent-action-ledger span,
+.agent-action-ledger b,
+.agent-action-ledger small {
+  display: block;
+}
+
+.agent-action-ledger div > span {
+  color: var(--ai-text);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.agent-action-ledger b {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 660;
+  line-height: 1.4;
+}
+
+.agent-action-ledger small {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-transform: capitalize;
+}
+
+.agent-empty {
+  display: grid;
+  place-items: center;
+  padding: 34px 20px;
+  text-align: center;
+}
+
+.agent-empty-compact {
+  padding: 20px 12px;
+}
+
+.agent-empty > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--ai-text);
+  background: var(--ai-bg);
+}
+
+.agent-empty h3 {
+  margin-top: 10px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.agent-empty p {
+  max-width: 46ch;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE PLAN INSPECTOR — the registered graph, as it executed
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.agent-node-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+  margin-top: 13px;
+}
+
+.agent-node-list > li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  min-width: 0;
+  gap: 9px;
+}
+
+.agent-node-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.agent-step-number {
+  z-index: 1;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  font: 750 10px/1 var(--font-mono);
+}
+
+.agent-node-rail i {
+  position: absolute;
+  top: 26px;
+  bottom: -9px;
+  width: 1px;
+  background: var(--border-subtle);
+}
+
+.agent-step-copy {
+  position: relative;
+  min-width: 0;
+  min-height: 58px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: var(--surface-sunken);
+}
+
+.agent-step-copy > div:first-child {
+  min-width: 0;
+  padding-right: 86px;
+}
+
+.agent-step-copy > div span,
+.agent-step-copy > div b {
+  display: block;
+}
+
+.agent-step-copy > div span {
+  color: var(--ai-text);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.agent-step-copy > div b {
+  overflow: hidden;
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 660;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-step-copy > small {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+.agent-step-copy > p {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-step-copy > p svg {
+  flex: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTION — four movements, each of which reports a state change
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes agent-live-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* The one continuous rotation on the screen, and it is on the glyph of a lane
+   that is genuinely executing — the only place on this surface where "still
+   moving" is the fact being reported. */
+@keyframes agent-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agent-spin {
+  animation: agent-spin 1.5s linear infinite;
+}
+
+/* A packet unfolding as it is created. */
+@keyframes agent-packet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scaleY(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* An evidence tile settling into the rail. */
+@keyframes agent-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* One review scan, once. */
+@keyframes agent-scan {
+  from {
+    left: -42%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFLOW — 1440+, laptop, tablet, phone. Nothing scrolls sideways at 320px.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Laptop: the dock narrows before anything is dropped, and the strategy rail's
+   four facts fold to two rows rather than squeezing to unreadable columns. */
+@media (max-width: 1400px) {
+  .agent-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .agent-bar-stats {
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  }
+
+  .agent-bar-cancel {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .agent-rail-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agent-node-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tablet and below: the theatre becomes one column in reading order — brain
+   first, then the lanes, then the evidence, then the composer and the dock.
+   The lane head stops being a seven-column table and becomes two rows, which
+   is what stops the state chip and the task colliding. */
+@media (max-width: 1080px) {
+  .agent-theatre {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .agent-lane-head {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    row-gap: 8px;
+  }
+
+  .agent-lane-glyph {
+    grid-row: 1 / span 2;
+  }
+
+  .agent-lane-state {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .agent-lane-task {
+    grid-column: 2 / span 2;
+    grid-row: 2;
+  }
+
+  .agent-lane-progress,
+  .agent-lane-meta {
+    display: none;
+  }
+
+  .agent-lane-chevron {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    margin-left: 6px;
+  }
+
+  .agent-lane-bridge {
+    padding-left: 47px;
+  }
+}
+
+@media (max-width: 720px) {
+  .agent-command {
+    gap: 11px;
+  }
+
+  .agent-bar,
+  .agent-panel {
+    padding: 13px;
+  }
+
+  .agent-bar-stats,
+  .agent-rail-facts,
+  .agent-dock-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agent-rail-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .agent-phase {
+    grid-column: 2;
+  }
+
+  .agent-packets,
+  .agent-evidence {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The lane state chip drops to the second row on a phone, because at 320px a
+     chip and a four-letter agent name on one line leaves nothing for either. */
+  .agent-lane-head {
+    grid-template-columns: 28px minmax(0, 1fr) 16px;
+  }
+
+  .agent-lane-state {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .agent-lane-task {
+    grid-column: 1 / span 3;
+    grid-row: 3;
+  }
+
+  .agent-lane-bridge {
+    padding-left: 13px;
+  }
+
+  .agent-trace li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .agent-trace small {
+    grid-column: 2;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — every movement above is an enhancement, so all of it goes.
+   The states remain distinguishable by word, glyph and fill without exception.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-live-dot,
+  .agent-spin,
+  .agent-packet,
+  .agent-evidence-tile,
+  .agent-review-gate-passed::after {
+    animation: none;
+  }
+
+  .agent-review-gate-passed::after {
+    display: none;
+  }
+
+  .agent-lane,
+  .agent-lane-chevron,
+  .agent-stack-row,
+  .agent-presets button,
+  .agent-primary-action,
+  .agent-signal-action,
+  .agent-approve,
+  .agent-reject,
+  .agent-quiet-action,
+  .agent-icon-action,
+  .agent-history-row {
+    transition: none;
+  }
+
+  .agent-primary-action:hover:not(:disabled),
+  .agent-approve:hover:not(:disabled),
+  .agent-reject:hover:not(:disabled),
+  .agent-primary-action:active:not(:disabled),
+  .agent-approve:active:not(:disabled),
+  .agent-reject:active:not(:disabled) {
     transform: none;
   }
 }

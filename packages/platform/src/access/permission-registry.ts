@@ -219,6 +219,11 @@ export const PERMISSION_REGISTRY = [
   { permission: "aiops.cost.read", docType: "ai_call_metric", description: "Read AI cost, metering and budget status.", privileged: false },
   { permission: "aiops.killswitch.operate", docType: "ai_kill_switch", description: "Engage, release and probe the AI kill switch.", privileged: true },
   { permission: "aiops.audit.read", docType: "ai_action_log", description: "Explain a single AI call and export the AI evidence pack.", privileged: true },
+
+  // ---- AGENT OS -----------------------------------------------------------------
+  { permission: "agentos.run.read", docType: "agent_run", description: "Read Agent OS graphs, agents, capabilities, runs and their evidence.", privileged: false },
+  { permission: "agentos.run.operate", docType: "agent_run", description: "Start, resume and cancel bounded Agent OS missions.", privileged: true },
+  { permission: "agentos.approval.decide", docType: "agent_approval", description: "Approve or reject a consequential action proposed by an agent mission.", privileged: true },
 ] as const satisfies readonly PermissionSpec[];
 
 /**

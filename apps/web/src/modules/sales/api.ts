@@ -66,6 +66,8 @@ export interface SalesOrderView {
   roundOff: string;
   grandTotal: string;
   creditStatus: string;
+  creditLimitSnapshot: string | null;
+  creditExposureSnapshot: string | null;
   status: string;
   lines: SalesOrderLineView[];
 }

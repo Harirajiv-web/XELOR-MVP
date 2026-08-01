@@ -10,20 +10,68 @@ import { num } from "@spine/format";
  */
 export const qualityManifest: ModuleManifest = {
   key: "quality",
-  name: "Quality",
-  summary: "Inspections, the readings behind each verdict, and what was accepted or rejected.",
+  name: "QMS & Audit",
+  summary: "Keep quality documents, audits, findings and corrective actions ready and easy to prove.",
   department: "KILN",
   icon: "ShieldCheck",
   licenceKey: "quality",
   order: 55,
   nav: [
     {
+      label: "Overview",
+      path: "overview",
+      permission: "quality.inspection.read",
+      icon: "LayoutDashboard",
+      description: "A clear summary of quality work, overdue actions and audit readiness.",
+    },
+    {
       label: "Inspections",
       path: "inspections",
       permission: "quality.inspection.read",
       icon: "ClipboardCheck",
-      description:
-        "Every lot that has been put in front of an inspector, with the gate it was checked at, the sample size the plan called for, and the verdict the readings produced. The verdict is computed from the readings against the plan — an inspector records what they measured, not whether it passed.",
+      description: "Material and product checks, including the readings behind every pass or rejection.",
+    },
+    {
+      label: "Documents",
+      path: "documents",
+      permission: "quality.inspection.read",
+      icon: "Files",
+      description: "Approved procedures and work instructions, with their current version and review date.",
+    },
+    {
+      label: "Audits",
+      path: "audits",
+      permission: "quality.inspection.read",
+      icon: "ClipboardList",
+      description: "Plan audits, follow their progress and keep the supporting proof together.",
+    },
+    {
+      label: "Findings",
+      path: "findings",
+      permission: "quality.inspection.read",
+      icon: "SearchCheck",
+      description: "Issues found in an audit, inspection, complaint or supplier review.",
+    },
+    {
+      label: "Corrective actions",
+      path: "corrective-actions",
+      permission: "quality.inspection.read",
+      icon: "ListChecks",
+      description: "Fix the cause of a problem, assign each action and confirm the fix worked.",
+    },
+    {
+      label: "Training",
+      path: "training",
+      permission: "quality.inspection.read",
+      icon: "GraduationCap",
+      description: "Show who has read or trained on each current quality document.",
+    },
+    {
+      label: "Evidence packs",
+      path: "evidence-packs",
+      permission: "quality.inspection.read",
+      icon: "PackageCheck",
+      description: "Prepare a checked, versioned set of proof for an auditor or customer.",
     },
     {
       label: "Inspection",
@@ -34,7 +82,14 @@ export const qualityManifest: ModuleManifest = {
     },
   ],
   screens: {
+    overview: () => import("./screens/overview"),
     inspections: () => import("./screens/inspections"),
+    documents: () => import("./screens/documents"),
+    audits: () => import("./screens/audits"),
+    findings: () => import("./screens/findings"),
+    "corrective-actions": () => import("./screens/corrective-actions"),
+    training: () => import("./screens/training"),
+    "evidence-packs": () => import("./screens/evidence-packs"),
     inspection: () => import("./screens/inspection"),
   },
   /**

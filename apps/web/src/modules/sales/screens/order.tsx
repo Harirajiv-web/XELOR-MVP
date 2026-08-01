@@ -211,6 +211,22 @@ export default function OrderScreen({ params }: ScreenProps): React.JSX.Element 
               value={data.isInterState ? "Inter-state — IGST" : "Intra-state — CGST + SGST"}
             />
             <Fact label="Lines" value={String(data.lines.length)} />
+            <Fact
+              label="Credit limit at decision"
+              value={data.creditLimitSnapshot == null ? "Not assessed" : inr(data.creditLimitSnapshot)}
+            />
+            <Fact
+              label="Existing exposure at decision"
+              value={data.creditExposureSnapshot == null ? "Not assessed" : inr(data.creditExposureSnapshot)}
+            />
+            <Fact
+              label="Exposure including this order"
+              value={
+                data.creditExposureSnapshot == null
+                  ? "Not assessed"
+                  : inr(Number(data.creditExposureSnapshot) + Number(data.grandTotal))
+              }
+            />
           </dl>
         </section>
       ) : null}

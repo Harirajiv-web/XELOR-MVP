@@ -33,6 +33,33 @@ export type ResolvedTheme = "light" | "dark";
 
 const KEY = "indcore.theme";
 
+/**
+ * ══════════════════════════════════════════════════════════════════════════════
+ * THE SAME CHOICE, ON TWO ORIGINS.
+ * ══════════════════════════════════════════════════════════════════════════════
+ *
+ * The sign-in page is Keycloak's and it is served from a different origin — `:8080` here,
+ * an auth host in production. `localStorage` is scoped to an origin, so a person who
+ * switches to light on the sign-in screen would arrive at a dark Brain a second later, and
+ * a person who set light inside the product would meet a dark sign-in page every morning.
+ * That is not a theme; that is two applications.
+ *
+ * COOKIES IGNORE THE PORT. A host-only cookie set on `localhost` is sent to `localhost:8080`
+ * and `localhost:3001` alike — the one storage mechanism whose scope is the host rather than
+ * the origin. In production the two live on sibling subdomains, so this needs
+ * `domain=.<registrable-domain>` to keep working; that is the single line to change and it
+ * is called out here because nothing will fail loudly when it is wrong. The theme will
+ * simply stop following people across the front door.
+ *
+ * The cookie is therefore the SHARED record and `localStorage` is kept beside it: the cookie
+ * is what makes the two screens agree, and the local copy is what still works when cookies
+ * are refused by policy. Read prefers the cookie, because it is the only one of the two that
+ * either screen can have written.
+ */
+const COOKIE = "xelor.theme";
+/** A year. Long enough that "persist for future visits" means what it says. */
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
 interface ThemeContextValue {
   /** What the person chose, including "system". */
   choice: ThemeChoice;
@@ -55,12 +82,40 @@ const ThemeContext = createContext<ThemeContextValue>({
  * merely unthemed. Private browsing modes and locked-down group policies both make
  * `localStorage` throw on read, so it is wrapped.
  */
+/**
+ * THE DOT IN `xelor.theme` HAS TO BE ESCAPED EXACTLY ONCE.
+ *
+ * This is a regex built by string concatenation inside a template literal, which is two
+ * layers of escaping stacked on each other, and getting it wrong is silent: `"\\\\."` emits
+ * `\\.` into the script, which the regex engine reads as "a literal backslash, then any
+ * character" — so the pattern never matched, the cookie was never read, and a person who
+ * chose light on the SIGN-IN page arrived at a dark Brain. Everything looked correct;
+ * nothing threw. Measured end to end, which is the only way this class of fault surfaces.
+ */
 export const themeBootScript = `(function(){try{
-var c=localStorage.getItem(${JSON.stringify(KEY)})||"system";
+var m=document.cookie.match(/(?:^|; )${COOKIE.replace(".", "\\.")}=(light|dark|system)/);
+var c=(m&&m[1])||localStorage.getItem(${JSON.stringify(KEY)})||"system";
 var d=c==="dark"||(c==="system"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
 document.documentElement.setAttribute("data-theme",d?"dark":"light");
 document.documentElement.style.colorScheme=d?"dark":"light";
 }catch(e){document.documentElement.setAttribute("data-theme","light");}})();`;
+
+/** Writes the shared record. Silent on failure — see `setChoice`. */
+function writeCookie(c: ThemeChoice): void {
+  try {
+    document.cookie = `${COOKIE}=${c}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  } catch {
+    /* A browser that refuses cookies still gets a themed session from localStorage. */
+  }
+}
+
+function readCookie(): ThemeChoice | null {
+  if (typeof document === "undefined") return null;
+  const m = new RegExp(`(?:^|; )${COOKIE.replace(".", "\\.")}=(light|dark|system)`).exec(
+    document.cookie,
+  );
+  return (m?.[1] as ThemeChoice) ?? null;
+}
 
 function systemIsDark(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -69,6 +124,10 @@ function systemIsDark(): boolean {
 
 function readChoice(): ThemeChoice {
   if (typeof window === "undefined") return "system";
+  // The cookie first: it is the only one of the two that the SIGN-IN page can have written,
+  // so preferring it is what makes a choice made at the front door survive the walk inside.
+  const shared = readCookie();
+  if (shared) return shared;
   try {
     const v = window.localStorage.getItem(KEY);
     return v === "light" || v === "dark" || v === "system" ? v : "system";
@@ -118,6 +177,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.
     const next: ResolvedTheme = c === "system" ? (systemIsDark() ? "dark" : "light") : c;
     setResolved(next);
     apply(next);
+    writeCookie(c);
     try {
       window.localStorage.setItem(KEY, c);
     } catch {

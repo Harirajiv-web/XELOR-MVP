@@ -14,6 +14,7 @@ import type { ScreenProps } from "@spine/registry/manifest";
 import type {
   ProductionActionResult,
   ProductionComponentRow,
+  ProductionOperationRow,
   ProductionOrderDetail,
   WarehouseOption,
 } from "../api";
@@ -224,7 +225,31 @@ export default function ProductionOrderScreen(props: ScreenProps): React.JSX.Ele
         </Fact>
         <Fact label="Last changed">{dateTime(data.updatedAt)}</Fact>
         <Fact label="Components">{String(data.components.length)}</Fact>
+        <Fact label="Route steps">{String(data.operations.length)}</Fact>
       </dl>
+
+      <div className="flex flex-col gap-2">
+        <div>
+          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Operation route</h2>
+          <p className="mt-0.5 text-[12.5px] text-[var(--text-secondary)]">
+            Ordered shop-floor evidence: workstation, accountable operator, actual time and measured yield.
+          </p>
+        </div>
+        {data.operations.length ? (
+          <ol className="grid gap-2 lg:grid-cols-2" aria-label="Production operation route">
+            {data.operations.map((operation) => (
+              <OperationCard key={operation.sequence} operation={operation} uom={data.uom} />
+            ))}
+          </ol>
+        ) : (
+          <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-5">
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">No operation route attached</p>
+            <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
+              This order can still use the quantity-level issue and receipt flow; no workstation sequence was planned for it.
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Components</h2>
@@ -267,6 +292,56 @@ export default function ProductionOrderScreen(props: ScreenProps): React.JSX.Ele
           }}
         />
       ) : null}
+    </div>
+  );
+}
+
+function OperationCard({
+  operation,
+  uom,
+}: {
+  operation: ProductionOperationRow;
+  uom: string | null;
+}): React.JSX.Element {
+  return (
+    <li className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)] p-3.5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-raised)] font-[var(--font-mono)] text-[12px] font-bold text-[var(--text-primary)]">
+            {operation.sequence}
+          </span>
+          <div className="min-w-0">
+            <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">
+              {operation.operationName}
+            </p>
+            <p className="text-[12px] text-[var(--text-secondary)]">
+              {operation.operationCode}
+              {operation.workCenterRef ? ` · ${operation.workCenterRef}` : ""}
+            </p>
+          </div>
+        </div>
+        <StatusBadge status={operation.status} />
+      </div>
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-[12px] sm:grid-cols-4">
+        <RouteFact label="Operator" value={operation.operatorRef ?? "Not assigned"} />
+        <RouteFact label="Started" value={operation.actualStart ? dateTime(operation.actualStart) : "Not started"} />
+        <RouteFact label="Good output" value={qty(operation.outputQty, uom)} />
+        <RouteFact label="Rejected" value={qty(operation.rejectedQty, uom)} />
+      </dl>
+      {operation.evidenceNote ? (
+        <p className="mt-3 border-t border-[var(--border-subtle)] pt-2.5 text-[12.5px] text-[var(--text-secondary)]">
+          <span className="font-semibold text-[var(--text-primary)]">Evidence:</span> {operation.evidenceNote}
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
+function RouteFact({ label, value }: { label: string; value: string }): React.JSX.Element {
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]">{label}</dt>
+      <dd className="mt-0.5 break-words text-[var(--text-primary)]">{value}</dd>
     </div>
   );
 }

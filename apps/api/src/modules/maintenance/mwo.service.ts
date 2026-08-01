@@ -23,6 +23,7 @@ import {
   type MwoType,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { fingerprint, runIdempotent } from "../../common/idempotency.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { WORKFLOW_EXECUTOR, type WorkflowExecutor } from "../../ports/workflow.port.js";
 import { DowntimeService } from "./downtime.service.js";
@@ -253,7 +254,16 @@ export class MwoService {
    * that is not already down — opens the downtime interval. If the asset IS already down,
    * this job JOINS that interval rather than opening a second clock.
    */
-  async start(mwoNo: string, employeeRef: string, at?: string): Promise<MwoView> {
+  async start(mwoNo: string, employeeRef: string, at: string | undefined, idempotencyKey: string): Promise<MwoView> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ operation: "maintenance.mwo.start", mwoNo, employeeRef, at: at ?? null }),
+      async () => ({ status: 200, body: await this.startOnce(mwoNo, employeeRef, at) }),
+    );
+    return result.body;
+  }
+
+  private async startOnce(mwoNo: string, employeeRef: string, at?: string): Promise<MwoView> {
     const { actorId } = currentTenant();
     return withTenant(async (tx) => {
       const m = await this.byNoInTx(tx, mwoNo);
@@ -607,6 +617,19 @@ export class MwoService {
   /* --------------------------------- tasks -------------------------------- */
 
   async addTask(
+    mwoNo: string,
+    task: { instruction: string; isMandatory?: boolean; resultType?: string; expectedMin?: number; expectedMax?: number; uom?: string; safetyNote?: string },
+    idempotencyKey: string,
+  ): Promise<{ sequence: number }> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ operation: "maintenance.mwo.task.add", mwoNo, task }),
+      async () => ({ status: 201, body: await this.addTaskOnce(mwoNo, task) }),
+    );
+    return result.body;
+  }
+
+  private async addTaskOnce(
     mwoNo: string,
     task: { instruction: string; isMandatory?: boolean; resultType?: string; expectedMin?: number; expectedMax?: number; uom?: string; safetyNote?: string },
   ): Promise<{ sequence: number }> {

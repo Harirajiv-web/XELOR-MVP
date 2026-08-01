@@ -17,8 +17,8 @@ INSERT INTO connector (id, tenant_id, created_by, updated_by, code, name, catego
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO credential (id, tenant_id, created_by, updated_by, label, credential_type, encrypted_data_key, ciphertext_ref, rotation_policy_days, last_rotated_at) VALUES
- ('0192a8c0-0040-7100-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','gsp-sandbox-api','api_key','kms:ap-south-1:key/demo-0001','secretsmanager://indcore/gsp/sandbox',90,'2026-06-01T00:00:00Z'),
- ('0192a8c0-0040-7100-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','suvarna-sftp-key','sftp_key','kms:ap-south-1:key/demo-0002','secretsmanager://indcore/bank/suvarna',180,'2026-05-15T00:00:00Z')
+ ('0192a8c0-0040-7100-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','gsp-sandbox-api','api_key','kms:ap-south-1:key/demo-0001','secretsmanager://xelor/gsp/sandbox',90,'2026-06-01T00:00:00Z'),
+ ('0192a8c0-0040-7100-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','suvarna-sftp-key','sftp_key','kms:ap-south-1:key/demo-0002','secretsmanager://xelor/bank/suvarna',180,'2026-05-15T00:00:00Z')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO connection (id, tenant_id, created_by, updated_by, connector_id, name, environment, adapter_mode, endpoint_url, secondary_endpoint_url, auth_type, credential_id, health_status) VALUES

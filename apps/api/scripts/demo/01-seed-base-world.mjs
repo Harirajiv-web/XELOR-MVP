@@ -21,103 +21,24 @@
  * so re-running adds nothing. `--reset` clears the demo documents first (never the masters,
  * never another tenant) for a clean rebuild.
  *
- *   node scripts/seed-demo.mjs [--reset] [--verbose]
+ *   node scripts/demo/01-seed-base-world.mjs [--reset] [--verbose]
  */
 
-const API = process.env.API_BASE ?? "http://127.0.0.1:3000";
-const KC = process.env.KEYCLOAK_URL ?? "http://127.0.0.1:8080";
-const REALM = process.env.KEYCLOAK_REALM ?? "indcore";
+import {
+  TODAY,
+  TRISHUL_GSTIN_PUNE,
+  SKIPPED,
+  token,
+  makeClient,
+  step,
+  expect,
+  rows,
+  daysAgo,
+  fyOf,
+  finish,
+} from "../shared/demo-client.mjs";
 
-const VERBOSE = process.argv.includes("--verbose");
-
-/** Demo "today" — §7 fixes it at Monday 20 July 2026 so every screen agrees. */
-const TODAY = "2026-07-20";
-const TRISHUL_GSTIN_PUNE = "27AABCT1234F1Z5";
-
-let ok = 0;
-let failed = 0;
 const created = { vendors: [], orders: [], pos: [], grns: [], mos: [], dispatches: [] };
-
-/* ------------------------------------------------------------------ plumbing */
-
-async function token(username) {
-  const res = await fetch(`${KC}/realms/${REALM}/protocol/openid-connect/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: "indcore-api",
-      grant_type: "password",
-      username,
-      password: "demo",
-      scope: "openid",
-    }),
-  });
-  const j = await res.json();
-  if (!j.access_token) throw new Error(`no token for ${username}: ${JSON.stringify(j)}`);
-  return j.access_token;
-}
-
-function makeClient(tok) {
-  return async function call(method, path, body, idemKey) {
-    const headers = { authorization: `Bearer ${tok}` };
-    if (body !== undefined) headers["content-type"] = "application/json";
-    // The key is derived from the path and the payload, so re-running the seeder replays
-    // rather than duplicates — the same guarantee a retrying client gets.
-    if (idemKey) headers["idempotency-key"] = idemKey;
-    const res = await fetch(`${API}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    const text = await res.text();
-    let json;
-    try {
-      json = text ? JSON.parse(text) : null;
-    } catch {
-      json = { raw: text };
-    }
-    return { status: res.status, body: json };
-  };
-}
-
-/** Run a step, print one line, keep going. A failed step must not hide the ones after it. */
-async function step(label, fn) {
-  try {
-    const result = await fn();
-    if (result === SKIPPED) {
-      console.log(`  --   ${label} (already present)`);
-      ok++;
-      return null;
-    }
-    console.log(`  ok   ${label}${result?.note ? ` — ${result.note}` : ""}`);
-    ok++;
-    return result?.value ?? result ?? null;
-  } catch (e) {
-    failed++;
-    console.log(`  FAIL ${label}`);
-    console.log(`         ${e.message}`);
-    if (VERBOSE && e.detail) console.log(`         ${JSON.stringify(e.detail)}`);
-    return null;
-  }
-}
-
-const SKIPPED = Symbol("skipped");
-
-function expect(res, want, what) {
-  const wants = Array.isArray(want) ? want : [want];
-  if (!wants.includes(res.status)) {
-    const env = res.body?.error;
-    const detail = env
-      ? `${env.code}: ${env.message}${env.details ? ` ${JSON.stringify(env.details)}` : ""}`
-      : JSON.stringify(res.body).slice(0, 300);
-    const err = new Error(`${what} → HTTP ${res.status} (wanted ${wants.join("/")}) — ${detail}`);
-    err.detail = res.body;
-    throw err;
-  }
-  return res.body;
-}
-
-const rows = (b) => (Array.isArray(b) ? b : (b?.data ?? b?.items ?? []));
 
 /* ------------------------------------------------------------------- the world */
 
@@ -513,17 +434,6 @@ async function seedKaveri(call) {
 
 /* ------------------------------------------------- HEXA: the platform console */
 
-const DAY = 86_400_000;
-const isoDate = (ms) => new Date(ms).toISOString().slice(0, 10);
-const daysAgo = (n) => isoDate(Date.now() - n * DAY);
-
-/** Indian financial year for a date: April to March. 20-Jul-2026 falls in FY 2026-27. */
-function fyOf(dateStr) {
-  const [y, m] = dateStr.split("-").map(Number);
-  const start = m >= 4 ? y : y - 1;
-  return `${start}-${String((start + 1) % 100).padStart(2, "0")}`;
-}
-
 /**
  * ADMINISTRATION and INTEGRATION — the control plane and the edge.
  *
@@ -573,12 +483,12 @@ async function seedPlatform(call) {
   const subscriptions = [
     {
       subscriberName: "ashvamedha-dealer-portal",
-      targetUrl: "https://portal.ashvamedha.example/hooks/indcore",
+      targetUrl: "https://portal.ashvamedha.example/hooks/xelor",
       eventNames: ["sales.order.confirmed.v1", "sales.dispatch.executed.v1", "accounts.invoice.raised.v1"],
     },
     {
       subscriberName: "finex-tally-bridge",
-      targetUrl: "https://bridge.finex.example/indcore/events",
+      targetUrl: "https://bridge.finex.example/xelor/events",
       eventNames: ["accounts.invoice.raised.v1", "accounts.payment.received.v1", "purchase.grn.created.v1"],
     },
   ];
@@ -890,22 +800,16 @@ async function main() {
   await seedPlatform(trishul);
   await seedKaveri(kaveri);
 
-  console.log(`\n${"=".repeat(70)}`);
-  console.log(`  ${ok} step(s) ok, ${failed} failed`);
-
   // The point of the whole exercise: readable, consecutive, year-qualified numbers.
-  const sos = created.orders.map((o) => o.soNo).filter(Boolean);
-  if (sos.length) console.log(`  sales orders : ${sos.join("  ")}`);
-  const pos = created.pos.map((p) => p.poNo).filter(Boolean);
-  if (pos.length) console.log(`  purchase     : ${pos.join("  ")}`);
-  const grns = created.grns.map((g) => g.grnNo).filter(Boolean);
-  if (grns.length) console.log(`  receipts     : ${grns.join("  ")}`);
-  const mos = created.mos.map((m) => m.orderNo).filter(Boolean);
-  if (mos.length) console.log(`  production   : ${mos.join("  ")}`);
-  const dns = created.dispatches.map((d) => d.dispatchNo).filter(Boolean);
-  if (dns.length) console.log(`  dispatch     : ${dns.join("  ")}`);
-
-  process.exit(failed > 0 ? 1 : 0);
+  const line = (label, values) =>
+    values.filter(Boolean).length ? [`${label} : ${values.filter(Boolean).join("  ")}`] : [];
+  finish([
+    ...line("sales orders", created.orders.map((o) => o.soNo)),
+    ...line("purchase    ", created.pos.map((p) => p.poNo)),
+    ...line("receipts    ", created.grns.map((g) => g.grnNo)),
+    ...line("production  ", created.mos.map((m) => m.orderNo)),
+    ...line("dispatch    ", created.dispatches.map((d) => d.dispatchNo)),
+  ]);
 }
 
 main().catch((e) => {

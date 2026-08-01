@@ -28,7 +28,7 @@ import { STOCK_POSTER, type StockPoster, type StockMovement } from "../../ports/
 import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.port.js";
 import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
 
-const { productionOrder, productionOrderComponent, outboxEvent } = schema;
+const { productionOrder, productionOrderComponent, productionOperation, outboxEvent } = schema;
 
 export interface CreateProductionOrderInput {
   itemId: string;
@@ -36,6 +36,28 @@ export interface CreateProductionOrderInput {
   bomId?: string;
   sourceWarehouseId: string;
   fgWarehouseId: string;
+}
+
+export interface AddProductionOperationInput {
+  sequence: number;
+  operationCode: string;
+  operationName: string;
+  workCenterRef?: string;
+  plannedStart?: string;
+  plannedEnd?: string;
+}
+
+export interface StartProductionOperationInput {
+  operatorRef: string;
+  at?: string;
+  inputQty?: number;
+}
+
+export interface CompleteProductionOperationInput {
+  outputQty: number;
+  rejectedQty: number;
+  evidenceNote: string;
+  at?: string;
 }
 /**
  * The item master fields every read path carries.
@@ -58,6 +80,23 @@ export interface ProdComponentCore {
   issuedQty: string;
 }
 export interface ProdComponentView extends ProdComponentCore, ItemNaming {}
+
+export interface ProductionOperationCore {
+  sequence: number;
+  operationCode: string;
+  operationName: string;
+  workCenterRef: string | null;
+  status: string;
+  plannedStart: string | null;
+  plannedEnd: string | null;
+  actualStart: string | null;
+  actualEnd: string | null;
+  operatorRef: string | null;
+  inputQty: string | null;
+  outputQty: string;
+  rejectedQty: string;
+  evidenceNote: string | null;
+}
 
 /**
  * The order as this module's own tables hold it — no cross-module lookup involved.
@@ -82,6 +121,7 @@ export interface ProductionOrderCore {
   createdAt: string;
   updatedAt: string;
   components: ProdComponentCore[];
+  operations: ProductionOperationCore[];
 }
 
 /** What a GET answers: the order, with every item named. */
@@ -98,6 +138,7 @@ export interface ProductionOrderView extends ItemNaming {
   createdAt: string;
   updatedAt: string;
   components: ProdComponentView[];
+  operations: ProductionOperationCore[];
 }
 
 export interface ProductionActionResult {
@@ -198,6 +239,207 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
         createdAt: now,
       });
       return this.viewInTx(tx, id);
+    });
+  }
+
+  /** Add one immutable routing step while the order is still planned. */
+  async addOperation(
+    orderId: string,
+    input: AddProductionOperationInput,
+    idempotencyKey: string,
+  ): Promise<ProductionOrderCore> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ orderId, op: "add_operation", ...input }),
+      async () => ({ status: 201, body: await this.doAddOperation(orderId, input) }),
+    );
+    return result.body;
+  }
+
+  private async doAddOperation(
+    orderId: string,
+    input: AddProductionOperationInput,
+  ): Promise<ProductionOrderCore> {
+    const { tenantId, actorId } = currentTenant();
+    const now = new Date();
+    return withTenant(async (tx) => {
+      const order = await this.loadOrder(tx, orderId);
+      if (order.status !== "planned") {
+        throw new AppError(
+          "PRODUCTION_ROUTE_LOCKED",
+          409,
+          `Order is ${order.status}; its operation route is already locked.`,
+        );
+      }
+      await tx.insert(productionOperation).values({
+        id: newId(),
+        tenantId,
+        createdBy: actorId,
+        updatedBy: actorId,
+        orderId,
+        sequence: input.sequence,
+        operationCode: input.operationCode,
+        operationName: input.operationName,
+        workCenterRef: input.workCenterRef,
+        plannedStart: input.plannedStart ? new Date(input.plannedStart) : undefined,
+        plannedEnd: input.plannedEnd ? new Date(input.plannedEnd) : undefined,
+      });
+      await this.audit.appendInTx(tx, {
+        action: "production.operation.added",
+        entityType: "production_order",
+        entityId: orderId,
+        data: {
+          orderNo: order.orderNo,
+          sequence: input.sequence,
+          operationCode: input.operationCode,
+          workCenterRef: input.workCenterRef ?? null,
+        },
+      });
+      await tx.insert(outboxEvent).values({
+        id: newId(),
+        tenantId,
+        name: eventName("production", "operation", "added"),
+        payload: { orderId, orderNo: order.orderNo, sequence: input.sequence },
+        createdAt: now,
+      });
+      return this.viewInTx(tx, orderId);
+    });
+  }
+
+  /** Start the next eligible operation; an earlier unfinished step is a hard gate. */
+  async startOperation(
+    orderId: string,
+    sequence: number,
+    input: StartProductionOperationInput,
+    idempotencyKey: string,
+  ): Promise<ProductionOrderCore> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ orderId, sequence, op: "start_operation", ...input }),
+      async () => ({ status: 201, body: await this.doStartOperation(orderId, sequence, input) }),
+    );
+    return result.body;
+  }
+
+  private async doStartOperation(
+    orderId: string,
+    sequence: number,
+    input: StartProductionOperationInput,
+  ): Promise<ProductionOrderCore> {
+    const { actorId } = currentTenant();
+    const startedAt = input.at ? new Date(input.at) : new Date();
+    return withTenant(async (tx) => {
+      const order = await this.loadOrder(tx, orderId);
+      if (order.status !== "in_progress") {
+        throw new AppError(
+          "PRODUCTION_NOT_IN_PROGRESS",
+          409,
+          `Order is ${order.status}; issue components before starting an operation.`,
+        );
+      }
+      const operations = await this.operationsInTx(tx, orderId);
+      const operation = operations.find((candidate) => candidate.sequence === sequence);
+      if (!operation) throw Errors.notFound("production operation");
+      if (operation.status !== "queued") {
+        throw new AppError(
+          "PRODUCTION_OPERATION_NOT_QUEUED",
+          409,
+          `Operation ${sequence} is ${operation.status}; only a queued operation can start.`,
+        );
+      }
+      const unfinishedEarlier = operations.find(
+        (candidate) => candidate.sequence < sequence && candidate.status !== "completed",
+      );
+      if (unfinishedEarlier) {
+        throw new AppError(
+          "PRODUCTION_PREVIOUS_OPERATION_OPEN",
+          409,
+          `Complete operation ${unfinishedEarlier.sequence} before starting operation ${sequence}.`,
+        );
+      }
+      await tx
+        .update(productionOperation)
+        .set({
+          status: "in_progress",
+          operatorRef: input.operatorRef,
+          inputQty: input.inputQty == null ? null : q3(input.inputQty),
+          actualStart: startedAt,
+          updatedBy: actorId,
+          updatedAt: startedAt,
+        })
+        .where(and(eq(productionOperation.orderId, orderId), eq(productionOperation.sequence, sequence)));
+      await this.audit.appendInTx(tx, {
+        action: "production.operation.started",
+        entityType: "production_order",
+        entityId: orderId,
+        data: { orderNo: order.orderNo, sequence, operatorRef: input.operatorRef, at: startedAt.toISOString() },
+      });
+      return this.viewInTx(tx, orderId);
+    });
+  }
+
+  /** Complete an operation with explicit output, rejects and attributable evidence. */
+  async completeOperation(
+    orderId: string,
+    sequence: number,
+    input: CompleteProductionOperationInput,
+    idempotencyKey: string,
+  ): Promise<ProductionOrderCore> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ orderId, sequence, op: "complete_operation", ...input }),
+      async () => ({ status: 201, body: await this.doCompleteOperation(orderId, sequence, input) }),
+    );
+    return result.body;
+  }
+
+  private async doCompleteOperation(
+    orderId: string,
+    sequence: number,
+    input: CompleteProductionOperationInput,
+  ): Promise<ProductionOrderCore> {
+    const { actorId } = currentTenant();
+    const endedAt = input.at ? new Date(input.at) : new Date();
+    return withTenant(async (tx) => {
+      const order = await this.loadOrder(tx, orderId);
+      const operations = await this.operationsInTx(tx, orderId);
+      const operation = operations.find((candidate) => candidate.sequence === sequence);
+      if (!operation) throw Errors.notFound("production operation");
+      if (operation.status !== "in_progress") {
+        throw new AppError(
+          "PRODUCTION_OPERATION_NOT_IN_PROGRESS",
+          409,
+          `Operation ${sequence} is ${operation.status}; start it before recording completion.`,
+        );
+      }
+      if (operation.actualStart && endedAt < new Date(operation.actualStart)) {
+        throw Errors.validation([{ field: "at", message: "must not be before the operation start" }]);
+      }
+      await tx
+        .update(productionOperation)
+        .set({
+          status: "completed",
+          outputQty: q3(input.outputQty),
+          rejectedQty: q3(input.rejectedQty),
+          evidenceNote: input.evidenceNote,
+          actualEnd: endedAt,
+          updatedBy: actorId,
+          updatedAt: endedAt,
+        })
+        .where(and(eq(productionOperation.orderId, orderId), eq(productionOperation.sequence, sequence)));
+      await this.audit.appendInTx(tx, {
+        action: "production.operation.completed",
+        entityType: "production_order",
+        entityId: orderId,
+        data: {
+          orderNo: order.orderNo,
+          sequence,
+          outputQty: q3(input.outputQty),
+          rejectedQty: q3(input.rejectedQty),
+          evidenceNote: input.evidenceNote,
+        },
+      });
+      return this.viewInTx(tx, orderId);
     });
   }
 
@@ -310,6 +552,15 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       const order = await this.loadOrder(tx, orderId);
       if (order.status !== "in_progress") {
         throw new AppError("PRODUCTION_NOT_IN_PROGRESS", 409, `Order is ${order.status}; issue components first.`);
+      }
+      const operations = await this.operationsInTx(tx, orderId);
+      const unfinished = operations.find((operation) => operation.status !== "completed");
+      if (unfinished) {
+        throw new AppError(
+          "PRODUCTION_OPERATION_OPEN",
+          409,
+          `Complete operation ${unfinished.sequence} (${unfinished.operationName}) before receiving finished goods.`,
+        );
       }
       const post = await this.stock.postInTx(tx, {
         entryType: "receipt",
@@ -432,7 +683,10 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
     return this.nameItems(core);
   }
 
-  async listOrders(limit: number, cursor?: string): Promise<CursorPage<Omit<ProductionOrderView, "components">>> {
+  async listOrders(
+    limit: number,
+    cursor?: string,
+  ): Promise<CursorPage<Omit<ProductionOrderView, "components" | "operations">>> {
     const page = await withTenant(async (tx) => {
       const keyset = cursor ? decodeCursor(cursor) : null;
       const rows = await tx
@@ -553,6 +807,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       .from(productionOrderComponent)
       .where(eq(productionOrderComponent.orderId, orderId))
       .orderBy(asc(productionOrderComponent.lineNo));
+    const operations = await this.operationsInTx(tx, orderId);
 
     const { createdAt, updatedAt, ...rest } = o;
     return {
@@ -560,7 +815,38 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       createdAt: createdAt.toISOString(),
       updatedAt: updatedAt.toISOString(),
       components,
+      operations,
     };
+  }
+
+  private async operationsInTx(tx: Tx, orderId: string): Promise<ProductionOperationCore[]> {
+    const rows = await tx
+      .select({
+        sequence: productionOperation.sequence,
+        operationCode: productionOperation.operationCode,
+        operationName: productionOperation.operationName,
+        workCenterRef: productionOperation.workCenterRef,
+        status: productionOperation.status,
+        plannedStart: productionOperation.plannedStart,
+        plannedEnd: productionOperation.plannedEnd,
+        actualStart: productionOperation.actualStart,
+        actualEnd: productionOperation.actualEnd,
+        operatorRef: productionOperation.operatorRef,
+        inputQty: productionOperation.inputQty,
+        outputQty: productionOperation.outputQty,
+        rejectedQty: productionOperation.rejectedQty,
+        evidenceNote: productionOperation.evidenceNote,
+      })
+      .from(productionOperation)
+      .where(and(eq(productionOperation.orderId, orderId), eq(productionOperation.isActive, true)))
+      .orderBy(asc(productionOperation.sequence));
+    return rows.map((row) => ({
+      ...row,
+      plannedStart: row.plannedStart?.toISOString() ?? null,
+      plannedEnd: row.plannedEnd?.toISOString() ?? null,
+      actualStart: row.actualStart?.toISOString() ?? null,
+      actualEnd: row.actualEnd?.toISOString() ?? null,
+    }));
   }
 
   /**

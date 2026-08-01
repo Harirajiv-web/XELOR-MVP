@@ -25,7 +25,7 @@ import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const WEB = join(HERE, "..");
+const WEB = join(HERE, "../..");
 const MODULES_DIR = join(WEB, "src", "modules");
 const REGISTRY = join(MODULES_DIR, "registry.ts");
 const PERMISSION_REGISTRY = join(

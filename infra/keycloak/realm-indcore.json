@@ -3,6 +3,9 @@
   "enabled": true,
   "sslRequired": "none",
   "loginWithEmailAllowed": true,
+  "editUsernameAllowed": true,
+  "displayName": "XELOR",
+  "loginTheme": "indcore",
   "groups": [
     { "name": "trishul" },
     { "name": "kaveri" }
@@ -10,7 +13,7 @@
   "clients": [
     {
       "clientId": "indcore-api",
-      "name": "IND-CORE API",
+      "name": "XELOR API",
       "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,
@@ -66,6 +69,62 @@
       "lastName": "Admin",
       "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
       "groups": ["/kaveri"]
+    },
+
+    {
+      "id": "d0000000-0000-4000-8000-00000000000a",
+      "username": "hari",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "hari@xelor.demo",
+      "firstName": "Hari",
+      "lastName": "Administrator",
+      "credentials": [{ "type": "password", "value": "1234", "temporary": false }],
+      "groups": ["/trishul"]
+    },
+    {
+      "id": "d0000000-0000-4000-8000-00000000000b",
+      "username": "mica.commercial",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "mica.commercial@indcore.demo",
+      "firstName": "Anitha",
+      "lastName": "Raghavan",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/trishul"]
+    },
+    {
+      "id": "d0000000-0000-4000-8000-00000000000c",
+      "username": "hexa.admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "hexa.admin@indcore.demo",
+      "firstName": "Deepak",
+      "lastName": "Menon",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/trishul"]
+    },
+    {
+      "id": "d0000000-0000-4000-8000-00000000000d",
+      "username": "kiln.operations",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "kiln.operations@indcore.demo",
+      "firstName": "Ravi",
+      "lastName": "Thangaraj",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/trishul"]
+    },
+    {
+      "id": "d0000000-0000-4000-8000-00000000000e",
+      "username": "spar.supply",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "spar.supply@indcore.demo",
+      "firstName": "Farida",
+      "lastName": "Shaikh",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "groups": ["/trishul"]
     }
   ]
 }

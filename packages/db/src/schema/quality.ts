@@ -1,4 +1,4 @@
-import { boolean, date, index, integer, jsonb, numeric, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, jsonb, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { tenantScopedColumns } from "./columns.js";
 
 /**
@@ -164,5 +164,67 @@ export const qmsDisposition = pgTable(
   (t) => [
     unique("uq_qmsdisp_tenant_no").on(t.tenantId, t.dispositionNo),
     index("ix_qmsdisp_tenant_insp").on(t.tenantId, t.inspectionId),
+  ],
+);
+
+/** A real non-conformance record linked back to the evidence that raised it. */
+export const qmsFinding = pgTable(
+  "qms_finding",
+  {
+    ...tenantScopedColumns,
+    findingNo: text("finding_no").notNull(),
+    sourceType: text("source_type").notNull(), // inspection | audit | complaint | supplier | manual
+    sourceRef: text("source_ref").notNull(),
+    inspectionId: uuid("inspection_id"),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    severity: text("severity").notNull(), // critical | major | minor
+    status: text("status").notNull().default("new"),
+    ownerRef: text("owner_ref").notNull(),
+    dueDate: date("due_date"),
+    containment: text("containment"),
+    containedAt: timestamp("contained_at", { withTimezone: true }),
+    rootCause: text("root_cause"),
+    rootCauseConfirmedBy: uuid("root_cause_confirmed_by"),
+    rootCauseConfirmedAt: timestamp("root_cause_confirmed_at", { withTimezone: true }),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    closedBy: uuid("closed_by"),
+    closureReason: text("closure_reason"),
+    idempotencyKey: text("idempotency_key").notNull(),
+  },
+  (t) => [
+    unique("uq_qmsfinding_no").on(t.tenantId, t.findingNo),
+    unique("uq_qmsfinding_idem").on(t.tenantId, t.idempotencyKey),
+    index("ix_qmsfinding_status").on(t.tenantId, t.status, t.dueDate),
+    index("ix_qmsfinding_source").on(t.tenantId, t.sourceType, t.sourceRef),
+  ],
+);
+
+/** Corrective action with an explicit effectiveness decision; completion is not closure. */
+export const qmsCorrectiveAction = pgTable(
+  "qms_corrective_action",
+  {
+    ...tenantScopedColumns,
+    capaNo: text("capa_no").notNull(),
+    findingId: uuid("finding_id").notNull(),
+    title: text("title").notNull(),
+    actionPlan: text("action_plan").notNull(),
+    ownerRef: text("owner_ref").notNull(),
+    dueDate: date("due_date").notNull(),
+    status: text("status").notNull().default("planned"),
+    effectivenessCriteria: text("effectiveness_criteria").notNull(),
+    completionEvidence: text("completion_evidence"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    effectivenessResult: text("effectiveness_result").notNull().default("pending"),
+    effectivenessEvidence: text("effectiveness_evidence"),
+    verifiedBy: uuid("verified_by"),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    idempotencyKey: text("idempotency_key").notNull(),
+  },
+  (t) => [
+    unique("uq_qmscapa_no").on(t.tenantId, t.capaNo),
+    unique("uq_qmscapa_idem").on(t.tenantId, t.idempotencyKey),
+    index("ix_qmscapa_status").on(t.tenantId, t.status, t.dueDate),
+    index("ix_qmscapa_finding").on(t.tenantId, t.findingId),
   ],
 );

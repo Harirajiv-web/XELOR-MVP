@@ -5,8 +5,11 @@ import { themeBootScript } from "@spine/theme/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AIKYANTRA",
-  description: "Manufacturing intelligence for India.",
+  title: {
+    default: "XELOR",
+    template: "%s · XELOR",
+  },
+  description: "XELOR manufacturing intelligence by AIKYANTRA.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): React.JSX.Element {

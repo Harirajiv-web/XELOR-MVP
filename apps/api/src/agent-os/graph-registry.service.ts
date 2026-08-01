@@ -1,0 +1,835 @@
+import { createHash } from "node:crypto";
+import { Injectable } from "@nestjs/common";
+import {
+  AppError,
+  validateAgentGraph,
+  type AgentGraphDefinition,
+} from "@ind-core/platform";
+
+const FOUNDATION_MISSION: AgentGraphDefinition = {
+  key: "foundation.cross-functional-readiness",
+  version: 1,
+  name: "Cross-functional readiness review",
+  description:
+    "Proves durable orchestration, parallel specialist work, governed ERP reads, verification and human approval.",
+  maxSteps: 14,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX mission intake",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Normalize the goal and state the bounded investigation plan.",
+      dependsOn: [],
+    },
+    {
+      id: "mica-orders",
+      name: "MICA reads commercial commitments",
+      kind: "capability",
+      agentKey: "MICA",
+      capabilityKey: "sales.orders.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "spar-stock",
+      name: "SPAR reads stock position",
+      kind: "capability",
+      agentKey: "SPAR",
+      capabilityKey: "inventory.on-hand.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "mica-assessment",
+      name: "MICA commercial assessment",
+      kind: "agent",
+      agentKey: "MICA",
+      instruction:
+        "Summarize the live order commitments and identify commercial evidence.",
+      dependsOn: ["mica-orders"],
+    },
+    {
+      id: "spar-assessment",
+      name: "SPAR supply assessment",
+      kind: "agent",
+      agentKey: "SPAR",
+      instruction:
+        "Summarize the live stock position and identify supply evidence.",
+      dependsOn: ["spar-stock"],
+    },
+    {
+      id: "evidence-join",
+      name: "Join specialist evidence",
+      kind: "transform",
+      operation: "collect",
+      dependsOn: ["mica-assessment", "spar-assessment"],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies policy and evidence",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "all tool calls are registered",
+        "all evidence is tenant-scoped",
+        "no write was executed",
+      ],
+      dependsOn: ["evidence-join"],
+    },
+    {
+      id: "human-approval",
+      name: "Human authorizes synthesis",
+      kind: "approval",
+      title: "Approve the evidence-backed mission result",
+      risk: "low",
+      proposedAction:
+        "Allow ONYX to issue the final readiness synthesis. No ERP write will occur.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "onyx-synthesis",
+      name: "ONYX final synthesis",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Produce the final concise result from verified evidence and the human decision.",
+      dependsOn: ["human-approval"],
+      condition: {
+        nodeId: "human-approval",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+  ],
+};
+
+const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
+  key: "operations.full-command-review",
+  version: 1,
+  name: "Seven-agent operating review",
+  description:
+    "Connects ONYX to every specialist agent for one bounded, evidence-backed operating review.",
+  maxSteps: 24,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX frames the mission",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Normalize the goal, define the evidence boundary and delegate to every specialist.",
+      dependsOn: [],
+    },
+    {
+      id: "hexa-context",
+      name: "HEXA reads organisation context",
+      kind: "capability",
+      agentKey: "HEXA",
+      capabilityKey: "general.companies.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "mica-orders",
+      name: "MICA reads customer commitments",
+      kind: "capability",
+      agentKey: "MICA",
+      capabilityKey: "sales.orders.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "spar-stock",
+      name: "SPAR reads inventory position",
+      kind: "capability",
+      agentKey: "SPAR",
+      capabilityKey: "inventory.on-hand.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "axle-plan",
+      name: "AXLE reads the material plan",
+      kind: "capability",
+      agentKey: "AXLE",
+      capabilityKey: "planning.planned-orders.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "kiln-production",
+      name: "KILN reads production execution",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "production.orders.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "rasp-finance",
+      name: "RASP reads finance postings",
+      kind: "capability",
+      agentKey: "RASP",
+      capabilityKey: "accounts.vouchers.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "hexa-assessment",
+      name: "HEXA control assessment",
+      kind: "agent",
+      agentKey: "HEXA",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["hexa-context"],
+    },
+    {
+      id: "mica-assessment",
+      name: "MICA commercial assessment",
+      kind: "agent",
+      agentKey: "MICA",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["mica-orders"],
+    },
+    {
+      id: "spar-assessment",
+      name: "SPAR supply assessment",
+      kind: "agent",
+      agentKey: "SPAR",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["spar-stock"],
+    },
+    {
+      id: "axle-assessment",
+      name: "AXLE planning assessment",
+      kind: "agent",
+      agentKey: "AXLE",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["axle-plan"],
+    },
+    {
+      id: "kiln-assessment",
+      name: "KILN operations assessment",
+      kind: "agent",
+      agentKey: "KILN",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["kiln-production"],
+    },
+    {
+      id: "rasp-assessment",
+      name: "RASP finance assessment",
+      kind: "agent",
+      agentKey: "RASP",
+      instruction:
+        "Assess the live domain evidence, state material findings and preserve source references.",
+      dependsOn: ["rasp-finance"],
+    },
+    {
+      id: "evidence-join",
+      name: "ONYX joins specialist evidence",
+      kind: "transform",
+      operation: "collect",
+      dependsOn: [
+        "hexa-assessment",
+        "mica-assessment",
+        "spar-assessment",
+        "axle-assessment",
+        "kiln-assessment",
+        "rasp-assessment",
+      ],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies the complete evidence pack",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "every specialist used only registered capabilities",
+        "every domain read stayed tenant-scoped",
+        "all six specialist assessments are present",
+        "no business record was changed",
+      ],
+      dependsOn: ["evidence-join"],
+    },
+    {
+      id: "human-approval",
+      name: "Human authorizes the command brief",
+      kind: "approval",
+      title: "Approve the seven-agent operating brief",
+      risk: "low",
+      proposedAction:
+        "Allow ONYX to publish the verified cross-functional brief. No ERP write will occur.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "onyx-synthesis",
+      name: "ONYX issues the command brief",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Synthesize the six verified specialist assessments into a concise operating brief.",
+      dependsOn: ["human-approval"],
+      condition: {
+        nodeId: "human-approval",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+  ],
+};
+
+/**
+ * Phase 3's controlled-autonomy contract:
+ * read live evidence -> propose -> verify -> human gate -> dispatch -> verify outcome.
+ *
+ * The six execution nodes create attributable domain work items. They do not give a model
+ * SQL access and they do not claim an external connector ran. Each node is structurally
+ * downstream of the approval, and the engine independently enforces that ancestry.
+ */
+const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
+  key: "operations.controlled-action-mission",
+  version: 1,
+  name: "Seven-agent controlled action mission",
+  description:
+    "Coordinates every specialist, pauses on a high-visibility human gate, then dispatches six approval-bound domain actions and verifies the outcome.",
+  maxSteps: 32,
+  timeoutSeconds: 600,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX frames the operating objective",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Define the objective, the permitted evidence boundary and the consequence boundary.",
+      dependsOn: [],
+    },
+    {
+      id: "hexa-context",
+      name: "HEXA reads governed company context",
+      kind: "capability",
+      agentKey: "HEXA",
+      capabilityKey: "general.companies.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "mica-orders",
+      name: "MICA reads delivery commitments",
+      kind: "capability",
+      agentKey: "MICA",
+      capabilityKey: "sales.orders.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "spar-stock",
+      name: "SPAR reads supply exposure",
+      kind: "capability",
+      agentKey: "SPAR",
+      capabilityKey: "inventory.on-hand.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "axle-plan",
+      name: "AXLE reads the current material plan",
+      kind: "capability",
+      agentKey: "AXLE",
+      capabilityKey: "planning.planned-orders.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "kiln-production",
+      name: "KILN reads production execution",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "production.orders.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "rasp-finance",
+      name: "RASP reads financial exposure",
+      kind: "capability",
+      agentKey: "RASP",
+      capabilityKey: "accounts.vouchers.read",
+      input: { limit: 20 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    ...(
+      [
+        ["hexa", "HEXA", "control"],
+        ["mica", "MICA", "commercial"],
+        ["spar", "SPAR", "supply"],
+        ["axle", "AXLE", "planning"],
+        ["kiln", "KILN", "operations"],
+        ["rasp", "RASP", "finance and people"],
+      ] as const
+    ).map(([prefix, agentKey, domain]) => ({
+      id: `${prefix}-assessment`,
+      name: `${agentKey} prepares the ${domain} recommendation`,
+      kind: "agent" as const,
+      agentKey,
+      instruction:
+        "Produce a bounded action recommendation from the live evidence. Preserve references and do not execute anything.",
+      dependsOn: [
+        prefix === "hexa"
+          ? "hexa-context"
+          : prefix === "mica"
+            ? "mica-orders"
+            : prefix === "spar"
+              ? "spar-stock"
+              : prefix === "axle"
+                ? "axle-plan"
+                : prefix === "kiln"
+                  ? "kiln-production"
+                  : "rasp-finance",
+      ],
+    })),
+    {
+      id: "recommendation-join",
+      name: "ONYX joins six action recommendations",
+      kind: "transform",
+      operation: "collect",
+      dependsOn: [
+        "hexa-assessment",
+        "mica-assessment",
+        "spar-assessment",
+        "axle-assessment",
+        "kiln-assessment",
+        "rasp-assessment",
+      ],
+    },
+    {
+      id: "onyx-action-plan",
+      name: "ONYX prepares the controlled action plan",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Produce one coordinated six-domain plan. Separate evidence, recommendation and proposed execution.",
+      dependsOn: ["recommendation-join"],
+    },
+    {
+      id: "hexa-preflight",
+      name: "HEXA verifies evidence and consequence boundaries",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "all evidence calls are registered and tenant-scoped",
+        "all six specialist recommendations are present",
+        "no action has executed before approval",
+        "each future action is a governed work item",
+      ],
+      dependsOn: ["onyx-action-plan"],
+    },
+    {
+      id: "human-action-approval",
+      name: "Human authorizes six governed actions",
+      kind: "approval",
+      title: "Authorize the Phase 3 controlled action plan",
+      risk: "medium",
+      proposedAction:
+        "Dispatch six attributable domain work items—one per specialist. No external API or unrestricted database action will run.",
+      dependsOn: ["hexa-preflight"],
+    },
+    {
+      id: "hexa-dispatch",
+      name: "HEXA dispatches the governance guardrail",
+      kind: "capability",
+      agentKey: "HEXA",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "governance",
+        actionType: "control_review",
+        title: "Verify permissions, evidence and approval compliance",
+        risk: "medium",
+        payload: { owner: "HEXA", outcome: "control_evidence_pack" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "mica-dispatch",
+      name: "MICA dispatches the customer commitment action",
+      kind: "capability",
+      agentKey: "MICA",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "sales",
+        actionType: "commitment_recovery",
+        title: "Prepare the customer delivery commitment recovery",
+        risk: "medium",
+        payload: { owner: "MICA", outcome: "customer_commitment_brief" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "spar-dispatch",
+      name: "SPAR dispatches the supply recovery action",
+      kind: "capability",
+      agentKey: "SPAR",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "supply",
+        actionType: "shortage_recovery",
+        title: "Prepare material shortage recovery work",
+        risk: "medium",
+        payload: { owner: "SPAR", outcome: "supply_recovery_queue" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "axle-dispatch",
+      name: "AXLE dispatches the planning scenario",
+      kind: "capability",
+      agentKey: "AXLE",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "planning",
+        actionType: "capacity_scenario",
+        title: "Prepare a capacity and material recovery scenario",
+        risk: "medium",
+        payload: { owner: "AXLE", outcome: "bounded_replan_scenario" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "kiln-dispatch",
+      name: "KILN dispatches the execution priority",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "operations",
+        actionType: "execution_priority",
+        title: "Prepare the governed production execution priority",
+        risk: "medium",
+        payload: { owner: "KILN", outcome: "shop_floor_priority" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "rasp-dispatch",
+      name: "RASP dispatches the financial guardrail",
+      kind: "capability",
+      agentKey: "RASP",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "finance_people",
+        actionType: "margin_and_workforce_guardrail",
+        title: "Prepare margin, cash and workforce guardrails",
+        risk: "medium",
+        payload: { owner: "RASP", outcome: "financial_guardrail" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
+      id: "action-outcome-join",
+      name: "ONYX collects six dispatch outcomes",
+      kind: "transform",
+      operation: "collect",
+      dependsOn: [
+        "hexa-dispatch",
+        "mica-dispatch",
+        "spar-dispatch",
+        "axle-dispatch",
+        "kiln-dispatch",
+        "rasp-dispatch",
+      ],
+    },
+    {
+      id: "hexa-outcome-verification",
+      name: "HEXA verifies approval-bound execution",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "every dispatched action has an approved ancestor",
+        "every action is attributable to one registered specialist",
+        "all execution stayed inside the governed work-item boundary",
+        "all six outcomes are present",
+      ],
+      dependsOn: ["action-outcome-join"],
+    },
+    {
+      id: "onyx-outcome",
+      name: "ONYX publishes the action outcome",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Publish the approved action ledger, verification result and next human checkpoints.",
+      dependsOn: ["hexa-outcome-verification"],
+    },
+  ],
+};
+
+const WORKING_CAPITAL_REVIEW: AgentGraphDefinition = {
+  key: "finance.working-capital-review",
+  version: 1,
+  name: "Working Capital Review",
+  description:
+    "RASP combines finance, customer and stock evidence into a cash outlook, then HEXA verifies the boundary before ONYX issues a human-approved brief.",
+  maxSteps: 18,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX frames the working capital question",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "State the time horizon, evidence boundary and the decisions this review must support.",
+      dependsOn: [],
+    },
+    {
+      id: "rasp-cash",
+      name: "RASP reads the verified finance position",
+      kind: "capability",
+      agentKey: "RASP",
+      capabilityKey: "finance.cash-position.read",
+      input: { asOf: "2026-07-20" },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "mica-customers",
+      name: "MICA reads customer commitments",
+      kind: "capability",
+      agentKey: "MICA",
+      capabilityKey: "sales.orders.read",
+      input: { limit: 50 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "spar-stock",
+      name: "SPAR reads stock holding cash",
+      kind: "capability",
+      agentKey: "SPAR",
+      capabilityKey: "inventory.on-hand.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "rasp-forecast",
+      name: "RASP simulates the 13-week outlook",
+      kind: "capability",
+      agentKey: "RASP",
+      capabilityKey: "finance.forecast.simulate",
+      input: { horizonWeeks: 13, scenario: "base case" },
+      maxAttempts: 2,
+      dependsOn: ["rasp-cash"],
+    },
+    {
+      id: "rasp-analysis",
+      name: "RASP explains the cash risks and choices",
+      kind: "agent",
+      agentKey: "RASP",
+      instruction:
+        "Separate calculated facts, assumptions and suggested actions. Do not propose an automatic payment, posting or customer contact.",
+      dependsOn: ["rasp-forecast", "mica-customers", "spar-stock"],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies the finance evidence",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "every figure is tied to tenant-scoped source evidence",
+        "assumptions are labelled separately from recorded facts",
+        "the scenario changed no source record",
+        "no payment, posting or customer message was executed",
+      ],
+      dependsOn: ["rasp-analysis"],
+    },
+    {
+      id: "human-review",
+      name: "Human approves the working capital brief",
+      kind: "approval",
+      title: "Approve the Working Capital Review",
+      risk: "low",
+      proposedAction:
+        "Allow ONYX to publish the verified cash brief. This approval does not authorize a payment, ledger posting or customer contact.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "onyx-brief",
+      name: "ONYX publishes the working capital brief",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Write a concise brief with current position, next risk, safest options, owners and dates.",
+      dependsOn: ["human-review"],
+      condition: {
+        nodeId: "human-review",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+  ],
+};
+
+const QMS_AUDIT_READINESS: AgentGraphDefinition = {
+  key: "quality.qms-audit-readiness",
+  version: 1,
+  name: "QMS & Audit Readiness",
+  description:
+    "KILN collects traceable quality evidence, identifies explicit gaps and prepares a review pack that HEXA verifies before a human-approved summary.",
+  maxSteps: 18,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX frames the audit scope",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "State the audit scope, required proof and the decisions reserved for authorised quality people.",
+      dependsOn: [],
+    },
+    {
+      id: "kiln-inspections",
+      name: "KILN reads inspection evidence",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "quality.inspections.read",
+      input: { limit: 100 },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "kiln-evidence",
+      name: "KILN collects the QMS evidence view",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "quality.evidence.collect",
+      input: { scope: "current QMS and internal audit readiness", limit: 100 },
+      maxAttempts: 2,
+      dependsOn: ["kiln-inspections"],
+    },
+    {
+      id: "kiln-pack",
+      name: "KILN drafts the evidence pack",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "quality.audit-pack.draft",
+      input: { scope: "current QMS and internal audit readiness" },
+      maxAttempts: 2,
+      dependsOn: ["kiln-evidence"],
+    },
+    {
+      id: "kiln-analysis",
+      name: "KILN explains readiness and gaps",
+      kind: "agent",
+      agentKey: "KILN",
+      instruction:
+        "Separate verified evidence, missing links and human decisions. Never declare compliance, confirm root cause or close CAPA.",
+      dependsOn: ["kiln-pack"],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies traceability and access",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "every evidence item preserves its source reference",
+        "document or inspection versions are not silently replaced",
+        "all gaps and missing evidence are explicit",
+        "no audit result, root cause or CAPA closure was decided by AI",
+      ],
+      dependsOn: ["kiln-analysis"],
+    },
+    {
+      id: "human-review",
+      name: "Quality owner approves the readiness summary",
+      kind: "approval",
+      title: "Approve the QMS & Audit Readiness summary",
+      risk: "low",
+      proposedAction:
+        "Allow ONYX to publish the verified readiness summary. This does not declare compliance or close a finding.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "onyx-brief",
+      name: "ONYX publishes the audit readiness brief",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Write a concise readiness brief with evidence present, gaps, owners, dates and the decisions still reserved for people.",
+      dependsOn: ["human-review"],
+      condition: {
+        nodeId: "human-review",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+  ],
+};
+
+@Injectable()
+export class GraphRegistryService {
+  private readonly graphs = new Map<string, AgentGraphDefinition>();
+
+  constructor() {
+    for (const graph of [
+      WORKING_CAPITAL_REVIEW,
+      QMS_AUDIT_READINESS,
+      CONTROLLED_ACTION_MISSION,
+      FULL_COMMAND_REVIEW,
+      FOUNDATION_MISSION,
+    ]) {
+      const validation = validateAgentGraph(graph);
+      if (!validation.valid) {
+        throw new Error(
+          `Invalid Agent OS graph '${graph.key}': ${validation.errors.join("; ")}`,
+        );
+      }
+      this.graphs.set(`${graph.key}@${graph.version}`, graph);
+    }
+  }
+
+  list(): readonly AgentGraphDefinition[] {
+    return [...this.graphs.values()];
+  }
+
+  get(key: string, version?: number): AgentGraphDefinition {
+    const candidates = [...this.graphs.values()].filter((g) => g.key === key);
+    const graph = version
+      ? this.graphs.get(`${key}@${version}`)
+      : candidates.sort((a, b) => b.version - a.version)[0];
+    if (!graph)
+      throw new AppError(
+        "AGENT_GRAPH_NOT_FOUND",
+        404,
+        `Agent graph '${key}' was not found.`,
+      );
+    return graph;
+  }
+
+  contentHash(graph: AgentGraphDefinition): string {
+    return createHash("sha256").update(JSON.stringify(graph)).digest("hex");
+  }
+}

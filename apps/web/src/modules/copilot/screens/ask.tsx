@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Database, Eye, Lock, Search, Send } from "lucide-react";
+import { Bot, CheckCircle2, Database, Eye, Lock, Search, Send, Sparkles } from "lucide-react";
 import { useQuery } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty, ErrorState, Forbidden, Loading, Refusal } from "@spine/states";
 import { date, dateTime, humanise, inr, num } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { cn } from "@spine/ui/cn";
+import { Disclosure } from "@spine/ui/disclosure";
+import { conciseCopilotAnswer } from "@spine/ui/plain-language";
 import { api } from "@spine/api/client";
 import { AppError } from "@spine/api/errors";
 import type { ScreenProps } from "@spine/registry/manifest";
@@ -86,7 +88,8 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
   const [result, setResult] = useState<AskResult | null>(null);
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState<unknown>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [catalogueFilter, setCatalogueFilter] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   /** Which catalogue entries this user's own permissions allow. */
   const allowed = useMemo(
@@ -103,6 +106,19 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
     }
     return [...byModule.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [catalogue.data]);
+
+  const filteredGrouped = useMemo(() => {
+    const needle = catalogueFilter.trim().toLowerCase();
+    if (!needle) return grouped;
+    return grouped
+      .map(([module, entries]) => [
+        module,
+        entries.filter((entry) =>
+          [entry.question, entry.module, ...entry.examples].join(" ").toLowerCase().includes(needle),
+        ),
+      ] as const)
+      .filter(([, entries]) => entries.length > 0);
+  }, [catalogueFilter, grouped]);
 
   async function ask(text: string, intentKey?: string): Promise<void> {
     const asked = text.trim();
@@ -149,68 +165,103 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
   const forbidden = askError instanceof AppError && askError.kind === "forbidden" ? askError : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <PageHeader
-        title="Ask"
-        subtitle="Type a question about your own factory data and get the answer with the rows it came from. It reads a fixed list of questions — nothing here can change a record."
+        title="Ask ONYX"
+        subtitle="A governed factory analyst that answers from live records, shows its evidence, and stays inside your permissions."
       />
 
-      {/* The three promises, on the screen rather than in a brochure. All three are
-          properties of the backend: there is no write path in the copilot module, every
-          question is authorised against the asker's permissions before retrieval, and every
-          answer carries the tables it read. */}
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Assurance
-          icon={<Eye className="h-3.5 w-3.5" aria-hidden />}
-          title="It only reads"
-          body="There is no create, edit, approve or cancel anywhere in this module. Ask it to change something and it says so."
+      <section className="relative overflow-hidden rounded-[calc(var(--radius-card)+4px)] border border-[var(--border-subtle)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at 12% 5%, var(--brand-soft) 0, transparent 36%), radial-gradient(circle at 92% 100%, var(--brand-soft-2) 0, transparent 34%)",
+          }}
+          aria-hidden
         />
-        <Assurance
-          icon={<Lock className="h-3.5 w-3.5" aria-hidden />}
-          title="Your access, nothing more"
-          body="Every question is checked against your own permissions first. It cannot show you what your screens would not."
-        />
-        <Assurance
-          icon={<Database className="h-3.5 w-3.5" aria-hidden />}
-          title="Every answer is sourced"
-          body="You get the tables it read and the rows it read, beside the answer. Nothing is summarised out of sight."
-        />
-      </div>
+        <div className="relative grid gap-5 p-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(220px,0.7fr)] lg:p-5">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[var(--brand)] shadow-[var(--shadow-subtle)]">
+                <Bot className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">ONYX analyst</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--status-success-border)] bg-[var(--status-success-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--status-success)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+                    Live
+                  </span>
+                </div>
+                <p className="text-[12px] text-[var(--text-secondary)]">
+                  Ask about your business in everyday words.
+                </p>
+              </div>
+            </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void ask(question);
-        }}
-        className="flex flex-wrap items-center gap-2"
-      >
-        <div className="relative min-w-0 flex-1">
-          <Search
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]"
-            aria-hidden
-          />
-          {/* maxLength is the same 500-character ceiling the API enforces. Stopping an
-              over-long paste here is kinder than refusing it after a round trip. */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            maxLength={500}
-            placeholder="How much PMP-CP50 do we have?"
-            aria-label="Your question"
-            className="h-10 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-          />
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void ask(question);
+              }}
+              className="rounded-[var(--radius-card)] border border-[var(--border-input)] bg-[var(--surface-raised)] p-2 shadow-[var(--shadow-subtle)] focus-within:border-[var(--brand)]"
+            >
+              {/* maxLength is the same 500-character ceiling the API enforces. */}
+              <textarea
+                ref={inputRef}
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void ask(question);
+                  }
+                }}
+                maxLength={500}
+                rows={3}
+                placeholder="Ask about stock, orders, suppliers, production or exceptions…"
+                aria-label="Your question"
+                className="min-h-20 w-full resize-none bg-transparent px-2 py-2 text-[14px] leading-6 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
+              />
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] px-1 pt-2">
+                <span className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
+                  <Sparkles className="h-3 w-3 text-[var(--brand)]" aria-hidden />
+                  Enter to ask · Shift+Enter for a new line · {question.length}/500
+                </span>
+                <button
+                  type="submit"
+                  disabled={asking || question.trim().length === 0}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--brand)] px-4 text-[12px] font-semibold text-white shadow-[var(--shadow-subtle)] transition-all hover:bg-[var(--brand-hover)] disabled:opacity-50"
+                >
+                  <Send className="h-3.5 w-3.5" aria-hidden />
+                  {asking ? "Reading…" : "Ask ONYX"}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <Disclosure title="How ONYX works" className="self-center">
+            <div className="grid gap-2">
+              <Assurance
+                icon={<Eye className="h-3.5 w-3.5" aria-hidden />}
+                title="Read-only"
+                body="It cannot change your records."
+              />
+              <Assurance
+                icon={<Lock className="h-3.5 w-3.5" aria-hidden />}
+                title="Uses your access"
+                body="It only reads information you may open."
+              />
+              <Assurance
+                icon={<Database className="h-3.5 w-3.5" aria-hidden />}
+                title="Shows its sources"
+                body="You can check where each answer came from."
+              />
+            </div>
+          </Disclosure>
         </div>
-        <button
-          type="submit"
-          disabled={asking || question.trim().length === 0}
-          className="inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--brand)] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-50"
-        >
-          <Send className="h-3.5 w-3.5" aria-hidden />
-          {asking ? "Asking…" : "Ask"}
-        </button>
-      </form>
+      </section>
 
       {asking ? <Loading label="Reading your data…" /> : null}
 
@@ -222,28 +273,42 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
 
       {result && !asking ? <Answer result={result} onPick={(q, k) => void ask(q, k)} /> : null}
 
-      {/* The catalogue, always visible — before the first question and after every answer. */}
+      <Disclosure
+        title="Suggested questions"
+        hint={`${allowed.size} available to you`}
+      >
       <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">What you can ask</h2>
-          <p className="mt-0.5 max-w-prose text-[13px] leading-5 text-[var(--text-secondary)]">
-            This is the whole list. The copilot answers these questions and refuses everything else —
-            adding one is a code change with a review, which is what keeps the list worth trusting.
-          </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Questions ONYX can answer</h2>
+            <p className="mt-0.5 max-w-prose text-[13px] leading-5 text-[var(--text-secondary)]">
+              Choose one or search the list.
+            </p>
+          </div>
+          <label className="relative min-w-[220px]">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" aria-hidden />
+            <input
+              value={catalogueFilter}
+              onChange={(e) => setCatalogueFilter(e.target.value)}
+              placeholder="Find a question"
+              aria-label="Filter available questions"
+              className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
+            />
+          </label>
         </div>
 
         {catalogue.loading || capabilities.loading ? (
           <Loading label="Loading the catalogue…" />
         ) : catalogue.error ? (
           <ErrorState error={catalogue.error} onRetry={catalogue.reload} />
-        ) : grouped.length === 0 ? (
+        ) : filteredGrouped.length === 0 ? (
           <Empty
-            title="No questions are registered"
-            body="The question catalogue is empty, which means the copilot can answer nothing at all. That is a build problem rather than a data one."
+            title={catalogueFilter ? "No matching questions" : "No questions are registered"}
+            body={catalogueFilter ? "Try another word or clear the filter." : "The governed question catalogue is empty."}
           />
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {grouped.map(([module, entries]) => (
+            {filteredGrouped.map(([module, entries]) => (
               <div
                 key={module}
                 className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)] p-3"
@@ -261,13 +326,14 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
                           disabled={!may}
                           onClick={() => pick(entry)}
                           className={cn(
-                            "w-full rounded-[var(--radius-control)] px-2 py-1.5 text-left text-[13px] leading-5 transition-colors",
+                            "group flex w-full items-start gap-2 rounded-[var(--radius-control)] border border-transparent px-2.5 py-2 text-left text-[13px] leading-5 transition-all",
                             may
-                              ? "text-[var(--text-primary)] hover:bg-[var(--brand-soft-2)]"
+                              ? "text-[var(--text-primary)] hover:border-[var(--border-subtle)] hover:bg-[var(--brand-soft-2)]"
                               : "cursor-not-allowed text-[var(--text-muted)]",
                           )}
                         >
-                          {entry.question}
+                          <CheckCircle2 className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", may ? "text-[var(--brand)]" : "text-[var(--text-muted)]")} aria-hidden />
+                          <span>{entry.question}
                           {/* Naming the permission rather than greying the row out silently:
                               in a factory of forty people they already know who grants it. */}
                           {may ? null : (
@@ -278,6 +344,7 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
                               </code>
                             </span>
                           )}
+                          </span>
                         </button>
                       </li>
                     );
@@ -288,6 +355,7 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
           </div>
         )}
       </section>
+      </Disclosure>
     </div>
   );
 }
@@ -363,11 +431,14 @@ function Answer({
   return (
     <section className="flex flex-col gap-3">
       <div className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)] p-4">
-        <p className="whitespace-pre-wrap text-[14px] leading-6 text-[var(--text-primary)]">{result.answer}</p>
+        <p className="whitespace-pre-wrap text-[14px] leading-6 text-[var(--text-primary)]">
+          {conciseCopilotAnswer(result.answer, rows.length)}
+        </p>
       </div>
 
       {citation ? (
-        <div className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface-sunken)] p-3 text-[12px] leading-5 text-[var(--text-secondary)]">
+        <Disclosure title="How this answer was found" hint="Sources and checks">
+        <div className="text-[12px] leading-5 text-[var(--text-secondary)]">
           <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]">
             Evidence
           </div>
@@ -406,9 +477,11 @@ function Answer({
             {citation.truncated ? " The row cap trimmed this answer; there are more." : ""}
           </p>
         </div>
+        </Disclosure>
       ) : null}
 
       {rows.length > 0 ? (
+        <Disclosure title="Records used" hint={`${rows.length} records`}>
         <DataTable
           rows={rows}
           columns={columns}
@@ -416,6 +489,7 @@ function Answer({
           density="compact"
           caption="The rows this answer was drawn from"
         />
+        </Disclosure>
       ) : (
         <Empty
           title="No rows matched"

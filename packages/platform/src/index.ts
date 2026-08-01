@@ -67,3 +67,5 @@ export * from "./aiops/lifecycle.js";
 export * from "./copilot/intents.js";
 export * from "./copilot/route.js";
 export * from "./copilot/answer.js";
+export * from "./agent-os/types.js";
+export * from "./agent-os/graph.js";

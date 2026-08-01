@@ -19,6 +19,8 @@ export type DocSeriesType =
   | "production_order"
   | "inspection"
   | "disposition"
+  | "quality_finding"
+  | "corrective_action"
   | "voucher_journal"
   | "voucher_invoice"
   | "receipt"

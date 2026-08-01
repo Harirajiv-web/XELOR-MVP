@@ -8,6 +8,7 @@ import { Loading, ErrorState } from "@spine/states";
 import { PageHeader } from "@spine/shell/page-header";
 import { CountUp, Meter, Reveal } from "@spine/ui/motion";
 import { BarRows } from "@spine/ui/charts";
+import { Disclosure } from "@spine/ui/disclosure";
 import { inr, num, dateTime, humanise } from "@spine/format";
 import { cn } from "@spine/ui/cn";
 import type { ScreenProps } from "@spine/registry/manifest";
@@ -25,7 +26,6 @@ import {
   type HitlItem,
   type IncidentRow,
   type KillSwitchState,
-  type ProviderRow,
   type RegistryFeature,
 } from "../api";
 
@@ -50,14 +50,14 @@ import {
  * WHAT COUNTS AS A CONNECTOR
  * ───────────────────────────────────────────────────────────────────────────────────
  * A place the AI layer draws evidence FROM or drafts actions INTO. Two classes, and the
- * distinction is the whole IND-CORE / IND-AI story:
+ * distinction is the whole XELOR intelligence-layer story:
  *
  *   INTERNAL — a module service in this build that calls a registered feature through an
  *   adapter. Derived by INVERTING `FEATURE_CONSUMERS`, which is itself transcribed from the
  *   real call sites in `apps/api/src/ai/`. Not a list somebody typed: add a call site and a
  *   connector appears here; delete the adapter and it leaves.
  *
- *   EXTERNAL — the systems IND-AI is meant to read in a plant that already runs an ERP.
+ *   EXTERNAL — the systems XELOR is meant to read in a plant that already runs an ERP.
  *   None of them has an adapter in this repository, so every one is drawn as NOT CONNECTED
  *   with what it would take. Leaving them off the page would be tidier and would hide the
  *   single biggest gap between what is sold and what is built.
@@ -89,13 +89,13 @@ const MODULE_LOOK: Readonly<Record<string, { name: string; icon: string }>> = {
   csp: { name: "Customer service", icon: "Headset" },
   hrm: { name: "People", icon: "Users" },
   expenditure: { name: "Expenditure", icon: "Receipt" },
-  copilot: { name: "Copilot", icon: "MessageSquare" },
+  copilot: { name: "ONYX Copilot", icon: "MessageSquare" },
 };
 
 /**
- * The systems IND-AI is meant to read in a factory that already runs an ERP.
+ * The systems XELOR is meant to read in a factory that already runs an ERP.
  *
- * Source: the product definition — IND-AI is "a read-only intelligence layer on top of a
+ * Source: the product definition — XELOR is "a read-only intelligence layer on top of a
  * plant's existing systems (SAP, Tally, Odoo, Dynamics, MES/SCADA, documents)". The build
  * status of each is a fact about THIS REPOSITORY, checked by searching for an adapter:
  * there is no `apps/api/src/integrations/` connector for any of them, and DECISIONS-V2 §6
@@ -206,7 +206,6 @@ const STATUS_LOOK: Record<
 
 export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element {
   const registry = useQuery<Envelope<RegistryFeature>>(aiopsApi.registryPath);
-  const providers = useQuery<Envelope<ProviderRow>>(aiopsApi.providersPath);
   const incidents = useQuery<Envelope<IncidentRow>>(aiopsApi.incidentsPath);
   const hitl = useQuery<Envelope<HitlItem>>(aiopsApi.hitlPath, { query: { status: "open" } });
   const switches = useQuery<Envelope<KillSwitchState>>(aiopsApi.killSwitchesPath);
@@ -254,47 +253,32 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Connectors"
-        subtitle="Nine module services in this build call the AI layer; six external systems IND-AI is sold against do not exist here yet. Both are on this page, and every figure is read from an endpoint or transcribed from a named source file."
+        subtitle="See which parts of XELOR are using AI and whether anything needs attention."
         meta={[
           { label: "Connected", value: `${wired.length} of ${connectors.length}` },
-          { label: "External", value: `0 of ${EXTERNAL_CONNECTORS.length}` },
-          { label: "Providers", value: num(providers.data?.data.length ?? 0) },
+          { label: "Waiting for review", value: num(drafts.length) },
+          { label: "Open issues", value: num(openIncidents.length) },
         ]}
       />
 
       {/* ─────────────────────────── the headline strip ─────────────────────────── */}
-      <div className="kgrid [grid-template-columns:repeat(6,1fr)] max-[1400px]:[grid-template-columns:repeat(3,1fr)] max-[900px]:[grid-template-columns:repeat(2,1fr)]">
+      <div className="kgrid [grid-template-columns:repeat(3,1fr)] max-[900px]:[grid-template-columns:1fr]">
         {[
           {
             l: "Connected",
             v: `${wired.length}/${connectors.length}`,
-            d: `${connectors.length - wired.length} registered with no call site`,
+            d: `${connectors.length - wired.length} still need to be connected`,
             f: connectors.length ? wired.length / connectors.length : 0,
-          },
-          {
-            l: "Answering",
-            v: String(live.length),
-            d: live.length === 0 ? "No calls in this window" : "Made a call in this window",
           },
           {
             l: "Calls",
             v: num(totalCalls),
-            d: cost.data ? `${cost.data.from} to ${cost.data.to}` : "In this window",
-          },
-          {
-            l: "Spend",
-            v: inr(cost.data?.totalCost ?? 0),
-            d: "Priced at the rate in force on the day",
+            d: live.length === 0 ? "No recent AI activity" : `${live.length} areas used AI recently`,
           },
           {
             l: "Awaiting a person",
             v: num(drafts.length),
-            d: "Drafts not yet written to any record",
-          },
-          {
-            l: "Open incidents",
-            v: num(openIncidents.length),
-            d: openIncidents.length === 0 ? "Nothing on the register" : "On the AI incident register",
+            d: drafts.length === 0 ? "Nothing needs a decision" : "Ready for review",
           },
         ].map((k, i) => (
           <Reveal key={k.l} delay={40 + i * 45}>
@@ -311,16 +295,20 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
       </div>
 
       {/* ─────────────────────── the mesh, and what governs it ─────────────────── */}
-      <Reveal delay={140}>
+      <Disclosure
+        title="See how AI connects across XELOR"
+        hint={`${wired.length} connected areas · ${num(totalCalls)} recent calls`}
+      >
+        <Reveal delay={140}>
         <div className="grid gap-3.5 [grid-template-columns:minmax(0,1fr)_320px] max-[1200px]:[grid-template-columns:minmax(0,1fr)]">
           <section className="card overflow-hidden">
             <div className="panel-h">
               <span className="flex items-center gap-2">
                 <Icons.Waypoints className="h-4 w-4 text-[var(--brand)]" aria-hidden />
-                The mesh
+                Connection map
               </span>
               <span className="panel-h-sub">
-                Drawn from the call sites, not from a diagram
+                Shows the areas that currently use AI
               </span>
             </div>
             <MeshGraph connectors={connectors} />
@@ -334,32 +322,30 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
                 owner can put this in front of an auditor. */}
             <section className="card p-4">
               <p className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                Autonomy posture
+                Human approval
               </p>
               <p className="mt-1.5 text-[30px] font-bold leading-none tracking-[-0.02em] text-[var(--ok-ink)]">
                 <CountUp value="0%" />
               </p>
               <p className="mt-1 text-[11px] font-semibold text-[var(--text-secondary)]">
-                acts without a person
+                acts without approval
               </p>
               <Meter fraction={1} tone="ok" className="mt-3" />
               <p className="mt-2 text-[11px] leading-[1.5] text-[var(--text-muted)]">
-                Every AI output in this system is a draft. There is no code path by which a
-                model writes to a business record — the {num(drafts.length)} item
-                {drafts.length === 1 ? "" : "s"} in the review queue{" "}
-                {drafts.length === 1 ? "is" : "are"} proposals, and nothing else.
+                AI suggestions remain drafts until a person reviews them. There are currently{" "}
+                {num(drafts.length)} waiting.
               </p>
             </section>
 
             <section className="card p-4">
               <p className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                Evidence discipline
+                Tested AI features
               </p>
               <p className="mt-1.5 text-[22px] font-bold leading-none text-[var(--text-primary)]">
                 <CountUp value={`${withGolden} of ${features.length}`} />
               </p>
               <p className="mt-1 text-[11px] font-semibold text-[var(--text-secondary)]">
-                features have a golden set
+                features have a test set
               </p>
               <Meter
                 fraction={features.length ? withGolden / features.length : 0}
@@ -367,14 +353,13 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
                 className="mt-3"
               />
               <p className="mt-2 text-[11px] leading-[1.5] text-[var(--text-muted)]">
-                DECISIONS-V2 §4.1: no golden set, no ship. {features.length - withGolden} have
-                none, and they are named on the cards below rather than averaged away.
+                {features.length - withGolden} features still need a complete test set.
               </p>
             </section>
 
             <section className="card overflow-hidden">
               <div className="panel-h">
-                <span>How far each feature has been let out</span>
+                <span>Where AI features are being used</span>
               </div>
               <div className="p-3.5">
                 <BarRows data={byStage} />
@@ -382,15 +367,14 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             </section>
           </div>
         </div>
-      </Reveal>
+        </Reveal>
+      </Disclosure>
 
       {/* ───────────────────────────── the connectors ───────────────────────────── */}
-      <section className="flex flex-col gap-2.5">
-        <h2 className="flex items-center gap-2 text-[13px] font-bold text-[var(--text-primary)]">
-          <Icons.Cable className="h-4 w-4 text-[var(--brand)]" aria-hidden />
-          Inside this build
-          <span className="chip chip-grey">{connectors.length}</span>
-        </h2>
+      <Disclosure
+        title="Connected XELOR areas"
+        hint={`${connectors.length} areas · open to see individual status`}
+      >
         <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fill,minmax(390px,1fr))]">
           {connectors.map((c, i) => (
             <Reveal key={c.key} delay={200 + i * 45}>
@@ -398,7 +382,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             </Reveal>
           ))}
         </div>
-      </section>
+      </Disclosure>
 
       {/* ────────────────────── what a person still has to do ─────────────────── */}
       <Reveal delay={260}>
@@ -458,7 +442,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             <div className="panel-h">
               <span className="flex items-center gap-2">
                 <Icons.ShieldAlert className="h-4 w-4 text-[var(--bad)]" aria-hidden />
-                When the AI itself was the problem
+                AI issues
               </span>
               <Link href="/aiops/incidents" className="btn btn-ghost btn-sm">
                 Incident register
@@ -466,9 +450,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             </div>
             {(incidents.data?.data ?? []).length === 0 ? (
               <p className="px-4 py-9 text-center text-[12px] leading-[1.55] text-[var(--text-muted)]">
-                The register is empty. That means nothing has been recorded — not that
-                nothing has happened. These failures are found by somebody noticing, which is
-                why this register exists at all.
+                No AI issues have been reported.
               </p>
             ) : (
               <ul className="divide-y divide-[var(--border-subtle)]">
@@ -503,20 +485,22 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
       </Reveal>
 
       {/* ───────────────────────── the ones that are not built ─────────────────── */}
-      <Reveal delay={320}>
+      <Disclosure
+        title="Planned outside connections"
+        hint={`SAP, Tally, Odoo and ${EXTERNAL_CONNECTORS.length - 3} more`}
+      >
+        <Reveal delay={320}>
         <section className="card overflow-hidden">
           <div className="panel-h">
             <span className="flex items-center gap-2">
               <Icons.Unplug className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-              Outside this build — IND-AI's read-only connectors
+              Systems XELOR can connect to
             </span>
             <span className="chip chip-warn">0 of {EXTERNAL_CONNECTORS.length} connected</span>
           </div>
           <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
-            IND-AI is sold as a layer over a plant's existing systems. None of these has an
-            adapter in this repository yet. They are on the page because a console that shows
-            only what works is a brochure — and because the second column is the actual
-            engineering estimate, not a roadmap adjective.
+            These connections are planned but are not available yet. Open each item to see
+            what information it would use and what is needed to connect it.
           </p>
           <ul className="grid [grid-template-columns:repeat(auto-fill,minmax(330px,1fr))]">
             {EXTERNAL_CONNECTORS.map((e) => {
@@ -537,11 +521,11 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
                     <span className="chip chip-grey">Not connected</span>
                   </div>
                   <p className="mt-2 text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">
-                    <b className="font-semibold text-[var(--text-primary)]">Would read: </b>
+                    <b className="font-semibold text-[var(--text-primary)]">Information used: </b>
                     {e.reads}
                   </p>
                   <p className="mt-1.5 text-[11px] leading-[1.5] text-[var(--text-muted)]">
-                    <b className="font-semibold text-[var(--text-secondary)]">To connect it: </b>
+                    <b className="font-semibold text-[var(--text-secondary)]">What is needed: </b>
                     {e.needs}
                   </p>
                 </li>
@@ -549,23 +533,26 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             })}
           </ul>
         </section>
-      </Reveal>
+        </Reveal>
+      </Disclosure>
 
       {/* ───────────────────── where a call is actually stopped ────────────────── */}
-      <Reveal delay={340}>
+      <Disclosure
+        title="Safety and technical details"
+        hint="Controls, dependencies, open work and monitoring"
+      >
+        <Reveal delay={340}>
         <div className="grid gap-3.5 [grid-template-columns:repeat(2,minmax(0,1fr))] max-[1100px]:[grid-template-columns:minmax(0,1fr)]">
           <section className="card flex flex-col overflow-hidden">
             <div className="panel-h">
               <span className="flex items-center gap-2">
                 <Icons.ShieldCheck className="h-4 w-4 text-[var(--ok)]" aria-hidden />
-                What stops a call
+                Safety controls
               </span>
               <span className="chip chip-grey">{CHOKEPOINTS.length} gates</span>
             </div>
             <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
-              The answer to "what stops this thing doing something stupid", and every one of
-              them is a line of code with a file name — not a policy in a document somebody
-              signed.
+              These controls stop unsafe or unauthorised AI requests.
             </p>
             <ul className="divide-y divide-[var(--border-subtle)]">
               {CHOKEPOINTS.map((k) => (
@@ -588,14 +575,13 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             <div className="panel-h">
               <span className="flex items-center gap-2">
                 <Icons.Share2 className="h-4 w-4 text-[var(--brand)]" aria-hidden />
-                What ONYX takes from HEXA
+                Information ONYX receives from HEXA
               </span>
               <span className="chip chip-grey">{ONYX_DEPENDS_ON_HEXA.length} ports</span>
             </div>
             <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
-              The AI layer owns no business table and reads no module's rows directly. It
-              borrows these ports from the platform — which is why switching model vendor, or
-              running with no vendor at all, never touches a module.
+              ONYX uses approved connections to read business information. It does not own or
+              directly change department records.
             </p>
             <ul className="divide-y divide-[var(--border-subtle)]">
               {ONYX_DEPENDS_ON_HEXA.map((d) => (
@@ -614,21 +600,20 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             </ul>
           </section>
         </div>
-      </Reveal>
+        </Reveal>
 
       {/* ───────────────────────── what is still open ──────────────────────────── */}
-      <Reveal delay={350}>
+        <Reveal delay={350}>
         <section className="card overflow-hidden">
           <div className="panel-h">
             <span className="flex items-center gap-2">
               <Icons.CircleDashed className="h-4 w-4 text-[var(--warn)]" aria-hidden />
-              Open against this layer
+              Open technical work
             </span>
             <span className="chip chip-warn">{OPEN_ITEMS.length}</span>
           </div>
           <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
-            A governance console that hid its own open items would be the first thing to
-            disbelieve on it. Each row names where the fact came from.
+            Work that still needs to be completed before a wider rollout.
           </p>
           <ul className="divide-y divide-[var(--border-subtle)]">
             {OPEN_ITEMS.map((o) => (
@@ -652,25 +637,23 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             ))}
           </ul>
         </section>
-      </Reveal>
+        </Reveal>
 
       {/* ─────────────────── the numbers we are refusing to invent ─────────────── */}
-      <Reveal delay={360}>
+        <Reveal delay={360}>
         <section className="card overflow-hidden">
           <div className="panel-h">
             <span className="flex items-center gap-2">
               <Icons.GaugeCircle className="h-4 w-4 text-[var(--gold)]" aria-hidden />
-              Not instrumented yet
+              Monitoring still to add
             </span>
             <span className="panel-h-sub">
-              Named rather than approximated
+              Not currently measured
             </span>
           </div>
           <p className="border-b border-[var(--border-subtle)] px-4 py-2.5 text-[11.5px] leading-[1.55] text-[var(--text-muted)]">
-            An operations console of this kind normally carries live latency, throughput and
-            confidence dials. We do not record those things, so they are not on the page. Each
-            line below is what is missing and what it would take — which is a more useful
-            document than a gauge nobody could check.
+            These measurements are not available yet. They are listed here so the team can
+            add them before a wider rollout.
           </p>
           <ul className="divide-y divide-[var(--border-subtle)]">
             {NOT_INSTRUMENTED.map((g) => (
@@ -686,7 +669,8 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
             ))}
           </ul>
         </section>
-      </Reveal>
+        </Reveal>
+      </Disclosure>
     </div>
   );
 }

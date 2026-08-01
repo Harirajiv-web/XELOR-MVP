@@ -14,6 +14,7 @@
 
 import boundaries from "eslint-plugin-boundaries";
 import importPlugin from "eslint-plugin-import";
+import reactHooks from "eslint-plugin-react-hooks";
 import tsParser from "@typescript-eslint/parser";
 
 export default [
@@ -87,5 +88,19 @@ export default [
         },
       ],
     },
+  },
+  {
+    // ESLint resolves one flat config from the workspace root. The web package also keeps
+    // its focused config for package-local runs, but the root CI command must register the
+    // rules named by web source comments too.
+    files: ["apps/web/src/**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 2023,
+      sourceType: "module",
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    plugins: { "react-hooks": reactHooks },
+    rules: reactHooks.configs.recommended.rules,
   },
 ];

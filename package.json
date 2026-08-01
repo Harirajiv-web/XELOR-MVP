@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "IND-CORE Manufacturing ERP — boundary-enforced modular monolith (MVP prototype 1). Baseline: DECISIONS-V2 (binding).",
+  "description": "XELOR Manufacturing Intelligence — boundary-enforced modular monolith (MVP prototype 1). Baseline: DECISIONS-V2 (binding).",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=22 <25",
@@ -20,8 +20,12 @@
     "db:migrate": "pnpm --filter @ind-core/db migrate",
     "db:rls-check": "pnpm --filter @ind-core/db rls-check",
     "db:perm-check": "pnpm --filter @ind-core/db perm-check",
-    "demo:seed": "node apps/api/scripts/seed-demo.mjs",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm db:perm-check"
+    "demo:seed": "node apps/api/scripts/demo/01-seed-base-world.mjs",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm db:perm-check",
+    "db:demo-reset": "pnpm --filter @ind-core/db demo-reset",
+    "demo:northstar": "node apps/api/scripts/demo/02-seed-northstar-story.mjs",
+    "demo:verify": "node apps/api/scripts/diagnostics/investor-demo-matrix.mjs",
+    "demo:rebuild": "pnpm db:demo-reset --yes && pnpm db:migrate && pnpm demo:seed && pnpm demo:northstar"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.15.0",

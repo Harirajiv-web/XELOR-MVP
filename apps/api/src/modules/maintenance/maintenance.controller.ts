@@ -78,6 +78,27 @@ const completeSchema = z.object({
   at: z.string().optional(),
 });
 
+const startMwoSchema = z.object({
+  employeeRef: z.string().uuid(),
+  at: z.string().min(1).optional(),
+});
+
+const mwoTaskSchema = z.object({
+  instruction: z.string().min(1),
+  isMandatory: z.boolean().optional(),
+  resultType: z.enum(["ok_not_ok", "numeric", "text", "photo"]).optional(),
+  expectedMin: z.number().optional(),
+  expectedMax: z.number().optional(),
+  uom: z.string().min(1).optional(),
+  safetyNote: z.string().min(1).optional(),
+}).superRefine((value, ctx) => {
+  if (value.resultType === "numeric" && value.expectedMin != null && value.expectedMax != null && value.expectedMin > value.expectedMax) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["expectedMin"], message: "must not exceed expectedMax" });
+  }
+});
+
+const mwoTaskResultSchema = z.object({ value: z.string().min(1) });
+
 const spareIssueSchema = z.object({ qty: z.number().positive(), warehouseRef: z.string().uuid() });
 
 const downtimeStartSchema = z.object({
@@ -255,9 +276,9 @@ export class MaintenanceController {
 
   @Post("work-orders/:no/start")
   @RequirePermission("mnt.mwo.execute")
-  start(@Param("no") no: string, @Body() body: { employeeRef: string; at?: string }, @Headers("idempotency-key") key?: string) {
-    requireKey(key);
-    return this.mwos.start(no, body.employeeRef, body.at);
+  start(@Param("no") no: string, @Body() body: unknown, @Headers("idempotency-key") key?: string) {
+    const input = parse(startMwoSchema, body);
+    return this.mwos.start(no, input.employeeRef, input.at, requireKey(key));
   }
 
   @Post("work-orders/:no/hold")
@@ -298,14 +319,19 @@ export class MaintenanceController {
 
   @Post("work-orders/:no/tasks")
   @RequirePermission("mnt.mwo.write")
-  addTask(@Param("no") no: string, @Body() body: { instruction: string; isMandatory?: boolean; resultType?: string; expectedMin?: number; expectedMax?: number; uom?: string; safetyNote?: string }) {
-    return this.mwos.addTask(no, body);
+  addTask(@Param("no") no: string, @Body() body: unknown, @Headers("idempotency-key") key?: string) {
+    return this.mwos.addTask(no, parse(mwoTaskSchema, body), requireKey(key));
   }
 
   @Patch("work-orders/:no/tasks/:seq")
   @RequirePermission("mnt.mwo.execute")
-  recordTask(@Param("no") no: string, @Param("seq") seq: string, @Body() body: { value: string }) {
-    return this.mwos.recordTaskResult(no, Number(seq), body.value);
+  recordTask(@Param("no") no: string, @Param("seq") seq: string, @Body() body: unknown) {
+    const parsedSequence = z.coerce.number().int().positive().safeParse(seq);
+    if (!parsedSequence.success) {
+      throw Errors.validation([{ field: "seq", message: "must be a positive task sequence" }]);
+    }
+    const input = parse(mwoTaskResultSchema, body);
+    return this.mwos.recordTaskResult(no, parsedSequence.data, input.value);
   }
 
   @Post("work-orders/:no/complete")

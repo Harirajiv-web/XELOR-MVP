@@ -12,6 +12,35 @@ const createSchema = z.object({
   fgWarehouseId: z.string().uuid(),
 });
 const completeSchema = z.object({ producedQty: z.number().positive() });
+const addOperationSchema = z
+  .object({
+    sequence: z.number().int().positive(),
+    operationCode: z.string().trim().min(1).max(40),
+    operationName: z.string().trim().min(1).max(160),
+    workCenterRef: z.string().trim().min(1).max(120).optional(),
+    plannedStart: z.string().datetime({ offset: true }).optional(),
+    plannedEnd: z.string().datetime({ offset: true }).optional(),
+  })
+  .refine(
+    (value) => !value.plannedStart || !value.plannedEnd || value.plannedEnd >= value.plannedStart,
+    { path: ["plannedEnd"], message: "must not be before plannedStart" },
+  );
+const startOperationSchema = z.object({
+  operatorRef: z.string().trim().min(1).max(160),
+  at: z.string().datetime({ offset: true }).optional(),
+  inputQty: z.number().nonnegative().optional(),
+});
+const completeOperationSchema = z
+  .object({
+    outputQty: z.number().nonnegative(),
+    rejectedQty: z.number().nonnegative().default(0),
+    evidenceNote: z.string().trim().min(8).max(2_000),
+    at: z.string().datetime({ offset: true }).optional(),
+  })
+  .refine((value) => value.outputQty + value.rejectedQty > 0, {
+    path: ["outputQty"],
+    message: "outputQty and rejectedQty cannot both be zero",
+  });
 const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),
@@ -36,6 +65,51 @@ export class ProductionController {
     const p = createSchema.safeParse(body);
     if (!p.success) badRequest(p.error.issues);
     return this.production.createOrder(p.data, idk);
+  }
+
+  @Post(":id/operations")
+  @RequirePermission("production.order.create")
+  async addOperation(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key?: string,
+  ) {
+    const idk = requireKey(key);
+    const p = addOperationSchema.safeParse(body);
+    if (!p.success) badRequest(p.error.issues);
+    return this.production.addOperation(id, p.data, idk);
+  }
+
+  @Post(":id/operations/:sequence/start")
+  @RequirePermission("production.order.execute")
+  async startOperation(
+    @Param("id") id: string,
+    @Param("sequence") sequence: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key?: string,
+  ) {
+    const idk = requireKey(key);
+    const parsedSequence = z.coerce.number().int().positive().safeParse(sequence);
+    if (!parsedSequence.success) badRequest(parsedSequence.error.issues);
+    const p = startOperationSchema.safeParse(body);
+    if (!p.success) badRequest(p.error.issues);
+    return this.production.startOperation(id, parsedSequence.data, p.data, idk);
+  }
+
+  @Post(":id/operations/:sequence/complete")
+  @RequirePermission("production.order.execute")
+  async completeOperation(
+    @Param("id") id: string,
+    @Param("sequence") sequence: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key?: string,
+  ) {
+    const idk = requireKey(key);
+    const parsedSequence = z.coerce.number().int().positive().safeParse(sequence);
+    if (!parsedSequence.success) badRequest(parsedSequence.error.issues);
+    const p = completeOperationSchema.safeParse(body);
+    if (!p.success) badRequest(p.error.issues);
+    return this.production.completeOperation(id, parsedSequence.data, p.data, idk);
   }
 
   @Post(":id/issue")
