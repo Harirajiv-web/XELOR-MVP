@@ -21,24 +21,26 @@ import { consumeRootEntryHandoff, useSession } from "@spine/auth/session";
  * it would happen on every sign-in.
  */
 export default function VoidLayout({ children }: { children: ReactNode }): React.JSX.Element {
-  const { status, signIn } = useSession();
+  const { status, signIn, isPublicDemo } = useSession();
   const entryHandled = useRef(false);
 
   useEffect(() => {
     if (status === "loading" || entryHandled.current) return;
     entryHandled.current = true;
 
+    if (isPublicDemo) return;
+
     // A completed callback gets one pass into the gateway. Every other visit to `/` —
     // including a refresh with a valid local token — must display the credential screen.
     if (status === "authenticated" && consumeRootEntryHandoff()) return;
     signIn("/", { force: true });
-  }, [status, signIn]);
+  }, [status, signIn, isPublicDemo]);
 
   if (status !== "authenticated") {
     return (
       <div className="grid h-screen w-screen place-items-center bg-[#04060c]" style={{ colorScheme: "dark" }}>
         <p className="text-[11px] tracking-[0.3em] text-[#48607a] uppercase">
-          {status === "anonymous" ? "Signing you in" : "Waking"}
+          {isPublicDemo ? "Opening XELOR" : status === "anonymous" ? "Signing you in" : "Waking"}
         </p>
       </div>
     );

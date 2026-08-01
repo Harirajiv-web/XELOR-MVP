@@ -4,6 +4,34 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { api } from "../api/client";
 import { AppError } from "../api/errors";
 import { useSession } from "../auth/session";
+import { INSTALLED_MODULES } from "@modules/registry";
+
+const PUBLIC_DEMO_PERMISSIONS = [
+  ...new Set(
+    INSTALLED_MODULES.flatMap((module) => [
+      ...module.nav.map((entry) => entry.permission),
+      ...(module.signals ?? []).map((signal) => signal.permission),
+      ...(module.alerts ?? []).map((alert) => alert.permission),
+    ]),
+  ),
+] as const;
+
+const PUBLIC_DEMO_IDENTITY: Identity = {
+  subject: "public-demo-presenter",
+  tenantId: "0192a8c0-0000-7000-8000-000000000001",
+  principal: "investor.demo",
+  roles: [{ code: "public_demo", name: "Read-only presenter" }],
+  permissions: PUBLIC_DEMO_PERMISSIONS,
+  licence: {
+    plan: "Investor demonstration",
+    modules: [...new Set(INSTALLED_MODULES.map((module) => module.licenceKey))],
+    validFrom: "2026-08-01",
+    validTo: "2099-12-31",
+    enforcement: "presentation_only",
+    expired: false,
+  },
+  organisation: { name: "Trishul Precision Components" },
+};
 
 /**
  * WHO THIS USER IS AND WHAT THEY MAY DO — one call, made once, at sign-in.
@@ -60,13 +88,19 @@ interface AccessValue {
 const AccessContext = createContext<AccessValue | null>(null);
 
 export function AccessProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const { status } = useSession();
+  const { status, isPublicDemo } = useSession();
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
 
   useEffect(() => {
+    if (isPublicDemo) {
+      setIdentity(PUBLIC_DEMO_IDENTITY);
+      setError(null);
+      setReady(true);
+      return;
+    }
     if (status !== "authenticated") {
       setIdentity(null);
       setReady(status === "anonymous");
@@ -95,7 +129,7 @@ export function AccessProvider({ children }: { children: ReactNode }): React.JSX
     return () => {
       cancelled = true;
     };
-  }, [status, nonce]);
+  }, [status, isPublicDemo, nonce]);
 
   const value = useMemo<AccessValue>(() => {
     const permissions = new Set(identity?.permissions ?? []);

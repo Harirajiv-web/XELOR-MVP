@@ -31,18 +31,22 @@ import { Loading } from "@spine/states";
  * frame full of menus for an application the visitor may not be signed in to yet.
  */
 export default function AppLayout({ children }: { children: ReactNode }): React.JSX.Element {
-  const { status, signIn } = useSession();
+  const { status, signIn, isPublicDemo } = useSession();
   const { ready } = useAccess();
 
   useEffect(() => {
-    if (status === "anonymous") signIn(window.location.pathname + window.location.search);
-  }, [status, signIn]);
+    if (!isPublicDemo && status === "anonymous") {
+      signIn(window.location.pathname + window.location.search);
+    }
+  }, [status, signIn, isPublicDemo]);
 
   // Gated here rather than inside the shell, so nobody is ever shown a sidebar that is
   // empty because the permission call has not answered yet. An empty menu reads as "you
   // have access to nothing", which is the single worst thing to tell someone during the
   // two hundred milliseconds before you find out what they do have.
-  if (status === "loading" || !ready) return <Loading label="Signing you in…" />;
+  if (status === "loading" || !ready) {
+    return <Loading label={isPublicDemo ? "Opening XELOR…" : "Signing you in…"} />;
+  }
   if (status === "anonymous") return <Loading label="Redirecting to sign-in…" />;
 
   // Authenticated screens remain where the presenter leaves them. Session refresh still

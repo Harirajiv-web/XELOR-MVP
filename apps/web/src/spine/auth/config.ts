@@ -12,6 +12,14 @@ export const authConfig = {
   scope: "openid profile email",
 } as const;
 
+/**
+ * The investor-facing hosted build can open without an identity provider. This is an
+ * explicit presentation mode, not an authentication fallback: it never manufactures a
+ * bearer token and the API keeps enforcing its normal security boundary.
+ */
+export const publicDemoEnabled =
+  process.env.NEXT_PUBLIC_PUBLIC_DEMO === "true";
+
 export function realmUrl(): string {
   return `${authConfig.issuer}/realms/${authConfig.realm}`;
 }

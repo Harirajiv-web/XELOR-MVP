@@ -52,7 +52,7 @@ function Icon({ name, className }: { name?: string; className?: string }): React
 export function AppShell({ children }: { children: ReactNode }): React.JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut } = useSession();
+  const { user, signOut, isPublicDemo } = useSession();
   const { can, isLicensed, licence, identity } = useAccess();
   const [collapsed, setCollapsed] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
@@ -332,13 +332,17 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
             </span>
           </span>
 
-          <button
-            type="button"
-            onClick={signOut}
-            className="btn btn-ghost btn-sm"
-          >
-            Sign out
-          </button>
+          {isPublicDemo ? (
+            <span className="chip chip-info">Public demo</span>
+          ) : (
+            <button
+              type="button"
+              onClick={signOut}
+              className="btn btn-ghost btn-sm"
+            >
+              Sign out
+            </button>
+          )}
         </div>
       </header>
 

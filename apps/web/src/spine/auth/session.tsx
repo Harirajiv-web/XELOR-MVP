@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { authConfig, endpoints, TENANT_LABELS } from "./config";
+import { authConfig, endpoints, publicDemoEnabled, TENANT_LABELS } from "./config";
 import { beginPkce, clearPkce, finishPkce } from "./pkce";
 import { configureApi } from "../api/client";
 
@@ -46,6 +46,8 @@ interface SessionValue {
   status: Status;
   user: SessionUser | null;
   error: string | null;
+  /** True only for the deliberately sign-in-free investor presentation build. */
+  isPublicDemo: boolean;
   signIn: (returnTo?: string, options?: { force?: boolean }) => void;
   signOut: () => void;
   /** Completes the redirect. Called only by the /callback route. */
@@ -56,6 +58,16 @@ const SessionContext = createContext<SessionValue | null>(null);
 
 const TOKEN_KEY = "aikyantra.session";
 const ROOT_ENTRY_HANDOFF_KEY = "aikyantra.auth.root-entry-handoff";
+
+const PUBLIC_DEMO_USER: SessionUser = {
+  subject: "public-demo-presenter",
+  username: "investor.demo",
+  displayName: "Investor Demo",
+  email: null,
+  groups: ["trishul", "public-demo"],
+  tenantKey: "trishul",
+  tenantLabel: TENANT_LABELS.trishul ?? "Trishul Precision Components",
+};
 
 /**
  * React development mode can mount an entry layout twice. Starting PKCE twice is not merely
@@ -158,6 +170,11 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
     sessionRef.current = null;
     sessionStorage.removeItem(TOKEN_KEY);
     if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    if (publicDemoEnabled) {
+      setUser(PUBLIC_DEMO_USER);
+      setStatus("authenticated");
+      return;
+    }
     setUser(null);
     setStatus("anonymous");
   }, []);
@@ -224,6 +241,12 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
 
   const signIn = useCallback(
     (returnTo?: string, options?: { force?: boolean }) => {
+      if (publicDemoEnabled) {
+        setError(null);
+        setUser(PUBLIC_DEMO_USER);
+        setStatus("authenticated");
+        return;
+      }
       if (signInRedirectStarted) return;
       signInRedirectStarted = true;
       signInCompletion = null;
@@ -257,6 +280,10 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
   );
 
   const signOut = useCallback(() => {
+    if (publicDemoEnabled) {
+      window.location.assign("/");
+      return;
+    }
     const refreshToken = sessionRef.current?.refreshToken;
     clear();
     const url = new URL(endpoints.logout());
@@ -280,6 +307,7 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
 
   const completeSignIn = useCallback(
     async (code: string, state: string | null): Promise<string> => {
+      if (publicDemoEnabled) return "/";
       if (!signInCompletion || signInCompletion.code !== code) {
         const { verifier, returnTo } = finishPkce(state);
         signInCompletion = {
@@ -307,6 +335,19 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
 
   // Wire the API client once, and restore any session left by a page reload.
   useEffect(() => {
+    if (publicDemoEnabled) {
+      configureApi({
+        getToken: () => null,
+        // A public demo has no login ceremony to repeat. The API error remains visible on
+        // the relevant screen without throwing the visitor back out of the product.
+        onUnauthenticated: () => {},
+      });
+      setError(null);
+      setUser(PUBLIC_DEMO_USER);
+      setStatus("authenticated");
+      return;
+    }
+
     configureApi({
       getToken: () => sessionRef.current?.accessToken ?? null,
       onUnauthenticated: () => clear(),
@@ -333,7 +374,15 @@ export function SessionProvider({ children }: { children: ReactNode }): React.JS
   }, []);
 
   const value = useMemo<SessionValue>(
-    () => ({ status, user, error, signIn, signOut, completeSignIn }),
+    () => ({
+      status,
+      user,
+      error,
+      isPublicDemo: publicDemoEnabled,
+      signIn,
+      signOut,
+      completeSignIn,
+    }),
     [status, user, error, signIn, signOut, completeSignIn],
   );
 
