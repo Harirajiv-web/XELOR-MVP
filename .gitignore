@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+!apps/web/scripts/build/
+!apps/web/scripts/build/*.mjs
 coverage/
 *.tsbuildinfo
 .env

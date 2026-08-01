@@ -14,12 +14,12 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b",
-    "migrate": "node --import tsx src/migrate.ts",
-    "rls-check": "node --import tsx src/rls-check.ts",
-    "naming-check": "node --import tsx src/naming-check.ts",
-    "perm-check": "node --import tsx src/perm-check.ts",
-    "test": "node --import tsx --test \"src/**/*.test.ts\"",
-    "demo-reset": "node --import tsx src/demo-reset.ts"
+    "migrate": "node --env-file-if-exists=../../.env --import tsx src/migrate.ts",
+    "rls-check": "node --env-file-if-exists=../../.env --import tsx src/rls-check.ts",
+    "naming-check": "node --env-file-if-exists=../../.env --import tsx src/naming-check.ts",
+    "perm-check": "node --env-file-if-exists=../../.env --import tsx src/perm-check.ts",
+    "test": "node --env-file-if-exists=../../.env --import tsx --test \"src/**/*.test.ts\"",
+    "demo-reset": "node --env-file-if-exists=../../.env --import tsx src/demo-reset.ts"
   },
   "dependencies": {
     "@ind-core/platform": "workspace:*",

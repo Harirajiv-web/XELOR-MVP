@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "nest build -b swc",
-    "start": "node dist/src/main.js",
-    "worker": "node dist/src/worker.js",
-    "eval": "node dist/src/eval.js",
-    "ai:grounding": "node dist/src/ai-grounding.js",
-    "start:dev": "nest start -b swc --watch",
+    "start": "node --env-file-if-exists=../../.env dist/src/main.js",
+    "worker": "node --env-file-if-exists=../../.env dist/src/worker.js",
+    "eval": "node --env-file-if-exists=../../.env dist/src/eval.js",
+    "ai:grounding": "node --env-file-if-exists=../../.env dist/src/ai-grounding.js",
+    "start:dev": "node --env-file-if-exists=../../.env node_modules/@nestjs/cli/bin/nest.js start -b swc --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },

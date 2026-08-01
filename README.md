@@ -1434,29 +1434,95 @@ Nine things the database refuses outright, including a self-approved production 
 
 The ANN leak probe is recorded rather than assumed: a nearest-neighbour search that crosses tenants returns a competitor's part names as "similar items", and an index that was **never probed** says so — which is not the same as safe.
 
-## Run it
+## Run it on a new device
 
-Prerequisites: **Docker** (PG17 / Valkey / Keycloak / Gotenberg) and **pnpm 9**.
+Prerequisites:
+
+- **Node.js 22** (the supported range is `>=22 <25`);
+- **Docker Desktop with Docker Compose v2** (PG17, Valkey, Keycloak and Gotenberg);
+- free local ports **3000, 3001, 3002, 5432, 6379 and 8080**; and
+- Git.
+
+The repository contains the source, lockfile, all migrations, deterministic demo seeders,
+Keycloak realm and compiled login theme. Dependencies, build output, `.env` and the local
+PostgreSQL volume are deliberately not committed; the commands below recreate them.
+
+### First-time setup
 
 ```bash
-corepack enable && corepack prepare pnpm@9 --activate   # or: npm i -g pnpm@9
+git clone https://github.com/Harirajiv-web/XELOR-MVP.git
+cd XELOR-MVP
+
+corepack enable
+corepack prepare pnpm@9.12.0 --activate
+pnpm install --frozen-lockfile
 cp .env.example .env
 
-pnpm install
-pnpm infra:up          # start the containers
-pnpm db:migrate        # apply 0000 … 0023 (as the schema owner)
-pnpm db:rls-check      # §1.6 gate: fails if any tenant-scoped table lacks FORCE RLS
-pnpm test              # unit tests + the two-tenant leak probe (needs infra up)
-pnpm dev               # NestJS API on http://localhost:3000/api/v1
+docker compose version                         # must report Compose v2
+pnpm infra:up
+docker compose -f infra/docker-compose.yml ps  # wait until PostgreSQL is healthy
+pnpm db:migrate                                # applies every migration through 0065
+pnpm db:rls-check
+```
 
-# In a SECOND shell — the worker process (the outbox "mailman" + a demo consumer).
-# It drains outbox_event -> Valkey/BullMQ per tenant (never bypassing RLS); the
-# consumer records each event once (idempotent), so redeliveries are no-ops.
+The API and database scripts load the root `.env` automatically. You do not need to source
+it manually in each terminal.
+
+### Start the complete demo
+
+Keep these processes running in separate terminals from the repository root:
+
+```bash
+# Terminal 1 — API (development/watch mode)
+pnpm dev
+
+# Terminal 2 — web application
+pnpm --filter @ind-core/web dev
+
+# Terminal 3 — asynchronous outbox worker
 pnpm --filter @ind-core/api worker
+```
 
-# The AI ship-gates (exit 0 PASS / 1 FAIL).
-pnpm --filter @ind-core/api eval general.master_dedup    # grades the DETECTOR (F1)
-pnpm --filter @ind-core/api ai:grounding                 # grades the EXPLANATION
+After Keycloak and Terminal 1 are ready, populate the investor story from a fourth terminal:
+
+```bash
+pnpm demo:seed
+pnpm demo:northstar
+pnpm demo:verify
+```
+
+Open **http://localhost:3001**. Keycloak is at **http://localhost:8080** and the API is at
+**http://localhost:3000/api/v1**.
+
+### Production-mode local run
+
+```bash
+pnpm build
+
+# Three separate terminals after the build:
+pnpm --filter @ind-core/api start
+pnpm --filter @ind-core/api worker
+pnpm --filter @ind-core/web start
+```
+
+To rebuild the committed Keycloak login JavaScript after changing its TypeScript source:
+
+```bash
+pnpm --filter @ind-core/web build-login-theme
+```
+
+The main verification commands are:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test              # includes DB-gated tests when the infrastructure is available
+pnpm db:rls-check
+pnpm db:perm-check
+
+# AI ship-gates (exit 0 PASS / 1 FAIL)
+pnpm --filter @ind-core/api eval general.master_dedup
+pnpm --filter @ind-core/api ai:grounding
 ```
 
 **Optional — run the EDGE-tier local model.** Everything above works with no model at all.

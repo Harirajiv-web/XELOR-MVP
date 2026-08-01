@@ -527,14 +527,15 @@ pnpm demo:verify</pre>
     <h3>Prerequisites</h3>
     <ul><li>Node.js 22</li><li>Corepack / pnpm 9</li><li>Docker with Compose support</li><li>Ports 3000, 3001, 3002, 5432, 6379 and 8080 available</li></ul>
     <h3>First-time setup</h3>
-    <pre>cd "MVP_PROTOTYPE_1"
+    <pre>git clone https://github.com/Harirajiv-web/XELOR-MVP.git
+cd XELOR-MVP
 corepack enable
-pnpm install
+corepack prepare pnpm@9.12.0 --activate
+pnpm install --frozen-lockfile
 cp .env.example .env
-docker compose -f infra/docker-compose.yml up -d
+docker compose version
+pnpm infra:up
 pnpm db:migrate
-pnpm demo:seed
-pnpm demo:northstar
 pnpm build</pre>
     <h3>Start the application</h3>
     <pre># Terminal 1 — API
@@ -544,7 +545,12 @@ pnpm --filter @ind-core/api start
 pnpm --filter @ind-core/api worker
 
 # Terminal 3 — production web build
-pnpm --filter @ind-core/web start</pre>
+pnpm --filter @ind-core/web start
+
+# Terminal 4 — after API and Keycloak are ready
+pnpm demo:seed
+pnpm demo:northstar
+pnpm demo:verify</pre>
     <table>
       <thead><tr><th>Service</th><th>URL / port</th><th>Expected check</th></tr></thead>
       <tbody>
