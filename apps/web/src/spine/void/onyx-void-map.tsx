@@ -645,7 +645,7 @@ function OnyxVoidMapInner({
                 transition: "opacity 300ms ease",
               }}
             >
-              {onyx.reachable ? "Open Mission Control" : "No access"}
+              {onyx.reachable ? "Open Decision Commander" : "No access"}
             </text>
 
             {/*
@@ -725,15 +725,15 @@ function OnyxVoidMapInner({
           <button
             type="button"
             disabled={!onyx.reachable || !settled}
-            onClick={() => router.push("/agentos/command")}
+            onClick={() => router.push("/agentos/commander")}
             onPointerEnter={() => setHubOn(true)}
             onPointerLeave={() => setHubOn(false)}
             onFocus={() => setHubOn(true)}
             onBlur={() => setHubOn(false)}
             aria-label={
               onyx.reachable
-                ? `ONYX Mission Control. The live supervisor connected to six specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
-                : "ONYX Mission Control. You do not have access to this surface."
+                ? `ONYX Decision Commander. The live decision room connected to six specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
+                : "ONYX Decision Commander. You do not have access to this surface."
             }
             className="pointer-events-auto absolute cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--void-focus) focus-visible:ring-offset-4 focus-visible:ring-offset-(--void-bg) disabled:cursor-default"
             style={{
@@ -1064,7 +1064,7 @@ function OnyxVoidMapInner({
           transition: "opacity 400ms ease, color 200ms ease",
         }}
       >
-        Open Mission Control
+        Open Decision Commander
         <span className="text-[10px] tracking-normal opacity-55">Esc</span>
       </button>
     </div>

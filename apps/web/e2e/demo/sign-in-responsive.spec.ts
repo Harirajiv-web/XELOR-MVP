@@ -136,7 +136,7 @@ test("returning to the root always requires credentials again", async ({ page })
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
   await expect(brain).toBeVisible();
   await brain.click();
-  await expect(page.getByRole("button", { name: /^ONYX Mission Control/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^ONYX Decision Commander/ })).toBeVisible();
 
   // The app token and the Keycloak SSO cookie both still exist. Root entry must bypass
   // both shortcuts and present the credential form instead of reopening Mission Control.

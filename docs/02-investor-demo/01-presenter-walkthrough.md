@@ -1,4 +1,4 @@
-# Investor demo — One order, seven departments
+# Investor demo — One decision, seven agents, complete evidence
 
 Everything below is live data in the running system. No slides, no mock screens. Every
 document was created by a real request through the real guards, so anything on screen can be
@@ -10,18 +10,93 @@ clicked into and questioned.
 
 | | |
 |---|---|
-| Sign-in | `http://localhost:3001` |
-| Main demo login | Username `hari` · password `1234` |
+| Open | `http://localhost:3001` |
+| Investor presentation mode | No sign-in; `.env` has both public-demo flags set to `true` |
+| Optional authenticated demo | Username `hari` · password `1234` after turning both public-demo flags off |
 | Specialist logins | Password `demo` |
 | Demo "today" | **Monday 20 July 2026**, FY 2026-27 |
 | Rebuild | `pnpm demo:rebuild` (about a minute; see *Resetting between presentations*) |
 
-Check all three services answer before anyone is in the room. `web:200 · api:401 · kc:200` is
-the healthy state — the API's 401 is its auth guard replying, not a fault.
+Check the services before anyone is in the room. In sign-in-free presentation mode the
+healthy state is `web:200 · commander with the fixed demo header:200 · API without that
+header:401`. The last response proves the demo switch did not turn the backend into a public
+API. Keycloak remains available at port 8080 for the optional role-isolation segment.
 
 ---
 
-## The five people
+## Recommended 8–10 minute investor route
+
+This is the primary presentation. The detailed module-by-module route below is the optional
+technical follow-up.
+
+### 1 · Start with what XELOR is
+
+Open `http://localhost:3001`, press **Enter the factory intelligence**, then press the ONYX
+hub or **Open Decision Commander**.
+
+Say: **“XELOR is the decision layer above the factory system of record. It connects the
+records that belong to one operating decision, explains the evidence, and keeps a person in
+control of every consequential action.”**
+
+### 2 · Show the Northstar decision first
+
+The first card is **SO-2627-00004 · Northstar Process Systems**. It is first because two live
+facts are connected: the open ₹74.34 lakh customer commitment and the rejected PX-400 final
+inspection. Open the source-record disclosure and show both Sales and Quality.
+
+Then open the confidence calculation. Explain that the percentage measures evidence
+coverage, freshness, completeness and prior verified history. It is explicitly **not** a
+probability that a recovery action will succeed.
+
+### 3 · Explain the complete intelligence loop
+
+Scroll to **One visible decision-intelligence loop**:
+
+`Live records → Evidence graph → Confidence → Human decision → Verified outcome → Memory`
+
+The Knowledge Graph must show persisted relationships across at least two business areas.
+Organizational Memory must show one completed, verified non-financial example and one current
+Northstar decision waiting for a person. The verified example claims **₹0 financial value**:
+it proves six governed work items completed their control boundary, not that XELOR invented
+savings.
+
+### 4 · Prove the seven MVP upgrades
+
+At **MVP platform readiness**, show API and integration health, document-intelligence
+measurement, operational health, and the seven proof cards. The cards say `Live MVP` or
+`MVP operations`; none says production-ready. Simulated connectors are labelled simulated.
+
+### 5 · Follow the live evidence
+
+Press **Start Demo**, choose **Protect the Northstar delivery**, and follow the guided steps.
+The guide navigates only; it never changes an ERP record. Use the Sales, Planning, Quality,
+Maintenance and Accounts screens to challenge each statement against its owner record.
+
+### 6 · Make the human boundary visible
+
+When the guide reaches **Approvals**, one seeded Northstar recovery is waiting. Read the
+proposed action: it creates six attributable internal work items and does not claim to send
+a supplier message, customer promise or payment. Approve it only if you want to demonstrate
+the live transition; doing so is attributable and changes the demo state until the next
+rebuild.
+
+### 7 · Finish on proof, not animation
+
+Open Mission Control to show the specialist work-item ledger, then Administration → Audit
+trail. Finish with: **“The recommendation, the human decision, the work dispatched and the
+verification are all separate records. That separation is the product.”**
+
+---
+
+## Optional authenticated role-isolation deep dive
+
+The five personas below are used only after disabling sign-in-free presentation mode and
+restarting the web/API processes. They demonstrate real Keycloak identities and server-side
+permission boundaries; they are not required for the main investor journey.
+
+---
+
+### The five people
 
 | Sign in as | Who they are | What they can open |
 |---|---|---|
@@ -36,14 +111,14 @@ across a factory whose parts are otherwise walled off from each other.
 
 ---
 
-## The story in one line
+### The story in one line
 
 **Northstar Process Systems ordered 120 PX-400 precision pump assemblies, ₹74.34 lakh, for
 4 September.** Every department below is looking at that one order from its own angle.
 
 ---
 
-## 1 · MICA — the order, and a control that fires
+### 1 · MICA — the order, and a control that fires
 
 Sign in as **`mica.commercial`**. Sales → Orders → **SO-2627-00004**.
 
@@ -62,7 +137,7 @@ than sitting in somebody's inbox.
 
 ---
 
-## 2 · SPAR — buying the metal, two signatures at a time
+### 2 · SPAR — buying the metal, two signatures at a time
 
 Sign in as **`spar.supply`**. Purchase → Orders.
 
@@ -78,7 +153,7 @@ Sign in as **`spar.supply`**. Purchase → Orders.
 
 ---
 
-## 3 · KILN — from bar stock to pumps, and the twelve that did not pass
+### 3 · KILN — from bar stock to pumps, and the twelve that did not pass
 
 Sign in as **`kiln.operations`**.
 
@@ -111,7 +186,7 @@ sign-off.
 
 ---
 
-## 4 · AXLE — what the plan says has to happen
+### 4 · AXLE — what the plan says has to happen
 
 Sign in as **`hari`** (AXLE has no dedicated persona).
 
@@ -126,7 +201,7 @@ Sign in as **`hari`** (AXLE has no dedicated persona).
 
 ---
 
-## 5 · MICA again — the customer notices before we ship
+### 5 · MICA again — the customer notices before we ship
 
 Back as **`mica.commercial`**. CSP → Tickets → **TKT-2627-00015**.
 
@@ -144,7 +219,7 @@ finding arriving from two directions, and the system already connected them.
 
 ---
 
-## 6 · Shipping, money, and people
+### 6 · Shipping, money, and people
 
 - MICA → the order shows **28 dispatched of 120**. The twelve held stayed behind. DN-2627-00002,
   invoice INV-2627-00002, reported to the IRP, e-way bill raised.
@@ -156,7 +231,7 @@ finding arriving from two directions, and the system already connected them.
 
 ---
 
-## 7 · HEXA — why any of this can be believed
+### 7 · HEXA — why any of this can be believed
 
 Sign in as **`hexa.admin`**. Administration → Audit trail.
 
@@ -170,7 +245,7 @@ Sign in as **`hexa.admin`**. Administration → Audit trail.
 
 ---
 
-## 8 · ONYX — the part that answers questions
+### 8 · ONYX — the part that answers questions
 
 Available to every persona. Copilot → Ask.
 
@@ -198,7 +273,7 @@ AI Operations → Feature registry, Evals, Cost:
 
 ---
 
-## 9 · The wall between people — the two-minute version
+### 9 · The wall between people — the two-minute version
 
 The strongest thirty seconds in the demo, and it needs two browser windows.
 
@@ -238,7 +313,8 @@ The reset refuses to run on a database whose `tenant` table holds anything other
 demo tenants. Point it at a real one and it stops without touching a row.
 
 Nothing needs restarting afterwards — the running services pick the rebuilt database up on
-their own. Refresh the browser and sign in again.
+their own. Refresh the browser. In public-demo mode no sign-in is required; in authenticated
+mode sign in again.
 
 ---
 

@@ -30,6 +30,7 @@ const screenEvidence: Record<string, ScreenEvidence> = {
   "/administration/incidents": { area: "Security incident", evidence: "High-severity signal is contained to one identity", source: "identity and integration telemetry" },
   "/administration/roles": { area: "Authority check", evidence: "Effective permissions and approval limits resolved", source: "role and segregation rules" },
   "/agentos/approvals": { area: "Human approval", evidence: "Exact action, owner and evidence await a person", source: "the governed approval queue" },
+  "/agentos/commander": { area: "Decision intelligence", evidence: "Customer commitment and rejected quality evidence are joined", source: "live sales and quality records" },
   "/agentos/command": { area: "Mission control", evidence: "Signals grouped into one bounded mission", source: "the agent mission ledger" },
   "/aiops/connectors": { area: "Document intake", evidence: "Source file, uploader and received time preserved", source: "controlled intake connectors" },
   "/aiops/registry": { area: "AI extraction", evidence: "Proposed fields carry field-level confidence", source: "the registered document model" },

@@ -4,7 +4,13 @@ import { buildPresenterSnapshot } from "../../src/spine/demo/demo-presenter";
 
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await Promise.race([
+    page.locator("#username").waitFor({ state: "visible" }),
+    page.getByRole("button", { name: "Enter the factory intelligence" }).waitFor({ state: "visible" }),
+  ]);
+  if (await page.locator("#username").isVisible()) {
+    await page.getByRole("button", { name: "Enter XELOR" }).click();
+  }
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
   await page.goto("/sales/orders");
   await expect(page.getByTestId("demo-launcher")).toBeVisible();

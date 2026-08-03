@@ -49,7 +49,7 @@ async function signIn(page: Page, username: string, password: string): Promise<v
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
   await expect(brain).toBeVisible();
   await brain.click();
-  await expect(page.getByRole("button", { name: /^ONYX Mission Control/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^ONYX Decision Commander/ })).toBeVisible();
 }
 
 test("five real personas see only their departments and the API enforces the same wall", async ({

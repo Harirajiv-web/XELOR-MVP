@@ -118,6 +118,10 @@ let trialBalance;
 let integrations = [];
 let agentCatalogue;
 let commander;
+let commanderMemory;
+let knowledgeGraph;
+let readiness;
+let agentApprovals;
 
 const surfaces = [
   ["company master", "/api/v1/general/companies", (body) => { companies = rows(body); }],
@@ -146,7 +150,10 @@ const surfaces = [
   ["Copilot capability catalogue", "/api/v1/copilot/capabilities", () => {}],
   ["Agent OS catalogue", "/api/v1/agent-os/catalogue", (body) => { agentCatalogue = unwrap(body); }],
   ["Decision Commander", "/api/v1/agent-os/commander", (body) => { commander = unwrap(body); }],
-  ["human approval inbox", "/api/v1/agent-os/approvals", () => {}],
+  ["organizational memory", "/api/v1/agent-os/commander/memory", (body) => { commanderMemory = unwrap(body); }],
+  ["enterprise knowledge graph", "/api/v1/agent-os/commander/knowledge-graph", (body) => { knowledgeGraph = unwrap(body); }],
+  ["MVP readiness proof", "/api/v1/agent-os/commander/readiness", (body) => { readiness = unwrap(body); }],
+  ["human approval inbox", "/api/v1/agent-os/approvals", (body) => { agentApprovals = rows(body); }],
   ["audit-chain verification register", "/api/v1/admin/audit/verifications", () => {}],
   ["security posture summary", "/api/v1/admin/posture", () => {}],
 ];
@@ -307,8 +314,40 @@ await verify("Decision Commander checks all five live source families", async ()
 await verify("Decision Commander includes the partially dispatched Northstar promise", async () => {
   assert(commander.risks.some((risk) => String(risk.title).includes("Northstar")), "Northstar is absent from the decision room");
 });
+await verify("Northstar is the first decision because live quality evidence makes it critical", async () => {
+  assert(String(commander.risks[0]?.title).includes("Northstar"), `first decision is ${commander.risks[0]?.title}`);
+  assert(commander.risks[0]?.severity === "critical", `Northstar severity is ${commander.risks[0]?.severity}`);
+});
+await verify("Northstar decision links sales and rejected quality evidence", async () => {
+  const northstar = commander.risks.find((risk) => String(risk.title).includes("Northstar"));
+  const domains = new Set(northstar?.evidence?.map((item) => item.domain));
+  assert(domains.has("sales") && domains.has("quality"), `Northstar evidence domains are ${[...domains].join(", ")}`);
+  assert(/12 PMP-PX400/i.test(northstar?.plainSummary ?? ""), `Northstar summary is ${northstar?.plainSummary}`);
+});
+await verify("repetitive planning rows are grouped into one decision per requirement", async () => {
+  const planningTitles = commander.risks.filter((risk) => risk.kind === "planning").map((risk) => risk.title);
+  assert(new Set(planningTitles).size === planningTitles.length, "duplicate planning decision cards remain");
+});
 await verify("Decision Commander labels exposure as non-loss", async () => {
   assert(/not predicted loss/i.test(commander.summary.exposureBasis), "exposure boundary is missing");
+});
+await verify("organizational memory contains a completed example and the current human gate", async () => {
+  assert(commanderMemory.summary.decisionsRemembered >= 2, `only ${commanderMemory.summary.decisionsRemembered} decisions remembered`);
+  assert(commanderMemory.summary.withVerifiedOutcome >= 1, "no verified learning example is present");
+  assert(commanderMemory.summary.awaitingHumanDecision === 1, `expected one current approval, found ${commanderMemory.summary.awaitingHumanDecision}`);
+});
+await verify("the persisted knowledge graph links at least two business areas", async () => {
+  assert(knowledgeGraph.summary.rememberedDecisions >= 2, `only ${knowledgeGraph.summary.rememberedDecisions} decisions persisted`);
+  assert(knowledgeGraph.summary.relationships >= 2, `only ${knowledgeGraph.summary.relationships} evidence relationships persisted`);
+  assert(knowledgeGraph.summary.businessAreas >= 2, `only ${knowledgeGraph.summary.businessAreas} business areas linked`);
+});
+await verify("the approval inbox contains one current Northstar decision", async () => {
+  assert(agentApprovals.length === 1, `approval inbox contains ${agentApprovals.length} items`);
+  assert(JSON.stringify(agentApprovals[0]?.proposed ?? {}).includes("Northstar"), "the pending approval is not the Northstar recovery");
+});
+await verify("all seven MVP upgrade proofs are visible and honestly labelled", async () => {
+  assert(readiness.upgrades.length === 7, `readiness exposes ${readiness.upgrades.length} upgrades`);
+  assert(readiness.upgrades.every((item) => ["live_mvp", "mvp_operations"].includes(item.status)), "an upgrade has an unsupported status");
 });
 await verify("all seven governed agents are registered", async () => {
   assert(agentCatalogue.agents.length === 7, `catalogue has ${agentCatalogue.agents.length} agents`);

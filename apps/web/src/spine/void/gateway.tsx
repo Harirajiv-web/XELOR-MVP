@@ -296,7 +296,7 @@ export function Gateway(): React.JSX.Element {
   const markSettled = useCallback(() => setSettled(true), []);
 
   const back = useCallback(() => {
-    router.push("/agentos/command");
+    router.push("/agentos/commander");
   }, [router]);
 
   // Escape from the entry topology opens the operational surface behind the same network.
@@ -486,7 +486,7 @@ export function Gateway(): React.JSX.Element {
         ═══════════════════════════════════════════════════════════════════════════════
         It read: "Stillness on the map returns to the Brain — a state change, not a
         navigation, so the scene never reloads." That was true when `back` swapped a stance.
-        It has not been true since `back` became `router.push("/agentos/command")`: with
+        It has not been true since `back` became a deliberate route transition: with
         `IDLE_MS` at 30 seconds, THIRTY SECONDS OF NOT TOUCHING THE MOUSE NAVIGATED THE USER
         OFF THIS SCREEN.
 
@@ -497,8 +497,8 @@ export function Gateway(): React.JSX.Element {
         The page moving on its own mid-sentence reads as a crash.
 
         A launcher does not decide where you go. Both real ways in remain, and both are
-        deliberate: press the ONYX hub, or press "Open Mission Control" (Escape does the
-        same). The authenticated shell no longer mounts any idle navigation.
+        deliberate: press the ONYX hub, or press "Open Decision Commander" (Escape does
+        the same). The authenticated shell no longer mounts any idle navigation.
       */}
 
       {/* The escape hatch for a keyboard user who lands here and wants the plain product.

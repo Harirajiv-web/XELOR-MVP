@@ -118,6 +118,7 @@ async function main() {
   await raspPeople(call, world);
   await micaDispatch(call, world);
   await onyx(call);
+  await decisionIntelligence(call);
   await hexa(call);
 
   finish([
@@ -1585,6 +1586,118 @@ async function micaDispatch(call) {
     if (res.status === 409) return SKIPPED;
     const b = expect(res, [200, 201], "receipt");
     return { note: `${b.voucherNo ?? "receipt"} — ₹10.00 lakh on account` };
+  });
+}
+
+/* ----------------------------------------------------- DECISION INTELLIGENCE */
+
+async function decisionIntelligence(call) {
+  console.log("\nONYX DECISION INTELLIGENCE — current decision, governed memory and proof");
+
+  const commander = await step("read the live cross-company decision room", async () => {
+    const body = expect(await call("GET", "/api/v1/agent-os/commander"), 200, "decision commander");
+    const view = body.data ?? body;
+    if (!Array.isArray(view.risks) || view.risks.length === 0) {
+      throw new Error("the decision room contains no current risk");
+    }
+    return { value: view, note: `${view.risks.length} current decision(s) from ${view.summary.sourcesChecked} source families` };
+  });
+  if (!commander) return;
+
+  const historicalRisk = commander.risks.find((risk) => risk.kind === "planning");
+  const northstarRisk = commander.risks.find((risk) => String(risk.title).includes("Northstar"));
+  if (!historicalRisk || !northstarRisk) {
+    throw new Error("the decision room must contain both a planning risk and the Northstar commitment");
+  }
+
+  const historical = await step("create the governed example that becomes organizational memory", async () => {
+    const body = expect(
+      await call(
+        "POST",
+        `/api/v1/agent-os/commander/risks/${encodeURIComponent(historicalRisk.key)}/start`,
+        {},
+        "ns-agentos-history",
+      ),
+      [200, 201],
+      "start historical decision",
+    );
+    const detail = body.data ?? body;
+    return { value: detail, note: `${detail.run.status} · ${historicalRisk.title}` };
+  });
+
+  if (historical?.run?.id) {
+    const hexa = makeClient(await token("hexa.admin"));
+    await step("a different person approves the historical governed plan", async () => {
+      const pending = historical.approvals?.find((approval) => approval.status === "pending");
+      if (!pending) return SKIPPED;
+      const body = expect(
+        await hexa(
+          "POST",
+          `/api/v1/agent-os/approvals/${pending.id}/decide`,
+          {
+            decision: "approved",
+            note: "Approved for the investor demo history after reviewing the bounded work-item scope and verification checks.",
+          },
+          "ns-agentos-history-approval",
+        ),
+        [200, 201],
+        "approve historical decision",
+      );
+      const detail = body.data ?? body;
+      return { note: `${detail.run.status} · six specialist work items remain internal and attributable` };
+    });
+
+    await step("record one verified non-financial outcome for decision learning", async () => {
+      const body = expect(
+        await hexa(
+          "POST",
+          "/api/v1/agent-os/commander/outcomes",
+          {
+            decisionKey: historicalRisk.key,
+            missionRunId: historical.run.id,
+            metricKey: "governed_work_items_verified",
+            label: "Approval-bound work items verified",
+            unit: "work_items",
+            baselineValue: 0,
+            targetValue: 6,
+            observedValue: 6,
+            estimatedValue: 0,
+            verifiedValue: 0,
+            verificationStatus: "verified",
+            attributionStatus: "supported",
+            verificationMethod: "The completed mission ledger contains six dispatched work items and a successful approval-bound verification node.",
+            evidence: {
+              story: "northstar_investor_demo",
+              claimBoundary: "Verified execution evidence only; no financial benefit is claimed.",
+            },
+          },
+          "ns-agentos-history-outcome",
+        ),
+        [200, 201],
+        "record verified decision outcome",
+      );
+      const outcome = body.data ?? body;
+      return { note: `${outcome.verificationStatus} · 6/6 work items · ₹0 financial value claimed` };
+    });
+  }
+
+  await step("leave the current Northstar recovery at its human approval gate", async () => {
+    const body = expect(
+      await call(
+        "POST",
+        `/api/v1/agent-os/commander/risks/${encodeURIComponent(northstarRisk.key)}/start`,
+        {},
+        "ns-agentos-northstar-current",
+      ),
+      [200, 201],
+      "start current Northstar decision",
+    );
+    const detail = body.data ?? body;
+    const pending = detail.approvals?.filter((approval) => approval.status === "pending") ?? [];
+    if (detail.run.status !== "waiting_approval" || pending.length !== 1) {
+      throw new Error(`Northstar decision is ${detail.run.status} with ${pending.length} pending approval(s)`);
+    }
+    return { note: `waiting for one named person · ${northstarRisk.evidence.length} linked source record(s)` };
   });
 }
 

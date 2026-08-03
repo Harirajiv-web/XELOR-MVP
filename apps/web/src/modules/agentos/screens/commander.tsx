@@ -159,7 +159,10 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
                 {visible.map((risk) => (
                   <button key={risk.key} type="button" onClick={() => { setSelectedKey(risk.key); setStartedRun(null); }} className={cn("w-full rounded-[14px] border p-4 text-left shadow-[var(--shadow-sm)] transition hover:-translate-y-px hover:shadow-[var(--shadow-md)]", selected?.key === risk.key ? "border-[var(--brand)] bg-[var(--brand-soft)]" : "border-[var(--border-subtle)] bg-[var(--surface)]")}>
                     <div className="flex items-start justify-between gap-3">
-                      <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(risk.severity))}>{risk.severity}</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(risk.severity))}>{risk.severity}</span>
+                        {evidenceDomains(risk) > 1 ? <span className="rounded-full bg-[var(--violet-soft)] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[.06em] text-[var(--ai-text)]">Connected decision</span> : null}
+                      </div>
                       <span className="text-[9.5px] font-bold text-[var(--text-muted)]">{humanise(risk.kind)} · {risk.ownerAgent} · {risk.confidence.score}% confidence</span>
                     </div>
                     <h2 className="mt-2 text-[13px] font-extrabold leading-5 text-[var(--text-primary)]">{risk.title}</h2>
@@ -175,7 +178,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
               {selected ? (
                 <article className="overflow-hidden rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] shadow-[var(--shadow-md)]">
                   <div className="border-b border-[var(--border-subtle)] p-5">
-                    <div className="flex flex-wrap items-center gap-2"><span className={cn("rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(selected.severity))}>{selected.severity}</span><span className="text-[10px] font-bold text-[var(--text-muted)]">Owner agent: {selected.ownerAgent}</span></div>
+                    <div className="flex flex-wrap items-center gap-2"><span className={cn("rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(selected.severity))}>{selected.severity}</span>{evidenceDomains(selected) > 1 ? <span className="rounded-full bg-[var(--violet-soft)] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[var(--ai-text)]">{evidenceDomains(selected)} business areas connected</span> : null}<span className="text-[10px] font-bold text-[var(--text-muted)]">Owner agent: {selected.ownerAgent}</span></div>
                     <h2 className="mt-3 text-[19px] font-extrabold tracking-[-.02em] text-[var(--text-primary)]">{selected.title}</h2>
                     <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-secondary)]">{selected.plainSummary}</p>
                     <dl className="mt-4 grid gap-px overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-2 xl:grid-cols-4">
@@ -330,6 +333,10 @@ function severityClass(severity: CommanderRisk["severity"]): string {
   if (severity === "high") return "bg-[var(--warn-soft)] text-[var(--warn-ink)]";
   if (severity === "medium") return "bg-[var(--brand-soft)] text-[var(--brand)]";
   return "bg-[var(--ok-soft)] text-[var(--ok-ink)]";
+}
+
+function evidenceDomains(risk: CommanderRisk): number {
+  return new Set(risk.evidence.map((item) => item.domain)).size;
 }
 
 function confidenceDimensionLabel(key: string): string {

@@ -14,7 +14,7 @@ test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
     page.getByRole("button", { name: "Enter the factory intelligence" }),
   ).toHaveCount(0);
   await expect(page.getByText(/7\/7 agents connected/i)).toBeVisible();
-  const onyxDoor = page.getByRole("button", { name: /ONYX Mission Control/i });
+  const onyxDoor = page.getByRole("button", { name: /ONYX Decision Commander/i });
   await expect(onyxDoor).toBeEnabled();
   await page.screenshot({
     path: "test-results/onyx-connected-gateway.png",
@@ -22,6 +22,9 @@ test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
   });
 
   await onyxDoor.click();
+  await expect(page).toHaveURL(/\/agentos\/commander$/);
+  await expect(page.getByRole("heading", { name: "Live operating decision room" })).toBeVisible();
+  await page.getByRole("link", { name: "Mission control", exact: true }).click();
   await expect(page).toHaveURL(/\/agentos\/command$/);
   await expect(
     page.getByRole("heading", {

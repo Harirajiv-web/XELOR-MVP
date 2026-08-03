@@ -1,6 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { assessDecisionConfidence, type DecisionConfidence } from "@ind-core/platform";
-import { SalesService, type SalesOrderSummary } from "../modules/sales/sales.service.js";
+import {
+  SalesService,
+  type SalesOrderSummary,
+  type SalesOrderView,
+} from "../modules/sales/sales.service.js";
 import { PlanExceptionService } from "../modules/planning/exception.service.js";
 import { PurchaseService, type PoSummary } from "../modules/purchase/purchase.service.js";
 import { QualityService, type InspectionView } from "../modules/quality/quality.service.js";
@@ -76,14 +80,23 @@ export class DecisionIntelligenceService {
       ]);
 
     const now = new Date();
+    // A delivery card must be able to name quality evidence for the exact item on the
+    // order. The list endpoint intentionally omits lines, so enrich the small active-order
+    // set once here rather than either guessing from names or making the browser join
+    // records across module boundaries.
+    const orderDetails = await Promise.all(
+      orderPage.items
+        .filter((order) => ["confirmed", "partially_dispatched", "credit_hold"].includes(order.status))
+        .map((order) => this.sales.getOrder(order.id)),
+    );
     const unscoredRisks = [
-      ...this.deliveryRisks(orderPage.items, exceptions, now),
+      ...this.deliveryRisks(orderPage.items, orderDetails, exceptions, inspectionPage.items, now),
       ...this.unlinkedPlanningRisks(exceptions),
       ...this.supplyRisks(poPage.items, now),
       ...this.qualityRisks(inspectionPage.items),
       ...this.maintenanceRisks(downtimeRows, now),
     ]
-      .sort((a, b) => severityRank(a.severity) - severityRank(b.severity))
+      .sort(compareRisks)
       .slice(0, 40);
 
     const [history, persistentGraph, memory] = await Promise.all([
@@ -211,7 +224,9 @@ export class DecisionIntelligenceService {
 
   private deliveryRisks(
     orders: readonly SalesOrderSummary[],
+    orderDetails: readonly SalesOrderView[],
     exceptions: readonly Record<string, unknown>[],
+    inspections: readonly InspectionView[],
     now: Date,
   ): UnscoredCommanderRisk[] {
     return orders.flatMap((order) => {
@@ -225,21 +240,37 @@ export class DecisionIntelligenceService {
           .filter(Boolean)
           .some((value) => String(value).includes(order.soNo)),
       );
+      const detail = orderDetails.find((item) => item.id === order.id);
+      const orderItemIds = new Set(detail?.lines.map((line) => line.itemId) ?? []);
+      const linkedQuality = inspections.filter(
+        (inspection) =>
+          inspection.result === "rejected" &&
+          inspection.itemRef !== null &&
+          orderItemIds.has(inspection.itemRef),
+      );
       // A partially dispatched order still has a live customer commitment. Keep it in the
       // decision room even outside the 14-day horizon: the first shipment is evidence of
       // progress, not evidence that the remaining promise has a feasible supply plan.
       const partiallyDispatched = order.status === "partially_dispatched";
       if (!creditHeld && !partiallyDispatched && (days === null || days > 14)) return [];
       const severity: RiskSeverity =
-        creditHeld || (days !== null && days < 0)
+        linkedQuality.length > 0 || creditHeld || (days !== null && days < 0)
           ? "critical"
           : days !== null && days <= 3
             ? "critical"
             : days !== null && days <= 7
               ? "high"
               : "medium";
-      const causes = linked.length
-        ? linked.slice(0, 4).map((item) => simple(String(item.message ?? item.suggestion)))
+      const linkedCauses = [
+        ...linked.map((item) => simple(String(item.message ?? item.suggestion))),
+        ...linkedQuality.map((inspection) =>
+          simple(
+            `${inspection.inspectionNo} rejected ${containedQuantity(inspection)} ${inspection.itemCode ?? inspection.itemName ?? "units"} into controlled disposition. ${inspection.verdictRationale ?? "The recorded result is rejected."}`,
+          ),
+        ),
+      ];
+      const causes = linkedCauses.length > 0
+        ? [...new Set(linkedCauses)].slice(0, 4)
         : [
             creditHeld
               ? "The order is blocked by a credit decision."
@@ -254,7 +285,9 @@ export class DecisionIntelligenceService {
         severity,
         title: `${order.soNo} · ${order.customerName ?? "Customer delivery"}`,
         plainSummary:
-          days === null
+          linkedQuality.length > 0
+            ? `${containedQuantity(linkedQuality[0]!)} ${linkedQuality[0]!.itemCode ?? "units"} are held by a failed quality result while the customer commitment remains open.`
+            : days === null
             ? "This order is blocked and needs a decision before work can continue."
             : days < 0
               ? `The open customer promise is ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} late.`
@@ -273,33 +306,68 @@ export class DecisionIntelligenceService {
         evidence: [
           evidence("sales", "sales_order", order.id, order.soNo, "Customer commitment", `Status ${order.status}; next promise ${order.requestedDeliveryDate ?? "not set"}.`, observedAt),
           ...linked.map((item) => evidence("planning", "plan_exception", String(item.id), String(item.ref), "Planning exception", simple(String(item.message)), observedAt)),
+          ...linkedQuality.map((inspection) => evidence(
+            "quality",
+            "inspection",
+            inspection.id,
+            inspection.inspectionNo,
+            "Rejected inspection on the ordered item",
+            `${containedQuantity(inspection)} ${inspection.itemCode ?? "units"} remain under controlled disposition. ${inspection.verdictRationale ?? "Result rejected."}`,
+            inspection.completedAt ?? observedAt,
+          )),
         ],
       }];
     });
   }
 
   private unlinkedPlanningRisks(exceptions: readonly Record<string, unknown>[]): UnscoredCommanderRisk[] {
-    return exceptions.flatMap((item) => {
+    const grouped = new Map<string, Record<string, unknown>[]>();
+    for (const item of exceptions) {
       const severity = String(item.severity) as RiskSeverity;
-      if (!["critical", "high"].includes(severity) || item.pegRef) return [];
+      if (!["critical", "high"].includes(severity) || item.pegRef) continue;
       const id = String(item.id);
       const ref = String(item.ref ?? item.itemCode ?? id);
-      const observedAt = new Date().toISOString();
-      return [{
-        key: `planning:${id}`,
+      const group = grouped.get(ref) ?? [];
+      group.push(item);
+      grouped.set(ref, group);
+    }
+
+    return [...grouped.entries()].map(([ref, items]) => {
+      const first = items[0]!;
+      const severity = items.some((item) => String(item.severity) === "critical")
+        ? "critical" as const
+        : "high" as const;
+      const causes = [...new Set(items.map((item) => simple(String(item.message ?? "Plan exception"))))];
+      const commitmentDates = items
+        .map((item) => item.currentBucket)
+        .filter((value): value is string => typeof value === "string")
+        .sort();
+      return {
+        key: `planning:${String(first.id)}`,
         kind: "planning" as const,
         severity,
         title: `${ref} · Plan needs attention`,
-        plainSummary: simple(String(item.message ?? "An open planning exception needs a person to choose the next action.")),
+        plainSummary:
+          items.length === 1
+            ? causes[0]!
+            : `${items.length} related planning exceptions affect the same requirement. ${causes[0]}`,
         ownerAgent: "AXLE" as const,
         status: "needs_decision" as const,
-        commitmentDate: typeof item.currentBucket === "string" ? item.currentBucket : null,
+        commitmentDate: commitmentDates[0] ?? null,
         daysToCommitment: null,
         exposure: { amount: null, currency: "INR" as const, basis: "No defensible monetary exposure is available for this record." },
-        causes: [simple(String(item.message ?? "Plan exception"))],
+        causes: causes.slice(0, 4),
         recoveryOptions: planningOptions(ref),
-        evidence: [evidence("planning", "plan_exception", id, ref, "Open plan exception", simple(String(item.message ?? item.suggestion)), observedAt)],
-      }];
+        evidence: items.map((item) => evidence(
+          "planning",
+          "plan_exception",
+          String(item.id),
+          String(item.ref ?? ref),
+          "Open plan exception",
+          simple(String(item.message ?? item.suggestion)),
+          dateString(item.updatedAt ?? item.createdAt),
+        )),
+      };
     });
   }
 
@@ -352,7 +420,10 @@ export class DecisionIntelligenceService {
 
   private maintenanceRisks(rows: readonly DowntimeListRow[], now: Date): UnscoredCommanderRisk[] {
     return rows.flatMap((row) => {
-      if (!row.productionImpacting) return [];
+      // A completed historical outage is useful context on the maintenance screen, but it
+      // is not a machine that is "production stopped" now. Keep the live decision room
+      // literal even if an upstream caller accidentally returns closed intervals.
+      if (!row.productionImpacting || row.endedAt !== null) return [];
       const hours = Math.max(0, (now.getTime() - new Date(row.startedAt).getTime()) / 3_600_000);
       const observedAt = now.toISOString();
       return [{
@@ -459,6 +530,29 @@ function daysFrom(now: Date, iso: string): number {
 
 function severityRank(severity: RiskSeverity): number {
   return { critical: 0, high: 1, medium: 2, low: 3 }[severity];
+}
+
+function compareRisks(a: UnscoredCommanderRisk, b: UnscoredCommanderRisk): number {
+  return severityRank(a.severity) - severityRank(b.severity) ||
+    b.evidence.length - a.evidence.length ||
+    (b.exposure.amount ?? -1) - (a.exposure.amount ?? -1) ||
+    (a.commitmentDate ?? "9999").localeCompare(b.commitmentDate ?? "9999") ||
+    a.title.localeCompare(b.title);
+}
+
+function containedQuantity(inspection: InspectionView): number {
+  const quarantined = inspection.dispositions
+    .filter((item) => ["quarantine", "rework", "scrap", "return_to_supplier"].includes(item.dispositionType))
+    .reduce((sum, item) => sum + Number(item.qty), 0);
+  return quarantined > 0 ? quarantined : Number(inspection.qtyRejected ?? 0);
+}
+
+function dateString(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string" && Number.isFinite(Date.parse(value))) {
+    return new Date(value).toISOString();
+  }
+  return new Date().toISOString();
 }
 
 function simple(value: string): string {

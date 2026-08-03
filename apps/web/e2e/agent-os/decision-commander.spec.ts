@@ -24,14 +24,20 @@ test("decision commander explains current risk and separates exposure from verif
   await expect(page.getByText("Value connected to risk", { exact: true })).toBeVisible();
   await expect(page.getByText("Verified value", { exact: true })).toBeVisible();
   await expect(page.getByText(/not a hidden prediction/i)).toBeVisible();
-  const start = page.getByRole("button", { name: "Start governed recovery" });
-  if (await start.isVisible()) {
-    await start.click();
-    await expect(page.getByRole("link", { name: "Open human approval" })).toBeVisible();
-    await page.getByRole("link", { name: "Open human approval" }).click();
-    await expect(page.getByRole("heading", { name: "Human Approvals", level: 1 })).toBeVisible();
-  }
+  await expect(page.getByRole("button", { name: "Start governed recovery" })).toBeVisible();
+  await expect(page.getByText(/Northstar Process Systems/).first()).toBeVisible();
+  await expect(page.getByText("Connected decision", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/2 business areas connected/i)).toBeVisible();
   expect(browserErrors).toEqual([]);
+});
+
+test("the public investor entry opens directly into Decision Commander", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Enter the factory intelligence" }).click();
+  await expect(page.getByRole("button", { name: /ONYX Decision Commander/ })).toBeVisible();
+  await page.getByRole("button", { name: /ONYX Decision Commander/ }).click();
+  await expect(page).toHaveURL(/\/agentos\/commander$/);
+  await expect(page.getByRole("heading", { name: "Live operating decision room", level: 1 })).toBeVisible();
 });
 
 test("decision intelligence, memory and MVP readiness remain usable from desktop to mobile", async ({ page }) => {

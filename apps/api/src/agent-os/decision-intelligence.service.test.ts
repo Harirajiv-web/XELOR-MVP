@@ -15,6 +15,10 @@ test("commander joins current cross-domain facts without presenting exposure as 
         }],
         nextCursor: null,
       }),
+      getOrder: async () => ({
+        id: "so-1",
+        lines: [{ itemId: "item-1" }],
+      }),
     } as never,
     {
       list: async () => [{
@@ -78,7 +82,10 @@ test("commander leaves monetary exposure blank when a source has no defensible r
 test("commander confidence is explainable and organizational memory stays explicit", async () => {
   const now = new Date().toISOString();
   const service = new DecisionIntelligenceService(
-    { listOrders: async () => ({ items: [{ id: "so-2", soNo: "SO-2000", customerId: "c-2", customerCode: "C2", customerName: "Customer", custPoNo: null, orderDate: "2026-08-01", requestedDeliveryDate: now, lineCount: 1, isInterState: false, grandTotal: "1000", creditStatus: "clear", status: "confirmed" }], nextCursor: null }) } as never,
+    {
+      listOrders: async () => ({ items: [{ id: "so-2", soNo: "SO-2000", customerId: "c-2", customerCode: "C2", customerName: "Customer", custPoNo: null, orderDate: "2026-08-01", requestedDeliveryDate: now, lineCount: 1, isInterState: false, grandTotal: "1000", creditStatus: "clear", status: "confirmed" }], nextCursor: null }),
+      getOrder: async () => ({ id: "so-2", lines: [{ itemId: "item-2" }] }),
+    } as never,
     { list: async () => [{ id: "p-2", severity: "high", status: "open", ref: "SO-2000/1", pegRef: "SO-2000", message: "Material is short", suggestion: "Review supply" }] } as never,
     { listPos: async () => ({ items: [], nextCursor: null }) } as never,
     { listInspections: async () => ({ items: [], nextCursor: null }) } as never,
@@ -96,4 +103,51 @@ test("commander confidence is explainable and organizational memory stays explic
   assert.equal(result.confidence.high, 1);
   assert.equal(result.memory.summary.decisionsRemembered, 1);
   assert.match(result.graph.disclosure, /persisted evidence/i);
+});
+
+test("commander prioritizes a customer commitment linked to rejected quality and groups duplicate plan cards", async () => {
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString();
+  const repository = {
+    valueSummary: async () => ({ estimatedValue: 0, verifiedValue: 0, outcomeCount: 0, verifiedCount: 0, currency: "INR", disclosure: "" }),
+    decisionHistory: async () => ({}),
+    knowledgeGraph: async () => ({ nodes: [], edges: [], summary: { rememberedDecisions: 0, relationships: 0, businessAreas: 0 } }),
+    organizationalMemory: async () => ({ summary: { decisionsRemembered: 0, withVerifiedOutcome: 0, awaitingHumanDecision: 0, lastDecisionAt: null }, items: [], disclosure: "" }),
+  };
+  const service = new DecisionIntelligenceService(
+    {
+      listOrders: async () => ({ items: [{ id: "northstar", soNo: "SO-NS", customerId: "customer", customerCode: "NS", customerName: "Northstar", custPoNo: "NPS/1", orderDate: "2026-08-01", requestedDeliveryDate: tomorrow, lineCount: 1, isInterState: true, grandTotal: "7434000", creditStatus: "override", status: "partially_dispatched" }], nextCursor: null }),
+      getOrder: async () => ({ id: "northstar", lines: [{ itemId: "px400" }] }),
+    } as never,
+    {
+      list: async () => [
+        { id: "p-1", severity: "critical", status: "open", ref: "CMP-1@W30", pegRef: null, currentBucket: "2026-W29", message: "Component is past due" },
+        { id: "p-2", severity: "critical", status: "open", ref: "CMP-1@W30", pegRef: null, currentBucket: "2026-W30", message: "Component is short" },
+      ],
+    } as never,
+    { listPos: async () => ({ items: [], nextCursor: null }) } as never,
+    {
+      listInspections: async () => ({
+        items: [{
+          id: "inspection-1", inspectionNo: "INS-1", inspectionType: "final", itemRef: "px400",
+          itemCode: "PMP-PX400", itemName: "PX-400", result: "rejected", completedAt: new Date().toISOString(),
+          qtyRejected: "40", verdictRationale: "Critical runout failed.",
+          dispositions: [{ dispositionType: "quarantine", qty: "12" }],
+        }],
+        nextCursor: null,
+      }),
+    } as never,
+    { list: async () => [] } as never,
+    repository as never,
+  );
+
+  const result = await service.commander();
+  assert.equal(result.risks.length, 3);
+  assert.match(result.risks[0]?.title ?? "", /Northstar/);
+  assert.equal(result.risks[0]?.severity, "critical");
+  assert.equal(result.risks[0]?.evidence.length, 2);
+  assert.match(result.risks[0]?.plainSummary ?? "", /12 PMP-PX400/);
+  const planning = result.risks.find((risk) => risk.kind === "planning");
+  assert.equal(planning?.causes.length, 2);
+  assert.equal(planning?.evidence.length, 2);
+  assert.match(planning?.plainSummary ?? "", /2 related planning exceptions/i);
 });
