@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { assessDecisionConfidence, type DecisionConfidence } from "@ind-core/platform";
 import { SalesService, type SalesOrderSummary } from "../modules/sales/sales.service.js";
 import { PlanExceptionService } from "../modules/planning/exception.service.js";
 import { PurchaseService, type PoSummary } from "../modules/purchase/purchase.service.js";
@@ -47,7 +48,10 @@ export interface CommanderRisk {
   causes: string[];
   recoveryOptions: RecoveryOption[];
   evidence: CommanderEvidence[];
+  confidence: DecisionConfidence;
 }
+
+type UnscoredCommanderRisk = Omit<CommanderRisk, "confidence">;
 
 @Injectable()
 export class DecisionIntelligenceService {
@@ -72,7 +76,7 @@ export class DecisionIntelligenceService {
       ]);
 
     const now = new Date();
-    const risks = [
+    const unscoredRisks = [
       ...this.deliveryRisks(orderPage.items, exceptions, now),
       ...this.unlinkedPlanningRisks(exceptions),
       ...this.supplyRisks(poPage.items, now),
@@ -81,6 +85,28 @@ export class DecisionIntelligenceService {
     ]
       .sort((a, b) => severityRank(a.severity) - severityRank(b.severity))
       .slice(0, 40);
+
+    const [history, persistentGraph, memory] = await Promise.all([
+      this.repository.decisionHistory(unscoredRisks.map((risk) => risk.key)),
+      this.repository.knowledgeGraph(),
+      this.repository.organizationalMemory(6),
+    ]);
+    const risks: CommanderRisk[] = unscoredRisks.map((risk) => {
+      const previous = history[risk.key];
+      return {
+        ...risk,
+        confidence: assessDecisionConfidence({
+          evidence: risk.evidence,
+          causeCount: risk.causes.length,
+          recoveryOptionCount: risk.recoveryOptions.length,
+          hasCommitmentDate: risk.commitmentDate !== null,
+          hasDefensibleExposure: risk.exposure.amount !== null,
+          previousDecisionCount: previous?.previousDecisionCount ?? 0,
+          verifiedOutcomeCount: previous?.verifiedOutcomeCount ?? 0,
+          now: now.toISOString(),
+        }),
+      };
+    });
 
     const exposedValue = risks.reduce(
       (sum, risk) => sum + (risk.exposure.amount ?? 0),
@@ -109,10 +135,20 @@ export class DecisionIntelligenceService {
         exposedValue,
         exposureBasis: "Gross business value connected to open risks; it is not predicted loss.",
         sourcesChecked: 5,
+        averageConfidence: risks.length === 0
+          ? 100
+          : Math.round(risks.reduce((sum, risk) => sum + risk.confidence.score, 0) / risks.length),
+      },
+      confidence: {
+        high: risks.filter((risk) => risk.confidence.band === "high").length,
+        medium: risks.filter((risk) => risk.confidence.band === "medium").length,
+        low: risks.filter((risk) => risk.confidence.band === "low").length,
+        disclosure: "Confidence measures the quality of the available evidence, not the chance that an action will succeed.",
       },
       value,
       risks,
-      graph: buildGraph(risks),
+      graph: mergeGraphs(buildGraph(risks), persistentGraph),
+      memory,
     };
   }
 
@@ -165,11 +201,19 @@ export class DecisionIntelligenceService {
     return this.repository.listOutcomes(limit);
   }
 
+  memory(limit?: number) {
+    return this.repository.organizationalMemory(limit);
+  }
+
+  knowledgeGraph(limit?: number) {
+    return this.repository.knowledgeGraph(limit);
+  }
+
   private deliveryRisks(
     orders: readonly SalesOrderSummary[],
     exceptions: readonly Record<string, unknown>[],
     now: Date,
-  ): CommanderRisk[] {
+  ): UnscoredCommanderRisk[] {
     return orders.flatMap((order) => {
       if (!["confirmed", "partially_dispatched", "credit_hold"].includes(order.status)) return [];
       const days = order.requestedDeliveryDate
@@ -234,7 +278,7 @@ export class DecisionIntelligenceService {
     });
   }
 
-  private unlinkedPlanningRisks(exceptions: readonly Record<string, unknown>[]): CommanderRisk[] {
+  private unlinkedPlanningRisks(exceptions: readonly Record<string, unknown>[]): UnscoredCommanderRisk[] {
     return exceptions.flatMap((item) => {
       const severity = String(item.severity) as RiskSeverity;
       if (!["critical", "high"].includes(severity) || item.pegRef) return [];
@@ -259,7 +303,7 @@ export class DecisionIntelligenceService {
     });
   }
 
-  private supplyRisks(orders: readonly PoSummary[], now: Date): CommanderRisk[] {
+  private supplyRisks(orders: readonly PoSummary[], now: Date): UnscoredCommanderRisk[] {
     return orders.flatMap((order) => {
       if (["received", "cancelled", "closed"].includes(order.status) || !order.expectedDate) return [];
       const days = daysFrom(now, order.expectedDate);
@@ -284,7 +328,7 @@ export class DecisionIntelligenceService {
     });
   }
 
-  private qualityRisks(inspections: readonly InspectionView[]): CommanderRisk[] {
+  private qualityRisks(inspections: readonly InspectionView[]): UnscoredCommanderRisk[] {
     return inspections.flatMap((inspection) => {
       if (inspection.result !== "rejected") return [];
       const observedAt = inspection.completedAt ?? new Date().toISOString();
@@ -306,7 +350,7 @@ export class DecisionIntelligenceService {
     });
   }
 
-  private maintenanceRisks(rows: readonly DowntimeListRow[], now: Date): CommanderRisk[] {
+  private maintenanceRisks(rows: readonly DowntimeListRow[], now: Date): UnscoredCommanderRisk[] {
     return rows.flatMap((row) => {
       if (!row.productionImpacting) return [];
       const hours = Math.max(0, (now.getTime() - new Date(row.startedAt).getTime()) / 3_600_000);
@@ -375,6 +419,37 @@ function buildGraph(risks: readonly CommanderRisk[]) {
     }
   }
   return { nodes: [...nodes.values()], edges };
+}
+
+function mergeGraphs(
+  current: ReturnType<typeof buildGraph>,
+  remembered: Awaited<ReturnType<DecisionIntelligenceRepository["knowledgeGraph"]>>,
+) {
+  const nodes = new Map(current.nodes.map((node) => [node.id, node]));
+  const edges = new Map(current.edges.map((edge) => [edge.id, edge]));
+  for (const node of remembered.nodes) {
+    if (!nodes.has(node.id)) nodes.set(node.id, node);
+  }
+  for (const edge of remembered.edges) {
+    if (!edges.has(edge.id)) edges.set(edge.id, edge);
+  }
+  const currentDomains = new Set(
+    current.nodes.map((node) => node.domain).filter((domain) => domain !== "agentos"),
+  );
+  return {
+    nodes: [...nodes.values()],
+    edges: [...edges.values()],
+    summary: {
+      currentDecisions: current.nodes.filter((node) => node.kind === "risk").length,
+      rememberedDecisions: remembered.summary.rememberedDecisions,
+      relationships: edges.size,
+      businessAreas: new Set([
+        ...currentDomains,
+        ...remembered.nodes.map((node) => node.domain).filter((domain) => domain !== "agentos"),
+      ]).size,
+    },
+    disclosure: "Current facts and persisted evidence links are joined by stable source references; source modules remain the owners of their records.",
+  };
 }
 
 function daysFrom(now: Date, iso: string): number {

@@ -7,6 +7,7 @@ import type { AgentRunRepository } from "./agent-run.repository.js";
 import { CapabilityRegistryService } from "./capability-registry.service.js";
 import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
 import { GraphRegistryService } from "./graph-registry.service.js";
+import { AgentOsService } from "./agent-os.service.js";
 
 test("registers every named departmental agent", () => {
   const registry = new AgentRegistryService();
@@ -181,6 +182,50 @@ test("offline reasoner reports deterministic mode and evidence rather than hidde
   assert.equal(output.providerMode, "deterministic");
   assert.equal(output.evidence[0]?.recordCount, 2);
   assert.equal(output.confidence, 1);
+});
+
+test("commander retries keep one fingerprint even when observation timestamps move", async () => {
+  const fingerprints: string[] = [];
+  let observation = 0;
+  const graph = new GraphRegistryService().get("operations.controlled-action-mission");
+  const repository = {
+    create: async (input: { requestFingerprint: string }) => {
+      fingerprints.push(input.requestFingerprint);
+      return { runId: "0192a8c0-0059-7000-8000-000000000099", replayed: fingerprints.length > 1 };
+    },
+  };
+  const engine = {
+    execute: async () => ({
+      run: { id: "0192a8c0-0059-7000-8000-000000000099", status: "waiting_approval" },
+      nodes: [], approvals: [], events: [], checkpoints: [],
+    }),
+  };
+  const decisions = {
+    risk: async () => ({
+      key: "delivery:so-1", kind: "delivery", severity: "high", title: "SO-1", plainSummary: "Customer date needs review.", ownerAgent: "MICA", status: "needs_decision",
+      commitmentDate: "2026-08-04", daysToCommitment: 1,
+      exposure: { amount: 100, currency: "INR", basis: "Order value." }, causes: ["Supply is short."], recoveryOptions: [],
+      evidence: [{ domain: "sales", entityType: "sales_order", entityId: "so-1", reference: "SO-1", label: "Order", detail: "Open", observedAt: new Date(Date.now() + observation++).toISOString() }],
+      confidence: { score: 70, band: "medium", meaning: "Evidence confidence.", dimensions: { evidenceCoverage: 60, freshness: 100, completeness: 75, learningHistory: 50 }, strengths: [], gaps: [] },
+    }),
+    persistRiskEvidence: async () => undefined,
+  };
+  const service = new AgentOsService(
+    {} as never,
+    { get: () => graph, contentHash: () => "graph-hash" } as never,
+    {} as never,
+    { mode: "deterministic" } as never,
+    repository as never,
+    engine as never,
+    {} as never,
+    decisions as never,
+    {} as never,
+  );
+
+  await service.startCommanderRisk("delivery:so-1", "stable-retry-key");
+  await service.startCommanderRisk("delivery:so-1", "stable-retry-key");
+  assert.equal(fingerprints.length, 2);
+  assert.equal(fingerprints[0], fingerprints[1]);
 });
 
 test("engine runs parallel evidence waves, pauses, resumes and completes after approval", async () => {

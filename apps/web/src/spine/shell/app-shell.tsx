@@ -55,10 +55,12 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
   const { user, signOut, isPublicDemo } = useSession();
   const { can, isLicensed, licence, identity } = useAccess();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
 
   useEffect(() => {
     if (pathname.startsWith("/agentos/")) setRailOpen(false);
+    setMobileNavOpen(false);
   }, [pathname]);
 
   const modules = orderedModules().filter(
@@ -87,6 +89,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
    */
   const navigate = useCallback(
     (event: MouseEvent<HTMLAnchorElement>, href: string): void => {
+      setMobileNavOpen(false);
       if (
         event.defaultPrevented ||
         event.button !== 0 ||
@@ -111,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
   return (
     <div
-      className="x-app-shell grid h-screen bg-[var(--bg)]"
+      className={cn("x-app-shell grid h-screen bg-[var(--bg)]", mobileNavOpen && "x-mobile-nav-open")}
       style={{
         gridTemplateColumns: `${collapsed ? "64px" : "var(--side)"} minmax(0,1fr) ${railOpen ? "var(--cop)" : "0px"}`,
         gridTemplateRows: "var(--top) minmax(0,1fr)",
@@ -119,6 +122,12 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
         transition: "grid-template-columns .3s ease",
       }}
     >
+      <button
+        type="button"
+        aria-label="Close navigation"
+        onClick={() => setMobileNavOpen(false)}
+        className="x-mobile-nav-backdrop"
+      />
       {/* ---------------------------- sidebar ---------------------------- */}
       <aside
         style={{ gridArea: "side" }}
@@ -257,10 +266,22 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
         style={{ gridArea: "top" }}
         className="x-shell-topbar z-30 flex items-center gap-2.5 border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4"
       >
+        <button
+          type="button"
+          aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
+          aria-expanded={mobileNavOpen}
+          onClick={() => {
+            setCollapsed(false);
+            setMobileNavOpen((open) => !open);
+          }}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-[9px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg)] md:hidden"
+        >
+          {mobileNavOpen ? <Icons.X className="h-4 w-4" aria-hidden /> : <Icons.Menu className="h-4 w-4" aria-hidden />}
+        </button>
         {/* The tenant, always on screen. In a product whose whole security story is that
             one factory cannot see another's data, "whose data am I looking at" must never
             require a click. */}
-        <span className="inline-flex shrink-0 items-center gap-2 rounded-[9px] border border-[var(--border-subtle)] bg-[var(--surface)] px-3 py-[7px] text-[12.5px] font-semibold text-[var(--text-primary)] shadow-[var(--shadow-sm)]">
+        <span className="inline-flex min-w-0 flex-1 items-center gap-2 rounded-[9px] border border-[var(--border-subtle)] bg-[var(--surface)] px-3 py-[7px] text-[12.5px] font-semibold text-[var(--text-primary)] shadow-[var(--shadow-sm)] sm:flex-none">
           <Icons.Factory className="h-3.5 w-3.5 text-[var(--brand)]" aria-hidden />
           <span className="max-w-[220px] truncate">
             {identity?.organisation?.name ?? user?.tenantLabel ?? "—"}
@@ -281,7 +302,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           ) : null}
         </p>
 
-        <div className="ml-auto flex items-center gap-2.5">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2.5">
           {licence?.expired ? (
             // Soft enforcement, said out loud. A plant does not stop because a licence
             // lapsed on a Friday evening — but nobody should be able to say they were not told.
@@ -295,13 +316,13 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
               tells you something has happened whether or not you asked; the copilot answers
               when you do. A person scanning left to right meets the interruption first,
               which is the only one of the two that can be time-critical. */}
-          <DemoLauncher />
+          <span className="hidden sm:contents"><DemoLauncher /></span>
 
           <HumanApprovalLink />
 
           <AlertCentre />
 
-          <ThemeToggle />
+          <span className="hidden sm:contents"><ThemeToggle /></span>
 
           <button
             type="button"
@@ -333,7 +354,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           </span>
 
           {isPublicDemo ? (
-            <span className="chip chip-info">Public demo</span>
+            <span className="chip chip-info hidden lg:inline-flex">Public demo</span>
           ) : (
             <button
               type="button"

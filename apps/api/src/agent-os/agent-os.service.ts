@@ -10,6 +10,7 @@ import { GraphRegistryService } from "./graph-registry.service.js";
 import { AgentActionService } from "./agent-action.service.js";
 import { DecisionIntelligenceService } from "./decision-intelligence.service.js";
 import type { OutcomeInput } from "./decision-intelligence.repository.js";
+import { MvpReadinessService } from "./mvp-readiness.service.js";
 
 @Injectable()
 export class AgentOsService {
@@ -22,6 +23,7 @@ export class AgentOsService {
     private readonly engine: AgentGraphEngine,
     private readonly actionService: AgentActionService,
     private readonly decisions: DecisionIntelligenceService,
+    private readonly readinessService: MvpReadinessService,
   ) {}
 
   catalogue() {
@@ -52,6 +54,8 @@ export class AgentOsService {
     goal: string;
     missionInput: Record<string, unknown>;
     idempotencyKey: string;
+    /** Stable business identity used when the mission snapshot contains observation time. */
+    idempotencyIdentity?: Record<string, unknown>;
   }) {
     if (!input.idempotencyKey.trim()) {
       throw new AppError(
@@ -67,7 +71,7 @@ export class AgentOsService {
           graphKey: graph.key,
           graphVersion: graph.version,
           goal: input.goal,
-          input: input.missionInput,
+          input: input.idempotencyIdentity ?? input.missionInput,
         }),
       )
       .digest("hex");
@@ -107,6 +111,14 @@ export class AgentOsService {
         signalPayload: input.payload ?? {},
       },
       idempotencyKey: `agent-signal:${input.eventId}`,
+      idempotencyIdentity: {
+        eventId: input.eventId,
+        eventType: input.eventType,
+        sourceDomain: input.sourceDomain,
+        summary: input.summary,
+        severity: input.severity ?? "medium",
+        payload: input.payload ?? {},
+      },
     });
   }
 
@@ -135,8 +147,24 @@ export class AgentOsService {
     return this.actionService.list(limit, runId);
   }
 
-  commander() {
-    return this.decisions.commander();
+  async commander() {
+    const [decisionRoom, platform] = await Promise.all([
+      this.decisions.commander(),
+      this.readinessService.snapshot(),
+    ]);
+    return { ...decisionRoom, platform };
+  }
+
+  memory(limit?: number) {
+    return this.decisions.memory(limit);
+  }
+
+  knowledgeGraph(limit?: number) {
+    return this.decisions.knowledgeGraph(limit);
+  }
+
+  readiness() {
+    return this.readinessService.snapshot();
   }
 
   async commanderRisk(riskKey: string) {
@@ -164,6 +192,11 @@ export class AgentOsService {
           "Prepare governed work only. A named person must approve every consequential action.",
       },
       idempotencyKey,
+      idempotencyIdentity: {
+        source: "decision_commander",
+        riskKey: risk.key,
+        riskKind: risk.kind,
+      },
     });
     await this.decisions.persistRiskEvidence(risk, result.run.id);
     return result;

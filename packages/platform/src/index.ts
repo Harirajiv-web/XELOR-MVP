@@ -69,3 +69,4 @@ export * from "./copilot/route.js";
 export * from "./copilot/answer.js";
 export * from "./agent-os/types.js";
 export * from "./agent-os/graph.js";
+export * from "./agent-os/confidence.js";

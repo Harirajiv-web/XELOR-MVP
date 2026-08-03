@@ -180,6 +180,20 @@ export interface CommanderEvidence {
   observedAt: string;
 }
 
+export interface DecisionConfidence {
+  score: number;
+  band: "high" | "medium" | "low";
+  meaning: string;
+  dimensions: {
+    evidenceCoverage: number;
+    freshness: number;
+    completeness: number;
+    learningHistory: number;
+  };
+  strengths: readonly string[];
+  gaps: readonly string[];
+}
+
 export interface CommanderRisk {
   key: string;
   kind: CommanderRiskKind;
@@ -202,6 +216,80 @@ export interface CommanderRisk {
     cost: { amount: number | null; currency: "INR"; basis: string };
   }[];
   evidence: readonly CommanderEvidence[];
+  confidence: DecisionConfidence;
+}
+
+export interface DecisionMemoryItem {
+  missionRunId: string;
+  decisionKey: string;
+  title: string;
+  riskKind: string | null;
+  ownerAgent: AgentKey;
+  severityAtDecision: string | null;
+  missionStatus: string;
+  humanDecision: string;
+  decisionNote: string | null;
+  chosenAction: { title: string; actionType: string; status: string } | null;
+  evidenceLinks: number;
+  outcomeCount: number;
+  verifiedOutcomeCount: number;
+  verifiedValue: number;
+  learned: string;
+  startedAt: string;
+  completedAt: string | null;
+  decidedAt: string | null;
+}
+
+export interface OrganizationalMemory {
+  summary: {
+    decisionsRemembered: number;
+    withVerifiedOutcome: number;
+    awaitingHumanDecision: number;
+    lastDecisionAt: string | null;
+  };
+  items: readonly DecisionMemoryItem[];
+  disclosure: string;
+}
+
+export interface MvpReadiness {
+  checkedAt: string;
+  integrations: {
+    status: string;
+    connectors: number;
+    connections: number;
+    healthyConnections: number;
+    simulatedConnections: number;
+    liveConnections: number;
+    activeFlows: number;
+    totalFlows: number;
+    disclosure: string;
+  };
+  documents: {
+    status: string;
+    drafts: number;
+    confirmed: number;
+    acceptanceRatePct: number;
+    fieldEditRatePct: number;
+    fallbackRatePct: number;
+    humanConfirmationRequired: boolean;
+    disclosure: string;
+  };
+  aiGovernance: {
+    registeredFeatures: number;
+    enabledFeatures: number;
+    openIncidents: number;
+    status: string;
+  };
+  operations: {
+    checkedAt: string;
+    database: { status: string; queryMs: number };
+    decisionRuntime24h: { total: number; active: number; completed: number; failed: number };
+    governance: { pendingApprovals: number; governedActions24h: number };
+    eventDelivery: { status: string; unpublished: number; retrying: number; oldestAgeSeconds: number };
+    intelligence: { evidenceLinks: number; outcomes: number; verifiedOutcomes: number };
+    disclosure: string;
+  };
+  upgrades: readonly { key: string; label: string; status: string; proof: string }[];
 }
 
 export interface DecisionCommander {
@@ -217,6 +305,13 @@ export interface DecisionCommander {
     exposedValue: number;
     exposureBasis: string;
     sourcesChecked: number;
+    averageConfidence: number;
+  };
+  confidence: {
+    high: number;
+    medium: number;
+    low: number;
+    disclosure: string;
   };
   value: {
     estimatedValue: number;
@@ -229,8 +324,12 @@ export interface DecisionCommander {
   risks: readonly CommanderRisk[];
   graph: {
     nodes: readonly { id: string; kind: string; label: string; domain: string }[];
-    edges: readonly { id: string; source: string; target: string; relation: string }[];
+    edges: readonly { id: string; source: string; target: string; relation: string; observedAt?: string }[];
+    summary: { currentDecisions: number; rememberedDecisions: number; relationships: number; businessAreas: number };
+    disclosure: string;
   };
+  memory: OrganizationalMemory;
+  platform: MvpReadiness;
 }
 
 interface DataEnvelope<T> {
@@ -242,6 +341,10 @@ export const agentOsApi = {
     (await api.get<DataEnvelope<AgentCatalogue>>("/agent-os/catalogue")).data,
   commander: async (): Promise<DecisionCommander> =>
     (await api.get<DataEnvelope<DecisionCommander>>("/agent-os/commander")).data,
+  memory: async (limit = 20): Promise<OrganizationalMemory> =>
+    (await api.get<DataEnvelope<OrganizationalMemory>>("/agent-os/commander/memory", { query: { limit } })).data,
+  readiness: async (): Promise<MvpReadiness> =>
+    (await api.get<DataEnvelope<MvpReadiness>>("/agent-os/commander/readiness")).data,
   startCommanderRisk: async (riskKey: string): Promise<AgentRunDetail> =>
     (
       await api.post<DataEnvelope<AgentRunDetail>>(

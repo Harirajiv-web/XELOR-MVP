@@ -3,175 +3,180 @@
   * { box-sizing:border-box; }
   html, body { margin:0; padding:0; background:#dfe4ec; color:var(--ink); font-family:Inter,Arial,sans-serif; }
   @page { size:A4; margin:0; }
-  .page { width:210mm; height:297mm; padding:17mm 17mm 15mm; margin:8mm auto; background:var(--paper); position:relative; overflow:hidden; page-break-after:always; }
+  .page { width:210mm; height:297mm; padding:16mm 16mm 14mm; margin:8mm auto; background:var(--paper); position:relative; overflow:hidden; page-break-after:always; }
   .page:last-child { page-break-after:auto; }
   @media print { html,body{background:#fff}.page{margin:0} }
   h1,h2,h3,p { margin-top:0; }
   h1 { font-size:35px; line-height:1.03; letter-spacing:-1.2px; margin-bottom:8px; }
-  h2 { font-size:24px; line-height:1.1; letter-spacing:-.5px; margin-bottom:7px; }
-  h3 { font-size:12.5px; line-height:1.25; margin-bottom:5px; }
-  p,li,td,th { font-size:10.5px; line-height:1.48; }
+  h2 { font-size:25px; line-height:1.1; letter-spacing:-.5px; margin-bottom:6px; }
+  h3 { font-size:13.5px; line-height:1.25; margin-bottom:5px; }
+  p,li,td,th { font-size:11.8px; line-height:1.5; }
   p { color:var(--muted); margin-bottom:8px; }
-  ul { margin:5px 0 0; padding-left:18px; }
-  li { margin-bottom:5px; color:#33445a; }
-  small { font-size:8px; color:#67758a; font-weight:500; }
-  .eyebrow { color:var(--accent); font-size:9px; letter-spacing:1.7px; text-transform:uppercase; font-weight:800; margin-bottom:9px; }
-  .lead { font-size:15px; line-height:1.45; max-width:155mm; color:#34465d; }
-  .rule { height:3px; width:24mm; background:var(--accent); margin:10px 0 16px; border-radius:4px; }
-  .section-head { display:flex; justify-content:space-between; gap:10mm; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:13px; }
-  .section-head p { max-width:74mm; text-align:right; margin:0; }
-  .footer { position:absolute; left:17mm; right:17mm; bottom:7mm; display:flex; justify-content:space-between; color:#8994a5; font-size:7.5px; border-top:1px solid #e7ebf0; padding-top:3px; }
+  ul { margin:5px 0 0; padding-left:17px; }
+  li { margin-bottom:6px; color:#33445a; }
+  small { font-size:9px; color:#67758a; font-weight:500; }
+  .eyebrow { color:var(--accent); font-size:9.5px; letter-spacing:1.7px; text-transform:uppercase; font-weight:800; margin-bottom:9px; }
+  .lead { font-size:16px; line-height:1.45; max-width:158mm; color:#34465d; }
+  .rule { height:3px; width:24mm; background:var(--accent); margin:10px 0 15px; border-radius:4px; }
+  .section-head { display:flex; justify-content:space-between; gap:9mm; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:7px; margin-bottom:12px; }
+  .section-head p { max-width:74mm; text-align:right; margin:0; font-size:11px; }
+  .footer { position:absolute; left:16mm; right:16mm; bottom:7mm; display:flex; justify-content:space-between; color:#8994a5; font-size:7.5px; border-top:1px solid #e7ebf0; padding-top:3px; }
   .cover { background:linear-gradient(145deg,var(--navy) 0 60%,var(--accent) 60% 100%); color:white; }
   .cover p { color:#d7dfec; }
-  .cover .eyebrow { color:#fff; opacity:.8; margin-top:15mm; }
-  .cover h1 { font-size:52px; max-width:142mm; margin-top:40mm; }
-  .cover .lead { color:#e8edf5; font-size:17px; max-width:132mm; }
-  .cover .cover-note { position:absolute; bottom:27mm; left:17mm; width:106mm; padding:12px 14px; border:1px solid #ffffff42; border-radius:12px; background:#ffffff0d; font-size:10px; line-height:1.5; }
+  .cover .eyebrow { color:#fff; opacity:.8; margin-top:14mm; }
+  .cover h1 { font-size:52px; max-width:142mm; margin-top:38mm; }
+  .cover .lead { color:#e8edf5; font-size:16px; max-width:132mm; }
+  .cover .cover-note { position:absolute; bottom:26mm; left:16mm; width:112mm; padding:11px 13px; border:1px solid #ffffff42; border-radius:12px; background:#ffffff0d; font-size:9.5px; line-height:1.5; }
   .cover .footer { color:#d6dfed; border-color:#ffffff25; }
-  .big-mark { position:absolute; right:11mm; bottom:18mm; font-size:72px; line-height:.9; font-weight:900; color:#ffffff18; writing-mode:vertical-rl; transform:rotate(180deg); }
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .big-mark { position:absolute; right:10mm; bottom:17mm; font-size:70px; line-height:.9; font-weight:900; color:#ffffff18; writing-mode:vertical-rl; transform:rotate(180deg); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .card { border:1px solid var(--line); border-radius:10px; padding:10px 11px; background:#fff; break-inside:avoid; }
+  .card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; background:#fff; break-inside:avoid; }
   .card h3 { color:var(--accent); }
-  .card p { margin:0; font-size:9.5px; }
+  .card p { margin:0; font-size:10.8px; line-height:1.48; }
   .tint { background:var(--pale); border-color:color-mix(in srgb,var(--accent) 20%,white); }
-  .callout { border-left:4px solid var(--accent); background:var(--pale); padding:11px 13px; border-radius:0 10px 10px 0; margin:10px 0; }
-  .callout strong { display:block; font-size:11px; margin-bottom:4px; }
-  .callout p { margin:0; }
-  .pills { display:flex; flex-wrap:wrap; gap:5px; margin:7px 0 12px; }
-  .pills span { font-size:8px; font-weight:700; border:1px solid var(--line); border-radius:99px; padding:4px 7px; background:#fff; color:#4b5b70; }
-  .flow { display:flex; align-items:stretch; gap:5px; margin:14px 0; }
-  .flow-block { flex:1; min-width:0; min-height:49px; display:flex; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:8px; padding:6px; font-size:9px; font-weight:750; background:#fff; }
+  .callout { border-left:4px solid var(--accent); background:var(--pale); padding:12px 14px; border-radius:0 9px 9px 0; margin:11px 0; }
+  .callout strong { display:block; font-size:12px; margin-bottom:4px; color:var(--ink); }
+  .callout p { margin:0; font-size:11.2px; line-height:1.5; }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; margin:7px 0 11px; }
+  .pills span { font-size:9.2px; font-weight:700; border:1px solid var(--line); border-radius:99px; padding:5px 9px; background:#fff; color:#4b5b70; }
+  .flow { display:flex; align-items:stretch; gap:4px; margin:14px 0; }
+  .flow-block { flex:1; min-width:0; min-height:52px; display:flex; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:8px; padding:6px; font-size:9.8px; font-weight:750; background:#fff; }
   .arrow { display:flex; align-items:center; color:var(--accent); font-size:16px; }
-  .swim { display:grid; grid-template-columns:30mm 1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:8px 0; }
-  .swim .who { background:var(--pale); color:var(--accent); font-weight:800; padding:9px; font-size:9px; }
-  .swim .what { padding:9px; font-size:9px; color:#33445a; }
+  .swim { display:grid; grid-template-columns:30mm 1fr; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin:8px 0; }
+  .swim .who { background:var(--pale); color:var(--accent); font-weight:800; padding:9px; font-size:10.5px; }
+  .swim .what { padding:9px; font-size:10.5px; color:#33445a; }
   table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
-  th { color:#fff; background:var(--accent); text-align:left; font-size:8px; padding:7px; }
-  td { border-bottom:1px solid var(--line); padding:7px; font-size:8.2px; vertical-align:top; overflow-wrap:anywhere; }
+  th { color:#fff; background:var(--accent); text-align:left; font-size:9.2px; padding:7px; }
+  td { border-bottom:1px solid var(--line); padding:7px; font-size:9.8px; vertical-align:top; overflow-wrap:anywhere; }
   tr:nth-child(even) td { background:#f8fafc; }
-  .cap-table th:nth-child(1){width:28%}.cap-table th:nth-child(2){width:11%}.cap-table th:nth-child(3){width:22%}.cap-table th:nth-child(4){width:25%}.cap-table th:nth-child(5){width:14%}
-  .steps { counter-reset:step; display:grid; gap:7px; }
-  .step { display:grid; grid-template-columns:10mm 1fr; gap:8px; align-items:start; border:1px solid var(--line); border-radius:9px; padding:8px; }
-  .step:before { counter-increment:step; content:counter(step); width:8mm; height:8mm; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:9px; }
-  .step p { margin:0; font-size:9.5px; }
-  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
-  .stat { background:var(--navy); color:#fff; border-radius:10px; padding:11px; }
-  .stat b { display:block; font-size:22px; color:#fff; }
-  .stat span { font-size:8px; color:#c8d1de; }
-  .agent-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
-  .agent-card { border:1px solid var(--line); border-left:6px solid var(--c); padding:8px 10px; border-radius:8px; }
-  .agent-card b { color:var(--c); font-size:11px; }
-  .agent-card p { margin:2px 0 0; font-size:8.8px; }
-  .lane { display:grid; grid-template-columns:23mm 1fr; align-items:stretch; border-bottom:1px solid var(--line); }
-  .lane:last-child { border-bottom:0; }
-  .lane-name { padding:7px; font-size:8px; font-weight:800; color:#fff; background:var(--c); display:flex; align-items:center; }
-  .lane-work { padding:7px; display:flex; gap:5px; align-items:center; font-size:8.5px; }
-  .lane-work span { padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:#fff; }
-  .lane-work i { color:#9aa5b4; font-style:normal; }
-  .stack { display:grid; gap:6px; margin:12px auto; max-width:155mm; }
-  .stack-row { border:1px solid var(--line); border-left:6px solid var(--accent); padding:9px 12px; border-radius:8px; display:flex; justify-content:space-between; gap:15px; }
-  .stack-row b { font-size:10px; }
-  .stack-row span { font-size:8.5px; color:var(--muted); text-align:right; }
+  .cap-table th:nth-child(1){width:27%}.cap-table th:nth-child(2){width:11%}.cap-table th:nth-child(3){width:21%}.cap-table th:nth-child(4){width:26%}.cap-table th:nth-child(5){width:15%}
+  .mission-table th:nth-child(1){width:34%}
+  .matrix th:nth-child(1){width:26%}.matrix th:nth-child(2){width:10%}.matrix th:nth-child(3){width:15%}.matrix th:nth-child(4){width:26%}.matrix th:nth-child(5){width:23%}
+  .steps { display:grid; gap:8px; counter-reset:step; }
+  .step { display:grid; grid-template-columns:9mm 1fr; gap:9px; align-items:start; border:1px solid var(--line); border-radius:8px; padding:9px 11px; }
+  .step:before { counter-increment:step; content:counter(step); width:7.5mm; height:7.5mm; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:10px; }
+  .step b { font-size:11.5px; color:var(--ink); }
+  .step p { margin:2px 0 0; font-size:11px; line-height:1.48; }
+  .plain .step { grid-template-columns:1fr; }
+  .plain .step:before { content:none; }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:13px 0; }
+  .stat { background:var(--navy); color:#fff; border-radius:9px; padding:12px; }
+  .stat b { display:block; font-size:25px; color:#fff; }
+  .stat span { font-size:9px; color:#c8d1de; }
+  .agent-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .agent-card { border:1px solid var(--line); border-left:6px solid var(--c); padding:9px 11px; border-radius:8px; }
+  .agent-card b { color:var(--c); font-size:12px; }
+  .agent-card p { margin:3px 0 0; font-size:10px; line-height:1.45; }
+  .stack { display:grid; gap:7px; margin:12px auto; max-width:162mm; }
+  .stack-row { border:1px solid var(--line); border-left:6px solid var(--accent); padding:10px 13px; border-radius:8px; display:flex; justify-content:space-between; gap:14px; }
+  .stack-row b { font-size:11.5px; }
+  .stack-row span { font-size:10.2px; color:var(--muted); text-align:right; }
   .truth { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .truth > div { border-radius:10px; padding:12px; border:1px solid var(--line); }
+  .truth > div { border-radius:9px; padding:13px; border:1px solid var(--line); }
   .truth .yes { border-top:5px solid #2a9160; }.truth .no { border-top:5px solid #d94b4b; }
-  .glossary td:first-child { width:28%; font-weight:800; color:var(--accent); }
-  .source { font-family:ui-monospace,Menlo,monospace; font-size:7.8px; overflow-wrap:anywhere; }
-  .mini { font-size:8.5px; }
+  .truth h3 { font-size:12.5px; }
+  .truth li { font-size:10.8px; }
+  .glossary td:first-child { width:27%; font-weight:800; color:var(--accent); }
+  .source { font-family:ui-monospace,Menlo,monospace; font-size:9.4px; overflow-wrap:anywhere; }
+  .mini { font-size:10px; line-height:1.5; }
+  .graph-card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:8px; border-left:5px solid var(--accent); }
+  .graph-card b { font-size:12px; }
+  .graph-card .meta { font-family:ui-monospace,Menlo,monospace; font-size:9px; color:#7a879a; margin:3px 0 4px; }
+  .graph-card p { margin:0; font-size:10.6px; line-height:1.45; }
 </style></head><body><section class="page cover" style="--accent:#7758e8;--pale:#f0edff">
-    <div class="eyebrow">XELOR system handbook · implementation-based</div>
+    <div class="eyebrow">XELOR system handbook · built from the implementation</div>
     <h1>The XELOR<br>agent system</h1><div class="rule"></div>
-    <p class="lead">A plain-language master guide to the seven agents, their product groupings, and the controlled way they coordinate to turn business questions into evidence-backed work.</p>
-    <div class="cover-note"><b>Includes:</b> agent map, architecture blocks, mission flow, collaboration examples, human-control model and current runtime boundary.<br><b>Companion set:</b> one detailed guide for each agent.</div>
+    <p class="lead">Seven agents, sixteen tools and five missions — and the machinery that keeps all of it inside the authority of the person who asked.</p>
+    <div class="cover-note"><b>Covers:</b> what XELOR is, the seven agents, the architecture, every capability, all five mission graphs, how a run actually executes, the trust model, and what is honestly not built.<br><b>Companion set:</b> one guide per agent.<br><b>Truth standard:</b> the repository as it stands on 1 August 2026.</div>
     <div class="big-mark">MASTER</div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>01</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">01 · Product model</div><h2>What XELOR is</h2></div><p>A manufacturing operating system with a controlled multi-agent coordination layer</p></header>
-    <div class="callout"><strong>The simple explanation</strong><p>XELOR connects customer commitments, material, plans, plant execution, quality, maintenance, money, people and governance. Its agents do not replace these modules; they help a user ask one cross-functional question and receive one traceable, controlled answer.</p></div>
+    <header class="section-head"><div><div class="eyebrow">01 · The idea</div><h2>What XELOR is</h2></div><p>A manufacturing system of record, with a controlled layer that reads across it</p></header>
+    <div class="callout"><strong>The plain version</strong><p>A factory's information sits in separate places — orders, stock, plans, the shop floor, quality, machines, money, people. Each has its own rules and each is right about its own subject. What nobody has is one honest answer to a question that crosses all of them. XELOR's agents exist for that question, and for nothing else: they do not replace the modules, they read them under the asker's own permissions and put the pieces side by side.</p></div>
     <div class="stat-grid">
-      <div class="stat"><b>7</b><span>named agents</span></div><div class="stat"><b>19</b><span>grouped product modules</span></div><div class="stat"><b>16</b><span>registered capabilities</span></div><div class="stat"><b>5</b><span>versioned mission graphs</span></div>
+      <div class="stat"><b>7</b><span>named agents</span></div>
+      <div class="stat"><b>19</b><span>product modules</span></div>
+      <div class="stat"><b>16</b><span>registered tools</span></div>
+      <div class="stat"><b>5</b><span>mission graphs</span></div>
     </div>
-    <div class="flow"><div class="flow-block">Business records</div><span class="arrow">→</span><div class="flow-block">Module rules</div><span class="arrow">→</span><div class="flow-block">Registered capabilities</div><span class="arrow">→</span><div class="flow-block">Specialist agents</div><span class="arrow">→</span><div class="flow-block">ONYX coordination</div><span class="arrow">→</span><div class="flow-block">Controlled outcome</div></div>
+    <div class="flow"><div class="flow-block">Business records</div><span class="arrow">→</span><div class="flow-block">Module rules</div><span class="arrow">→</span><div class="flow-block">Registered tools</div><span class="arrow">→</span><div class="flow-block">Specialists</div><span class="arrow">→</span><div class="flow-block">ONYX joins</div><span class="arrow">→</span><div class="flow-block">Human decides</div></div>
     <div class="grid-2">
-      <article class="card"><h3>Modules remain the source of truth</h3><p>Sales owns orders, Inventory owns stock, Accounts owns journals, and so on. Agents call those controlled services.</p></article>
-      <article class="card"><h3>Agents make cross-functional work understandable</h3><p>Each agent supplies its own evidence; ONYX joins it, and HEXA protects the decision boundary.</p></article>
-    </div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>02</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">02 · Agent map</div><h2>Seven agents, one coordinated system</h2></div><p>Each summary is intentionally brief; the companion PDFs hold the detail</p></header>
+      <article class="card"><h3>The modules stay in charge</h3><p>Sales owns orders, Inventory owns stock, Accounts owns journals. An agent calls those services; it never gets its own copy of the data or its own way in.</p></article>
+      <article class="card"><h3>The agents make the crossing visible</h3><p>Each contributes only what its own area can prove. ONYX joins it, HEXA checks it, and a person decides anything with a consequence.</p></article>
+    </div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>02</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">02 · The team</div><h2>Seven agents, one system</h2></div><p>Each has a full companion guide</p></header>
     <div class="agent-grid">
-      <article class="agent-card" style="--c:#7758e8"><b>ONYX · Supervisor</b><p>Turns a business goal into a controlled plan, assigns the right specialists, joins their evidence and presents one understandable result.</p><p><strong>Grouping:</strong> ONYX Copilot, Agent OS, AI Operations</p></article><article class="agent-card" style="--c:#2876d2"><b>HEXA · Governance</b><p>Protects identity, permissions, policy, budgets, approvals and audit evidence so every mission stays inside the user’s authority.</p><p><strong>Grouping:</strong> Organisation, Administration, Integration</p></article><article class="agent-card" style="--c:#d94b77"><b>MICA · Commercial</b><p>Explains what customers ordered, what was promised, what has shipped and what service or warranty obligation remains.</p><p><strong>Grouping:</strong> Sales, Service / CSP</p></article><article class="agent-card" style="--c:#c77b13"><b>SPAR · Supply</b><p>Explains what stock exists, what has been ordered from suppliers and where material shortages threaten a plan or promise.</p><p><strong>Grouping:</strong> Purchase, Inventory</p></article><article class="agent-card" style="--c:#5365d9"><b>AXLE · Planning</b><p>Connects what the product needs with what demand requires, then explains what to make, what to buy and which dates or capacities are at risk.</p><p><strong>Grouping:</strong> Engineering, Planning</p></article><article class="agent-card" style="--c:#168e87"><b>KILN · Operations &amp; Quality</b><p>Explains what the plant is making, whether it passes quality controls and whether machines can keep the schedule running.</p><p><strong>Grouping:</strong> Production, QMS &amp; Audit, Maintenance</p></article><article class="agent-card" style="--c:#2a9160"><b>RASP · Finance &amp; Working Capital</b><p>Explains the accounting truth, cash pressure, collections, expenditure and payroll consequences behind an operating decision.</p><p><strong>Grouping:</strong> Accounts, Working Capital, Employee Spend, People / HRM</p></article>
+      <article class="agent-card" style="--c:#7758e8"><b>ONYX · Supervisor</b><p>Turns a business goal into a bounded plan, assigns the right specialists, joins their evidence and presents one understandable result.</p></article><article class="agent-card" style="--c:#2876d2"><b>HEXA · Governance</b><p>Holds identity, tenant isolation, permissions, approvals and the tamper-evident record, so every mission stays inside the authority of the person who started it.</p></article><article class="agent-card" style="--c:#d94b77"><b>MICA · Commercial</b><p>Explains what a customer ordered, what was promised, what has shipped, and what service or warranty obligation is still open.</p></article><article class="agent-card" style="--c:#c77b13"><b>SPAR · Supply</b><p>Explains what stock exists, what has been ordered from suppliers, and where a shortage threatens a plan or a promise.</p></article><article class="agent-card" style="--c:#5365d9"><b>AXLE · Planning</b><p>Connects what the product is made of with what demand requires, then says what to make, what to buy, by when — and which dates cannot be met.</p></article><article class="agent-card" style="--c:#168e87"><b>KILN · Operations &amp; Quality</b><p>Explains what the plant is making, whether it passes inspection, and whether the machines will still be there tomorrow.</p></article><article class="agent-card" style="--c:#2a9160"><b>RASP · Finance &amp; People</b><p>Explains the accounting truth, the cash position, what is already committed, and the payroll consequence behind an operating decision.</p></article>
     </div>
-    <div class="callout"><strong>The shape of the team</strong><p>ONYX is the only delegating supervisor. HEXA is the shared control layer. MICA, SPAR, AXLE, KILN and RASP are business specialists. A specialist cannot quietly recruit another agent or widen its own role.</p></div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>03</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">03 · Architecture</div><h2>How a question reaches trusted business data</h2></div><p>Every block narrows authority and preserves evidence</p></header>
-    <div class="flow"><div class="flow-block">Person / alert</div><span class="arrow">→</span><div class="flow-block">ONYX mission</div><span class="arrow">→</span><div class="flow-block">Named specialist</div><span class="arrow">→</span><div class="flow-block">Capability registry</div><span class="arrow">→</span><div class="flow-block">Domain service</div><span class="arrow">→</span><div class="flow-block">Tenant database</div><span class="arrow">→</span><div class="flow-block">Audit + outcome</div></div>
+    <div class="callout"><strong>The counterintuitive part, and the best proof the design is real</strong><p>ONYX is the supervisor, and it is the LEAST powerful agent in the system. It holds one read tool and is not on the allow-list for the one capability that can cause an effect. It can convene a mission and write the summary; it cannot touch the business. A design where the coordinator accumulates power is the failure everyone expects from agent systems — this one gives it the smallest surface of all.</p></div>
+    <h3 style="margin-top:11px">How authority is distributed</h3>
+    <div class="grid-2"><article class="card"><h3>One supervisor</h3><p>ONYX is the only agent that may delegate. The six specialists cannot recruit each other or widen their own role.</p></article><article class="card"><h3>One control layer</h3><p>HEXA verifies before and after the human gate, and applies the same tenant, permission and approval rules to everybody.</p></article></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>03</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">03 · Architecture</div><h2>How a question reaches trusted data</h2></div><p>Every layer narrows what is possible and keeps the evidence</p></header>
+    <div class="flow"><div class="flow-block">Person / signal</div><span class="arrow">→</span><div class="flow-block">Mission</div><span class="arrow">→</span><div class="flow-block">Specialist</div><span class="arrow">→</span><div class="flow-block">Registry</div><span class="arrow">→</span><div class="flow-block">Domain service</div><span class="arrow">→</span><div class="flow-block">Tenant data</div><span class="arrow">→</span><div class="flow-block">Audit</div></div>
     <div class="stack">
-      <div class="stack-row"><b>Experience layer</b><span>Copilot, dashboard and Decision Commander</span></div>
-      <div class="stack-row"><b>Coordination layer</b><span>Graph catalogue, runtime, nodes, joins and checkpoints</span></div>
-      <div class="stack-row"><b>Governance layer</b><span>Identity, tenant, RBAC, approval, budget, kill switch and audit</span></div>
-      <div class="stack-row"><b>Capability layer</b><span>Closed registry of read, analyse, simulate, draft and execute operations</span></div>
-      <div class="stack-row"><b>Business layer</b><span>Sales, stock, planning, production, quality, finance and other domain services</span></div>
-      <div class="stack-row"><b>Data layer</b><span>Tenant-fenced PostgreSQL, append-only ledgers and durable run records</span></div>
+      <div class="stack-row"><b>Experience</b><span>Copilot, dashboards, Decision Commander</span></div>
+      <div class="stack-row"><b>Coordination</b><span>Graph catalogue, runtime, waves, joins, checkpoints</span></div>
+      <div class="stack-row"><b>Governance</b><span>Identity, tenant fence, permissions, approval, kill switch, audit</span></div>
+      <div class="stack-row"><b>Capability</b><span>A closed registry of 16 operations</span></div>
+      <div class="stack-row"><b>Business</b><span>Sales, stock, planning, production, quality, maintenance, finance, people</span></div>
+      <div class="stack-row"><b>Data</b><span>Tenant-fenced PostgreSQL, append-only ledgers, durable run records</span></div>
     </div>
-    <div class="callout"><strong>No direct database agent</strong><p>An agent cannot compose arbitrary SQL. It receives a named capability, the runtime checks authority, and the capability calls an existing business service whose rules remain in force.</p></div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>04</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">04 · Mission lifecycle</div><h2>How the agents coordinate from goal to outcome</h2></div><p>Independent work runs together; dependent work waits for evidence</p></header>
-    <div class="lane" style="--c:#7758e8"><div class="lane-name">ONYX</div><div class="lane-work"><span>Scope goal</span><i>→</i><span>Delegate</span><i>→</i><span>Join evidence</span><i>→</i><span>Plan</span><i>→</i><span>Final outcome</span></div></div>
-    <div class="lane" style="--c:#d94b77"><div class="lane-name">MICA</div><div class="lane-work"><span>Customer + order</span><i>→</i><span>Commercial assessment</span><i>→</i><span>Approved work item</span></div></div>
-    <div class="lane" style="--c:#c77b13"><div class="lane-name">SPAR</div><div class="lane-work"><span>Stock + supply</span><i>→</i><span>Supply assessment</span><i>→</i><span>Approved work item</span></div></div>
-    <div class="lane" style="--c:#5365d9"><div class="lane-name">AXLE</div><div class="lane-work"><span>Planned orders</span><i>→</i><span>Planning assessment</span><i>→</i><span>Approved work item</span></div></div>
-    <div class="lane" style="--c:#168e87"><div class="lane-name">KILN</div><div class="lane-work"><span>Production + quality</span><i>→</i><span>Operations assessment</span><i>→</i><span>Approved work item</span></div></div>
-    <div class="lane" style="--c:#2a9160"><div class="lane-name">RASP</div><div class="lane-work"><span>Cash + ledger</span><i>→</i><span>Finance assessment</span><i>→</i><span>Approved work item</span></div></div>
-    <div class="lane" style="--c:#2876d2"><div class="lane-name">HEXA</div><div class="lane-work"><span>Continuous controls</span><i>→</i><span>Preflight</span><i>→</i><span>Human gate</span><i>→</i><span>Post-verify</span></div></div>
-    <div class="callout"><strong>Runtime behaviour</strong><p>Ready nodes run in parallel waves. After each wave, XELOR stores a checkpoint. Failed nodes, timeouts or deadlocks stop the run safely; interrupted nodes can be recovered without pretending they completed.</p></div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>05</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">05 · Controlled action</div><h2>What happens when a mission needs follow-up work</h2></div><p>The demo has approval-bound dispatch, not silent autonomous ERP writes</p></header>
-    <div class="steps">
-      <div class="step"><p><b>Read.</b> The six live business reads gather company, order, stock, planned-order, production, inspection and finance evidence where required.</p></div>
-      <div class="step"><p><b>Assess.</b> Specialists explain their own area. ONYX combines the evidence into a proposed cross-functional action plan.</p></div>
-      <div class="step"><p><b>Preflight.</b> HEXA checks the user, tenant, permission, graph context and proposed action before any approval request.</p></div>
-      <div class="step"><p><b>Approve.</b> The graph pauses for a human. Approval belongs to that exact waiting node and mission context.</p></div>
-      <div class="step"><p><b>Dispatch.</b> Approved specialist assignments are appended as governed work items; retries do not duplicate them.</p></div>
-      <div class="step"><p><b>Verify.</b> HEXA verifies records and audit evidence; ONYX reports the observed outcome and any remaining limits.</p></div>
-    </div>
-    <div class="callout"><strong>Investor-demo wording</strong><p>Say “the system has created approved, traceable work for the responsible teams.” Do not say “the agents changed every ERP record automatically,” because that is deliberately outside the current runtime.</p></div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>06</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">06 · Collaboration examples</div><h2>How the groupings make one business answer</h2></div><p>The value comes from joined evidence, not seven isolated chat windows</p></header>
-    <div class="grid-2"><article class="card"><h3>Delivery promise</h3><p>MICA supplies the customer date; SPAR the material; AXLE the plan; KILN execution and quality; RASP the cash effect; HEXA the controls; ONYX gives one readiness answer.</p></article><article class="card"><h3>Quality and audit readiness</h3><p>KILN gathers inspections and drafts evidence/CAPA/audit packs. SPAR traces incoming material, AXLE the product/plan context, HEXA the approvals, and ONYX the readiness gaps.</p></article><article class="card"><h3>Working-capital review</h3><p>RASP leads cash, vouchers, scenarios and collections. MICA adds receivables context, SPAR purchasing/inventory pressure, AXLE planned demand, KILN operating impact, and HEXA control evidence.</p></article><article class="card"><h3>Full command review</h3><p>ONYX runs a broad operational view, keeps specialist facts separate, highlights conflicts and publishes a prioritised evidence-backed summary.</p></article></div>
-    <h3 style="margin-top:15px">Five registered graph recipes</h3>
-    <ul><li>Foundation cross-functional readiness</li><li>Full command review</li><li>Controlled action mission</li><li>Finance working-capital review</li><li>Quality QMS/audit readiness</li></ul>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>07</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">07 · Trust model</div><h2>Why the user remains in control</h2></div><p>Five boundaries apply to every mission</p></header>
+    <div class="callout"><strong>There is no database agent</strong><p>An agent cannot write a query. It names a registered capability; the runtime checks who is asking and whether they may; the capability calls a service whose rules are already in force. The reason the Copilot can refuse “ship the held units anyway” is not good judgement — it is that no endpoint exists that would take such an instruction.</p></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>04</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">04 · Every tool</div><h2>All 16 capabilities</h2></div><p>The complete registry — nothing else is callable</p></header>
+    <table class="matrix"><thead><tr><th>Capability</th><th>Mode</th><th>Who may call</th><th>What it returns</th><th>Permission</th></tr></thead><tbody>
+      <tr><td>general.companies.read</td><td>Read</td><td>HEXA, ONYX</td><td>Company masters</td><td>general.company.read</td></tr>
+      <tr><td>sales.orders.read</td><td>Read</td><td>MICA</td><td>Sales orders</td><td>sales.order.read</td></tr>
+      <tr><td>inventory.on-hand.read</td><td>Read</td><td>SPAR</td><td>Stock balances</td><td>inventory.stock.read</td></tr>
+      <tr><td>planning.planned-orders.read</td><td>Read</td><td>AXLE</td><td>Planned orders</td><td>planning.mrp.read</td></tr>
+      <tr><td>production.orders.read</td><td>Read</td><td>KILN</td><td>Production orders</td><td>production.order.read</td></tr>
+      <tr><td>quality.inspections.read</td><td>Read</td><td>KILN</td><td>Inspections</td><td>quality.inspection.read</td></tr>
+      <tr><td>accounts.vouchers.read</td><td>Read</td><td>RASP</td><td>Journal vouchers</td><td>accounts.ledger.read</td></tr>
+      <tr><td>finance.cash-position.read</td><td>Read</td><td>RASP</td><td>Trial balance</td><td>accounts.ledger.read</td></tr>
+      <tr><td>quality.evidence.collect</td><td>Analyse</td><td>KILN</td><td>Evidence view</td><td>quality.inspection.read</td></tr>
+      <tr><td>finance.collections.prioritise</td><td>Analyse</td><td>RASP</td><td>Review queue</td><td>accounts.ledger.read</td></tr>
+      <tr><td>finance.forecast.simulate</td><td>Simulate</td><td>RASP</td><td>13-week scenario</td><td>accounts.ledger.read</td></tr>
+      <tr><td>quality.audit-plan.draft</td><td>Draft</td><td>KILN</td><td>Audit checklist</td><td>quality.inspection.read</td></tr>
+      <tr><td>quality.capa-plan.draft</td><td>Draft</td><td>KILN</td><td>Investigation draft</td><td>quality.inspection.read</td></tr>
+      <tr><td>quality.audit-pack.draft</td><td>Draft</td><td>KILN</td><td>Evidence manifest</td><td>quality.inspection.read</td></tr>
+      <tr><td>finance.funding-pack.draft</td><td>Draft</td><td>RASP</td><td>Draft manifest</td><td>accounts.ledger.read</td></tr>
+      <tr><td><b>agent.action.dispatch</b></td><td><b>Execute</b></td><td>HEXA, MICA, SPAR, AXLE, KILN, RASP</td><td>Governed work item</td><td>agentos.run.operate</td></tr>
+    </tbody></table>
+    <div class="callout"><strong>Fifteen of sixteen cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX is absent from the execute row.</p></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>05</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">05 · The five missions</div><h2>Every registered graph</h2></div><p>69 nodes in total, all written down before any run starts</p></header>
+    <div class="graph-card"><b>Cross-functional readiness review</b><div class="meta">foundation.cross-functional-readiness · 9 nodes · step budget 14 · timeout 300s · 0 dispatch nodes</div><p>ONYX frames it · MICA and SPAR read in parallel · both assess · join · HEXA verifies · human approves · ONYX synthesises.</p></div><div class="graph-card"><b>Seven-agent operating review</b><div class="meta">operations.full-command-review · 17 nodes · step budget 24 · timeout 300s · 0 dispatch nodes</div><p>All six specialists read their own domain at once, each assesses, ONYX joins, HEXA verifies four checks, a human approves, ONYX issues the brief.</p></div><div class="graph-card"><b>Seven-agent controlled action mission</b><div class="meta">operations.controlled-action-mission · 26 nodes · step budget 32 · timeout 600s · 6 dispatch nodes</div><p>The read-propose-verify-approve-dispatch-verify contract. Six reads, six recommendations, one plan, a preflight, ONE human gate, then six governed work items and an outcome check.</p></div><div class="graph-card"><b>Working Capital Review</b><div class="meta">finance.working-capital-review · 9 nodes · step budget 18 · timeout 300s · 0 dispatch nodes</div><p>RASP reads the trial balance, MICA the commitments, SPAR the stock holding; RASP simulates 13 weeks; HEXA verifies; a human approves the brief.</p></div><div class="graph-card"><b>QMS &amp; Audit Readiness</b><div class="meta">quality.qms-audit-readiness · 8 nodes · step budget 18 · timeout 300s · 0 dispatch nodes</div><p>KILN reads inspections, collects evidence and drafts a pack; HEXA checks traceability; the quality owner approves; ONYX publishes gaps and owners.</p></div>
+    <div class="callout"><strong>Four of the five cannot act at all</strong><p>Only the controlled action mission contains dispatch nodes, and it has six — one per specialist, every one of them structurally downstream of a single human gate. The other four graphs are read, analyse, draft and explain. A test asserts that the Working Capital and QMS missions contain no dispatch node, so that property cannot be edited away by accident.</p></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>06</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">06 · How a run works</div><h2>The execution rules, in plain terms</h2></div><p>The same engine drives all five missions</p></header>
+    <div class="steps"><div class="step"><div><b>Everything ready runs together</b><p>The engine takes every node whose dependencies are finished and runs that whole wave at once. Six specialists reading six modules is one wave, not six trips.</p></div></div><div class="step"><div><b>A checkpoint after every wave</b><p>Progress is written down as it happens, so a run can be explained afterwards and resumed rather than restarted.</p></div></div><div class="step"><div><b>Retries are bounded</b><p>A node may be given a second attempt, never more than five, and the limit is validated when the graph is registered rather than at runtime.</p></div></div><div class="step"><div><b>Failure stops the mission</b><p>A failed node, a timeout, or a state where nothing can progress ends the run and says so. It does not invent a result to keep things moving.</p></div></div><div class="step"><div><b>Interrupted work is recovered honestly</b><p>If the process dies mid-node, that node is returned to pending on resume and re-run — with its attempt count preserved, so recovery cannot be used to escape the retry budget.</p></div></div><div class="step"><div><b>Approval pauses everything</b><p>An approval node parks the run. The decision belongs to that exact node in that exact mission and cannot be reused elsewhere.</p></div></div><div class="step"><div><b>Effects need an approved ancestor</b><p>Before a side-effecting node runs, the engine walks the graph upward looking for an approval that actually returned yes. No ancestor, no execution — checked by the engine, not by the tool.</p></div></div></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>07</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">07 · Trust model</div><h2>Why the person stays in control</h2></div><p>Five boundaries, on every mission, with no exceptions</p></header>
     <div class="stack">
-      <div class="stack-row"><b>1 · Identity</b><span>Verified token determines the user and tenant</span></div>
-      <div class="stack-row"><b>2 · Authority</b><span>Agent allow-list AND the user’s permission must pass</span></div>
-      <div class="stack-row"><b>3 · Action</b><span>Side effects need an approved ancestor node</span></div>
-      <div class="stack-row"><b>4 · Business rules</b><span>The normal domain service remains in charge</span></div>
-      <div class="stack-row"><b>5 · Evidence</b><span>Runs, nodes, events, checkpoints, approvals and audit persist</span></div>
+      <div class="stack-row"><b>1 · Identity</b><span>A verified token decides the tenant and the actor</span></div>
+      <div class="stack-row"><b>2 · Authority</b><span>The agent's allow-list AND the person's own permission</span></div>
+      <div class="stack-row"><b>3 · Action</b><span>A side effect needs an approved ancestor node</span></div>
+      <div class="stack-row"><b>4 · Business rules</b><span>The normal domain service still decides what is legal</span></div>
+      <div class="stack-row"><b>5 · Evidence</b><span>Runs, nodes, events, checkpoints and audit all persist</span></div>
     </div>
     <div class="grid-2">
-      <article class="card"><h3>Failure is explicit</h3><p>The graph records a failed node, timeout or deadlock and stops. It does not fabricate a successful answer to keep the presentation smooth.</p></article>
-      <article class="card"><h3>Recovery is durable</h3><p>Stored checkpoints let a run recover interrupted work with idempotent capability rules and visible history.</p></article>
-      <article class="card"><h3>AI is governed</h3><p>A closed feature registry, provider router, opt-out, budget, kill switch, evaluation gate and hash-chained log surround AI use.</p></article>
-      <article class="card"><h3>Code and humans decide</h3><p>Deterministic code applies accounting, quality, tax, stock and workflow rules. A person controls approval-bound action.</p></article>
+      <article class="card"><h3>Failure is visible</h3><p>A failed node, a timeout or a deadlock is recorded and the run stops. Nothing is smoothed over to keep a demo comfortable.</p></article>
+      <article class="card"><h3>Recovery is real</h3><p>Checkpoints let an interrupted run continue without pretending the interrupted step had finished.</p></article>
+      <article class="card"><h3>AI is fenced separately</h3><p>A closed registry of 8 features, a kill switch, budgets and an evaluation gate that must beat a rules-only baseline before anything ships.</p></article>
+      <article class="card"><h3>Code decides, people approve</h3><p>Tax, stock, quality verdicts, payroll and accounting are arithmetic. A model may phrase an explanation; it never sets the number.</p></article>
     </div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>08</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">08 · Current implementation boundary</div><h2>What the MVP honestly demonstrates</h2></div><p>A strong demo is clear about the boundary between live, controlled and future</p></header>
+    <div class="callout"><strong>Where the guarantees are actually kept</strong><p>Continuous integration re-proves the tenant fence on every build, a live two-tenant probe tries to read across the boundary and fails, and all 138 permissions are reconciled against the routes that demand them. These are gates, not intentions.</p></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>08</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">08 · The honest boundary</div><h2>What this build does and does not do</h2></div><p>Say the right-hand column out loud before anyone finds it</p></header>
     <div class="truth">
-      <div class="yes"><h3>Live now</h3><ul><li>Seven registered agent identities and prefixes</li><li>Sixteen allow-listed capabilities</li><li>Five versioned mission graphs</li><li>Parallel nodes, joins, checkpoints and recovery</li><li>RBAC, tenant fencing, approval waits and audit</li><li>Read, analyse, simulate and draft tools</li><li>Approval-bound, idempotent work-item dispatch</li><li>Decision Commander evidence joins and outcome attribution</li></ul> </div>
-      <div class="no"><h3>Not claimed</h3><ul><li>No external model API is active</li><li>No external connector is active</li><li>Language reasoning is deterministic</li><li>No general-purpose direct SQL tool</li><li>No agent can widen the user’s permission</li><li>No automatic customer message, payment or posting</li><li>No dispatched work item is described as completed business work</li><li>No simulation or draft is labelled as fact</li></ul> </div>
+      <div class="yes"><h3>Live in the repository</h3><ul><li>Seven agents with fixed allow-lists</li><li>16 registered capabilities, one of them effectful</li><li>Five versioned, content-hashed mission graphs</li><li>Parallel waves, checkpoints, bounded retries, recovery</li><li>Tenant fencing and permissions, proven by CI</li><li>Approval gates with an append-only trail</li><li>Idempotent, approval-bound work-item dispatch</li><li>Hash-chained audit with a real verifier</li></ul></div>
+      <div class="no"><h3>Not claimed</h3><ul><li>No external model API is active — reasoning is deterministic</li><li>No external connector is live; integration is simulate-driven</li><li>No general SQL tool, and no way to create one at runtime</li><li>No agent can widen the asking person's permissions</li><li>No automatic customer message, payment or posting</li><li>A dispatched work item is never described as completed work</li><li>No quotation, lead or engineering change control exists</li><li>The purchase cycle stops at the goods receipt</li></ul></div>
     </div>
-    <div class="callout"><strong>The one-line disclosure</strong><p>Orchestration, ERP reads, approval gates and governed action dispatch are live. Language reasoning is deterministic; no external model API or connector is active.</p></div>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>09</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
-    <header class="section-head"><div><div class="eyebrow">09 · Guide set</div><h2>Where to go for detail</h2></div><p>The master stays short; each agent has its own complete handbook</p></header>
-    <div class="agent-grid"><article class="agent-card" style="--c:#7758e8"><b>ONYX guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#2876d2"><b>HEXA guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#d94b77"><b>MICA guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#c77b13"><b>SPAR guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#5365d9"><b>AXLE guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#168e87"><b>KILN guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article><article class="agent-card" style="--c:#2a9160"><b>RASP guide</b><p>Role, grouped modules, runtime contract, exact callable tools, handoffs, worked example, safety controls and implementation limits.</p></article></div>
-    <h3 style="margin-top:14px">Shared glossary</h3>
+    <div class="callout"><strong>The one-line disclosure</strong><p>Orchestration, ERP reads, approval gates and governed dispatch are live. Language reasoning is deterministic, and no external model API or connector is active.</p></div><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>09</span></div></section><section class="page " style="--accent:#7758e8;--pale:#f0edff">
+    <header class="section-head"><div><div class="eyebrow">09 · The guide set</div><h2>Where to read further</h2></div><p>The master stays short; each agent has its own handbook</p></header>
+    <div class="agent-grid"><article class="agent-card" style="--c:#7758e8"><b>ONYX · Supervisor</b><p>ONYX Copilot, Agent OS, AI Operations</p></article><article class="agent-card" style="--c:#2876d2"><b>HEXA · Governance</b><p>Organisation &amp; master data, Administration, Integration</p></article><article class="agent-card" style="--c:#d94b77"><b>MICA · Commercial</b><p>Sales, Service portal (CSP)</p></article><article class="agent-card" style="--c:#c77b13"><b>SPAR · Supply</b><p>Purchase, Inventory</p></article><article class="agent-card" style="--c:#5365d9"><b>AXLE · Planning</b><p>Engineering, Planning</p></article><article class="agent-card" style="--c:#168e87"><b>KILN · Operations &amp; Quality</b><p>Production, Quality &amp; QMS, Maintenance</p></article><article class="agent-card" style="--c:#2a9160"><b>RASP · Finance &amp; People</b><p>Accounts, Employee spend, People, Working capital</p></article></div>
+    <p class="mini" style="margin-top:9px">Each guide follows the same ten pages: what the agent is for, how its part of the business actually works, the rules underneath it, its runtime contract, its exact tools, where it appears in the five missions, a worked example from live demo data, and an honest account of what is missing.</p>
+    <h3 style="margin-top:11px">Shared glossary</h3>
     <table class="glossary"><tbody>
-      <tr><td>Agent</td><td>A named specialist with an allow-listed tool surface.</td></tr>
-      <tr><td>Capability</td><td>One registered operation with mode, owner and required user permission.</td></tr>
+      <tr><td>Agent</td><td>A named specialist with a fixed, allow-listed tool surface.</td></tr>
+      <tr><td>Capability</td><td>One registered operation with a mode, an owner and a required permission.</td></tr>
       <tr><td>Mission graph</td><td>A versioned recipe for steps, parallel work, joins and approval gates.</td></tr>
-      <tr><td>Checkpoint</td><td>A durable progress snapshot for explanation and recovery.</td></tr>
-      <tr><td>Governed work item</td><td>An approved, append-only assignment—not a direct mutation of the business record.</td></tr>
-      <tr><td>Verified value</td><td>An observed result with method and supported/partial attribution; distinct from an estimate.</td></tr>
+      <tr><td>Checkpoint</td><td>A durable progress snapshot used for explanation and recovery.</td></tr>
+      <tr><td>Governed work item</td><td>An approved, append-only assignment — not the business change itself.</td></tr>
+      <tr><td>Verified value</td><td>An observed result with its method recorded, kept distinct from an estimate.</td></tr>
     </tbody></table>
-    <p class="mini" style="margin-top:10px">Research basis: runtime types, capability registry, graph catalogue and runtime, action dispatch, Decision Commander, AI spine, module services, schema migrations, tests and product documentation in this repository. Snapshot: 1 August 2026.</p>
-  <div class="footer"><span>XELOR · XELOR agent system master guide</span><span>10</span></div></section></body></html>
+    <p class="mini" style="margin-top:8px">Sources: the capability registry, graph catalogue and run engine; the module services and their migrations; the platform packages for tax, quality, planning, accounting and audit; the automated tests; and the project's own investor-demo capability-gap register. Snapshot: 1 August 2026.</p><div class="footer"><span>XELOR · XELOR agent system master guide</span><span>10</span></div></section></body></html>

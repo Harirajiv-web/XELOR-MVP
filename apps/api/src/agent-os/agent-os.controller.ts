@@ -43,8 +43,8 @@ const outcomeSchema = z.object({
   observedValue: z.number().finite().optional(),
   estimatedValue: z.number().finite().optional(),
   verifiedValue: z.number().finite().optional(),
-  verificationStatus: z.enum(["unverified", "pending", "verified", "rejected"]),
-  attributionStatus: z.enum(["not_assessed", "unsupported", "partial", "supported"]),
+  verificationStatus: z.enum(["unverified", "measuring", "verified", "disputed"]),
+  attributionStatus: z.enum(["not_assessed", "rejected", "partial", "supported"]),
   verificationMethod: z.string().min(3).max(500).optional(),
   evidence: z.record(z.unknown()).default({}),
 });
@@ -89,6 +89,26 @@ export class AgentOsController {
   @RequirePermission("agentos.run.read")
   async commander() {
     return { data: await this.agentOs.commander() };
+  }
+
+  @Get("commander/memory")
+  @RequirePermission("agentos.run.read")
+  async memory(@Query("limit") rawLimit?: string) {
+    const limit = z.coerce.number().int().min(1).max(100).catch(20).parse(rawLimit);
+    return { data: await this.agentOs.memory(limit) };
+  }
+
+  @Get("commander/knowledge-graph")
+  @RequirePermission("agentos.run.read")
+  async knowledgeGraph(@Query("limit") rawLimit?: string) {
+    const limit = z.coerce.number().int().min(1).max(500).catch(250).parse(rawLimit);
+    return { data: await this.agentOs.knowledgeGraph(limit) };
+  }
+
+  @Get("commander/readiness")
+  @RequirePermission("agentos.run.read")
+  async readiness() {
+    return { data: await this.agentOs.readiness() };
   }
 
   @Get("commander/risks/:riskKey")

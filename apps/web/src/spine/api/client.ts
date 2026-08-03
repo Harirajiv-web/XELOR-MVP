@@ -61,6 +61,12 @@ async function request<T>(
 ): Promise<T> {
   const headers: Record<string, string> = { accept: "application/json" };
 
+  // This header is a selector, not a credential. The API honours it only when its
+  // separately configured API_PUBLIC_DEMO flag is enabled against an isolated demo DB.
+  if (process.env.NEXT_PUBLIC_PUBLIC_DEMO === "true") {
+    headers["x-xelor-public-demo"] = "investor-presentation";
+  }
+
   const token = tokenProvider();
   if (token) headers.authorization = `Bearer ${token}`;
   if (body !== undefined) headers["content-type"] = "application/json";

@@ -1495,6 +1495,18 @@ pnpm demo:verify
 Open **http://localhost:3001**. Keycloak is at **http://localhost:8080** and the API is at
 **http://localhost:3000/api/v1**.
 
+For the sign-in-free investor presentation, set both of these values in the local `.env`
+before building or starting the web app:
+
+```bash
+API_PUBLIC_DEMO=true
+NEXT_PUBLIC_PUBLIC_DEMO=true
+```
+
+The API flag is off by default and is only for the seeded, isolated Trishul demo dataset.
+Without it, the presentation header is ignored and normal Keycloak JWT verification stays
+mandatory.
+
 ### Production-mode local run
 
 ```bash

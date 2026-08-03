@@ -3,13 +3,20 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Activity,
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
+  BrainCircuit,
+  Cable,
   CalendarClock,
   CheckCircle2,
   CircleDollarSign,
+  Database,
+  FileSearch,
   GitBranch,
+  History,
+  Network,
   Radar,
   RefreshCw,
   ShieldCheck,
@@ -115,10 +122,11 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
 
       {data ? (
         <>
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Decision summary">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Decision summary">
             <Summary icon={CalendarClock} label="Promises at risk" value={String(data.summary.commitmentsAtRisk)} note="Customer commitments needing attention" tone="warn" />
             <Summary icon={AlertTriangle} label="Critical decisions" value={String(data.summary.critical)} note="Need attention now" tone={data.summary.critical > 0 ? "risk" : "good"} />
             <Summary icon={CircleDollarSign} label="Value connected to risk" value={inrShort(data.summary.exposedValue)} note="Gross connected value—not predicted loss" tone="ai" />
+            <Summary icon={BrainCircuit} label="Evidence confidence" value={`${data.summary.averageConfidence}%`} note={`${data.confidence.high} high · ${data.confidence.low} low confidence`} tone={data.confidence.low > 0 ? "warn" : "good"} />
             <Summary icon={BadgeCheck} label="Verified value" value={inrShort(data.value.verifiedValue)} note={`${data.value.verifiedCount} outcome${data.value.verifiedCount === 1 ? "" : "s"} independently checked`} tone="good" />
           </section>
 
@@ -152,7 +160,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
                   <button key={risk.key} type="button" onClick={() => { setSelectedKey(risk.key); setStartedRun(null); }} className={cn("w-full rounded-[14px] border p-4 text-left shadow-[var(--shadow-sm)] transition hover:-translate-y-px hover:shadow-[var(--shadow-md)]", selected?.key === risk.key ? "border-[var(--brand)] bg-[var(--brand-soft)]" : "border-[var(--border-subtle)] bg-[var(--surface)]")}>
                     <div className="flex items-start justify-between gap-3">
                       <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(risk.severity))}>{risk.severity}</span>
-                      <span className="text-[9.5px] font-bold text-[var(--text-muted)]">{humanise(risk.kind)} · {risk.ownerAgent}</span>
+                      <span className="text-[9.5px] font-bold text-[var(--text-muted)]">{humanise(risk.kind)} · {risk.ownerAgent} · {risk.confidence.score}% confidence</span>
                     </div>
                     <h2 className="mt-2 text-[13px] font-extrabold leading-5 text-[var(--text-primary)]">{risk.title}</h2>
                     <p className="mt-1 text-[11px] leading-4.5 text-[var(--text-secondary)]">{risk.plainSummary}</p>
@@ -170,10 +178,11 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
                     <div className="flex flex-wrap items-center gap-2"><span className={cn("rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.08em]", severityClass(selected.severity))}>{selected.severity}</span><span className="text-[10px] font-bold text-[var(--text-muted)]">Owner agent: {selected.ownerAgent}</span></div>
                     <h2 className="mt-3 text-[19px] font-extrabold tracking-[-.02em] text-[var(--text-primary)]">{selected.title}</h2>
                     <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-secondary)]">{selected.plainSummary}</p>
-                    <dl className="mt-4 grid gap-px overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-3">
+                    <dl className="mt-4 grid gap-px overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--border-subtle)] sm:grid-cols-2 xl:grid-cols-4">
                       <DecisionFact label="Connected source records" value={String(selected.evidence.length)} note="Current tenant evidence" />
                       <DecisionFact label="Commitment" value={selected.commitmentDate ?? "No date claimed"} note={selected.daysToCommitment === null ? "Not available" : `${selected.daysToCommitment} day${selected.daysToCommitment === 1 ? "" : "s"} from today`} />
                       <DecisionFact label="Connected value" value={selected.exposure.amount === null ? "Not inferred" : inrShort(selected.exposure.amount)} note={selected.exposure.basis} />
+                      <DecisionFact label="Evidence confidence" value={`${selected.confidence.score}% · ${humanise(selected.confidence.band)}`} note={selected.confidence.meaning} />
                     </dl>
                   </div>
 
@@ -186,6 +195,13 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
                       <details className="mt-3 rounded-[10px] border border-[var(--border-subtle)] p-3">
                         <summary className="cursor-pointer text-[10.5px] font-bold text-[var(--brand)]">Show {selected.evidence.length} source record{selected.evidence.length === 1 ? "" : "s"}</summary>
                         <div className="mt-3 space-y-2">{selected.evidence.map((item) => <div key={`${item.domain}-${item.entityId}`} className="text-[10px] leading-4"><b className="text-[var(--text-primary)]">{item.reference} · {item.label}</b><p className="text-[var(--text-muted)]">{item.detail}</p></div>)}</div>
+                      </details>
+                      <details className="mt-3 rounded-[10px] border border-[var(--border-subtle)] p-3">
+                        <summary className="cursor-pointer text-[10.5px] font-bold text-[var(--brand)]">How the {selected.confidence.score}% confidence was calculated</summary>
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          {Object.entries(selected.confidence.dimensions).map(([key, value]) => <div key={key} className="rounded-[8px] bg-[var(--bg)] p-2"><p className="text-[8px] font-bold uppercase tracking-[.06em] text-[var(--text-muted)]">{confidenceDimensionLabel(key)}</p><p className="mt-0.5 text-[12px] font-extrabold text-[var(--text-primary)]">{value}%</p></div>)}
+                        </div>
+                        {selected.confidence.gaps.length > 0 ? <ul className="mt-2 space-y-1 text-[9px] leading-3.5 text-[var(--text-muted)]">{selected.confidence.gaps.map((gap) => <li key={gap}>• {gap}</li>)}</ul> : null}
                       </details>
                     </section>
 
@@ -205,6 +221,72 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
               ) : null}
             </section>
           )}
+
+          <section className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]" aria-labelledby="intelligence-loop-title">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[9px] font-extrabold uppercase tracking-[.12em] text-[var(--ai-text)]">How XELOR learns safely</p>
+                <h2 id="intelligence-loop-title" className="mt-1 text-[16px] font-extrabold text-[var(--text-primary)]">One visible decision-intelligence loop</h2>
+              </div>
+              <span className="rounded-full bg-[var(--ok-soft)] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[var(--ok-ink)]">Live MVP</span>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+              {[
+                [Database, "Live records", "Sales, supply, plan, quality and machines"],
+                [Network, "Evidence graph", "Links records that belong to one decision"],
+                [BrainCircuit, "Confidence", "Shows strength, freshness and gaps"],
+                [ShieldCheck, "Human decision", "Approval before consequential work"],
+                [BadgeCheck, "Verified outcome", "Observed value, not marketing estimates"],
+                [History, "Memory", "Keeps the decision and result for next time"],
+              ].map(([Icon, title, note], index) => {
+                const FlowIcon = Icon as typeof Database;
+                return <div key={String(title)} className="relative rounded-[11px] border border-[var(--border-subtle)] bg-[var(--bg)] p-3"><FlowIcon className="h-4 w-4 text-[var(--brand)]" aria-hidden /><p className="mt-2 text-[10.5px] font-extrabold text-[var(--text-primary)]">{String(title)}</p><p className="mt-1 text-[8.5px] leading-3.5 text-[var(--text-muted)]">{String(note)}</p>{index < 5 ? <ArrowRight className="absolute -right-2 top-5 z-10 hidden h-3.5 w-3.5 text-[var(--text-muted)] xl:block" aria-hidden /> : null}</div>;
+              })}
+            </div>
+          </section>
+
+          <section className="grid gap-4 xl:grid-cols-2">
+            <article className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <Heading icon={Network} text="Enterprise knowledge graph" />
+              <p className="mt-2 text-[10.5px] leading-4.5 text-[var(--text-secondary)]">The graph connects business records by provenance while each module remains the owner of its original data.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <MiniMetric value={data.graph.summary.businessAreas} label="Business areas" />
+                <MiniMetric value={data.graph.summary.relationships} label="Relationships" />
+                <MiniMetric value={data.graph.summary.rememberedDecisions} label="Remembered decisions" />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-1.5">{[...new Set(data.graph.nodes.filter((node) => node.domain !== "agentos").map((node) => node.domain))].map((domain) => <span key={domain} className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg)] px-2.5 py-1 text-[9px] font-bold text-[var(--text-secondary)]">{humanise(domain)}</span>)}</div>
+              <p className="mt-3 text-[8.5px] leading-3.5 text-[var(--text-muted)]">{data.graph.disclosure}</p>
+            </article>
+
+            <article className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <Heading icon={History} text="Organizational memory" />
+              <p className="mt-2 text-[10.5px] leading-4.5 text-[var(--text-secondary)]">XELOR remembers only governed work and measured results—not private reasoning or an invented success story.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <MiniMetric value={data.memory.summary.decisionsRemembered} label="Missions remembered" />
+                <MiniMetric value={data.memory.summary.withVerifiedOutcome} label="Verified results" />
+                <MiniMetric value={data.memory.summary.awaitingHumanDecision} label="Awaiting people" />
+              </div>
+              <div className="mt-3 space-y-2">
+                {data.memory.items.length === 0 ? <p className="rounded-[10px] bg-[var(--bg)] p-3 text-[9.5px] leading-4 text-[var(--text-muted)]">Start a governed recovery above to create the first durable memory.</p> : data.memory.items.slice(0, 3).map((item) => <div key={item.missionRunId} className="rounded-[10px] border border-[var(--border-subtle)] p-3"><div className="flex items-start justify-between gap-3"><p className="text-[10.5px] font-extrabold text-[var(--text-primary)]">{item.title}</p><span className="shrink-0 text-[8.5px] font-bold text-[var(--text-muted)]">{humanise(item.humanDecision)}</span></div><p className="mt-1 text-[9px] leading-3.5 text-[var(--text-muted)]">{item.learned}</p></div>)}
+              </div>
+              <p className="mt-3 text-[8.5px] leading-3.5 text-[var(--text-muted)]">{data.memory.disclosure}</p>
+            </article>
+          </section>
+
+          <section className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]" aria-labelledby="platform-readiness-title">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+              <div><p className="text-[9px] font-extrabold uppercase tracking-[.12em] text-[var(--ai-text)]">Demo proof, not roadmap promises</p><h2 id="platform-readiness-title" className="mt-1 text-[16px] font-extrabold text-[var(--text-primary)]">MVP platform readiness</h2></div>
+              <p className="text-[8.5px] text-[var(--text-muted)]">Checked {dateTime(data.platform.checkedAt)}</p>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              <ReadinessCard icon={Cable} title="API & integrations" status={data.platform.integrations.status} metrics={`${data.platform.integrations.connectors} connectors · ${data.platform.integrations.activeFlows}/${data.platform.integrations.totalFlows} active flows`} note={data.platform.integrations.disclosure} />
+              <ReadinessCard icon={FileSearch} title="Document intelligence" status={data.platform.documents.status} metrics={`${data.platform.documents.confirmed}/${data.platform.documents.drafts} confirmed · ${data.platform.documents.fieldEditRatePct}% field edits`} note={data.platform.documents.disclosure} />
+              <ReadinessCard icon={Activity} title="Operational health" status={data.platform.operations.eventDelivery.status} metrics={`DB ${data.platform.operations.database.queryMs} ms · ${data.platform.operations.eventDelivery.unpublished} events waiting`} note={data.platform.operations.disclosure} />
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {data.platform.upgrades.map((upgrade) => <div key={upgrade.key} className="rounded-[10px] border border-[var(--border-subtle)] p-3"><div className="flex items-start justify-between gap-2"><p className="text-[10px] font-extrabold text-[var(--text-primary)]">{upgrade.label}</p><span className="shrink-0 rounded-full bg-[var(--ok-soft)] px-1.5 py-0.5 text-[7.5px] font-extrabold uppercase text-[var(--ok-ink)]">{humanise(upgrade.status)}</span></div><p className="mt-1.5 text-[8.5px] leading-3.5 text-[var(--text-muted)]">{upgrade.proof}</p></div>)}
+            </div>
+          </section>
         </>
       ) : null}
     </div>
@@ -213,6 +295,15 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
 
 function Heading({ icon: Icon, text }: { icon: typeof GitBranch; text: string }): React.JSX.Element {
   return <h2 className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[.08em] text-[var(--text-primary)]"><Icon className="h-4 w-4 text-[var(--brand)]" aria-hidden />{text}</h2>;
+}
+
+function MiniMetric({ value, label }: { value: number; label: string }): React.JSX.Element {
+  return <div className="rounded-[9px] bg-[var(--bg)] p-2.5"><p className="text-[16px] font-extrabold text-[var(--text-primary)]">{value}</p><p className="mt-0.5 text-[8px] font-bold uppercase tracking-[.055em] text-[var(--text-muted)]">{label}</p></div>;
+}
+
+function ReadinessCard({ icon: Icon, title, status, metrics, note }: { icon: typeof Activity; title: string; status: string; metrics: string; note: string }): React.JSX.Element {
+  const attention = ["attention", "not_configured"].includes(status);
+  return <article className="rounded-[12px] border border-[var(--border-subtle)] bg-[var(--bg)] p-4"><div className="flex items-start justify-between gap-3"><span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[var(--brand-soft)] text-[var(--brand)]"><Icon className="h-4 w-4" aria-hidden /></span><span className={cn("rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.06em]", attention ? "bg-[var(--warn-soft)] text-[var(--warn-ink)]" : "bg-[var(--ok-soft)] text-[var(--ok-ink)]")}>{humanise(status)}</span></div><h3 className="mt-3 text-[11.5px] font-extrabold text-[var(--text-primary)]">{title}</h3><p className="mt-1 text-[9.5px] font-bold text-[var(--text-secondary)]">{metrics}</p><p className="mt-1.5 text-[8.5px] leading-3.5 text-[var(--text-muted)]">{note}</p></article>;
 }
 
 function TrustChip({ label, tone }: { label: string; tone: "live" | "rule" | "safe" | "human" }): React.JSX.Element {
@@ -239,4 +330,13 @@ function severityClass(severity: CommanderRisk["severity"]): string {
   if (severity === "high") return "bg-[var(--warn-soft)] text-[var(--warn-ink)]";
   if (severity === "medium") return "bg-[var(--brand-soft)] text-[var(--brand)]";
   return "bg-[var(--ok-soft)] text-[var(--ok-ink)]";
+}
+
+function confidenceDimensionLabel(key: string): string {
+  return {
+    evidenceCoverage: "Evidence coverage",
+    freshness: "Evidence freshness",
+    completeness: "Decision completeness",
+    learningHistory: "Learning history",
+  }[key] ?? humanise(key);
 }

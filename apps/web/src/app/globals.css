@@ -400,6 +400,53 @@ table,
   backdrop-filter: blur(18px) saturate(1.2);
 }
 
+.x-mobile-nav-backdrop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .x-app-shell {
+    grid-template-columns: minmax(0, 1fr) 0 !important;
+    grid-template-rows: var(--top) minmax(0, 1fr) !important;
+    grid-template-areas: "top cop" "main cop" !important;
+  }
+
+  .x-shell-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(84vw, 292px);
+    transform: translateX(-105%);
+    transition: transform var(--motion-base) var(--ease-emphasized);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .x-mobile-nav-open .x-shell-sidebar {
+    transform: translateX(0);
+  }
+
+  .x-mobile-nav-open .x-mobile-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    border: 0;
+    background: rgb(8 18 38 / 42%);
+    backdrop-filter: blur(2px);
+  }
+
+  .x-shell-topbar {
+    padding-inline: 10px;
+  }
+
+  .x-workbench-tabs {
+    padding-inline: 10px !important;
+  }
+
+  .x-workspace-page {
+    padding: 14px 10px 24px !important;
+  }
+}
+
 .x-shell-sidebar {
   box-shadow: 10px 0 34px -32px color-mix(in srgb, var(--text-primary) 28%, transparent);
 }

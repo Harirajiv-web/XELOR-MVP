@@ -20,7 +20,7 @@ const PUBLIC_DEMO_IDENTITY: Identity = {
   subject: "public-demo-presenter",
   tenantId: "0192a8c0-0000-7000-8000-000000000001",
   principal: "investor.demo",
-  roles: [{ code: "public_demo", name: "Read-only presenter" }],
+  roles: [{ code: "public_demo", name: "Investor demo presenter" }],
   permissions: PUBLIC_DEMO_PERMISSIONS,
   licence: {
     plan: "Investor demonstration",

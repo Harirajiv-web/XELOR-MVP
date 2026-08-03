@@ -25,6 +25,6 @@ import { WebhookService } from "./webhook.service.js";
 @Module({
   controllers: [IntegrationController],
   providers: [PipelineService, MessageService, StatutoryService, WebhookService],
-  exports: [MessageService, StatutoryService],
+  exports: [PipelineService, MessageService, StatutoryService],
 })
 export class IntegrationModule {}

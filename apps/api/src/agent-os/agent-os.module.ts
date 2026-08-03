@@ -6,6 +6,9 @@ import { PlanningModule } from "../modules/planning/planning.module.js";
 import { ProductionModule } from "../modules/production/production.module.js";
 import { AccountsModule } from "../modules/accounts/accounts.module.js";
 import { MaintenanceModule } from "../modules/maintenance/maintenance.module.js";
+import { ExpenditureModule } from "../modules/expenditure/expenditure.module.js";
+import { IntegrationModule } from "../modules/integration/integration.module.js";
+import { AiOpsModule } from "../modules/aiops/aiops.module.js";
 import { AgentActionService } from "./agent-action.service.js";
 import { AgentAuthorizationService } from "./agent-authorization.service.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
@@ -18,6 +21,7 @@ import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
 import { GraphRegistryService } from "./graph-registry.service.js";
 import { DecisionIntelligenceRepository } from "./decision-intelligence.repository.js";
 import { DecisionIntelligenceService } from "./decision-intelligence.service.js";
+import { MvpReadinessService } from "./mvp-readiness.service.js";
 
 @Module({
   imports: [
@@ -28,6 +32,9 @@ import { DecisionIntelligenceService } from "./decision-intelligence.service.js"
     ProductionModule,
     AccountsModule,
     MaintenanceModule,
+    ExpenditureModule,
+    IntegrationModule,
+    AiOpsModule,
   ],
   controllers: [AgentOsController],
   providers: [
@@ -41,6 +48,7 @@ import { DecisionIntelligenceService } from "./decision-intelligence.service.js"
     AgentGraphEngine,
     DecisionIntelligenceRepository,
     DecisionIntelligenceService,
+    MvpReadinessService,
     AgentOsService,
   ],
   exports: [AgentOsService],

@@ -20,6 +20,15 @@ import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8080";
 const REALM = process.env.KEYCLOAK_REALM ?? "indcore";
 const ISSUER = `${KEYCLOAK_URL}/realms/${REALM}`;
+const PUBLIC_DEMO_ENABLED = process.env.API_PUBLIC_DEMO === "true";
+const PUBLIC_DEMO_HEADER = "investor-presentation";
+const PUBLIC_DEMO_CONTEXT: TenantContext = {
+  tenantId: "0192a8c0-0000-7000-8000-000000000001",
+  // The seeded demo administrator. This mode is valid only against the isolated demo
+  // world and still passes every request through normal database permissions and RLS.
+  actorId: "d0000000-0000-4000-8000-00000000000a",
+  principal: "staff",
+};
 
 // Group name → tenant id (the canonical demo universe, §7). Stands in for the
 // Keycloak-org → tenant registry; the guard logic is identical either way.
@@ -55,6 +64,12 @@ export class TenantMiddleware implements NestMiddleware {
 }
 
 async function resolveTenant(req: Request): Promise<TenantContext> {
+  if (
+    PUBLIC_DEMO_ENABLED &&
+    req.header("x-xelor-public-demo") === PUBLIC_DEMO_HEADER
+  ) {
+    return PUBLIC_DEMO_CONTEXT;
+  }
   const auth = req.header("authorization") ?? "";
   const [scheme, token] = auth.split(" ");
   if (scheme?.toLowerCase() !== "bearer" || !token) {
