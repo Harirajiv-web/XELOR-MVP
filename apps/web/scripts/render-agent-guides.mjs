@@ -16,8 +16,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  * limits page says so plainly. A guide that flatters the product is worth nothing in a
  * technical due-diligence room, which is the room these are written for.
  *
- * Page budget is ten per document, enforced: the renderer throws on any page that overflows
- * its A4 box, so content cannot quietly spill into an eleventh page nobody proof-read.
+ * The agent guides use twelve fixed pages and the master uses thirteen. The renderer throws
+ * on any page that overflows its A4 box, so content cannot quietly spill onto an unreviewed
+ * page.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -26,7 +27,7 @@ const htmlDir = resolve(root, "docs/reports/agent-guides");
 const pdfDir = resolve(root, "XELOR_AGENT_GUIDES");
 const proofDir = resolve(root, "apps/web/test-results/agent-guide-proofs");
 
-const SNAPSHOT = "1 August 2026";
+const SNAPSHOT = "3 August 2026";
 
 /* ============================================================================
    SYSTEM FACTS — counted from the implementation, not estimated.
@@ -42,6 +43,205 @@ const SYSTEM = {
   aiFeatures: 8,
   sideEffecting: 1,
 };
+
+/*
+ * The product-module catalogue. This is intentionally more operational than the navigation
+ * manifests: it joins what a user sees to the records, services, database controls and
+ * cross-module hand-offs that make the module useful. `boundary` prevents a screen or seeded
+ * scenario from being presented as a completed production capability.
+ */
+const MODULES = [
+  {
+    key: "copilot", agent: "ONYX", name: "ONYX Copilot",
+    purpose: "A read-only question surface for factory data. It gives a short answer, names the evidence rows and refuses questions outside its closed catalogue.",
+    records: "21 registered intents; question, outcome, matched intent, row count, sources, correlation id and optional narration result.",
+    screens: "Ask; Question log. Main API surfaces: /copilot/capabilities, /copilot/ask and /copilot/history.",
+    workflow: "Rules match the question first; a model may only help choose among known intents. The user's permission is checked, one hand-written query runs in the tenant transaction, a deterministic answer is rendered, optional narration is provenance-checked, and the event is logged.",
+    controls: "No SQL generation, no write tool, per-intent permission and row cap, unknown-intent refusal, numeric provenance check, deterministic fallback and an auditable refusal path.",
+    handoffs: "Reads Sales, Purchase, Inventory, Planning, Production, Quality, Maintenance, Accounts and master-data views through fixed queries; it never owns those records.",
+    boundary: "The 21 questions are live. General conversation and unrestricted business advice are not; external-model narration is off by default.",
+  },
+  {
+    key: "agentos", agent: "ONYX", name: "Agent OS",
+    purpose: "Durable coordination for cross-functional decisions: it runs versioned mission graphs, gathers specialist evidence and pauses at human approval gates.",
+    records: "Agent definitions, capabilities, graph versions and hashes, runs, node attempts, events, checkpoints, approvals, signals, outcomes and governed work items.",
+    screens: "Decision Commander; Human Approvals; Mission Command. Catalogue, run, signal, approval, action, memory, knowledge-graph and readiness APIs.",
+    workflow: "Start from a person, signal or risk; freeze the graph and authority context; run all ready nodes in parallel waves; checkpoint each wave; join evidence; let HEXA verify; wait for the named approver; resume; then publish or dispatch only what the graph permits.",
+    controls: "Fixed tool allow-lists, user-permission intersection, maximum steps and timeouts, bounded retries, content-hashed graphs, resumable checkpoints and engine-enforced approval ancestry for every effect.",
+    handoffs: "Coordinates all six specialists. Domain reads still pass through their normal services, and the single effect writes a governed assignment rather than modifying ERP records.",
+    boundary: "Five mission graphs and durable orchestration are live. Agent language reasoning is deterministic and dispatched work remains work for a person, not proof of completion.",
+  },
+  {
+    key: "aiops", agent: "ONYX", name: "AI Operations",
+    purpose: "The control room for AI features: what is registered, which provider may serve it, what it cost, whether it passed evaluation and when a person must review it.",
+    records: "Feature registry, provider configuration, governance state, tenant opt-outs, budgets, usage/cost events, evaluations, review items, incidents and a hash-chained AI action log.",
+    screens: "Connectors; Feature registry; Providers; Evaluations; Cost; Human review; Incidents.",
+    workflow: "A caller names a registered feature; the router checks global and tenant controls, budget and provider policy; the provider or deterministic fallback runs; input/output metadata and cost are logged; evaluation and human feedback determine whether the feature remains eligible.",
+    controls: "Closed registry, kill switch, tenant opt-out, budget ceiling, no-ship evaluation gate, privacy mode, deterministic fallback and tamper-evident action logging.",
+    handoffs: "Supplies governance to Copilot and the domain AI features in Employee Spend, Service, HR and master data; receives outcomes and edits for later evaluation.",
+    boundary: "Governance, registry, cost and evaluation plumbing are live. Provider connectivity is not configured in the demo, and some registered features remain unimplemented or lack golden sets.",
+  },
+  {
+    key: "general", agent: "HEXA", name: "Organisation",
+    purpose: "The legal and operating identity of a tenant: companies, registrations, departments and the document-number series shared by business modules.",
+    records: "Company master, legal name, base currency, GST registrations, registered addresses, departments and financial-year document sequences.",
+    screens: "Companies; Departments. Company and registration APIs are also used by tax, numbering and agent context.",
+    workflow: "A tenant defines its company and registrations; operating modules resolve the correct seller identity and state; document services allocate gapless numbers inside the posting transaction.",
+    controls: "Tenant RLS, typed permissions, unique registration/document constraints and transaction-safe numbering. Tenant identity never comes from a browser-provided header.",
+    handoffs: "Feeds Sales tax, Purchase receiving, Accounts, statutory filings, module navigation and HEXA/ONYX company-context capabilities.",
+    boundary: "Company, registration, department and numbering foundations are live; it is not a full legal-entity consolidation or corporate-secretarial product.",
+  },
+  {
+    key: "administration", agent: "HEXA", name: "Administration",
+    purpose: "The evidence and access centre for roles, separation of duties, security posture, incidents, privacy requests, audit integrity and licences.",
+    records: "138 permission keys, roles and grants, SoD rules/findings, access simulations, CERT-In incident clocks, privacy requests, audit-chain verification/anchors, retention and licence state.",
+    screens: "Roles & access; Segregation; Security posture; Incidents; Privacy; Audit; Licence.",
+    workflow: "Define a role from catalogue permissions; grant it to a user; scan conflicting role pairs; enforce route guards at request time; append sensitive events; periodically re-hash the audit chain; review open statutory clocks and evidence packs.",
+    controls: "Catalogue trigger blocks unknown permissions, tenant RLS, server-side guards, named SoD rules, append-only audit, chain verification that identifies the break type and CI permission reconciliation.",
+    handoffs: "Every module consumes identity and permission decisions. Agent OS uses the same authority context; Integration and AI Operations report incidents and evidence into the control view.",
+    boundary: "Core access, SoD, audit and incident evidence are live. Row/field policy is mainly a preview, soft-revoked grants need a guard correction, and escalation/delegation automation is not complete.",
+  },
+  {
+    key: "integration", agent: "HEXA", name: "Integration",
+    purpose: "A governed place to describe external connections, trace messages and handle failures without pretending an unavailable downstream system is healthy.",
+    records: "Connector and connection definitions, flow state, message attempts, correlation traces, dead letters, circuit state, e-invoice/e-way-bill records and webhook secrets/deliveries.",
+    screens: "Connections; Flows; Dead letters; Statutory filings; Webhooks.",
+    workflow: "Preflight a flow, classify each outcome, retry only transient failures with bounded policy, trip a circuit on repeated faults, quarantine terminal messages, and require a reviewed replay or resolution. Webhooks are signed and secrets can rotate.",
+    controls: "Idempotency/correlation ids, retry classification, circuit breakers, dead-letter custody, signed payload verification, secret rotation and statutory-window watches.",
+    handoffs: "Designed to connect Sales, Purchase, Accounts, statutory services and external consumers; feeds incidents and health evidence to Administration and Agent OS.",
+    boundary: "The resilience rules and screens are real and tested, but external network transports are simulate-driven in the MVP. No live GST, bank or supplier connector is claimed.",
+  },
+  {
+    key: "sales", agent: "MICA", name: "Sales",
+    purpose: "Turns an accepted customer commitment into a controlled order, dispatch and receivable while preserving the tax and credit decision made at each step.",
+    records: "Customers, ship-to data, GSTINs, sales orders/lines, credit snapshots and overrides, delivery notes, dispatch quantities, invoices and receivables.",
+    screens: "Orders; Order detail; Customers. The dashboard highlights overdue promises, today-due orders and credit holds from live order data.",
+    workflow: "Create or detect a duplicate customer; draft an order; calculate GST from supplier/place-of-supply state; confirm through the credit gate; reserve nothing automatically; dispatch only available stock; create delivery, invoice and receivable in the same transaction.",
+    controls: "Duplicate detection, immutable credit snapshots, mandatory override reason, server-side tax calculation, dispatch refusal on credit/stock gates, idempotency and atomic stock-plus-invoice posting.",
+    handoffs: "Reads Engineering items and Accounts exposure; asks Inventory to issue stock; hands dated demand to Planning, invoice data to Accounts and fulfilment context to Service.",
+    boundary: "Order-to-dispatch is live. Leads, opportunities, quotations/tenders, order cancellation, reservations and statutory submission are not complete.",
+  },
+  {
+    key: "csp", agent: "MICA", name: "Service",
+    purpose: "Keeps customer issues, entitlement, service timing and communication together while separating internal staff access from customer-portal access.",
+    records: "Customer accounts/users, installed base, warranty/AMC entitlement, tickets, comments, SLA pauses/breaches, complaints, spare requests, knowledge articles, reply drafts and CSAT.",
+    screens: "Tickets; Ticket detail; Spares; Service dashboard; CSAT, plus separate customer-portal APIs.",
+    workflow: "Open and classify a ticket; calculate the response/resolution clock in business hours; check installed-base entitlement; assign and work the case; generate a suggestion if allowed; require staff review before sending; capture complaint, spare and satisfaction outcomes.",
+    controls: "Tenant plus customer-account RLS, business-time recomputation, immutable sent comments, entitlement check, portal/staff permission separation and draft rules that refuse unsupported commitments or leaked internal references.",
+    handoffs: "Uses Sales customer/order context, Inventory spare availability, Quality complaint/NCR context and AI Operations for triage/reply governance.",
+    boundary: "Ticket, SLA, entitlement, portal isolation and reviewable AI suggestions are live; outbound messaging and automatic warranty population are not integrated.",
+  },
+  {
+    key: "purchase", agent: "SPAR", name: "Purchase",
+    purpose: "Controls supplier masters, purchase commitments, approval and receipt of material into the stock ledger.",
+    records: "Vendors, duplicate candidates, purchase orders/lines/status, W1 approval instances and decisions, goods receipts and receipt references.",
+    screens: "Orders; Vendors; Order detail; Goods receipt. Dashboard evidence comes from the purchase-order register.",
+    workflow: "Create/check vendor; draft purchase order; submit into the configured approval route; permit only the resolved approver at each step; receive no more than the approved open quantity; post the receipt through Inventory inside the same transaction.",
+    controls: "Vendor duplicate evidence, permission and idempotency checks, version-pinned approval, named approver refusal, approved-only receipt, over-receipt prevention and atomic receipt/stock posting.",
+    handoffs: "Receives buy proposals from Planning, consumes Organisation numbering, calls Inventory for receipt, and provides open supply to Planning and working-capital analysis.",
+    boundary: "Vendor-to-GRN is live. Supplier invoice, three-way match, AP ageing/payment, receipt accruals and supplier performance are not complete.",
+  },
+  {
+    key: "inventory", agent: "SPAR", name: "Inventory",
+    purpose: "The single source of truth for physical stock movement and current on-hand balance by item, warehouse and batch.",
+    records: "Warehouses, append-only stock entries, movement type/reference/idempotency key, signed quantity, batch/expiry details and row-locked stock balances.",
+    screens: "Stock; Warehouses. Alerts identify stranded batched stock only when the API can prove it.",
+    workflow: "A domain port asks for a movement; the service validates the request and idempotency key, serialises competing withdrawals, chooses eligible FIFO batches, locks balances, refuses a negative outcome, appends ledger entries and updates balances atomically.",
+    controls: "One write path, advisory and row locks, negative-stock refusal, append-only trigger, movement/reference traceability, FIFO batch consumption and tenant RLS.",
+    handoffs: "Purchase receives, Production issues/receives, Sales dispatches, Quality quarantines/releases and Maintenance consumes/returns spares through this same boundary.",
+    boundary: "On-hand and the movement ledger are live. No bins, reservations, cycle counting, serial genealogy or full valuation; FIFO chooses the batch, while standard cost remains the valuation basis.",
+  },
+  {
+    key: "engineering", agent: "AXLE", name: "Engineering",
+    purpose: "Defines the items a factory buys, makes and sells, and the bills of material that explain what a manufactured item consumes.",
+    records: "Item master, item type/UOM/status, GST classification, planning policy links, BOM headers/versions and component quantities/scrap factors.",
+    screens: "Items; BOM detail. The current web module is intentionally narrow and mainly exposes the authoritative product structure.",
+    workflow: "Create and classify an item; create/version a BOM; validate component references and graph shape; publish the product structure for Planning; snapshot it when Production creates an order.",
+    controls: "Typed permissions, tenant RLS, active/versioned BOM lookup and cycle detection when Planning derives low-level codes.",
+    handoffs: "Sales selects sellable items, Purchase selects bought items, Planning explodes BOM demand, Production snapshots components and Quality associates specifications/inspections.",
+    boundary: "Item/BOM foundations are live. There is no ECR/ECO request, impact assessment, approval, effectivity or revision audit workflow.",
+  },
+  {
+    key: "planning", agent: "AXLE", name: "Planning",
+    purpose: "Converts dated demand, stock, open supply, product structure and policy into explainable proposals for what to make or buy and when.",
+    records: "Planning policies, calendars, forecasts, demand/consumption, MPS, immutable MRP runs/workings, planned orders, pegging, exceptions, requisitions, capacity views and draft schedules.",
+    screens: "MRP; Planned orders; Exceptions; Demand; Policies; Explain.",
+    workflow: "Compute low-level codes; consume forecast with nearby orders; net demand bucket by bucket; apply safety stock and lot-sizing; offset over working days; explode components into release buckets; persist workings/pegs; create ranked exceptions; optionally firm or convert a proposal.",
+    controls: "Cycle refusal, required work calendar, immutable completed-run workings, upward lot rounding, past-due flagging, plan-to-execution uniqueness and explicit exception acceptance/snooze behavior.",
+    handoffs: "Reads Sales demand, Engineering BOMs, Inventory balances, Purchase open supply and Production state; outputs buy/make proposals to Purchase and Production.",
+    boundary: "MRP, pegging and explainability are live. Capacity is an infinite-capacity report, scheduling is a draft heuristic, and firmed orders do not yet feed the next run reliably.",
+  },
+  {
+    key: "production", agent: "KILN", name: "Production",
+    purpose: "Executes a manufactured order through a pinned material list and ordered operations, then moves finished quantity into stock.",
+    records: "Production orders, BOM/component snapshot, operation sequence/status, operator/evidence notes, issue movements, completion quantity and finished-goods receipt references.",
+    screens: "Production orders; Order detail with component issue, operation progress and completion actions.",
+    workflow: "Create from a manufactured item/BOM; snapshot components; define/start/complete operations in predecessor order; issue components through Inventory; require all routed work complete; receive finished goods; expose the full execution trail.",
+    controls: "Idempotency, predecessor gates, accountable operator/evidence, pinned BOM, all-blockers-at-once completion check, tenant RLS and atomic inventory movements.",
+    handoffs: "Receives make proposals from Planning, consumes Engineering BOM data and Inventory components, exposes lots to Quality, and reports execution/downtime context to Maintenance and Decision Commander.",
+    boundary: "Order, operation, issue and receipt workflows are live. The quality completion gate is not automatically armed, rejects do not post scrap, and detailed genealogy/costing is incomplete.",
+  },
+  {
+    key: "quality", agent: "KILN", name: "QMS & Audit",
+    purpose: "Records inspection evidence and turns defects into controlled findings, corrective actions, training and audit-ready evidence packs.",
+    records: "Specifications and revisions, sampling plans/snapshots, inspections/readings/verdicts, dispositions, findings/NCRs, CAPAs/actions/effectiveness reviews, documents, training, audits and evidence packs.",
+    screens: "Overview; Inspections; Documents; Audits; Findings; Corrective actions; Training; Evidence packs; Inspection detail.",
+    workflow: "Select a sampling plan from lot size; snapshot the plan and applied limits; record readings; calculate pass/reject deterministically; quarantine/release through Inventory; open a finding; investigate cause and actions; let a person judge effectiveness; collect and version audit evidence.",
+    controls: "Immutable applied limits, critical-defect override, sample derivation, disposition/movement linkage, no-delete history, human-owned CAPA effectiveness and draft-only agent outputs.",
+    handoffs: "Consumes Production or receipt context, moves held stock through Inventory, informs Service complaints, and supplies KILN/HEXA with traceable evidence for QMS missions.",
+    boundary: "Inspection and NCR/CAPA depth are live. Automatic production/receipt inspection creation, calibration/gauge management and complete material genealogy are missing.",
+  },
+  {
+    key: "maintenance", agent: "KILN", name: "Maintenance",
+    purpose: "Keeps assets safe and available through requests, controlled work, downtime history, preventive schedules and reproducible reliability measures.",
+    records: "Assets/hierarchy/work-centre links, readings, requests, work orders, labour/tasks/safety flags/spares/external work, downtime intervals/corrections/disputes, PM schedules/occurrences and KPI snapshots.",
+    screens: "Assets; Asset detail; Work orders; Requests; Downtime; Preventive maintenance; KPIs.",
+    workflow: "Register an asset; receive/acknowledge/triage a floor request; assign and execute a work order with tasks, labour and spares; record asset downtime from stop to handback; close only after gates pass; generate PM work and calculate reliability from source intervals.",
+    controls: "Database exclusion prevents overlapping downtime, corrections retain original timestamps, completion reports every missing condition, spare issue uses Inventory, and KPI snapshots are marked stale after relevant corrections.",
+    handoffs: "Links assets to Production work centres, uses Inventory spares, records external-work purchasing context and feeds KILN/Decision Commander with uptime risk.",
+    boundary: "Core maintenance workflow and KPIs are live. Shift calendars, sensor ingestion, advanced predictive maintenance and automatic external procurement are not complete.",
+  },
+  {
+    key: "accounts", agent: "RASP", name: "Accounts",
+    purpose: "The accounting source of truth: balanced, posted journal vouchers, a dated trial balance, receivables, receipts and reversal rather than edit.",
+    records: "Chart of accounts, vouchers/lines, posting date/status/reference, reversal links/reasons, customer receivables and receipt allocations.",
+    screens: "Trial balance; Vouchers; Voucher detail. Dashboard values name the as-at date and whether pagination caps the visible count.",
+    workflow: "A domain prepares a balanced voucher; Accounts validates and posts it; a deferred database check re-sums at commit; invoice postings create receivables; receipts settle oldest first; errors are corrected by an opposite voucher linked to the original.",
+    controls: "Triple balance checks, append-only posted records, one allowed reversal-link update, idempotency, tenant RLS, dated reporting and synchronous posting for transaction-critical domains.",
+    handoffs: "Receives Sales invoices and Payroll postings; supplies Sales credit exposure, Employee Spend acknowledgements, RASP finance tools and the working-capital starting point.",
+    boundary: "General ledger, trial balance, receivables and receipts are live. Period close/reopen, payables, bank reconciliation and full financial statements are incomplete.",
+  },
+  {
+    key: "expenditure", agent: "RASP", name: "Employee Spend",
+    purpose: "Controls employee and indirect spend before money leaves by reserving budget at request time and preserving policy, tax and receipt evidence.",
+    records: "Budgets and signed reservation movements, travel requests, claims/lines, attachments/extraction decisions, advances/refunds, indirect expenses, posting queue, duplicate/AI reports, TDS and ITC registers.",
+    screens: "Claims; Claim detail. The API also covers budgets, receipts, advances, travel, indirect expense, posting and tax reports.",
+    workflow: "Check budget under a row lock; create claim/travel/expense; attach and optionally extract a receipt; submit to reserve in-approval budget; approve/reject with policy evidence; move reservation to committed/actual through signed rows; prepare an accounting posting.",
+    controls: "Atomic reservation ledger, no silent unbudgeted approval, mandatory override reason, duplicate receipt checks, human confirmation of extraction, input-credit and withholding gates, idempotency and approval separation.",
+    handoffs: "Uses People identity/grade, Organisation financial year, AI Operations for receipt extraction, and is designed to post to Accounts after acknowledgement.",
+    boundary: "Budget, claim, receipt and policy controls are live. Prepared spend postings are not yet wired end-to-end to the ledger, and cost-centre vocabularies need alignment.",
+  },
+  {
+    key: "hrm", agent: "RASP", name: "People",
+    purpose: "Connects accountable employees, attendance and statutory payroll to the work and money records they create.",
+    records: "Employees, employment/grade/bank/statutory identifiers, punch events, attendance muster and regularisation, leave, payroll runs/payslips, dated statutory rates and posting references.",
+    screens: "Employees; Employee detail; Muster; Leave; Statutory.",
+    workflow: "Capture punches; derive attendance days; hold incomplete days for regularisation; append corrections and replay the day; calculate deemed wages and dated EPF/ESI/professional-tax/withholding; keep preparer and approver separate; post payroll to Accounts in one transaction.",
+    controls: "Append-only punch correction, no one-punch-as-present shortcut, dated statutory tables, fail-loudly on missing rates, separation of payroll duties, encrypted sensitive fields and synchronous ledger posting.",
+    handoffs: "Supplies accountable people to workflow, Maintenance, Production and Spend; sends approved payroll postings to Accounts and workforce evidence to RASP.",
+    boundary: "Employee, attendance and payroll foundations are live. Recruitment, performance, learning depth, biometric-device transport and broader HR lifecycle are not complete.",
+  },
+  {
+    key: "working-capital", agent: "RASP", name: "Working Capital",
+    purpose: "A decision workspace that explains cash coming in/out, stock cash, margins, a 13-week outlook, scenarios and finance-readiness evidence in simple language.",
+    records: "Current screen models for priorities, scenario cards and evidence gaps; live cash-position evidence comes from posted Accounts data and Agent OS capability outputs.",
+    screens: "Overview; Money in; Money out; Stock holding cash; Margins; 13-week forecast; Scenarios; Finance readiness pack.",
+    workflow: "Start from posted ledger evidence; bring in customer commitments and stock holding; label assumptions; compare bounded scenarios; prioritise human follow-up; draft an evidence manifest; route the brief through HEXA verification and a human gate.",
+    controls: "Read/simulate/analyse/draft modes only, no payment or posting capability, source and assumption labelling, human approval in the mission and an explicit boundary note on every tool result.",
+    handoffs: "Combines Accounts, MICA sales commitments and SPAR stock evidence; publishes a review brief and governed finance work item through Agent OS.",
+    boundary: "The cash-position read and governed mission are live. Most workspace numbers and three finance tools are illustrative/evidence wrappers, not a complete forecasting, collections or lender-pack engine.",
+  },
+];
 
 /* The five registered mission graphs, exactly as `GraphRegistryService` builds them. */
 const GRAPHS = [
@@ -111,6 +311,8 @@ const agents = [
       ["Agent OS", "The run engine: mission graphs, parallel waves, checkpoints, approval waits and recovery."],
       ["AI Operations", "The closed feature registry, the provider router, evaluations, the cost ledger and the kill switch."],
     ],
+    moduleKeys: ["copilot", "agentos", "aiops"],
+    coordination: "Copilot handles one bounded question; Agent OS handles a cross-functional mission; AI Operations governs any model-assisted feature. They share identity, permissions, logging and refusal rules, but they do not share a hidden general-purpose action channel.",
     prefixes: ["agent.", "workflow.", "general."],
     delegates: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP"],
     tools: [["general.companies.read", "Read", "Company masters", "general.company.read", "No"]],
@@ -131,7 +333,7 @@ const agents = [
     pipelineLead:
       "ONYX has two surfaces. The Copilot answers one question from one module. Agent OS runs a mission across many. Both refuse in the same way: there is no endpoint that takes free text and runs it.",
     pipeline: [
-      ["Understand", "Rules first. A model is asked only when the rules cannot decide, and its answer is checked against the closed list of 22 intents before it counts."],
+      ["Understand", "Rules first. A model is asked only when the rules cannot decide, and its answer is checked against the closed list of 21 intents before it counts."],
       ["Authorise", "The matched question declares a permission and the asker must hold it — the same check the equivalent screen makes, so the Copilot is never a side door."],
       ["Retrieve", "One hand-written SELECT, on the caller's own transaction, under the caller's own tenant. The model is not in this step and cannot reach it."],
       ["Render", "From a template. Numbers on screen are numbers from the rows."],
@@ -152,8 +354,8 @@ const agents = [
         "For the cross-functional version of the question, ONYX starts a mission instead: six specialists read their own domain in parallel, HEXA verifies, a person approves, and only then is a brief published.",
       ],
     },
-    live: ["22 permission-checked Copilot questions", "5 registered mission graphs", "Parallel waves, checkpoints and recovery", "Signal and Decision Commander mission triggers", "Closed AI registry with kill switch and cost ledger"],
-    limits: ["Language reasoning is deterministic; no external model API is active", "ONYX cannot dispatch an action — it is not on the allow-list", "Narration is off by default", "The Copilot answers 22 questions, not any question"],
+    live: ["21 permission-checked Copilot questions", "5 registered mission graphs", "Parallel waves, checkpoints and recovery", "Signal and Decision Commander mission triggers", "Closed AI registry with kill switch and cost ledger"],
+    limits: ["Language reasoning is deterministic; no external model API is active", "ONYX cannot dispatch an action — it is not on the allow-list", "Narration is off by default", "The Copilot answers 21 questions, not any question"],
     sources: ["apps/api/src/agent-os/agent-graph.engine.ts", "apps/api/src/modules/copilot/copilot.service.ts", "packages/platform/src/ai/feature-registry.ts"],
   },
 
@@ -172,6 +374,8 @@ const agents = [
       ["Administration", "138 permissions, roles, separation of duties, audit verification and the auditor pack."],
       ["Integration", "Retry classification, circuit breakers, dead-letter triage and signed webhooks."],
     ],
+    moduleKeys: ["general", "administration", "integration"],
+    coordination: "Organisation supplies the legal and numbering context, Administration decides who may do what and proves the trail, and Integration carries external failures as explicit state. Together they are the control plane used by every business module and every agent run.",
     prefixes: ["agent.", "workflow.", "governance.", "general."],
     delegates: [],
     tools: [
@@ -227,6 +431,8 @@ const agents = [
       ["Sales", "Customers, GST-aware orders, the credit gate, dispatch and the invoice it raises."],
       ["Service portal (CSP)", "Tickets isolated by customer account, a business-time SLA clock, warranty and AMC entitlement, and reviewable reply drafts."],
     ],
+    moduleKeys: ["sales", "csp"],
+    coordination: "Sales records what was promised and fulfilled; Service records what happened after delivery. MICA links the same customer, order, installed-base and quality evidence without allowing the portal to cross into another customer's account.",
     prefixes: ["sales.", "customer.", "agent."],
     delegates: [],
     tools: [
@@ -283,6 +489,8 @@ const agents = [
       ["Purchase", "Vendors, approval-bound purchase orders and goods receipts."],
       ["Inventory", "Warehouses, balances, and the append-only movement ledger behind the single stock write path."],
     ],
+    moduleKeys: ["purchase", "inventory"],
+    coordination: "Purchase creates an approved supply commitment; Inventory records the physical consequence. A receipt is useful only when both succeed in one transaction, and downstream modules move stock through Inventory rather than maintaining their own balances.",
     prefixes: ["inventory.", "purchase.", "supplier.", "agent."],
     delegates: [],
     tools: [
@@ -338,6 +546,8 @@ const agents = [
       ["Engineering", "The item master and bills of material. Four endpoints in total, and no change control."],
       ["Planning", "Forecast, MPS, MRP, planned orders, exceptions, a capacity load report and a draft schedule."],
     ],
+    moduleKeys: ["engineering", "planning"],
+    coordination: "Engineering defines what a product is; Planning applies demand, stock, supply, calendars and policy to decide what must happen by date. Production receives proposals and a pinned structure, so later master-data changes cannot rewrite work already released.",
     prefixes: ["engineering.", "planning.", "agent."],
     delegates: [],
     tools: [
@@ -396,6 +606,8 @@ const agents = [
       ["Quality & QMS", "Sampling, readings, lot verdicts, dispositions, and the NCR → CAPA chain."],
       ["Maintenance", "Assets, work orders, the downtime clock, preventive schedules and reliability KPIs."],
     ],
+    moduleKeys: ["production", "quality", "maintenance"],
+    coordination: "Production records the work, Quality decides whether the result is acceptable, and Maintenance explains whether the equipment can sustain the plan. Inventory movements are shared evidence, while quality and downtime conclusions remain deterministic and human-accountable.",
     prefixes: ["production.", "quality.", "maintenance.", "agent."],
     delegates: [],
     tools: [
@@ -458,8 +670,10 @@ const agents = [
       ["Accounts", "Append-only journals, the trial balance, receivables, receipts and reversal."],
       ["Employee spend", "Budgets held as a reservation ledger, claims, advances, and the input-credit and withholding gates."],
       ["People", "Attendance from punches, deemed wages under the Code on Wages, payroll and the posting back to the ledger."],
-      ["Working capital", "A cash-position read that is real. The forecast, collection and funding-pack screens are illustrative — see page 9."],
+      ["Working capital", "A cash-position read that is real. The forecast, collection and funding-pack screens are illustrative — see page 11."],
     ],
+    moduleKeys: ["accounts", "expenditure", "hrm", "working-capital"],
+    coordination: "Accounts is the posted truth; Employee Spend and People create controlled obligations and postings; Working Capital turns the available evidence into reviewable priorities and scenarios. RASP must label the difference between a ledger fact, an assumption and an illustrative demo value.",
     prefixes: ["accounts.", "finance.", "expenditure.", "hrm.", "agent."],
     delegates: [],
     tools: [
@@ -582,6 +796,26 @@ const flow = (items) =>
   `<div class="flow">${items.map((x, i) => `${i ? '<span class="arrow">→</span>' : ""}<div class="flow-block">${x}</div>`).join("")}</div>`;
 const steps = (items) =>
   `<div class="steps">${items.map(([t, d]) => `<div class="step"><div><b>${esc(t)}</b><p>${esc(d)}</p></div></div>`).join("")}</div>`;
+const moduleCode = (m) => {
+  const api = m.key === "agentos"
+    ? "apps/api/src/agent-os/"
+    : m.key === "working-capital"
+      ? "apps/api/src/agent-os/capability-registry.service.ts"
+      : `apps/api/src/modules/${m.key}/`;
+  return `apps/web/src/modules/${m.key}/manifest.ts · ${api}`;
+};
+const moduleDetail = (m) => `
+  <article class="module-detail">
+    <div class="module-title"><b>${esc(m.name)}</b><span>${esc(m.agent)} module · ${esc(m.key)}</span></div>
+    <div class="module-line"><strong>Purpose</strong><p>${esc(m.purpose)}</p></div>
+    <div class="module-line"><strong>Core records</strong><p>${esc(m.records)}</p></div>
+    <div class="module-line"><strong>User surface</strong><p>${esc(m.screens)}</p></div>
+    <div class="module-line"><strong>End-to-end flow</strong><p>${esc(m.workflow)}</p></div>
+    <div class="module-line"><strong>Enforced controls</strong><p>${esc(m.controls)}</p></div>
+    <div class="module-line"><strong>Inputs and outputs</strong><p>${esc(m.handoffs)}</p></div>
+    <div class="module-line boundary"><strong>Current boundary</strong><p>${esc(m.boundary)}</p></div>
+    <div class="module-line code-map"><strong>Primary code map</strong><p>${esc(moduleCode(m))}</p></div>
+  </article>`;
 
 const css = `
   :root { --ink:#132238; --muted:#5f6f83; --line:#dfe5ed; --paper:#fff; --navy:#101d31; }
@@ -669,6 +903,14 @@ const css = `
   .graph-card b { font-size:12px; }
   .graph-card .meta { font-family:ui-monospace,Menlo,monospace; font-size:9px; color:#7a879a; margin:3px 0 4px; }
   .graph-card p { margin:0; font-size:10.6px; line-height:1.45; }
+  .module-detail { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px; break-inside:avoid; }
+  .module-title { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:8px 10px; color:#fff; background:var(--accent); }
+  .module-title b { font-size:12.5px; }.module-title span { font-size:8.5px; opacity:.84; }
+  .module-line { display:grid; grid-template-columns:28mm 1fr; border-top:1px solid var(--line); }
+  .module-line strong { padding:5px 8px; font-size:8.8px; color:var(--accent); background:#f7f9fc; }
+  .module-line p { padding:5px 8px; margin:0; font-size:9.1px; line-height:1.35; color:#405066; }
+  .module-line.boundary strong,.module-line.boundary p { background:var(--pale); }
+  .module-line.code-map p { font-family:ui-monospace,Menlo,monospace; font-size:8.2px; }
 `;
 
 const footer = (title, page) => `<div class="footer"><span>XELOR · ${esc(title)}</span><span>${page}</span></div>`;
@@ -682,6 +924,10 @@ const heading = (kicker, title, note = "") =>
 function agentGuide(a) {
   const title = `${a.name} agent guide`;
   const p = [];
+  const ownedModules = a.moduleKeys.map((key) => MODULES.find((m) => m.key === key));
+  if (ownedModules.some((m) => !m)) throw new Error(`${a.name} references an unknown product module`);
+  const splitAt = Math.ceil(ownedModules.length / 2);
+  const modulePages = [ownedModules.slice(0, splitAt), ownedModules.slice(splitAt)];
 
   /* 01 — cover */
   p.push(page(a.colour, a.pale, title, "01", `
@@ -703,27 +949,39 @@ function agentGuide(a) {
     </div>
     ${cards([["What reaches it", a.receives.join(" · ")], ["What it hands back", a.produces.join(" · ")]], "grid-2")}
     <h3 style="margin-top:13px">Capability families it is allowed to touch</h3>${pills(a.prefixes)}
-    <div class="callout"><strong>Ownership and authority are not the same thing</strong><p>The areas above are where ${a.name} is the right specialist to ask. The tool table on page 6 is the much smaller set it can invoke at runtime. Owning a business area does not grant runtime power over it — and for ONYX, the supervisor, the gap between the two is the widest in the system.</p></div>`));
+    <div class="callout"><strong>Ownership and authority are not the same thing</strong><p>The areas above are where ${a.name} is the right specialist to ask. The tool table on page 8 is the much smaller set it can invoke at runtime. Owning a business area does not grant runtime power over it — and for ONYX, the supervisor, the gap between the two is the widest in the system.</p></div>`));
 
-  /* 03 — the domain pipeline */
-  const readable = a.tools.filter((t) => t[1] !== "Execute");
+  /* 03–04 — module deep dive */
   p.push(page(a.colour, a.pale, title, "03", `
-    ${heading("02 · The work itself", `How ${a.name}'s world actually runs`, "The business pipeline, not the agent plumbing")}
+    ${heading("02 · Module deep dive · 1 of 2", `What sits behind ${a.name}`, "Records, screens, workflow, controls and hand-offs")}
+    ${modulePages[0].map(moduleDetail).join("")}
+    <div class="callout"><strong>How to read these module pages</strong><p>“Live” means the records, service rules and user/API surface exist in this repository. It does not mean every surrounding enterprise process is complete. The boundary row names what remains illustrative, manual, simulate-driven or outside the MVP.</p></div>`));
+
+  p.push(page(a.colour, a.pale, title, "04", `
+    ${heading("02 · Module deep dive · 2 of 2", `How ${a.name}'s modules connect`, "A module owns its records; the agent explains the combined evidence")}
+    ${modulePages[1].map(moduleDetail).join("")}
+    <div class="callout"><strong>Cross-module coordination</strong><p>${esc(a.coordination)}</p></div>
+    ${flow(a.moduleKeys.map((key) => MODULES.find((m) => m.key === key).name).concat([`${a.name}<br><small>bounded evidence</small>`, "ONYX / person<br><small>decision</small>"]))}`));
+
+  /* 05 — the domain pipeline */
+  const readable = a.tools.filter((t) => t[1] !== "Execute");
+  p.push(page(a.colour, a.pale, title, "05", `
+    ${heading("03 · The work itself", `How ${a.name}'s world actually runs`, "The business pipeline, not the agent plumbing")}
     <p class="lead" style="font-size:13px;margin-bottom:12px">${esc(a.pipelineLead)}</p>
     ${steps(a.pipeline)}
     <div class="callout"><strong>How much of this ${a.name} can actually see</strong><p>Of everything above, ${a.name} can read exactly ${readable.length === 1 ? "one thing" : `${readable.length} things`} directly — ${readable.map((t) => t[2].toLowerCase()).join(", ")}. The rest of this pipeline is context for judging what it reads; it is not data the agent can reach. Where a mission needs more, it asks the specialist who owns it or it says the evidence is missing.</p></div>`));
 
-  /* 04 — the rules */
-  p.push(page(a.colour, a.pale, title, "04", `
-    ${heading("03 · The rules underneath", "What the code will not let anyone do", "Enforced by constraints and locks, not by wording")}
+  /* 06 — the rules */
+  p.push(page(a.colour, a.pale, title, "06", `
+    ${heading("04 · The rules underneath", "What the code will not let anyone do", "Enforced by constraints and locks, not by wording")}
     ${cards(a.rules, "grid-2")}
     <div class="callout" style="margin-top:13px"><strong>Why this page matters more than the agent pages</strong><p>An agent is only as trustworthy as the system it reads. Every rule here holds whether the request came from a person, a screen, a seeder or ${a.name} — which is precisely why an agent can be given a read tool without also being given a way to do damage.</p></div>
     <h3 style="margin-top:12px">Where these rules are kept</h3>
     ${a.sources.map((s) => `<div class="card source" style="margin:5px 0">${esc(s)}</div>`).join("")}`));
 
-  /* 05 — runtime contract */
-  p.push(page(a.colour, a.pale, title, "05", `
-    ${heading("04 · Runtime contract", `How ${a.name} takes part in a mission`, "The engine controls order, parallelism and recovery")}
+  /* 07 — runtime contract */
+  p.push(page(a.colour, a.pale, title, "07", `
+    ${heading("05 · Runtime contract", `How ${a.name} takes part in a mission`, "The engine controls order, parallelism and recovery")}
     ${flow(["Person or signal", "ONYX<br><small>scope the mission</small>", `${a.name}<br><small>${esc(a.label)}</small>`, "Capability registry<br><small>allow-listed tool</small>", "Domain service<br><small>business rules</small>", "Tenant data<br><small>+ audit</small>"])}
     <div class="grid-2">
       <article class="card tint"><h3>1 · Scope</h3><p>ONYX turns the goal into a run against a frozen graph version, with a fixed tenant, user, step budget and timeout.</p></article>
@@ -733,9 +991,9 @@ function agentGuide(a) {
     </div>
     <div class="callout"><strong>An agent can narrow authority, never widen it</strong><p>${a.delegates.length ? `${a.name} may delegate only to ${a.delegates.join(", ")}.` : `${a.name} is a specialist and delegates to nobody.`} Because the permission check is repeated against the requesting person, a mission can never reach data that person could not have opened themselves.</p></div>`));
 
-  /* 06 — callable surface */
-  p.push(page(a.colour, a.pale, title, "06", `
-    ${heading("05 · Exact callable surface", `Everything ${a.name} can call`, "This table is the complete list — there is no other door")}
+  /* 08 — callable surface */
+  p.push(page(a.colour, a.pale, title, "08", `
+    ${heading("06 · Exact callable surface", `Everything ${a.name} can call`, "This table is the complete list — there is no other door")}
     <table class="cap-table"><thead><tr><th>Capability</th><th>Mode</th><th>What comes back</th><th>Permission required</th><th>Needs approval</th></tr></thead><tbody>${a.tools
       .map((r) => `<tr>${r.map((x) => `<td>${esc(x)}</td>`).join("")}</tr>`)
       .join("")}</tbody></table>
@@ -750,9 +1008,9 @@ function agentGuide(a) {
       : `<div class="callout"><strong>${a.name} cannot act in the business at all</strong><p>There is no execute capability on this list, and ${a.name} is not on the allow-list for the one that exists. The agent that coordinates every mission is the only one that cannot cause an effect — which is the point, not an oversight.</p></div>`}
     ${a.extraSurface ?? ""}`));
 
-  /* 07 — mission participation */
-  p.push(page(a.colour, a.pale, title, "07", `
-    ${heading("06 · In the five missions", `Where ${a.name} actually appears`, "Node by node, from the registered graph definitions")}
+  /* 09 — mission participation */
+  p.push(page(a.colour, a.pale, title, "09", `
+    ${heading("07 · In the five missions", `Where ${a.name} actually appears`, "Node by node, from the registered graph definitions")}
     <table class="mission-table"><thead><tr><th>Mission graph</th><th>What ${esc(a.name)} does in it</th></tr></thead><tbody>${MISSION_ROLES[a.name]
       .map(([g, r]) => `<tr><td><b>${esc(g)}</b></td><td>${esc(r)}</td></tr>`)
       .join("")}</tbody></table>
@@ -760,17 +1018,17 @@ function agentGuide(a) {
     <h3 style="margin-top:12px">The shape every mission shares</h3>
     ${flow(["Goal", "Parallel reads", "Assessments", "Join", "HEXA verify", "Human gate", "Outcome"])}`));
 
-  /* 08 — worked example */
-  p.push(page(a.colour, a.pale, title, "08", `
-    ${heading("07 · Worked example", a.example.title, "Real records from the running demo, not an illustration")}
+  /* 10 — worked example */
+  p.push(page(a.colour, a.pale, title, "10", `
+    ${heading("08 · Worked example", a.example.title, "Real records from the running demo, not an illustration")}
     <div class="steps plain">${a.example.steps.map((x) => `<div class="step"><div><p style="font-size:9.8px">${esc(x)}</p></div></div>`).join("")}</div>
     <div class="callout"><strong>The sentence to say out loud</strong><p>“${a.name} contributes evidence from its own area, with the source records behind it and its limits stated. It does not claim an action is done until the system has recorded and verified it.”</p></div>
     <h3 style="margin-top:12px">Fair questions to ask while watching</h3>
     ${bullets(["Which records is this answer standing on?", "Which permission was checked, and against whom?", "Is this a recorded fact, a simulation, a draft, or a completed result?", "Would this step have waited for a person?", "What happens if the service restarts halfway through?"])}`));
 
-  /* 09 — boundaries + honest limits */
-  p.push(page(a.colour, a.pale, title, "09", `
-    ${heading("08 · What is real", "Live today, and deliberately not", "The second column is the one worth reading")}
+  /* 11 — boundaries + honest limits */
+  p.push(page(a.colour, a.pale, title, "11", `
+    ${heading("09 · What is real", "Live today, and deliberately not", "The second column is the one worth reading")}
     <div class="truth">
       <div class="yes"><h3>Working now</h3>${bullets(a.live)}</div>
       <div class="no"><h3>Not built — stated plainly</h3>${bullets(a.limits)}</div>
@@ -784,9 +1042,9 @@ function agentGuide(a) {
     </div>
     <p class="mini">Gaps are listed because a guide that hides them fails the first hour of technical due diligence. Every item on the right is either a roadmap decision or a known defect, and both are recorded in the project's own capability-gap register.</p>`));
 
-  /* 10 — quick reference */
-  p.push(page(a.colour, a.pale, title, "10", `
-    ${heading("09 · Quick reference", `${a.name} on one page`, "For explaining the agent to somebody new")}
+  /* 12 — quick reference */
+  p.push(page(a.colour, a.pale, title, "12", `
+    ${heading("10 · Quick reference", `${a.name} on one page`, "For explaining the agent to somebody new")}
     ${cards([
       ["Its job", a.summary],
       ["Speaks for", a.owns.map((x) => x[0]).join(", ")],
@@ -848,7 +1106,27 @@ function masterGuide() {
     ], "grid-2")}`));
 
   p.push(page(accent, pale, title, "04", `
-    ${heading("03 · Architecture", "How a question reaches trusted data", "Every layer narrows what is possible and keeps the evidence")}
+    ${heading("03 · Module map", "Nineteen modules under seven owners", "The master gives the map; the agent guides explain each module in depth")}
+    <table><thead><tr><th>Agent</th><th>Modules</th><th>What the group contributes</th></tr></thead><tbody>
+      ${agents.map((a) => `<tr><td><b>${a.name}</b><br><span class="mini">${esc(a.label)}</span></td><td>${a.moduleKeys.map((key) => esc(MODULES.find((m) => m.key === key).name)).join(" · ")}</td><td>${esc(a.coordination)}</td></tr>`).join("")}
+    </tbody></table>
+    <div class="callout"><strong>One ownership rule prevents a great deal of confusion</strong><p>The module that owns a record is the only place allowed to change it. A mission can combine Sales, stock, plan, quality and finance evidence, but it does not create a second cross-functional copy. The agent layer coordinates decisions; domain services remain the system of record.</p></div>`));
+
+  p.push(page(accent, pale, title, "05", `
+    ${heading("04 · Operating loop", "How the modules complete one factory story", "Control and evidence travel with the transaction")}
+    ${flow(["MICA<br><small>customer promise</small>", "AXLE<br><small>product + plan</small>", "SPAR<br><small>supply + stock</small>", "KILN<br><small>make + check</small>", "MICA<br><small>dispatch + service</small>", "RASP<br><small>ledger + cash</small>"])}
+    <div class="grid-2">
+      <article class="card"><h3>1 · Commit</h3><p>Sales stores the dated customer promise, GST result and credit decision. Planning receives demand; it does not reinterpret the order.</p></article>
+      <article class="card"><h3>2 · Plan and supply</h3><p>Engineering defines the BOM. Planning nets demand against stock and supply. Purchase approves a commitment; Inventory records the physical receipt.</p></article>
+      <article class="card"><h3>3 · Execute and prove</h3><p>Production pins components and operations. Quality snapshots the limits it judged. Maintenance preserves the uptime evidence behind delivery risk.</p></article>
+      <article class="card"><h3>4 · Deliver and account</h3><p>Dispatch posts stock-out and the invoice together. Accounts holds the receivable and later receipt; Service keeps the after-delivery obligation.</p></article>
+      <article class="card tint"><h3>HEXA surrounds every step</h3><p>Verified identity, tenant fence, permission, approval and audit apply before the business service is allowed to touch a record.</p></article>
+      <article class="card tint"><h3>ONYX crosses the loop safely</h3><p>It asks the six specialists for evidence, joins their answers and waits for the person. It does not take ownership away from any module.</p></article>
+    </div>
+    <div class="callout"><strong>The Northstar proof</strong><p>The canonical demo follows one 120-unit PX-400 customer order through MRP, purchase, three production orders, a rejected inspection, 12 quarantined units, 28 dispatched units, an invoice, a receipt, a service ticket, employee spend and a Decision Commander approval. The same identifiers reconcile across the modules.</p></div>`));
+
+  p.push(page(accent, pale, title, "06", `
+    ${heading("05 · Architecture", "How a question reaches trusted data", "Every layer narrows what is possible and keeps the evidence")}
     ${flow(["Person / signal", "Mission", "Specialist", "Registry", "Domain service", "Tenant data", "Audit"])}
     <div class="stack">
       <div class="stack-row"><b>Experience</b><span>Copilot, dashboards, Decision Commander</span></div>
@@ -860,8 +1138,8 @@ function masterGuide() {
     </div>
     <div class="callout"><strong>There is no database agent</strong><p>An agent cannot write a query. It names a registered capability; the runtime checks who is asking and whether they may; the capability calls a service whose rules are already in force. The reason the Copilot can refuse “ship the held units anyway” is not good judgement — it is that no endpoint exists that would take such an instruction.</p></div>`));
 
-  p.push(page(accent, pale, title, "05", `
-    ${heading("04 · Every tool", `All ${SYSTEM.capabilities} capabilities`, "The complete registry — nothing else is callable")}
+  p.push(page(accent, pale, title, "07", `
+    ${heading("06 · Every tool", `All ${SYSTEM.capabilities} capabilities`, "The complete registry — nothing else is callable")}
     <table class="matrix"><thead><tr><th>Capability</th><th>Mode</th><th>Who may call</th><th>What it returns</th><th>Permission</th></tr></thead><tbody>
       <tr><td>general.companies.read</td><td>Read</td><td>HEXA, ONYX</td><td>Company masters</td><td>general.company.read</td></tr>
       <tr><td>sales.orders.read</td><td>Read</td><td>MICA</td><td>Sales orders</td><td>sales.order.read</td></tr>
@@ -882,13 +1160,13 @@ function masterGuide() {
     </tbody></table>
     <div class="callout"><strong>Fifteen of sixteen cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX is absent from the execute row.</p></div>`));
 
-  p.push(page(accent, pale, title, "06", `
-    ${heading("05 · The five missions", "Every registered graph", `${SYSTEM.graphNodes} nodes in total, all written down before any run starts`)}
+  p.push(page(accent, pale, title, "08", `
+    ${heading("07 · The five missions", "Every registered graph", `${SYSTEM.graphNodes} nodes in total, all written down before any run starts`)}
     ${GRAPHS.map((g) => `<div class="graph-card"><b>${esc(g.name)}</b><div class="meta">${esc(g.key)} · ${g.nodes} nodes · step budget ${g.maxSteps} · timeout ${g.timeout} · ${g.dispatches} dispatch node${g.dispatches === 1 ? "" : "s"}</div><p>${esc(g.shape)}</p></div>`).join("")}
     <div class="callout"><strong>Four of the five cannot act at all</strong><p>Only the controlled action mission contains dispatch nodes, and it has six — one per specialist, every one of them structurally downstream of a single human gate. The other four graphs are read, analyse, draft and explain. A test asserts that the Working Capital and QMS missions contain no dispatch node, so that property cannot be edited away by accident.</p></div>`));
 
-  p.push(page(accent, pale, title, "07", `
-    ${heading("06 · How a run works", "The execution rules, in plain terms", "The same engine drives all five missions")}
+  p.push(page(accent, pale, title, "09", `
+    ${heading("08 · How a run works", "The execution rules, in plain terms", "The same engine drives all five missions")}
     ${steps([
       ["Everything ready runs together", "The engine takes every node whose dependencies are finished and runs that whole wave at once. Six specialists reading six modules is one wave, not six trips."],
       ["A checkpoint after every wave", "Progress is written down as it happens, so a run can be explained afterwards and resumed rather than restarted."],
@@ -899,8 +1177,8 @@ function masterGuide() {
       ["Effects need an approved ancestor", "Before a side-effecting node runs, the engine walks the graph upward looking for an approval that actually returned yes. No ancestor, no execution — checked by the engine, not by the tool."],
     ])}`));
 
-  p.push(page(accent, pale, title, "08", `
-    ${heading("07 · Trust model", "Why the person stays in control", "Five boundaries, on every mission, with no exceptions")}
+  p.push(page(accent, pale, title, "10", `
+    ${heading("09 · Trust model", "Why the person stays in control", "Five boundaries, on every mission, with no exceptions")}
     <div class="stack">
       <div class="stack-row"><b>1 · Identity</b><span>A verified token decides the tenant and the actor</span></div>
       <div class="stack-row"><b>2 · Authority</b><span>The agent's allow-list AND the person's own permission</span></div>
@@ -916,8 +1194,24 @@ function masterGuide() {
     </div>
     <div class="callout"><strong>Where the guarantees are actually kept</strong><p>Continuous integration re-proves the tenant fence on every build, a live two-tenant probe tries to read across the boundary and fails, and all ${SYSTEM.permissions} permissions are reconciled against the routes that demand them. These are gates, not intentions.</p></div>`));
 
-  p.push(page(accent, pale, title, "09", `
-    ${heading("08 · The honest boundary", "What this build does and does not do", "Say the right-hand column out loud before anyone finds it")}
+  p.push(page(accent, pale, title, "11", `
+    ${heading("10 · Demo deployment", "How the shareable build is packaged", "Railway-ready five-service topology; no live cloud URL is claimed")}
+    ${flow(["Public browser", "Next.js web", "NestJS API", "PostgreSQL", "Valkey"])}
+    <div class="stack">
+      <div class="stack-row"><b>Web service</b><span>Dynamic Railway port · routes API calls to the public API URL</span></div>
+      <div class="stack-row"><b>API service</b><span>Waits for PostgreSQL · migrates · seeds/checkpoints once · starts HTTP</span></div>
+      <div class="stack-row"><b>Worker service</b><span>Consumes the transactional outbox independently from the API</span></div>
+      <div class="stack-row"><b>PostgreSQL</b><span>Custom demo image with extensions, application role and all durable records</span></div>
+      <div class="stack-row"><b>Valkey</b><span>Redis-compatible cache/coordination service, not the source of business truth</span></div>
+    </div>
+    <div class="grid-2">
+      <article class="card"><h3>Public-demo identity</h3><p>The hosted demo opens without the former sign-in screen. An explicit public-demo mode maps a small, fixed persona list to seeded tenant permissions; normal bearer-token checks remain the default outside that mode.</p></article>
+      <article class="card"><h3>Repeatable boot</h3><p>Deployment scripts wait for dependencies, apply all migrations, seed only when the checkpoint is absent, and expose liveness/readiness endpoints. Restarts do not blindly rebuild the database.</p></article>
+    </div>
+    <div class="callout"><strong>Current status</strong><p>The repository contains Railway Dockerfiles, service descriptors, a Compose-equivalent topology and a deployment runbook. A production domain or confirmed public Railway URL is not present in the working directory, so the honest state is “deployment-ready demo packaging”, not “currently hosted”.</p></div>`));
+
+  p.push(page(accent, pale, title, "12", `
+    ${heading("11 · The honest boundary", "What this build does and does not do", "Say the right-hand column out loud before anyone finds it")}
     <div class="truth">
       <div class="yes"><h3>Live in the repository</h3>${bullets([
         "Seven agents with fixed allow-lists",
@@ -942,12 +1236,12 @@ function masterGuide() {
     </div>
     <div class="callout"><strong>The one-line disclosure</strong><p>Orchestration, ERP reads, approval gates and governed dispatch are live. Language reasoning is deterministic, and no external model API or connector is active.</p></div>`));
 
-  p.push(page(accent, pale, title, "10", `
-    ${heading("09 · The guide set", "Where to read further", "The master stays short; each agent has its own handbook")}
+  p.push(page(accent, pale, title, "13", `
+    ${heading("12 · The guide set", "Where to read further", "The master stays short; each agent has its own handbook")}
     <div class="agent-grid">${agents
       .map((a) => `<article class="agent-card" style="--c:${a.colour}"><b>${a.name} · ${esc(a.label)}</b><p>${esc(a.owns.map((x) => x[0]).join(", "))}</p></article>`)
       .join("")}</div>
-    <p class="mini" style="margin-top:9px">Each guide follows the same ten pages: what the agent is for, how its part of the business actually works, the rules underneath it, its runtime contract, its exact tools, where it appears in the five missions, a worked example from live demo data, and an honest account of what is missing.</p>
+    <p class="mini" style="margin-top:9px">Each guide follows the same twelve pages: purpose, two module deep dives, the end-to-end business pipeline, enforced rules, runtime contract, exact tools, mission participation, a worked example, honest limits and a quick reference.</p>
     <h3 style="margin-top:11px">Shared glossary</h3>
     <table class="glossary"><tbody>
       <tr><td>Agent</td><td>A named specialist with a fixed, allow-listed tool surface.</td></tr>

@@ -14,6 +14,11 @@ const PUBLIC_DEMO_PERMISSIONS = [
       ...(module.alerts ?? []).map((alert) => alert.permission),
     ]),
   ),
+  // The investor presenter is the isolated demo tenant's control-room operator. These
+  // mutation permissions are still enforced again by the API against the seeded admin.
+  "agentos.run.operate",
+  "agentos.approval.decide",
+  "aiops.killswitch.operate",
 ] as const;
 
 const PUBLIC_DEMO_IDENTITY: Identity = {

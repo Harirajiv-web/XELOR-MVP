@@ -7,7 +7,7 @@
  * refusals without changing business records. It must report at least 50 independent checks.
  */
 
-import { makeClient, rows, token } from "../shared/demo-client.mjs";
+import { makeClient, PUBLIC_DEMO, rows, token } from "../shared/demo-client.mjs";
 
 const WEB = process.env.WEB_BASE ?? "http://localhost:3001";
 const API = process.env.API_BASE ?? "http://localhost:3000";
@@ -55,25 +55,42 @@ let storesToken = "";
 let call;
 let stores;
 
-await verify("web entrypoint answers on the presenter port", async () => {
-  const response = await fetch(WEB, { redirect: "manual" });
-  assert([200, 302, 303, 307, 308].includes(response.status), `web returned ${response.status}`);
+await verify(PUBLIC_DEMO ? "API bootstrap endpoint answers before the web starts" : "web entrypoint answers on the presenter port", async () => {
+  const response = await fetch(PUBLIC_DEMO ? `${API}/api/v1/health/live` : WEB, { redirect: "manual" });
+  assert([200, 302, 303, 307, 308].includes(response.status), `entrypoint returned ${response.status}`);
 });
-await verify("Keycloak realm is reachable", async () => {
-  const response = await fetch(`${KC}/realms/${REALM}`);
-  assert(response.status === 200, `realm returned ${response.status}`);
+await verify(PUBLIC_DEMO ? "public-demo selector opens only the isolated demo API" : "Keycloak realm is reachable", async () => {
+  const response = PUBLIC_DEMO
+    ? await fetch(`${API}/api/v1/general/companies`, {
+        headers: { "x-xelor-public-demo": "investor-presentation" },
+      })
+    : await fetch(`${KC}/realms/${REALM}`);
+  assert(response.status === 200, `identity boundary returned ${response.status}`);
 });
-await verify("OIDC discovery metadata is published", async () => {
+await verify(PUBLIC_DEMO ? "stores demo persona cannot read the administration registry" : "OIDC discovery metadata is published", async () => {
+  if (PUBLIC_DEMO) {
+    const response = await fetch(`${API}/api/v1/admin/roles`, {
+      headers: {
+        "x-xelor-public-demo": "investor-presentation",
+        "x-xelor-demo-persona": "poongodi",
+      },
+    });
+    assert(response.status === 403, `stores persona returned ${response.status}`);
+    return;
+  }
   const response = await fetch(`${KC}/realms/${REALM}/.well-known/openid-configuration`);
   const body = await response.json();
   assert(response.status === 200 && body.token_endpoint, "OIDC metadata is incomplete");
 });
-await verify("administrator receives a real Keycloak access token", async () => {
+await verify(PUBLIC_DEMO ? "administrator receives a scoped demo identity marker" : "administrator receives a real Keycloak access token", async () => {
   adminToken = await token("venkat");
-  assert(adminToken.split(".").length === 3, "administrator token is not a JWT");
+  assert(
+    PUBLIC_DEMO ? adminToken === "public-demo:venkat" : adminToken.split(".").length === 3,
+    PUBLIC_DEMO ? "administrator demo marker is invalid" : "administrator token is not a JWT",
+  );
   call = makeClient(adminToken);
 });
-await verify("stores persona receives a distinct access token", async () => {
+await verify(PUBLIC_DEMO ? "stores persona receives a distinct demo identity marker" : "stores persona receives a distinct access token", async () => {
   storesToken = await token("poongodi");
   assert(storesToken !== adminToken, "persona tokens unexpectedly match");
   stores = makeClient(storesToken);

@@ -27,6 +27,7 @@
 export const API = process.env.API_BASE ?? "http://localhost:3000";
 export const KC = process.env.KEYCLOAK_URL ?? "http://localhost:8080";
 export const REALM = process.env.KEYCLOAK_REALM ?? "indcore";
+export const PUBLIC_DEMO = process.env.DEMO_PUBLIC_MODE === "true";
 
 /** Demo "today" — §7 fixes it at Monday 20 July 2026 so every screen agrees. */
 export const TODAY = "2026-07-20";
@@ -42,6 +43,11 @@ const counters = { ok: 0, failed: 0 };
 export const tally = () => ({ ...counters });
 
 export async function token(username, password = "demo") {
+  // The hosted investor stack intentionally omits Keycloak. API_PUBLIC_DEMO
+  // still keeps requests inside the isolated demo tenant and normal RBAC/RLS;
+  // this marker only selects one of the seeded demo people for workflow steps.
+  if (PUBLIC_DEMO) return `public-demo:${username}`;
+
   const res = await fetch(`${KC}/realms/${REALM}/protocol/openid-connect/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -60,7 +66,13 @@ export async function token(username, password = "demo") {
 
 export function makeClient(tok) {
   return async function call(method, path, body, idemKey) {
-    const headers = { authorization: `Bearer ${tok}` };
+    const headers = {};
+    if (tok.startsWith("public-demo:")) {
+      headers["x-xelor-public-demo"] = "investor-presentation";
+      headers["x-xelor-demo-persona"] = tok.slice("public-demo:".length);
+    } else {
+      headers.authorization = `Bearer ${tok}`;
+    }
     if (body !== undefined) headers["content-type"] = "application/json";
     // The key is derived from the path and the payload, so re-running a seeder replays
     // rather than duplicates — the same guarantee a retrying client gets.

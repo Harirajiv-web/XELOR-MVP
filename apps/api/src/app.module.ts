@@ -24,6 +24,8 @@ import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
 import { AgentOsModule } from "./agent-os/agent-os.module.js";
+import { HealthController } from "./health.controller.js";
+import { ServerlessWorkerController } from "./serverless-worker.controller.js";
 
 /**
  * The single deployable modular monolith (DECISIONS-V2 §1.1). Each ERP domain is
@@ -76,6 +78,7 @@ import { AgentOsModule } from "./agent-os/agent-os.module.js";
     // GET /me — the bootstrap every front end calls before it draws anything.
     IdentityModule,
   ],
+  controllers: [HealthController, ServerlessWorkerController],
   // Global RBAC gate — routes opt in with @RequirePermission; unguarded routes pass.
   providers: [{ provide: APP_GUARD, useClass: PermissionGuard }],
 })

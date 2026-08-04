@@ -37,7 +37,17 @@ try {
   if (!(error instanceof Error) || !("code" in error) || error.code !== "ENOENT") throw error;
 }
 
-const child = spawn(process.execPath, [nextBin, command, ...args], {
+// Container platforms inject PORT. Local development keeps the familiar 3001
+// default without baking that port into the package script.
+const effectiveArgs = [...args];
+if (
+  (command === "dev" || command === "start") &&
+  !effectiveArgs.some((arg) => arg === "--port" || arg === "-p")
+) {
+  effectiveArgs.push("--port", process.env.PORT ?? "3001");
+}
+
+const child = spawn(process.execPath, [nextBin, command, ...effectiveArgs], {
   env: process.env,
   stdio: "inherit",
 });

@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/run-next.mjs dev --port 3001",
+    "dev": "node scripts/run-next.mjs dev",
     "build": "node scripts/run-next.mjs build",
-    "start": "node scripts/run-next.mjs start --port 3001",
+    "start": "node scripts/run-next.mjs start",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "module-check": "node scripts/validation/check-module-manifests.mjs",

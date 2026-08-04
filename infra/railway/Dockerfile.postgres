@@ -1,0 +1,7 @@
+FROM pgvector/pgvector:pg17
+
+COPY infra/railway/postgres-init.sh /docker-entrypoint-initdb.d/00-xelor-init.sh
+RUN chmod 0555 /docker-entrypoint-initdb.d/00-xelor-init.sh
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=20 \
+  CMD pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" || exit 1

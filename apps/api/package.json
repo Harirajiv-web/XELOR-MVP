@@ -21,6 +21,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "bullmq": "^5.34.0",
     "drizzle-orm": "^0.36.4",
+    "express": "^5.1.0",
     "ioredis": "^5.4.1",
     "jose": "^5.9.6",
     "reflect-metadata": "^0.2.2",

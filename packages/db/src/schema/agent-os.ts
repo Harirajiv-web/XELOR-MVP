@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -185,6 +186,49 @@ export const agentActionDispatch = pgTable(
       t.tenantId,
       t.dispatchedAt,
     ),
+  ],
+);
+
+/**
+ * The tenant's operating contract for Agent OS. A single row decides whether a mission
+ * advances on its own between mandatory gates or stops before every execution wave.
+ */
+export const agentControlPolicy = pgTable(
+  "agent_control_policy",
+  {
+    ...tenantScopedColumns,
+    mode: text("mode").notNull().default("autonomous_guarded"),
+    changedReason: text("changed_reason").notNull(),
+    changedAt: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow(),
+    changedBy: uuid("changed_by").notNull(),
+  },
+  (t) => [unique("uq_agentcontrol_tenant").on(t.tenantId)],
+);
+
+/**
+ * A durable Proceed gate used only in step-by-step mode. It is separate from a business
+ * approval: Proceed authorises the runtime to perform the next bounded wave, while an
+ * approval authorises a consequential business action.
+ */
+export const agentStepGate = pgTable(
+  "agent_step_gate",
+  {
+    ...tenantScopedColumns,
+    runId: uuid("run_id").notNull(),
+    waveKey: text("wave_key").notNull(),
+    sequence: integer("sequence").notNull(),
+    nodeIds: jsonb("node_ids").notNull().default([]),
+    status: text("status").notNull().default("pending"),
+    requestedAt: timestamp("requested_at", { withTimezone: true }).notNull().defaultNow(),
+    decidedBy: uuid("decided_by"),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    decisionNote: text("decision_note"),
+    resumed: boolean("resumed").notNull().default(false),
+  },
+  (t) => [
+    unique("uq_agentstep_run_wave").on(t.tenantId, t.runId, t.waveKey),
+    unique("uq_agentstep_run_sequence").on(t.tenantId, t.runId, t.sequence),
+    index("ix_agentstep_tenant_status").on(t.tenantId, t.status, t.requestedAt),
   ],
 );
 

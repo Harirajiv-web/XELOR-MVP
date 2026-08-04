@@ -1,0 +1,102 @@
+# Local parity stack for the Railway public-demo topology.
+#
+# Railway deploys each service from the same GitHub repository using the adjacent
+# *.railway.json files. This Compose file lets the exact five containers be built
+# and exercised locally before a push.
+name: xelor-public-demo
+
+services:
+  xelor-postgres:
+    build:
+      context: ../..
+      dockerfile: infra/railway/Dockerfile.postgres
+    environment:
+      POSTGRES_DB: indcore
+      POSTGRES_USER: indcore_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      APP_DATABASE_PASSWORD: ${APP_DATABASE_PASSWORD:?set APP_DATABASE_PASSWORD}
+    volumes:
+      - xelor-demo-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indcore_owner -d indcore"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  xelor-valkey:
+    build:
+      context: ../..
+      dockerfile: infra/railway/Dockerfile.valkey
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  xelor-api:
+    build:
+      context: ../..
+      dockerfile: infra/railway/Dockerfile.api
+    environment:
+      PORT: "3000"
+      API_PUBLIC_DEMO: "true"
+      AI_PROVIDER: stub
+      DB_POOL_MAX: "5"
+      DATABASE_OWNER_URL: postgresql://indcore_owner:${POSTGRES_PASSWORD}@xelor-postgres:5432/indcore
+      DATABASE_URL: postgresql://app_user:${APP_DATABASE_PASSWORD}@xelor-postgres:5432/indcore
+      VALKEY_URL: redis://xelor-valkey:6379
+      SEED_DEMO_ON_BOOT: "true"
+      DEMO_SEED_VERSION: railway-public-demo-v1
+      READINESS_FILE: /tmp/xelor-api-ready
+    ports:
+      - "${XELOR_API_HOST_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 90
+      start_period: 20s
+    depends_on:
+      xelor-postgres:
+        condition: service_healthy
+
+  xelor-worker:
+    build:
+      context: ../..
+      dockerfile: infra/railway/Dockerfile.api
+    command: ["sh", "infra/railway/start-worker.sh"]
+    environment:
+      DATABASE_URL: postgresql://app_user:${APP_DATABASE_PASSWORD}@xelor-postgres:5432/indcore
+      VALKEY_URL: redis://xelor-valkey:6379
+      API_HEALTH_URL: http://xelor-api:3000/api/v1/health
+    depends_on:
+      xelor-api:
+        condition: service_healthy
+      xelor-valkey:
+        condition: service_healthy
+
+  xelor-web:
+    build:
+      context: ../..
+      dockerfile: infra/railway/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_ORIGIN: http://xelor-api:3000
+        NEXT_PUBLIC_PUBLIC_DEMO: "true"
+    environment:
+      PORT: "3001"
+      API_HEALTH_URL: http://xelor-api:3000/api/v1/health
+      NEXT_PUBLIC_PUBLIC_DEMO: "true"
+    ports:
+      - "${XELOR_WEB_HOST_PORT:-3001}:3001"
+    depends_on:
+      xelor-api:
+        condition: service_healthy
+
+volumes:
+  xelor-demo-postgres:

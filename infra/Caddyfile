@@ -1,0 +1,35 @@
+# XELOR reverse proxy.
+#
+# One hostname, one certificate, one DNS record. Keycloak sits at /auth on the SAME host
+# rather than on a sibling subdomain, and that is a deliberate choice: the sign-in theme
+# shares its light/dark preference with the app through a cookie named `xelor.theme`, and
+# a cookie is scoped to a HOST. Same host, and it simply works. Split them across
+# auth.xelor.… and xelor.… and the cookie needs `domain=.kisancred.com` set at BOTH ends
+# (spine/theme/theme.tsx and spine/void/login-loader.ts) — and nothing fails loudly when
+# that is wrong, the theme just stops following people through the front door.
+#
+# Caddy obtains and renews TLS automatically, which needs :80 and :443 reachable from the
+# internet and the DNS A record already pointing here.
+
+{$PUBLIC_HOST} {
+	encode zstd gzip
+
+	# Keycloak. The prefix is NOT stripped — the container runs with
+	# KC_HTTP_RELATIVE_PATH=/auth, so it expects to own this path and builds its issuer,
+	# redirect and JWKS URLs from it.
+	handle /auth/* {
+		reverse_proxy keycloak:8080
+	}
+
+	# Everything else is the Next.js app, which proxies /api/v1/* onward to the API itself
+	# (see the rewrites() block in apps/web/next.config.ts). The API is therefore never
+	# published to the internet directly, and CORS never enters the picture.
+	handle {
+		reverse_proxy web:3001
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

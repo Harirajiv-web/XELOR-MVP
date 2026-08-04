@@ -64,7 +64,7 @@
     <div class="eyebrow">XELOR · TECHNICAL STRATEGY</div>
     <h1>Technology Stack &amp; Production Roadmap</h1>
     <div class="sub">What the demo actually runs, what production still needs, the extension points already reserved, and a pragmatic target stack for a dependable manufacturing product.</div>
-    <div class="meta"><span>Prepared from the running repository and live workflow audit</span><span>31 July 2026</span></div>
+    <div class="meta"><span>Prepared from the repository, module/API audit and deployment package</span><span>3 August 2026</span></div>
   </section>
 
   <section>
@@ -74,14 +74,14 @@
     <div class="callout warning"><b>Security and reliability reality:</b> no honest architecture is unbreachable or incapable of failure. The production target is a resilient, recoverable, least-privilege system with defence in depth, small blast radii, tested restoration, continuous detection and measurable service objectives.</div>
     <div class="grid2">
       <div class="card"><h3>What is unusually good</h3><ul><li>Tenant context is derived from verified identity and reinforced by PostgreSQL FORCE RLS.</li><li>Ledger-critical writes stay transactional and use controlled write paths.</li><li>Audit, approvals and AI actions are append-only and tamper-evident.</li><li>Domain boundaries and provider ports leave credible exit paths.</li><li>The demo is deterministic and rebuildable instead of relying on fragile fake screens.</li></ul></div>
-      <div class="card"><h3>What blocks production</h3><ul><li>No production cloud deployment, autoscaling or managed recovery is implemented.</li><li>Telemetry, alerting, incident response and SLOs are not yet operational.</li><li>Several core manufacturing workflows remain incomplete.</li><li>Backup claims need automated restore drills and evidence.</li><li>Security assurance, load testing, accessibility and release governance need formal gates.</li></ul></div>
+      <div class="card"><h3>What blocks production</h3><ul><li>A Railway demo package exists, but no production cloud environment, autoscaling or managed recovery is operating.</li><li>Telemetry, alerting, incident response and SLOs are not yet operational.</li><li>Several core manufacturing workflows remain incomplete.</li><li>Backup claims need automated restore drills and evidence.</li><li>Security assurance, load testing, accessibility and release governance need formal gates.</li></ul></div>
     </div>
     <h3>Status language used in this report</h3>
     <p><span class="tag live">LIVE</span> wired and exercised in the prototype &nbsp; <span class="tag partial">PARTIAL</span> real foundation but incomplete production behavior &nbsp; <span class="tag reserved">RESERVED</span> a deliberate interface/schema extension point &nbsp; <span class="tag planned">RECOMMENDED</span> proposed after the demo.</p>
     <div class="kpi">
       <div><b>4</b>workspace packages/apps</div>
-      <div><b>26</b>NestJS controller surfaces</div>
-      <div><b>228</b>migration CREATE TABLE declarations</div>
+      <div><b>28</b>NestJS controller surfaces</div>
+      <div><b>233</b>migration CREATE TABLE declarations</div>
       <div><b>7/7</b>Agent OS identities connected</div>
     </div>
     <p class="small">Counts are repository observations, not a claim that every table or endpoint is complete for commercial production.</p>
@@ -95,18 +95,18 @@
         <tr><td>Runtime &amp; language</td><td>Node.js 22; TypeScript 5.7; ESM</td><td><span class="tag live">LIVE</span></td><td>One language across browser, API, platform rules, tests and workers.</td></tr>
         <tr><td>Monorepo</td><td>pnpm 9 workspaces</td><td><span class="tag live">LIVE</span></td><td>Coordinates <code>apps/web</code>, <code>apps/api</code>, <code>packages/platform</code> and <code>packages/db</code>.</td></tr>
         <tr><td>Web application</td><td>Next.js 15 App Router; React 19; Tailwind CSS 4; Radix UI; Lucide; Three.js</td><td><span class="tag live">LIVE</span></td><td>Authenticated XELOR shell, horizontal module tabs, global Human Approvals entry with live pending count, dedicated approval inbox, department gateway, ONYX rail, Mission Control and an adaptive 3-D digital-twin sign-in scene.</td></tr>
-        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 26 controller surfaces.</td></tr>
+        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 28 controller surfaces, including health/readiness.</td></tr>
         <tr><td>Validation</td><td>Zod 3</td><td><span class="tag live">LIVE</span></td><td>Validates most request bodies and agent capability inputs; a few documented endpoints still bypass the pattern.</td></tr>
         <tr><td>Database</td><td>PostgreSQL 17; pgvector; pg_trgm; btree_gist</td><td><span class="tag live">LIVE</span></td><td>Transactional ERP system of record, vector-ready columns, fuzzy master matching and constraint-backed invariants.</td></tr>
         <tr><td>Data access</td><td>Drizzle ORM 0.36; SQL migrations; node-postgres</td><td><span class="tag live">LIVE</span></td><td>Typed schema access plus explicit migrations and operational checks.</td></tr>
         <tr><td>Tenancy</td><td>AsyncLocalStorage context + <code>SET LOCAL</code> + PostgreSQL FORCE RLS</td><td><span class="tag live">LIVE</span></td><td>Fail-closed shared-schema tenant isolation; portal adds customer-account scoping.</td></tr>
-        <tr><td>Identity</td><td>Keycloak 26; OIDC Authorization Code + PKCE; jose/JWKS; in-app RBAC</td><td><span class="tag live">LIVE</span></td><td>Signed tenant claims, personas and permissions. The callback exchange is single-flight and retains tab-scoped PKCE state until success. The visibly labelled local demo theme provides one-action ENTER XELOR access on both initial and repeat authentication screens, mapping arbitrary or empty fields to an isolated seeded presenter identity; production retains strict IdP authentication.</td></tr>
+        <tr><td>Identity</td><td>Keycloak 26; OIDC Authorization Code + PKCE; jose/JWKS; in-app RBAC; explicit public-demo mode</td><td><span class="tag live">LIVE</span></td><td>Normal mode derives signed tenant claims and permissions from Keycloak. A separately configured, sign-in-free hosted-demo mode maps only fixed seeded personas and is restricted to disposable investor data.</td></tr>
         <tr><td>Queue &amp; cache</td><td>Valkey 8; BullMQ 5; ioredis</td><td><span class="tag live">LIVE</span></td><td>Outbox relay and idempotent asynchronous consumption; local cache/broker foundation.</td></tr>
         <tr><td>Audit &amp; workflow</td><td>Hash chains; append-only tables; W1 approval engine; Agent OS human gates</td><td><span class="tag live">LIVE</span></td><td>Tenant-scoped pending inbox, permission-checked Approve/Reject, mandatory decision note, identity/time attribution, durable pause/resume and tamper evidence.</td></tr>
         <tr><td>AI</td><td>Thin provider router; deterministic stub; optional Ollama; custom eval harness; Agent OS; Decision Commander</td><td><span class="tag partial">PARTIAL</span></td><td>Cross-module analysis, missions and approvals are live; language reasoning remains deterministic and no hosted provider is active.</td></tr>
         <tr><td>Decision data</td><td>PostgreSQL evidence-link graph and outcome metrics with RLS, audit and explicit verification state</td><td><span class="tag live">LIVE</span></td><td>Estimated exposure and verified value are stored and reported separately; verification requires observed data, method and named reviewer.</td></tr>
-        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>Unit/pure-rule tests, boundary checks and authenticated browser workflows, including all 13 guided-demo journeys and 110 presenter steps with a no-write assertion.</td></tr>
-        <tr><td>Local infrastructure</td><td>Docker Compose; Keycloak; PostgreSQL; Valkey; Gotenberg</td><td><span class="tag live">LIVE</span></td><td>Reproducible local services. This is not yet a production deployment topology.</td></tr>
+        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>722 unit/service tests pass (698 platform, 3 database, 21 API); the live investor matrix passes 97/97 and Playwright currently lists 20 browser scenarios.</td></tr>
+        <tr><td>Deployment packaging</td><td>Docker Compose plus Railway Dockerfiles, service JSON, health/readiness and boot scripts</td><td><span class="tag live">LIVE</span></td><td>Local seven-service development and a five-service hosted-demo topology are reproducible. A currently operating cloud environment or production topology is not claimed.</td></tr>
       </tbody>
     </table>
     <div class="callout warning"><b>Branding note:</b> internal package, database and Keycloak realm identifiers still use the historical deployment slug in places. They are technical contracts, not rendered product copy. Renaming them is possible but should be a separately rehearsed infrastructure migration—not a search-and-replace during demo hardening.</div>
@@ -167,6 +167,73 @@
   </section>
 
   <section class="page">
+    <h2>3A. Module maturity map</h2>
+    <p class="lead">All 19 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
+    <table class="small">
+      <thead><tr><th>Owner</th><th>Module</th><th>Working centre</th><th>Most important boundary</th></tr></thead>
+      <tbody>
+        <tr><td>ONYX</td><td>Copilot <span class="tag live">LIVE</span></td><td>21 permission-checked read intents, fixed queries, evidence, refusals and history.</td><td>No unrestricted Q&amp;A or write action; hosted narration is off.</td></tr>
+        <tr><td>ONYX</td><td>Agent OS <span class="tag live">LIVE</span></td><td>5 graphs, 16 capabilities, parallel waves, checkpoints, approvals and recovery.</td><td>Language reasoning is deterministic; dispatch creates a work item, not ERP completion.</td></tr>
+        <tr><td>ONYX</td><td>AI Operations <span class="tag partial">PARTIAL</span></td><td>Registry, provider policy, kill/budget, cost, evaluations and action logging.</td><td>No live hosted provider; implementation/golden-set coverage is incomplete.</td></tr>
+        <tr><td>HEXA</td><td>Organisation <span class="tag live">LIVE</span></td><td>Companies, registrations, departments and transaction-safe numbering.</td><td>No consolidation or corporate-secretarial lifecycle.</td></tr>
+        <tr><td>HEXA</td><td>Administration <span class="tag partial">PARTIAL</span></td><td>Roles, 138 permissions, SoD, incident/privacy clocks and audit verification.</td><td>Row/field policy is mainly preview; grant revocation/escalation needs depth.</td></tr>
+        <tr><td>HEXA</td><td>Integration <span class="tag partial">PARTIAL</span></td><td>Retry/DLQ/circuit/signature/statutory state logic and operator screens.</td><td>External network transports remain simulated.</td></tr>
+        <tr><td>MICA</td><td>Sales <span class="tag partial">PARTIAL</span></td><td>Customer, GST order, credit gate, dispatch, invoice and receivable.</td><td>No lead/opportunity/quotation or complete cancellation/reservation workflow.</td></tr>
+        <tr><td>MICA</td><td>Service <span class="tag partial">PARTIAL</span></td><td>Tickets, account isolation, SLA, entitlement, complaint, spares and CSAT.</td><td>No integrated outbound transport; warranty rows are not created by normal flow.</td></tr>
+        <tr><td>SPAR</td><td>Purchase <span class="tag partial">PARTIAL</span></td><td>Vendor, two-step approval, PO and atomic goods receipt.</td><td>Cycle ends at GRN; no supplier invoice, match, AP or payment.</td></tr>
+        <tr><td>SPAR</td><td>Inventory <span class="tag partial">PARTIAL</span></td><td>Single append-only stock path, locks, FIFO batches and on-hand.</td><td>No bin/reservation/count/serial genealogy or complete valuation.</td></tr>
+        <tr><td>AXLE</td><td>Engineering <span class="tag partial">PARTIAL</span></td><td>Item and BOM foundations consumed by Sales, Planning and Production.</td><td>No ECR/ECO change intent, impact, approval or effectivity.</td></tr>
+        <tr><td>AXLE</td><td>Planning <span class="tag partial">PARTIAL</span></td><td>MRP, calendars, lot sizing, pegging, immutable workings and exceptions.</td><td>Capacity is infinite and scheduling is a draft heuristic.</td></tr>
+        <tr><td>KILN</td><td>Production <span class="tag partial">PARTIAL</span></td><td>Pinned components, predecessor-gated operations, issue and receipt.</td><td>Quality auto-gate, scrap, genealogy, WIP and costing need depth.</td></tr>
+        <tr><td>KILN</td><td>QMS &amp; Audit <span class="tag partial">PARTIAL</span></td><td>Inspections, snapshotted limits, disposition, NCR/CAPA and evidence.</td><td>Auto-created inspections, calibration and broader document/audit lifecycle.</td></tr>
+        <tr><td>KILN</td><td>Maintenance <span class="tag partial">PARTIAL</span></td><td>Assets, requests, work, downtime, PM and reliability calculations.</td><td>No sensors, complete shift calendars or predictive engine.</td></tr>
+        <tr><td>RASP</td><td>Accounts <span class="tag partial">PARTIAL</span></td><td>Balanced append-only GL, reversal, trial balance and receivables.</td><td>No period close, AP, bank reconciliation or full statements.</td></tr>
+        <tr><td>RASP</td><td>Employee Spend <span class="tag partial">PARTIAL</span></td><td>Budget reservations, claims/receipts, approvals and tax gates.</td><td>Prepared posting is not fully wired to Accounts; cost-centre masters differ.</td></tr>
+        <tr><td>RASP</td><td>People <span class="tag partial">PARTIAL</span></td><td>Employees, punches, attendance and dated statutory payroll.</td><td>No broad recruitment/performance/learning or device integration.</td></tr>
+        <tr><td>RASP</td><td>Working Capital <span class="tag partial">PARTIAL</span></td><td>Real cash-position read and a governed cross-agent review mission.</td><td>Most screen values and three finance tools are illustrative wrappers.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>3B. Transaction ownership and cross-module dependencies</h2>
+    <p class="lead">The architecture works because cross-module flows do not bypass record ownership. The following boundaries are the highest-value contracts to preserve during future implementation.</p>
+    <table>
+      <thead><tr><th>Business event</th><th>Owning transaction</th><th>Cross-module effect</th><th>Failure behavior</th></tr></thead>
+      <tbody>
+        <tr><td>Customer dispatch</td><td>Sales coordinates through the Stock and Accounts ports.</td><td>Inventory goods-out, delivery note, invoice and receivable commit together.</td><td>Credit or stock refusal aborts all of it; a retry uses the same idempotency key.</td></tr>
+        <tr><td>Supplier receipt</td><td>Purchase validates approved outstanding PO quantity.</td><td>GRN and Inventory receipt share one transaction.</td><td>Over-receipt or stock posting fault leaves neither a GRN nor a movement.</td></tr>
+        <tr><td>MRP run</td><td>Planning gathers Sales/Engineering/Inventory/Purchase/Production inputs through ports.</td><td>Stores workings, pegs, planned orders and exceptions as one dated result.</td><td>Cycles/calendar faults refuse the run; completed workings cannot be edited.</td></tr>
+        <tr><td>Production release/completion</td><td>Production pins the Engineering BOM and operation sequence.</td><td>Inventory issues components and receives finished goods; Quality evidence is linked separately.</td><td>Open predecessors, insufficient stock or completion blockers return without pretending progress.</td></tr>
+        <tr><td>Quality disposition</td><td>Quality owns the verdict and applied spec/sampling snapshots.</td><td>Inventory owns quarantine/release movement; finding and CAPA preserve follow-up.</td><td>An executed disposition without its movement reference is structurally refused.</td></tr>
+        <tr><td>Employee claim</td><td>Employee Spend locks and moves the budget reservation ledger.</td><td>People supplies identity/grade; AI Operations may govern extraction; Accounts receives a prepared posting.</td><td>Unbudgeted/override/tax ambiguity stays visible; current Accounts hand-off is incomplete.</td></tr>
+        <tr><td>Payroll approval</td><td>People calculates from attendance and dated statutory tables.</td><td>Accounts posts the balanced payroll voucher synchronously.</td><td>Missing rate or duty conflict stops the run; payroll and journal cannot disagree.</td></tr>
+        <tr><td>Agent-controlled action</td><td>Agent OS owns the graph, approval and governed work item.</td><td>The specialist receives an assignment referencing the exact approved payload.</td><td>No approved ancestor means no dispatch; dispatch never masquerades as domain completion.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Extraction rule for future microservices:</b> do not split a module merely because it has many endpoints. Extract only when there is a measured scaling, ownership, deployment or fault-isolation need—and preserve each atomic contract with an explicit saga/reconciliation design.</div>
+  </section>
+
+  <section class="page">
+    <h2>3C. Railway demo deployment now present</h2>
+    <p class="lead">The repository includes deployment packaging for a public demonstration, not a claim of production operations. Railway is a better fit than Vercel alone because API, worker, PostgreSQL and Valkey must accompany the Next.js front end.</p>
+    <div class="flow"><div>Public visitor<br>Railway URL</div><div class="arrow">→</div><div>xelor-web<br>only public service</div><div class="arrow">→</div><div>xelor-api<br>private service</div></div>
+    <div class="flow"><div>xelor-worker<br>outbox consumer</div><div class="arrow">→</div><div>xelor-postgres<br>durable volume</div><div class="arrow">→</div><div>xelor-valkey<br>demo coordination</div></div>
+    <table>
+      <thead><tr><th>Concern</th><th>Implemented demo behavior</th><th>Still required for production</th></tr></thead>
+      <tbody>
+        <tr><td>Images/config</td><td>Four Dockerfiles, five Railway service descriptors, watch patterns and health/restart policies under <code>infra/railway</code>.</td><td>Registry signing, SBOM, vulnerability policy, promoted immutable digests and IaC.</td></tr>
+        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 64 forward migrations, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
+        <tr><td>Identity</td><td>Explicit Web/API public-demo flags provide fixed seeded personas and remove the sign-in page for the disposable demo.</td><td>Keycloak/enterprise IdP, MFA, lifecycle, strict session policy and zero demo bypass.</td></tr>
+        <tr><td>Networking</td><td>Only web is public; API, database, worker and Valkey communicate on Railway private DNS.</td><td>WAF/edge protection, network policy, private endpoints, rate limits and threat monitoring.</td></tr>
+        <tr><td>Operations</td><td>Liveness/readiness, dependency waits, restart policy and reproducible local five-container parity Compose.</td><td>Metrics/traces/log aggregation, SLOs, alerting, on-call, capacity and incident response.</td></tr>
+        <tr><td>Cost</td><td>Fits Railway's five-service trial limit and keeps AI on the deterministic stub.</td><td>Funded always-on environment; five services are unlikely to remain inside the long-term free allowance.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warning"><b>Current state:</b> deployment-ready demo packaging exists in the working directory. No generated Railway URL, active project, TLS certificate or DNS record can be proven from repository files alone.</div>
+  </section>
+
+  <section class="page">
     <h2>4. Stack needed immediately after the demo</h2>
     <table>
       <thead><tr><th>Capability</th><th>Recommended stack</th><th>Why it is required</th><th>Exit criterion</th></tr></thead>
@@ -211,7 +278,7 @@
       <thead><tr><th>Priority</th><th>Gap</th><th>Production impact</th><th>Recommended treatment</th></tr></thead>
       <tbody>
         <tr><td>Resolved</td><td>Batch/lot consumption</td><td>FIFO allocation now consumes batch-tracked receipts through the single stock write path and records explicit splits.</td><td>Keep the allocation and insufficiency regression tests in the release gate; extend genealogy reporting for production.</td></tr>
-        <tr><td>Resolved</td><td>Idempotency/validation consistency</td><td>Database conflicts map to safe 409 responses; the identified maintenance and expenditure paths validate and deduplicate requests.</td><td>Retain conformance probes in the 87-check investor acceptance matrix.</td></tr>
+        <tr><td>Resolved</td><td>Idempotency/validation consistency</td><td>Database conflicts map to safe 409 responses; the identified maintenance and expenditure paths validate and deduplicate requests.</td><td>Retain conformance probes in the 97-check investor acceptance matrix.</td></tr>
         <tr><td>P1</td><td>Quotation and opportunity</td><td>The commercial process starts at a committed sales order.</td><td>Add lead/opportunity, quote revisions, validity, approvals and quote-to-order conversion.</td></tr>
         <tr><td>Resolved</td><td>Production operations</td><td>Northstar production reports four predecessor-gated operations with operator, time, quantities and evidence.</td><td>Deepen labour/machine booking and WIP analytics for production deployments.</td></tr>
         <tr><td>Resolved</td><td>Persisted NCR/CAPA</td><td>The rejected inspection has a persisted NCR, containment, root cause and CAPA whose effectiveness review remains human-owned.</td><td>Extend toward full 8D, attachment lifecycle and customer-specific approval routes.</td></tr>
@@ -280,11 +347,12 @@
     <ul>
       <li><code>package.json</code> and all workspace package manifests</li>
       <li><code>infra/docker-compose.yml</code>, Keycloak realm/theme and PostgreSQL initialization</li>
+      <li><code>infra/railway</code> Dockerfiles, service descriptors, startup scripts and five-container parity topology</li>
       <li><code>packages/db</code> schemas, migrations, RLS/permission checks and demo reset</li>
       <li><code>apps/api</code> domain modules, common guards, worker/outbox, workflow, AI and Agent OS</li>
       <li><code>apps/web</code> module manifests, shell, Copilot rail and Playwright workflows</li>
       <li><code>docs/02-investor-demo/02-capability-gaps.md</code></li>
-      <li>Authenticated browser audit of the running XELOR application on 31 July 2026</li>
+      <li>Module/API/deployment re-audit and 722-test run on 3 August 2026</li>
     </ul>
     <h3>Official external references used for future recommendations</h3>
     <ul class="small">
@@ -298,7 +366,7 @@
     </ul>
     <h3>Final recommendation</h3>
     <p class="lead">Keep the core stack. Invest next in managed operations, observability, recovery, security and the missing manufacturing workflows. Use the ports already present to introduce hosted AI, durable workflow or higher-scale event infrastructure only when a tested product need calls for them.</p>
-    <p class="footer-note">This report describes the repository and local deployment inspected on 31 July 2026. “Live” means implemented and exercised in the prototype; it does not imply production certification, contractual availability or regulatory approval.</p>
+    <p class="footer-note">This report describes the working repository inspected on 3 August 2026. “Live” means implemented and exercised in the prototype; it does not imply an active hosted URL, production certification, contractual availability or regulatory approval.</p>
   </section>
 </body>
 </html>

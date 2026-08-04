@@ -1,0 +1,186 @@
+# XELOR — production stack for a single host.
+#
+#   docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# Run it from the REPOSITORY ROOT: the two image builds need the whole workspace as their
+# context, because the API is a pnpm workspace that consumes packages/platform and
+# packages/db through their build output.
+#
+# WHAT IS AND IS NOT EXPOSED. Only Caddy publishes ports. Postgres, Valkey, Gotenberg, the
+# API and the worker have no `ports:` at all — they are reachable on the compose network
+# and nowhere else. This is not tidiness: the API answers on :3000 with a global prefix of
+# /api/v1, and publishing it would put a second, unproxied door next to the front one.
+name: xelor
+
+services:
+  # ------------------------------------------------------------------ edge
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?set PUBLIC_HOST, e.g. xelor.kisancred.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, keycloak]
+
+  # ------------------------------------------------------------------ apps
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Baked into the browser bundle at build time. Change one, rebuild the image —
+        # restarting will not pick it up.
+        NEXT_PUBLIC_API_ORIGIN: http://api:3000
+        NEXT_PUBLIC_KEYCLOAK_URL: https://${PUBLIC_HOST}/auth
+        NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM:-indcore}
+        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-indcore-api}
+        NEXT_PUBLIC_PUBLIC_DEMO: ${NEXT_PUBLIC_PUBLIC_DEMO:-false}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      # Server-side only: next.config.ts reads this inside rewrites().
+      NEXT_PUBLIC_API_ORIGIN: http://api:3000
+    depends_on:
+      api:
+        condition: service_started
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # The APP role: non-owner, NOBYPASSRLS. FORCE RLS is only a real backstop because
+      # this connection cannot bypass it.
+      DATABASE_URL: postgres://app_user:${APP_DB_PASSWORD:?set APP_DB_PASSWORD}@postgres:5432/indcore
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      VALKEY_URL: redis://valkey:6379
+      KEYCLOAK_URL: https://${PUBLIC_HOST}/auth
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-indcore}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-indcore-api}
+      GOTENBERG_URL: http://gotenberg:3001
+      AI_PROVIDER: ${AI_PROVIDER:-stub}
+      API_PUBLIC_DEMO: ${API_PUBLIC_DEMO:-false}
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  # The outbox relay and BullMQ consumers. A separate process by design — see the header
+  # comment in apps/api/src/worker.ts.
+  worker:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://app_user:${APP_DB_PASSWORD}@postgres:5432/indcore
+      VALKEY_URL: redis://valkey:6379
+      KEYCLOAK_URL: https://${PUBLIC_HOST}/auth
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-indcore}
+      AI_PROVIDER: ${AI_PROVIDER:-stub}
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  # ------------------------------------------------------------- migrations
+  # One-shot, and it connects as the OWNER. Everything else connects as app_user, which
+  # cannot alter the schema — that separation is the point, so it gets its own container
+  # and its own credential rather than a flag on the API.
+  migrate:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: migrator
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://app_user:${APP_DB_PASSWORD}@postgres:5432/indcore
+      DATABASE_OWNER_URL: postgres://indcore_owner:${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD}@postgres:5432/indcore
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  # ------------------------------------------------------------------ data
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: indcore
+      POSTGRES_USER: indcore_owner
+      POSTGRES_PASSWORD: ${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD}
+      # Both are read by the init scripts on first boot only, and ignored on every boot
+      # after that — the scripts do not run again once the volume has data.
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set KEYCLOAK_DB_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs ONCE, on an empty volume: creates app_user (NOBYPASSRLS), the extensions, the
+      # default privileges and the app.current_tenant GUC — then the keycloak database.
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indcore_owner -d indcore"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    command: ["valkey-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - valkeydata:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ------------------------------------------------------------- identity
+  # `start`, not `start-dev`: a real database, no auto-generated dev keys, HTTPS terminated
+  # at Caddy. KC_PROXY_HEADERS=xforwarded is what makes Keycloak build its issuer and
+  # redirect URLs from the public hostname instead of the container's own.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    restart: unless-stopped
+    command: ["start", "--optimized=false", "--features=organization", "--http-port=8080"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: https://${PUBLIC_HOST}/auth
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:?set KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak-themes/indcore:/opt/keycloak/themes/indcore:ro
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  # -------------------------------------------------------------------- pdf
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    command: ["gotenberg", "--api-port=3001"]
+
+volumes:
+  pgdata:
+  valkeydata:
+  caddy_data:
+  caddy_config:

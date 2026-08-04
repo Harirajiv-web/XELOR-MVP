@@ -220,6 +220,7 @@ test("commander retries keep one fingerprint even when observation timestamps mo
     {} as never,
     decisions as never,
     {} as never,
+    { assertRuntimeActive: async () => undefined } as never,
   );
 
   await service.startCommanderRisk("delivery:so-1", "stable-retry-key");
@@ -329,6 +330,10 @@ test("engine runs parallel evidence waves, pauses, resumes and completes after a
     new AgentRegistryService(),
     capabilities as never,
     new DeterministicAgentReasoner(),
+    {
+      runtimeGate: async () => ({ allowed: true, reason: null }),
+      allowWave: async () => true,
+    } as never,
   );
 
   const paused = await engine.execute(state.run.id);

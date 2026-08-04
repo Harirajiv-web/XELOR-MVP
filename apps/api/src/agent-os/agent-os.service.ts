@@ -11,6 +11,10 @@ import { AgentActionService } from "./agent-action.service.js";
 import { DecisionIntelligenceService } from "./decision-intelligence.service.js";
 import type { OutcomeInput } from "./decision-intelligence.repository.js";
 import { MvpReadinessService } from "./mvp-readiness.service.js";
+import {
+  AgentControlService,
+  type AgentAutonomyMode,
+} from "./agent-control.service.js";
 
 @Injectable()
 export class AgentOsService {
@@ -24,16 +28,18 @@ export class AgentOsService {
     private readonly actionService: AgentActionService,
     private readonly decisions: DecisionIntelligenceService,
     private readonly readinessService: MvpReadinessService,
+    private readonly control: AgentControlService,
   ) {}
 
-  catalogue() {
+  async catalogue() {
+    const policy = await this.control.policy();
     return {
       runtime: {
         status: "live",
         providerMode: this.reasoner.mode,
         providerDisclosure:
           "Orchestration, ERP reads, approval gates and governed action dispatch are live. Language reasoning is deterministic; no external model API or connector is active.",
-        autonomyMode: "approval_bound",
+        autonomyMode: policy.mode,
         externalConnections: 0,
         signalIngress: {
           status: "live",
@@ -57,6 +63,7 @@ export class AgentOsService {
     /** Stable business identity used when the mission snapshot contains observation time. */
     idempotencyIdentity?: Record<string, unknown>;
   }) {
+    await this.control.assertRuntimeActive();
     if (!input.idempotencyKey.trim()) {
       throw new AppError(
         "IDEMPOTENCY_KEY_REQUIRED",
@@ -136,7 +143,46 @@ export class AgentOsService {
   }
 
   async resume(runId: string) {
+    await this.control.assertRuntimeActive();
     return presentRun(await this.engine.execute(runId));
+  }
+
+  controlCenter() {
+    return this.control.snapshot();
+  }
+
+  async setControlMode(mode: AgentAutonomyMode, reason: string) {
+    const policy = await this.control.setMode(mode, reason);
+    if (mode === "autonomous_guarded") {
+      const waiting = await this.repository.runIdsWithStatus(["waiting_step"]);
+      for (const runId of waiting) await this.engine.execute(runId);
+    }
+    return { policy, control: await this.control.snapshot() };
+  }
+
+  engageKillSwitch(reason: string) {
+    return this.control.engageKillSwitch(reason);
+  }
+
+  releaseKillSwitch() {
+    return this.control.releaseKillSwitch();
+  }
+
+  async proceedStep(gateId: string, note: string) {
+    await this.control.assertRuntimeActive();
+    const runId = await this.repository.approveStepGate(gateId, note);
+    return presentRun(await this.engine.execute(runId));
+  }
+
+  async resumeHalted() {
+    await this.control.assertRuntimeActive();
+    const ids = await this.repository.runIdsWithStatus(["halted"]);
+    const resumed: string[] = [];
+    for (const runId of ids) {
+      await this.engine.execute(runId);
+      resumed.push(runId);
+    }
+    return { resumed, control: await this.control.snapshot() };
   }
 
   async approvals() {
@@ -215,6 +261,7 @@ export class AgentOsService {
     decision: "approved" | "rejected",
     note: string,
   ) {
+    await this.control.assertRuntimeActive();
     const result = await this.repository.decideApproval(
       approvalId,
       decision,

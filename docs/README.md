@@ -22,5 +22,15 @@ The project documentation is ordered by purpose rather than by creation date.
 - [Agent guide index](03-agent-guides/README.md) — master system guide plus one
   plain-language PDF for each of the seven implemented agents.
 
+## 04 — Deployment
+
+- [Railway public-demo deployment](04-deployment/01-railway-public-demo.md) — five-service
+  hosted topology, exact variables, automatic migration/seed flow, cost limits, and local
+  parity commands.
+
+## Architecture and implementation playbook
+
+- [Architecture, delivery pipeline and implementation playbook](reports/xelor-architecture-implementation-playbook.html) — the exact target stack, repository additions, CI/CD, database and event pipelines, security, observability, recovery, developer workflows and phased build sequence. The rendered PDF is available at the repository root as `XELOR_ARCHITECTURE_AND_IMPLEMENTATION_PLAYBOOK.pdf`.
+
 Conventional discovery files remain at the repository root: `README.md` for project setup
 and `CLAUDE.md` for environment-specific engineering notes.

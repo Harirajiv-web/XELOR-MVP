@@ -48,14 +48,14 @@
     <div class="eyebrow">ONYX · AGENTIC INTELLIGENCE</div>
     <h1>Agentic AI Implementation &amp; Market Strategy</h1>
     <div class="sub">Exactly what is implemented, what is deterministic or simulated, and how XELOR can turn governed manufacturing intelligence into a defensible product advantage.</div>
-    <div class="meta"><span>Prepared from source code, database controls and live workflows</span><span>31 July 2026</span></div>
+    <div class="meta"><span>Prepared from source code, module contracts, database controls and deployment files</span><span>3 August 2026</span></div>
   </section>
 
   <section>
     <h2>1. The honest answer</h2>
     <p class="lead">XELOR has implemented meaningful agentic infrastructure—not merely a chat box. The application contains a seven-agent registry, versioned bounded graphs, live tenant-scoped ERP capability calls, parallel execution waves, durable run/node state, checkpoints, evidence, human approval pauses, approval ancestry enforcement, action dispatch records, event-triggered missions, an operator-facing Mission Control and a globally discoverable Human Approvals inbox. A cross-industry Decision &amp; Risk Commander now joins current sales, supply, planning, quality and maintenance facts, explains recovery choices, persists evidence relationships and separates estimated exposure from verified outcomes.</p>
     <div class="callout good"><b>What is real now:</b> orchestration, authorization, ERP reads, persistence, checkpoints, tenant-scoped pending approvals, global pending count, consequence review, mandatory decision notes, Approve/Reject, audit trails, governance switches, deterministic evaluation, Copilot queries and governed internal action dispatch.</div>
-    <div class="callout warning"><b>What is not active in the deployed demo:</b> no hosted LLM is configured; Agent OS language reasoning is deterministic; there are zero live external connectors; a dispatched action creates an internal governed work item and does not autonomously post inventory, money or supplier messages.</div>
+    <div class="callout warning"><b>What is not active in the current demo configuration:</b> no hosted LLM is configured; Agent OS language reasoning is deterministic; there are zero live external connectors; a dispatched action creates an internal governed work item and does not autonomously post inventory, money or supplier messages. Railway packaging exists, but a live hosted URL is not proven by the repository.</div>
     <div class="grid2">
       <div class="card"><h3>Why this is a good foundation</h3><ul><li>Models are outside the transaction and permission boundaries.</li><li>Capabilities are a closed allow-list, not arbitrary SQL or APIs.</li><li>Side effects require a successful human-approval ancestor.</li><li>Provider outage degrades to deterministic behavior instead of blocking ERP.</li><li>Every model call and consequential agent act is attributable and auditable.</li></ul></div>
       <div class="card"><h3>What must improve</h3><ul><li>Connect and benchmark at least one production model provider.</li><li>Add production-grade retrieval, document ingestion and semantic authorization.</li><li>Expand feature-specific golden sets and online evaluation.</li><li>Connect verified external signals through governed adapters.</li><li>Connect approved actions to domain executors only after shadow-mode evidence.</li></ul></div>
@@ -142,6 +142,68 @@
   </section>
 
   <section class="page">
+    <h2>3A. Agent-to-module contracts in detail</h2>
+    <p class="lead">An agent's business ownership is broader than its callable runtime surface. The modules below explain the context the specialist understands; the capability column is the smaller set of data it can actually fetch during a mission.</p>
+    <table>
+      <thead><tr><th>Agent</th><th>Modules it represents</th><th>Direct mission evidence</th><th>What its conclusion must preserve</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX</b></td><td>ONYX Copilot; Agent OS; AI Operations.</td><td>Company context only through <code>general.companies.read</code>; all other evidence arrives from specialists.</td><td>Scope, source links, parallel results, HEXA verdict, approval state and unresolved limits. ONYX cannot dispatch an action.</td></tr>
+        <tr><td><b>HEXA</b></td><td>Organisation; Administration; Integration.</td><td>Company masters through <code>general.companies.read</code>; graph/user/tool/audit state through the run context.</td><td>Verified tenant and actor, permission intersection, policy checks, approval ancestry and auditability. Simulated connector health cannot be labelled externally verified.</td></tr>
+        <tr><td><b>MICA</b></td><td>Sales; Service.</td><td>Tenant-scoped sales commitments through <code>sales.orders.read</code>.</td><td>Customer/order/date/credit evidence and the difference between promised, dispatched and still open. Service context cannot be invented when it was not retrieved.</td></tr>
+        <tr><td><b>SPAR</b></td><td>Purchase; Inventory.</td><td>Non-zero on-hand balances through <code>inventory.on-hand.read</code>.</td><td>Item, warehouse, batch and available quantity as observed. A purchase expectation is not on-hand stock, and an approved PO is not a receipt.</td></tr>
+        <tr><td><b>AXLE</b></td><td>Engineering; Planning.</td><td>Latest planned orders and status/source filters through <code>planning.planned-orders.read</code>.</td><td>Proposal, quantity, due/release dates, source and plan limitation. It must not present infinite-capacity MRP or a draft schedule as feasible execution.</td></tr>
+        <tr><td><b>KILN</b></td><td>Production; QMS &amp; Audit; Maintenance.</td><td>Production orders, inspections, quality evidence views and draft audit/CAPA/pack artifacts.</td><td>Observed operation/reading/verdict evidence, missing proof and draft labels. It cannot decide product release, compliance, root cause or CAPA effectiveness.</td></tr>
+        <tr><td><b>RASP</b></td><td>Accounts; Employee Spend; People; Working Capital.</td><td>Vouchers, trial balance, bounded scenario evidence, collection review and draft finance-pack manifest.</td><td>Posted fact versus scenario assumption versus illustrative screen value. It cannot move money, contact a customer, certify a funding pack or post a voucher.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Why this separation matters:</b> deep module knowledge helps a specialist explain consequences, but runtime data access remains intentionally narrow. Adding a module to an agent's description never grants a database read; a registered capability and the requesting person's permission are both still required.</div>
+  </section>
+
+  <section class="page">
+    <h2>3B. Exact capability surface and modes</h2>
+    <p class="lead">The registry contains 16 unique capabilities. Fifteen are read, analyse, simulate or draft. The only effectful capability is shared by six specialists and remains structurally downstream of human approval.</p>
+    <table class="small">
+      <thead><tr><th>Agent</th><th>Callable capabilities</th><th>Mode and evidence</th><th>Approval/effect boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX</b></td><td><code>general.companies.read</code></td><td>Read company/registration context.</td><td>No execute capability; supervisor is intentionally least powerful.</td></tr>
+        <tr><td><b>HEXA</b></td><td><code>general.companies.read</code><br><code>agent.action.dispatch</code></td><td>Read context; append governance work item.</td><td>Dispatch requires <code>agentos.run.operate</code> and approved ancestor.</td></tr>
+        <tr><td><b>MICA</b></td><td><code>sales.orders.read</code><br><code>agent.action.dispatch</code></td><td>Read commitments; append commercial work item.</td><td>No customer contact, order override or shipment.</td></tr>
+        <tr><td><b>SPAR</b></td><td><code>inventory.on-hand.read</code><br><code>agent.action.dispatch</code></td><td>Read balances; append supply work item.</td><td>No PO, receipt or stock movement.</td></tr>
+        <tr><td><b>AXLE</b></td><td><code>planning.planned-orders.read</code><br><code>agent.action.dispatch</code></td><td>Read current plan; append planning work item.</td><td>No firming, conversion, MRP rerun or schedule publication.</td></tr>
+        <tr><td><b>KILN</b></td><td><code>production.orders.read</code>; <code>quality.inspections.read</code>; <code>quality.evidence.collect</code>; <code>quality.audit-plan.draft</code>; <code>quality.capa-plan.draft</code>; <code>quality.audit-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read, analyse and prepare explicitly labelled drafts; append approved plant work.</td><td>No inspection verdict, disposition, document release, audit conclusion, CAPA closure or production posting.</td></tr>
+        <tr><td><b>RASP</b></td><td><code>accounts.vouchers.read</code>; <code>finance.cash-position.read</code>; <code>finance.forecast.simulate</code>; <code>finance.collections.prioritise</code>; <code>finance.funding-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read posted evidence; return bounded scenario/review/draft; append approved finance work.</td><td>No payment, bank instruction, posting, customer message or certification.</td></tr>
+      </tbody>
+    </table>
+    <h3>What the single effect actually writes</h3>
+    <ol>
+      <li>The graph engine proves that an approval node is an ancestor of the dispatch node and that its recorded decision is yes.</li>
+      <li>The capability repeats the agent allow-list and requesting-user permission checks.</li>
+      <li>An idempotent, append-only <code>governed_work_item</code> is written with run, node, agent, approval and payload references.</li>
+      <li>The mission later verifies that the work items exist. It does not claim the underlying departmental work is complete.</li>
+    </ol>
+    <div class="callout warning"><b>Common demo misunderstanding:</b> “six actions dispatched” means six accountable assignments were created after approval. It does not mean XELOR paid a supplier, changed stock, contacted a customer or altered a plan.</div>
+  </section>
+
+  <section class="page">
+    <h2>3C. Coordination, deployment and identity modes</h2>
+    <h3>How one mission is coordinated</h3>
+    <div class="flow"><div>Person / signal<br>fixed tenant + actor</div><div class="arrow">→</div><div>ONYX starts<br>versioned graph</div><div class="arrow">→</div><div>Specialists read<br>parallel wave</div></div>
+    <div class="flow"><div>Domain services<br>enforce rules</div><div class="arrow">→</div><div>HEXA verifies<br>joined evidence</div><div class="arrow">→</div><div>Human approves<br>or rejects</div></div>
+    <div class="flow"><div>Approved work<br>items only</div><div class="arrow">→</div><div>Checkpoint + audit<br>persist outcome</div><div class="arrow">→</div><div>ONYX publishes<br>limits included</div></div>
+    <table>
+      <thead><tr><th>Runtime mode</th><th>Identity source</th><th>Agent controls retained</th><th>Allowed use</th></tr></thead>
+      <tbody>
+        <tr><td><b>Normal local / future production</b></td><td>Keycloak OIDC Authorization Code + PKCE; API verifies signature, issuer, expiry and groups.</td><td>Tenant context, user permissions, agent allow-list, graph bounds, approval ancestry and RLS.</td><td>Development now; production only after the wider security/operations roadmap.</td></tr>
+        <tr><td><b>Railway public demo</b></td><td>Explicit Web/API demo flags map a small fixed persona list to the isolated Northstar tenant; web sends the dedicated demo marker.</td><td>Capability permissions, agent allow-list, graph/approval checks and RLS still run against the mapped persona.</td><td>Disposable investor data only. Never a shortcut for a pilot or real tenant.</td></tr>
+      </tbody>
+    </table>
+    <h3>Hosted demo service boundary</h3>
+    <div class="flow"><div>Next.js web<br>public</div><div class="arrow">→</div><div>NestJS API<br>private</div><div class="arrow">→</div><div>PostgreSQL + worker<br>private durable state</div></div>
+    <p>Railway service files start Web, API, Worker, PostgreSQL and Valkey; API boot waits for the database, applies migrations, seeds/checkpoints the demo version once and then reports readiness. The agent architecture is unchanged by hosting: the deterministic stub remains the provider, and no external connector is made real merely because the URL is public.</p>
+    <div class="callout bad"><b>Do not infer deployment from files:</b> the repository proves repeatable packaging and local parity. It does not prove an active Railway project, a public domain, TLS, monitoring or availability.</div>
+  </section>
+
+  <section class="page">
     <h2>4. ONYX Copilot: how it is actually safe</h2>
     <div class="flow">
       <div>User<br>question</div><div class="arrow">→</div><div>Closed intent<br>classification</div><div class="arrow">→</div><div>Permission<br>check</div>
@@ -160,7 +222,7 @@
     </ol>
     <div class="grid2">
       <div class="card"><h3>Strong design choice</h3><p>A hosted model can improve language understanding without receiving arbitrary database access. The retrieval surface remains a finite catalogue owned by product code.</p></div>
-      <div class="card"><h3>Current limitation</h3><p>The Copilot answers only pre-registered intents. This makes it safe and predictable, but it is not yet a broad conversational analyst over every workflow or document.</p></div>
+      <div class="card"><h3>Current limitation</h3><p>The Copilot answers exactly 21 pre-registered intents. This makes it safe and predictable, but it is not yet a broad conversational analyst over every workflow or document.</p></div>
     </div>
     <h3>Recommended evolution</h3>
     <p>Keep the same authorization/query boundary. Add semantic intent routing, query composition from approved metrics, authorized document retrieval and multi-turn context gradually; never replace tenant/RBAC filters with prompt instructions.</p>
@@ -365,6 +427,8 @@
       <li><code>packages/db/src/schema/agent-os.ts</code> and Agent OS migrations</li>
       <li><code>apps/web/src/spine/shell/copilot-rail.tsx</code>, global Human Approvals link, ONYX gateway, approval inbox and Mission Control screens</li>
       <li>Working Capital and QMS &amp; Audit module manifests, RASP/KILN capability registrations and bounded graph definitions</li>
+      <li>All 19 web module manifests and their owning domain controllers/services</li>
+      <li><code>infra/railway</code> public-demo identity, startup, health and five-service deployment files</li>
       <li>Agent OS Phase 1–3 documentation and authenticated browser tests, including start → discover → note → approve → resume</li>
     </ul>
     <h3>Official references informing the future architecture</h3>
@@ -378,7 +442,7 @@
     </ul>
     <h3>Final strategic recommendation</h3>
     <p class="lead">XELOR should become the manufacturing system that can explain every recommendation, prove every source, and safely turn approved decisions into work. Keep deterministic engines responsible for money, stock, tax, scheduling constraints and control verdicts. Use models for language, extraction, classification, evidence synthesis and hypothesis generation—and let the existing Agent OS make their use bounded, observable and accountable.</p>
-    <p class="footer-note">This report describes the inspected build on 31 July 2026. It deliberately distinguishes live orchestration from deterministic reasoning, isolated demo data, gross value connected to risk and human-verified outcomes. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
+    <p class="footer-note">This report describes the working repository inspected on 3 August 2026. It deliberately distinguishes live orchestration from deterministic reasoning, isolated demo data, gross value connected to risk and human-verified outcomes. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
   </section>
 </body>
 </html>

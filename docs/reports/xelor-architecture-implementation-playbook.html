@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR Architecture, Delivery Pipeline & Implementation Playbook</title>
+  <style>
+    @page { size:A4; margin:16mm 15mm 18mm; }
+    * { box-sizing:border-box; }
+    :root {
+      --ink:#13213b; --muted:#58667c; --navy:#07142f; --blue:#1646d8;
+      --cyan:#18a6c9; --green:#087f5b; --amber:#ad6200; --red:#b42318;
+      --line:#d5deea; --wash:#f3f7fc; --pale:#eaf2ff; --violet:#6542c2;
+    }
+    html { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    body { margin:0; color:var(--ink); font:9.6pt/1.42 Arial, Helvetica, sans-serif; }
+    h1,h2,h3,h4 { margin:0 0 7px; line-height:1.16; page-break-after:avoid; }
+    h1 { font-size:37pt; letter-spacing:-1.2px; }
+    h2 { font-size:18.5pt; color:var(--navy); border-bottom:2px solid var(--blue); padding-bottom:5px; margin-top:7px; }
+    h3 { font-size:12.5pt; color:var(--blue); margin-top:12px; }
+    h4 { font-size:10.2pt; color:var(--navy); margin-top:9px; }
+    p { margin:5px 0 8px; }
+    ul,ol { margin:4px 0 9px 18px; padding:0; }
+    li { margin:2.5px 0; }
+    table { width:100%; border-collapse:collapse; margin:7px 0 11px; font-size:8.15pt; }
+    tr { page-break-inside:avoid; }
+    th { background:var(--navy); color:#fff; text-align:left; padding:5.5px 6px; }
+    td { border:1px solid var(--line); padding:4.5px 6px; vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    code { font-family:"SFMono-Regular",Consolas,monospace; font-size:.9em; color:#173b79; }
+    pre { margin:7px 0 10px; background:#07142f; color:#e9f1ff; border-radius:7px; padding:9px 10px; font:7.7pt/1.38 "SFMono-Regular",Consolas,monospace; white-space:pre-wrap; page-break-inside:avoid; }
+    a { color:var(--blue); text-decoration:none; word-break:break-word; }
+    .cover { height:260mm; color:white; background:linear-gradient(145deg,#06122c 0%,#102d70 58%,#128cae 100%); margin:-16mm -15mm -18mm; padding:29mm 22mm; position:relative; page-break-after:always; }
+    .cover .mark { display:inline-grid; place-items:center; width:54px; height:54px; border:1px solid #7addff; border-radius:12px; font-size:17pt; font-weight:800; }
+    .cover .eyebrow { margin-top:26mm; color:#8fe5ff; font-size:10.5pt; letter-spacing:2.4px; font-weight:700; }
+    .cover h1 { max-width:158mm; margin-top:9px; }
+    .cover .sub { font-size:14.5pt; color:#d8efff; max-width:156mm; margin-top:12px; }
+    .cover .meta { position:absolute; bottom:23mm; left:22mm; right:22mm; display:flex; justify-content:space-between; border-top:1px solid #78a8d8; padding-top:9px; color:#c9def5; font-size:9pt; }
+    .page { page-break-before:always; }
+    .lead { font-size:11.5pt; color:#34445d; }
+    .small { font-size:8.15pt; color:var(--muted); }
+    .tiny { font-size:7.2pt; color:var(--muted); }
+    .callout { border-left:4px solid var(--blue); background:#eef4ff; padding:8px 11px; margin:8px 0 12px; page-break-inside:avoid; }
+    .good { border-left-color:var(--green); background:#ebf9f4; }
+    .warn { border-left-color:var(--amber); background:#fff6e5; }
+    .bad { border-left-color:var(--red); background:#fff0ef; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:7px 0 10px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:7px 0 10px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:9px; background:white; page-break-inside:avoid; }
+    .card h3,.card h4 { margin-top:0; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:9px 0; }
+    .kpis div { background:var(--navy); color:white; padding:8px; border-radius:7px; font-size:8pt; }
+    .kpis b { display:block; color:#7be0ff; font-size:15pt; }
+    .tag { display:inline-block; padding:1px 6px; border-radius:9px; font-size:7.2pt; font-weight:700; }
+    .now { background:#d7f2e6; color:#0d654a; }
+    .gap { background:#ffe8b2; color:#784800; }
+    .add { background:#dfe9ff; color:#254f9d; }
+    .flow { display:grid; grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr; gap:3px; align-items:stretch; margin:9px 0; page-break-inside:avoid; }
+    .flow.five { grid-template-columns:1fr 20px 1fr 20px 1fr; }
+    .flow div { border:1px solid #9bb2d6; background:var(--wash); padding:7px 5px; border-radius:6px; text-align:center; font-size:7.7pt; font-weight:700; display:grid; place-items:center; min-height:38px; }
+    .flow .arrow { border:0; background:none; color:var(--blue); font-size:15pt; padding:0; }
+    .lane { border:1px solid var(--line); border-radius:8px; overflow:hidden; margin:8px 0; page-break-inside:avoid; }
+    .lane .row { display:grid; grid-template-columns:29mm 1fr; border-top:1px solid var(--line); }
+    .lane .row:first-child { border-top:0; }
+    .lane .name { background:var(--navy); color:white; padding:7px; font-weight:700; }
+    .lane .steps { padding:7px; background:#f8fafd; }
+    .tree { background:#f6f8fc; border:1px solid var(--line); border-radius:7px; padding:9px 12px; font:8.1pt/1.42 "SFMono-Regular",Consolas,monospace; white-space:pre-wrap; page-break-inside:avoid; }
+    .check td:first-child { width:9mm; text-align:center; font-weight:700; color:var(--green); }
+    .decision { border:2px solid var(--navy); border-radius:8px; padding:9px; margin:8px 0; page-break-inside:avoid; }
+    .decision b:first-child { color:var(--blue); }
+    .source { font-size:7.6pt; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="mark">XE</div>
+    <div class="eyebrow">XELOR · BUILD AND DELIVERY BLUEPRINT</div>
+    <h1>Architecture, Delivery Pipeline &amp; Implementation Playbook</h1>
+    <div class="sub">The executable “how”: technology choices, repository changes, CI/CD, infrastructure, data, security, observability, testing, recovery, ownership and phased delivery.</div>
+    <div class="meta"><span>Prepared from the live repository and deployment package</span><span>4 August 2026 · v1.0</span></div>
+  </section>
+
+  <section>
+    <h2>1. The decision in one page</h2>
+    <p class="lead">Build XELOR as a boundary-enforced modular monolith and operate it as three independently scalable containers—Web, API and Worker—until real scale or team ownership proves that a module must be extracted. The next investment should make releases repeatable, data recoverable and behavior observable; it should not add microservices or Kubernetes.</p>
+    <div class="decision"><b>Recommended production shape:</b> AWS Mumbai primary; CloudFront/WAF and an Application Load Balancer; ECS Fargate Web/API/Worker; ECR; RDS PostgreSQL Multi-AZ; managed Valkey; S3/KMS; Secrets Manager; Keycloak behind the OIDC boundary; OpenTelemetry into CloudWatch/Grafana; GitHub Actions using short-lived AWS identity.</div>
+    <div class="grid2">
+      <div class="card"><h3>Keep</h3><ul><li>Node.js 22, TypeScript, pnpm workspaces.</li><li>Next.js 15 / React 19 Web.</li><li>NestJS 11 modular API and shared platform rules.</li><li>PostgreSQL 17, SQL migrations and FORCE RLS.</li><li>Valkey/BullMQ and transactional outbox.</li><li>Keycloak OIDC + PKCE for non-demo environments.</li><li>Deterministic AI stub until each AI use case passes evaluation.</li></ul></div>
+      <div class="card"><h3>Add now</h3><ul><li>GitHub pull-request and deployment workflows.</li><li>Immutable, scanned images promoted by digest.</li><li>OpenTofu infrastructure modules and remote state.</li><li>One-shot migration task and expand/contract rules.</li><li>Runtime readiness, graceful shutdown and deployment alarms.</li><li>Traceable structured telemetry and SLO alerting.</li><li>Restore, rollback and incident runbooks exercised on a schedule.</li></ul></div>
+    </div>
+    <div class="flow"><div>Commit</div><div class="arrow">→</div><div>Verify + build</div><div class="arrow">→</div><div>Stage same digest</div><div class="arrow">→</div><div>Approve + produce</div></div>
+    <div class="kpis"><div><b>3</b>runtime application roles</div><div><b>1</b>transactional system of record</div><div><b>0</b>static AWS access keys</div><div><b>1</b>promoted digest per image</div></div>
+    <div class="callout warn"><b>Three prerequisites before the first production deployment:</b> replace the public build-time API origin with runtime/private routing; replace demo-file readiness with dependency/schema readiness; and add the missing checked-in GitHub workflows. These are implementation gaps, not reasons to rewrite the product.</div>
+  </section>
+
+  <section class="page">
+    <h2>2. What was verified in the repository</h2>
+    <p>This playbook is based on code and configuration present in <code>MVP_PROTOTYPE_1</code>, not on a hypothetical greenfield stack.</p>
+    <table>
+      <thead><tr><th>Area</th><th>Repository evidence</th><th>Architectural meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Workspace</td><td><code>apps/web</code>, <code>apps/api</code>, <code>packages/platform</code>, <code>packages/db</code>; pnpm 9; Node 22; TypeScript 5.7.</td><td>One typed codebase with explicit runtime and domain layers.</td></tr>
+        <tr><td>Web</td><td>Next.js 15, React 19, Tailwind 4, Radix UI, Playwright.</td><td>Server-capable UI that should remain a client of the API, never the database.</td></tr>
+        <tr><td>API</td><td>NestJS 11; 28 controller surfaces; Zod validation; permission and tenant guards.</td><td>A modular monolith already exposes a credible enterprise API boundary.</td></tr>
+        <tr><td>Data</td><td>PostgreSQL 17, Drizzle, 64 forward SQL migrations, pgvector/pg_trgm/btree_gist and forced tenant RLS.</td><td>Transactional data integrity and tenant isolation belong in PostgreSQL as well as application code.</td></tr>
+        <tr><td>Async</td><td>Transactional outbox, BullMQ, Valkey and idempotent worker patterns.</td><td>Effects can be retried without pretending the queue is the source of truth.</td></tr>
+        <tr><td>Identity</td><td>Keycloak 26, authorization code + PKCE, JWKS verification and in-application permission registry.</td><td>The OIDC boundary is portable; the demo bypass must remain isolated.</td></tr>
+        <tr><td>AI/agents</td><td>7 agents, 16 capabilities, 5 graphs, durable checkpoints, approval gates, evidence and deterministic provider stub.</td><td>AI can be introduced behind governance and evaluation without giving a model direct ERP writes.</td></tr>
+        <tr><td>Quality gates</td><td>Lint, typecheck, module manifest check, 722 service/unit tests, DB RLS/permission checks, 97-item live acceptance matrix and 20 listed browser scenarios.</td><td>Existing local checks can become enforceable release policy.</td></tr>
+        <tr><td>Deployment</td><td>Local Compose plus five-service Railway demo packaging and health/start scripts.</td><td>Demo packaging exists; production delivery and IaC do not yet.</td></tr>
+      </tbody>
+    </table>
+    <h3>Gaps this document closes</h3>
+    <table>
+      <thead><tr><th>Observed gap</th><th>Required correction</th><th>Proof of completion</th></tr></thead>
+      <tbody>
+        <tr><td>No <code>.github/workflows</code> release pipeline was found.</td><td>Add CI, security, staging, production and recovery workflows described here.</td><td>A protected <code>main</code> cannot merge or deploy without named checks.</td></tr>
+        <tr><td><code>NEXT_PUBLIC_API_ORIGIN</code> is read by <code>next.config.ts</code>.</td><td>Route <code>/api/v1</code> at the ALB or use a server-only runtime origin; remove the public build dependency.</td><td>The identical Web image digest runs in staging and production.</td></tr>
+        <tr><td>Readiness depends on a demo seed file when configured.</td><td>Add distinct live, ready and startup behavior; readiness checks DB, schema compatibility and required broker connectivity.</td><td>ECS never sends traffic before dependencies are usable; seeding is not a production health condition.</td></tr>
+        <tr><td>API startup applies migrations in the Railway demo.</td><td>Run production migrations once as a separately authorized ECS task.</td><td>Scaling API tasks cannot race migrations or require owner credentials.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>3. Environment model and promotion contract</h2>
+    <table>
+      <thead><tr><th>Environment</th><th>Purpose</th><th>Identity/data</th><th>Deployment</th><th>Promotion rule</th></tr></thead>
+      <tbody>
+        <tr><td>Local normal</td><td>Daily development and realistic identity testing.</td><td>Compose PostgreSQL, Valkey, Keycloak, Gotenberg; seeded local data.</td><td>Web/API/Worker run from pnpm or parity containers.</td><td>Developer branch only; no external data.</td></tr>
+        <tr><td>Local demo parity</td><td>Reproduce the public investor topology.</td><td>Disposable data; fixed public-demo persona.</td><td><code>infra/railway/docker-compose.demo.yml</code>.</td><td>Required before changing Railway boot/deploy files.</td></tr>
+        <tr><td>Public demo</td><td>Anyone can view a controlled investor story.</td><td>Disposable seeded data only; explicit demo bypass; no customer integrations.</td><td>Railway Web/API/Worker/PostgreSQL/Valkey.</td><td>Separate flags and database; never promoted into staging.</td></tr>
+        <tr><td>Staging</td><td>Production-like acceptance and migration rehearsal.</td><td>Real OIDC; synthetic/de-identified data; same schema and service topology.</td><td>Dedicated AWS account/VPC and production class where feasible.</td><td>Receives immutable digests built from <code>main</code>.</td></tr>
+        <tr><td>Production</td><td>Pilot/customer operations.</td><td>Real tenant data; MFA; demo flags prohibited.</td><td>Separate AWS account, Mumbai primary.</td><td>Only a digest that passed staging and human approval.</td></tr>
+        <tr><td>Recovery</td><td>Restore and regional failover exercises.</td><td>Encrypted copies and restricted operators.</td><td>Hyderabad or an approved alternative; warm infrastructure as RTO requires.</td><td>Created/tested from IaC, not configured manually.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Core promotion rule:</b> build Web and API images once for a commit, record their digests, and promote those exact digests. Configuration and secrets change by environment; application bytes do not.</div>
+    <h3>Configuration classes</h3>
+    <div class="grid3">
+      <div class="card"><h4>Build-time</h4><p>Compiler flags and static asset decisions only. No environment URL, secret, tenant or feature authority.</p></div>
+      <div class="card"><h4>Runtime</h4><p>Service endpoints, pool sizes, log level, feature rollout and resource tuning. Supplied by task definition.</p></div>
+      <div class="card"><h4>Secret</h4><p>Database passwords, OIDC client credentials, connector keys and signing material. Referenced from Secrets Manager.</p></div>
+    </div>
+    <h3>Hard environment invariants</h3>
+    <ul>
+      <li><code>API_PUBLIC_DEMO</code> and <code>NEXT_PUBLIC_PUBLIC_DEMO</code> must be absent or false in staging and production. Add a startup assertion that aborts when a production environment sees either true.</li>
+      <li>Production application tasks receive the restricted <code>app_user</code> database URL. Only the migration task role can resolve the owner URL.</li>
+      <li>No customer production data is copied to public demo or developer laptops.</li>
+      <li>Every production environment change is represented by reviewed application or infrastructure code, with an audit trail.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>4. Target production architecture</h2>
+    <div class="flow"><div>Route 53<br>DNS</div><div class="arrow">→</div><div>CloudFront + WAF<br>TLS / edge controls</div><div class="arrow">→</div><div>Application Load Balancer<br>path routing</div><div class="arrow">→</div><div>ECS Fargate<br>Web + API</div></div>
+    <div class="flow"><div>Keycloak / IdP<br>OIDC</div><div class="arrow">→</div><div>API guards<br>tenant + permission</div><div class="arrow">→</div><div>RDS PostgreSQL<br>Multi-AZ</div><div class="arrow">→</div><div>Outbox rows<br>durable intent</div></div>
+    <div class="flow"><div>ECS Worker<br>private</div><div class="arrow">↔</div><div>Managed Valkey<br>BullMQ</div><div class="arrow">→</div><div>S3 + KMS<br>documents/evidence</div><div class="arrow">→</div><div>External connectors<br>allow-listed</div></div>
+    <div class="flow"><div>Web / API / Worker</div><div class="arrow">→</div><div>OTel Collector</div><div class="arrow">→</div><div>CloudWatch / Grafana</div><div class="arrow">→</div><div>Alerts + incident flow</div></div>
+    <table>
+      <thead><tr><th>Layer</th><th>Implementation</th><th>Why this choice</th><th>Initial topology</th></tr></thead>
+      <tbody>
+        <tr><td>Edge</td><td>Route 53, ACM, CloudFront, WAF, ALB.</td><td>Managed TLS, rate/filter rules, caching for static assets and health-aware routing.</td><td>One public distribution; only ALB ingress from the edge where practical.</td></tr>
+        <tr><td>Compute</td><td>ECS Fargate services for Web/API/Worker; ECR images.</td><td>Independent scaling without a Kubernetes control plane.</td><td>At least two Web and API tasks across AZs; Worker count driven by queue.</td></tr>
+        <tr><td>Data</td><td>RDS PostgreSQL Multi-AZ with encryption, PITR and alarms.</td><td>Managed failover and recovery for the transactional system of record.</td><td>Private subnets; no public endpoint; measured connection pool.</td></tr>
+        <tr><td>Queue/cache</td><td>Managed Valkey compatible with BullMQ.</td><td>Preserves existing async semantics while removing single-container state risk.</td><td>Private; TLS/auth; queue persistence tuned to recovery needs.</td></tr>
+        <tr><td>Documents</td><td>S3 buckets, KMS CMKs, object versioning and lifecycle policies.</td><td>Container disks are ephemeral and not an evidence store.</td><td>Separate raw/quarantine/approved/export prefixes or buckets.</td></tr>
+        <tr><td>Identity</td><td>Keycloak initially, isolated behind the standard OIDC contract.</td><td>Avoids application auth rewrite; preserves enterprise federation path.</td><td>At least two tasks and a dedicated database for pilot; managed IdP later if operations justify it.</td></tr>
+        <tr><td>Telemetry</td><td>OpenTelemetry Node instrumentation and Collector; CloudWatch/Grafana; browser error tracking.</td><td>Vendor-neutral traces/metrics and actionable operational evidence.</td><td>Node traces/metrics first; avoid depending on experimental browser OTel.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>Not selected now:</b> EKS/Kubernetes, service mesh, Kafka, separate graph database and a warehouse are deferred until measured scaling, fan-out, query or ownership needs justify their operational cost.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. Network, request and trust boundaries</h2>
+    <div class="lane">
+      <div class="row"><div class="name">Public edge</div><div class="steps">Browser → CloudFront/WAF → ALB. Only HTTPS 443. WAF rate, reputation and managed rules; request-size limits; TLS certificate in ACM.</div></div>
+      <div class="row"><div class="name">Application</div><div class="steps">ALB sends <code>/api/v1/*</code> to API and all other routes to Web. Web and API live in private subnets. API validates signed token, tenant and permission on every protected route.</div></div>
+      <div class="row"><div class="name">Data</div><div class="steps">Security groups allow PostgreSQL only from API/Worker/migration tasks and Valkey only from API/Worker. No database or broker public address.</div></div>
+      <div class="row"><div class="name">Egress</div><div class="steps">Connector/AI calls originate through controlled NAT or VPC endpoints, use allow-listed destinations and carry no broader tenant data than the approved contract.</div></div>
+      <div class="row"><div class="name">Operations</div><div class="steps">Engineers use SSO and audited AWS roles. No SSH into tasks. ECS Exec, if enabled for incidents, is time-bound, logged and disabled by default.</div></div>
+    </div>
+    <h3>Correct same-origin routing</h3>
+    <div class="flow five"><div>Browser<br><code>https://xelor.../api/v1</code></div><div class="arrow">→</div><div>ALB path rule<br><code>/api/v1/*</code></div><div class="arrow">→</div><div>API target group<br>private port 3000</div></div>
+    <p>The browser should never know an internal API hostname. This eliminates CORS complexity, keeps one public origin and lets the same Web image run everywhere. Keep a local Next.js rewrite for developer convenience, but use a server-only <code>API_ORIGIN</code> or ALB path routing—not <code>NEXT_PUBLIC_API_ORIGIN</code>—outside local/demo builds.</p>
+    <h3>Request contract</h3>
+    <ol>
+      <li>Edge assigns or preserves a safe request identifier; API starts a trace and returns its <code>traceId</code> in the error envelope.</li>
+      <li>API verifies issuer, audience, signature, expiry and allowed algorithms from OIDC JWKS; tenant comes from the verified identity, never a browser-selected header in normal mode.</li>
+      <li>Route permission and separation-of-duties checks run before business logic.</li>
+      <li>Mutation payload is schema-validated and carries a stable <code>Idempotency-Key</code>.</li>
+      <li>Domain service opens a tenant transaction, executes <code>SET LOCAL app.current_tenant</code>, writes business/audit/outbox rows and commits atomically.</li>
+      <li>Response exposes stable identifiers and evidence, not raw secrets or internal exception messages.</li>
+    </ol>
+  </section>
+
+  <section class="page">
+    <h2>6. Repository structure to add</h2>
+    <div class="tree">.github/
+  CODEOWNERS
+  workflows/
+    ci.yml                    # PR correctness gate
+    security.yml              # dependencies, SBOM, image/IaC scanning
+    deploy-staging.yml        # build once, migrate, deploy, verify
+    deploy-production.yml     # approved promotion of same digests
+    restore-drill.yml         # scheduled non-production recovery proof
+
+infra/
+  docker/
+    Dockerfile.web            # production multi-stage image
+    Dockerfile.runtime        # API + Worker shared image
+  opentofu/
+    bootstrap/                # remote state bucket/lock/KMS only
+    modules/
+      network/ edge/ ecs-service/ rds/ valkey/ identity/ telemetry/
+    envs/
+      staging/ production/ recovery/
+  railway/                    # keep disposable public-demo packaging
+
+scripts/
+  release/
+    assert-environment.mjs    # prohibit demo flags and invalid config
+    migration-plan.mjs        # report pending/unsafe migrations
+    smoke.mjs                 # health + critical contract probes
+    verify-digests.mjs        # staging/production digest equality
+
+docs/runbooks/
+  deployment.md  rollback.md  database-restore.md
+  queue-recovery.md  identity-outage.md  incident-response.md
+
+apps/api/src/observability/
+  bootstrap.ts  logging.ts  metrics.ts  redaction.ts
+
+apps/api/src/health/
+  health.controller.ts  readiness.service.ts  schema-compatibility.ts</div>
+    <h3>Ownership rules</h3>
+    <table>
+      <thead><tr><th>Path</th><th>Required reviewer</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td><code>packages/db/migrations/**</code>, RLS and permission registry</td><td>Backend/data owner plus security-aware reviewer.</td><td>Schema, tenant isolation and deploy compatibility are system-wide contracts.</td></tr>
+        <tr><td><code>packages/platform/**</code></td><td>Owning domain engineer.</td><td>Business invariants and module boundaries live here.</td></tr>
+        <tr><td><code>apps/api/**</code></td><td>Backend owner; security review for auth/effects.</td><td>Public behavior, authorization and transactions.</td></tr>
+        <tr><td><code>apps/web/**</code></td><td>Frontend/full-stack owner; design/accessibility check.</td><td>User contract and production bundle.</td></tr>
+        <tr><td><code>infra/**</code>, <code>.github/**</code></td><td>Platform owner; second approver for production.</td><td>Changes runtime authority, network or release controls.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Branch model:</b> short-lived branches, pull request into protected <code>main</code>, required checks and one reviewed deployment path. Avoid long-lived environment branches; environments are configuration and promotion targets, not divergent code lines.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Container and artifact pipeline</h2>
+    <div class="flow"><div>Source + lockfile</div><div class="arrow">→</div><div>Reproducible multi-stage build</div><div class="arrow">→</div><div>SBOM + scan + sign</div><div class="arrow">→</div><div>ECR digest</div></div>
+    <h3>Images</h3>
+    <table>
+      <thead><tr><th>Image</th><th>Contents</th><th>Runtime command</th><th>Rules</th></tr></thead>
+      <tbody>
+        <tr><td><code>xelor-web:&lt;sha&gt;</code></td><td>Next.js production output and static assets only.</td><td>Start Web on port 3001.</td><td>Non-root, read-only root filesystem where supported, no source maps with secrets, no environment-specific public API URL.</td></tr>
+        <tr><td><code>xelor-runtime:&lt;sha&gt;</code></td><td>Compiled API, Worker, platform and DB runtime/migration code.</td><td>API service, Worker service or one-shot migration command.</td><td>Same image for API/Worker/migration; different task roles and commands.</td></tr>
+      </tbody>
+    </table>
+    <h3>Build requirements</h3>
+    <ul>
+      <li>Pin base images by digest after an update process; use Node 22 LTS-compatible runtime and Corepack/pnpm 9.12 with frozen lockfile.</li>
+      <li>Builder receives dev dependencies; runtime stage receives only production output and the minimum migration assets required by its command.</li>
+      <li>Run as a numeric non-root user; set a restrictive filesystem and Linux capability policy; place writable temp files only in declared paths.</li>
+      <li>Attach OCI labels for commit, repository, build time and version. Tag by commit SHA for readability, deploy by digest for immutability.</li>
+      <li>Generate CycloneDX or SPDX SBOM, scan OS/npm/IaC issues, sign the image with keyless workload identity where supported, and retain provenance.</li>
+    </ul>
+    <h3>Artifact acceptance</h3>
+    <table class="check">
+      <tbody>
+        <tr><td>✓</td><td>Cold start succeeds with a non-root user and read-only filesystem policy.</td></tr>
+        <tr><td>✓</td><td>Image contains no <code>.env</code>, Git metadata, test fixtures, customer exports or owner database credential.</td></tr>
+        <tr><td>✓</td><td>Web and runtime digests are recorded in a signed release manifest.</td></tr>
+        <tr><td>✓</td><td>The same digests are used for staging and production; only task configuration differs.</td></tr>
+        <tr><td>✓</td><td>Critical vulnerabilities fail release unless a time-bounded, approved exception exists.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>8. Pull-request CI pipeline</h2>
+    <div class="flow"><div>PR opened</div><div class="arrow">→</div><div>Static + unit gates</div><div class="arrow">→</div><div>Real service integration</div><div class="arrow">→</div><div>Build + report</div></div>
+    <table>
+      <thead><tr><th>Job</th><th>Exact work</th><th>Failure means</th></tr></thead>
+      <tbody>
+        <tr><td>Changes</td><td>Classify Web/API/platform/DB/infra/docs changes and calculate jobs, without skipping global dependency files.</td><td>Pipeline cannot safely determine scope; run the full suite.</td></tr>
+        <tr><td>Install</td><td>Checkout, Node 22, Corepack, pnpm 9.12, <code>pnpm install --frozen-lockfile</code>, dependency cache keyed by lockfile.</td><td>Build is not reproducible.</td></tr>
+        <tr><td>Static</td><td><code>pnpm lint</code>, <code>pnpm typecheck</code>, module-manifest/boundary validation, formatting check if adopted.</td><td>Code or architecture contract is invalid.</td></tr>
+        <tr><td>Unit</td><td><code>pnpm test</code>; upload machine-readable test report and coverage trend.</td><td>Business/service contract regressed.</td></tr>
+        <tr><td>Database</td><td>Start PostgreSQL/Valkey/Keycloak parity services; run migrations from empty DB; RLS check; permission reconciliation; migration idempotence/ordering check.</td><td>Schema, isolation or permission contract is unsafe.</td></tr>
+        <tr><td>Integration</td><td>Start API/Worker/Web with test identity; run the 97-item live matrix and API contract probes; confirm outbox consumption.</td><td>The assembled system does not behave like its units.</td></tr>
+        <tr><td>Browser</td><td>Playwright critical journeys on Chromium on every PR; broader browser/responsive matrix nightly or before release.</td><td>A user cannot complete a protected critical journey.</td></tr>
+        <tr><td>Build</td><td>Build production Web/runtime images, boot them, run health probes and scan filesystem.</td><td>Passing source cannot produce a runnable artifact.</td></tr>
+        <tr><td>Security</td><td>Dependency, secret and IaC/container scanning; CodeQL or equivalent scheduled/on PR for sensitive changes.</td><td>Known release-blocking exposure or leaked secret.</td></tr>
+      </tbody>
+    </table>
+    <h3>Required branch checks</h3>
+    <pre>ci / static
+ci / unit
+ci / database-contracts
+ci / integration
+ci / browser-critical
+ci / image-build
+security / policy</pre>
+    <div class="callout warn"><b>No “temporary” bypass:</b> an emergency merge exception must be restricted to named administrators, create an audit event and require a follow-up review. It cannot silently turn a failing check green.</div>
+  </section>
+
+  <section class="page">
+    <h2>9. GitHub workflow design</h2>
+    <h3><code>ci.yml</code></h3>
+    <pre>on: pull_request, push(main)
+permissions: contents: read
+jobs:
+  static -> unit -> database-contracts -> integration -> browser-critical
+  image-build (parallel after static; boots final images)
+  ci-success (depends on every required job)</pre>
+    <h3><code>deploy-staging.yml</code></h3>
+    <pre>on: successful CI for main, or manual dispatch
+permissions: contents: read, id-token: write
+environment: staging
+steps:
+  authenticate to AWS with GitHub OIDC
+  build/sign/push Web + runtime images once
+  write release manifest containing immutable digests
+  run pre-deploy compatibility checks
+  run one-shot migration task
+  deploy backward-compatible Worker -> API -> Web using those digests
+  wait for ECS service stability and circuit-breaker result
+  run smoke + 97 acceptance checks
+  store manifest, results and deployment metadata</pre>
+    <h3><code>deploy-production.yml</code></h3>
+    <pre>on: manual promotion of a passed staging release manifest
+permissions: contents: read, id-token: write
+environment: production (required reviewers)
+steps:
+  verify commit, signature, scan status and staging evidence
+  verify ECR digests exactly match staged digests
+  snapshot/PITR and migration preconditions
+  run production migration task
+  roll backward-compatible Worker -> API -> Web with circuit breaker + alarms
+  run non-destructive smoke tests
+  watch deployment SLOs for the defined observation window
+  record success or execute the rollback decision tree</pre>
+    <h3>OIDC trust conditions</h3>
+    <ul><li>GitHub receives <code>id-token: write</code>, not a stored AWS key.</li><li>AWS role trust restricts audience and the token <code>sub</code> to this repository and named GitHub Environment.</li><li>Staging and production use different roles/accounts; production has narrower permissions and approval protection.</li><li>Workflow pins third-party actions to reviewed commit SHAs and uses least-privilege permissions at workflow/job level.</li></ul>
+  </section>
+
+  <section class="page">
+    <h2>10. Release sequence and deployment safety</h2>
+    <div class="lane">
+      <div class="row"><div class="name">1 · Qualify</div><div class="steps">All PR checks pass; review complete; merge commit is immutable input.</div></div>
+      <div class="row"><div class="name">2 · Build</div><div class="steps">Build Web/runtime once; scan, sign, push; create release manifest with digests and migration set.</div></div>
+      <div class="row"><div class="name">3 · Rehearse</div><div class="steps">Deploy same digests to staging; migrate from a production-like prior schema; run integration, browser and acceptance probes.</div></div>
+      <div class="row"><div class="name">4 · Approve</div><div class="steps">Human reviewer checks change, risk, database plan, metrics, rollback safety and staging proof.</div></div>
+      <div class="row"><div class="name">5 · Migrate</div><div class="steps">One-shot ECS task uses the owner secret, obtains an advisory release lock, applies migrations once, emits evidence and exits.</div></div>
+      <div class="row"><div class="name">6 · Roll</div><div class="steps">Deploy API, Worker and Web in compatibility order; ECS rolling deployment has circuit breaker and CloudWatch alarm rollback.</div></div>
+      <div class="row"><div class="name">7 · Verify</div><div class="steps">Readiness, non-destructive critical flows, error/latency/queue/DB dashboards, audit continuity and tenant probes.</div></div>
+      <div class="row"><div class="name">8 · Observe</div><div class="steps">Hold the release open for a defined window; record outcome and close only when SLO indicators remain acceptable.</div></div>
+    </div>
+    <h3>Service order</h3>
+    <table>
+      <thead><tr><th>Change type</th><th>Order</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Additive schema + compatible application</td><td>Migration → backward-compatible Worker → API → Web.</td><td>Consumers can handle old/new events before the API produces them; new code sees required structures while old code still functions during rolling overlap.</td></tr>
+        <tr><td>New consumer of existing outbox event</td><td>Worker capable of ignoring/handling both versions → producer/API.</td><td>Prevents poison events during mixed versions.</td></tr>
+        <tr><td>Breaking API response</td><td>First make API dual-compatible → deploy Web → later remove old representation.</td><td>Users may hold old browser bundles during rollout.</td></tr>
+        <tr><td>Destructive schema cleanup</td><td>Prove all readers stopped → remove references → observe → later migration drops data.</td><td>Rollback remains possible during the compatibility window.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><b>Never:</b> deploy application instances that each run owner migrations at startup; rebuild per environment; mutate a running server; or perform a destructive schema change in the same release that removes the last compatible reader.</div>
+  </section>
+
+  <section class="page">
+    <h2>11. Database change pipeline</h2>
+    <div class="flow"><div>Design invariant</div><div class="arrow">→</div><div>Additive SQL + RLS</div><div class="arrow">→</div><div>Rehearse + backfill</div><div class="arrow">→</div><div>Enforce later</div></div>
+    <h3>Expand / migrate / contract</h3>
+    <table>
+      <thead><tr><th>Release</th><th>Database</th><th>Application</th><th>Rollback status</th></tr></thead>
+      <tbody>
+        <tr><td>A · Expand</td><td>Add table/column/index/policy; nullable or compatible default; avoid long table rewrite.</td><td>Old code unchanged or capable of ignoring the addition.</td><td>Old image still safe.</td></tr>
+        <tr><td>B · Migrate</td><td>Backfill in bounded, resumable batches with progress and load limits.</td><td>Dual-write or read-new-with-fallback; compare results.</td><td>Can return to old read path.</td></tr>
+        <tr><td>C · Enforce</td><td>Add not-null/constraint only after a validating precheck; validate large constraints separately.</td><td>New field becomes authoritative.</td><td>Requires documented forward fix.</td></tr>
+        <tr><td>D · Contract</td><td>Drop old object in a later release after telemetry proves zero use and retention approval exists.</td><td>Old code already impossible to deploy.</td><td>Backup/PITR is disaster recovery, not normal rollback.</td></tr>
+      </tbody>
+    </table>
+    <h3>Migration task contract</h3>
+    <ul>
+      <li>Uses <code>DATABASE_OWNER_URL</code> only in the one-shot migration task. API/Worker never receive it.</li>
+      <li>Takes a PostgreSQL advisory lock keyed to the application to prevent two releases migrating concurrently.</li>
+      <li>Reads the repository migration ledger, applies each forward migration once and records checksum, commit, actor, start/end and outcome.</li>
+      <li>Sets lock/statement timeouts deliberately. A timeout fails the release; it does not retry blindly.</li>
+      <li>Runs RLS, permission and schema-compatibility checks after migration and before traffic reaches new tasks.</li>
+    </ul>
+    <h3>Every tenant table must prove</h3>
+    <table class="check"><tbody>
+      <tr><td>✓</td><td><code>tenant_id</code> is non-null and linked to the tenant master where appropriate.</td></tr>
+      <tr><td>✓</td><td>RLS is enabled and forced, and policies use the canonical tenant session setting.</td></tr>
+      <tr><td>✓</td><td>Indexes begin with tenant scope for common tenant-local access patterns.</td></tr>
+      <tr><td>✓</td><td>Uniqueness includes tenant unless the identifier is intentionally global.</td></tr>
+      <tr><td>✓</td><td>Cross-tenant support behavior is an explicit audited capability, never a missing filter.</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="page">
+    <h2>12. Identity, authorization and secret pipeline</h2>
+    <div class="flow"><div>User + PKCE</div><div class="arrow">→</div><div>Keycloak / IdP</div><div class="arrow">→</div><div>JWT verification</div><div class="arrow">→</div><div>Tenant + RBAC + SoD</div></div>
+    <h3>Identity implementation</h3>
+    <ol>
+      <li>Keep the application OIDC-standard: issuer, audience, JWKS and claims mapping are configuration, not Keycloak-specific business logic.</li>
+      <li>Run the browser authorization-code flow with PKCE. Do not put a client secret in Web code.</li>
+      <li>API pins allowed issuer/audience/algorithms, caches JWKS safely and fails closed if verification cannot be established.</li>
+      <li>Map immutable subject and verified organization/tenant membership. Display names and emails are not authorization identifiers.</li>
+      <li>Resolve route permission in the API and enforce tenant again through database RLS. UI permission hiding improves usability but never grants authority.</li>
+      <li>For pilot, deploy Keycloak HA with at least two application tasks and a dedicated managed database; configure MFA, brute-force controls, backup and realm export procedure.</li>
+    </ol>
+    <h3>Secrets lifecycle</h3>
+    <table>
+      <thead><tr><th>Secret</th><th>Consumer</th><th>Storage/rotation</th><th>Exposure rule</th></tr></thead>
+      <tbody>
+        <tr><td>Application DB credential</td><td>API/Worker.</td><td>Secrets Manager; rotate with dual-user or managed pattern after testing pool behavior.</td><td>Restricted role; never owner.</td></tr>
+        <tr><td>DB owner credential</td><td>Migration task only.</td><td>Separate secret and IAM access policy.</td><td>Unavailable to long-running services.</td></tr>
+        <tr><td>OIDC client credential</td><td>Confidential server-side client only.</td><td>Secrets Manager; scheduled rotation.</td><td>Never a <code>NEXT_PUBLIC_*</code> value.</td></tr>
+        <tr><td>Connector/API key</td><td>Named connector worker.</td><td>One secret per provider/environment; versioned rotation.</td><td>Not shared with general API if avoidable.</td></tr>
+        <tr><td>KMS/signing key</td><td>AWS service or narrowly scoped signer.</td><td>KMS/HSM-backed; no export.</td><td>Referenced by ARN; least-privilege encrypt/decrypt/sign.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><b>Production guard:</b> application startup must refuse <code>NODE_ENV=production</code> when demo bypass is true, issuer is HTTP, default passwords are detected, owner/app database URLs are equal, or mandatory telemetry/redaction configuration is missing.</div>
+  </section>
+
+  <section class="page">
+    <h2>13. Runtime configuration matrix</h2>
+    <table>
+      <thead><tr><th>Variable / class</th><th>Web</th><th>API</th><th>Worker</th><th>Migration</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td><code>NODE_ENV</code>, <code>APP_ENV</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td><code>APP_ENV</code> explicitly distinguishes demo/staging/production; do not infer authority only from Node mode.</td></tr>
+        <tr><td>Internal API origin</td><td>Runtime server-only/local rewrite</td><td>—</td><td>Optional health URL</td><td>—</td><td>Browser uses same-origin. No public internal hostname.</td></tr>
+        <tr><td><code>DATABASE_URL</code></td><td>Never</td><td>app_user</td><td>app_user</td><td>Optional verification</td><td>Web has no database code or credential.</td></tr>
+        <tr><td><code>DATABASE_OWNER_URL</code></td><td>Never</td><td>Never</td><td>Never</td><td>Required</td><td>Only one-shot migration role can retrieve.</td></tr>
+        <tr><td><code>VALKEY_URL</code></td><td>Never</td><td>Yes</td><td>Yes</td><td>No</td><td>TLS/auth in non-local environments.</td></tr>
+        <tr><td>OIDC issuer/audience</td><td>Public issuer/client ID as needed</td><td>Required</td><td>Only if independently authenticating</td><td>No</td><td>URLs/IDs are config; secrets are not public.</td></tr>
+        <tr><td>Demo flags</td><td>Demo only</td><td>Demo only</td><td>Inherited behavior only</td><td>No</td><td>Startup refusal outside disposable demo.</td></tr>
+        <tr><td>OTel endpoint/service</td><td>Error SDK/runtime config</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No sensitive attributes; environment/resource tags required.</td></tr>
+        <tr><td>Pool/concurrency</td><td>—</td><td>Measured DB pool</td><td>Worker/DB concurrency</td><td>1</td><td>Total possible connections remain below RDS safety budget.</td></tr>
+      </tbody>
+    </table>
+    <h3>Validation at boot</h3>
+    <p>Define one Zod configuration schema per runtime role. Parse once before the server/worker starts; emit only variable names and validation reasons, never values. Validate URL schemes, positive ranges, mutually exclusive modes and production invariants.</p>
+    <h3>Connection budget example</h3>
+    <pre>safe_app_connections = floor(rds_max_connections * 0.70)
+reserved = migration + administration + monitoring + failover headroom
+api_pool_max * max_api_tasks
+  + worker_pool_max * max_worker_tasks
+  + reserved
+  <= safe_app_connections</pre>
+    <p class="small">Do not copy a pool number from the demo. Load-test query concurrency and use RDS metrics before introducing RDS Proxy or PgBouncer.</p>
+  </section>
+
+  <section class="page">
+    <h2>14. How to implement one XELOR module safely</h2>
+    <div class="flow"><div>Business contract</div><div class="arrow">→</div><div>Platform invariant</div><div class="arrow">→</div><div>DB + API</div><div class="arrow">→</div><div>Web + evidence</div></div>
+    <table>
+      <thead><tr><th>Step</th><th>Deliverable</th><th>Verification before moving on</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Story</td><td>Actor, trigger, preconditions, authoritative owner, transaction boundary, refusal conditions, evidence and measurable outcome.</td><td>Product/domain owner can identify what is committed and what is only proposed.</td></tr>
+        <tr><td>2 · Boundary</td><td>Module manifest, permissions, inbound ports, emitted events and prohibited imports.</td><td>Boundary lint fails an intentional forbidden import.</td></tr>
+        <tr><td>3 · Rule</td><td>Pure platform service/value objects with deterministic business rules and typed errors.</td><td>Unit/property tests cover happy, boundary, invalid and replay cases.</td></tr>
+        <tr><td>4 · Schema</td><td>Forward migration, keys, constraints, indexes, RLS/force/policies, audit/outbox relationship.</td><td>Empty migration, upgrade migration, RLS and concurrent conflict tests pass.</td></tr>
+        <tr><td>5 · Transaction</td><td>One service owns the commit; calls other modules through defined ports; business + audit + outbox are atomic.</td><td>Injected failure proves no partial write.</td></tr>
+        <tr><td>6 · API</td><td>Controller, Zod input, permission, idempotency, stable error envelope and OpenAPI/contract representation.</td><td>Unauthorized, wrong-tenant, duplicate, invalid and conflict tests pass.</td></tr>
+        <tr><td>7 · Async</td><td>Versioned event and idempotent consumer only for effects that may occur after commit.</td><td>Duplicate, retry, poison and replay tests pass.</td></tr>
+        <tr><td>8 · Web</td><td>Navigation manifest, typed API mapping, all UI states, accessibility, evidence/provenance and safe mutation behavior.</td><td>Keyboard, loading, empty, denied, error, success and double-click scenarios pass.</td></tr>
+        <tr><td>9 · Operate</td><td>Metrics, trace fields, runbook, alert threshold and support evidence.</td><td>A developer can locate one failed request and explain recovery from telemetry.</td></tr>
+        <tr><td>10 · Accept</td><td>End-to-end story and negative-path acceptance probe.</td><td>Named owner signs the outcome, not just the screen.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Definition of done:</b> the work is not done when the UI renders. It is done when authority, transactionality, tenancy, replay behavior, failure evidence, user recovery and operating signals have all been proved.</div>
+  </section>
+
+  <section class="page">
+    <h2>15. Backend developer implementation guide</h2>
+    <h3>Write path</h3>
+    <ol>
+      <li>Controller authenticates, checks route permission, parses Zod input and captures a stable idempotency key.</li>
+      <li>Application service begins the database transaction and establishes tenant context with <code>SET LOCAL</code>.</li>
+      <li>Load and lock only the rows required for the invariant; order locks consistently to avoid deadlocks.</li>
+      <li>Evaluate rule in <code>packages/platform</code>; turn expected refusal into a stable domain/API code.</li>
+      <li>Persist business state, audit evidence and any outbox event in the same transaction.</li>
+      <li>Commit; return stable resource/version IDs. Post-commit effects are picked up by idempotent workers.</li>
+    </ol>
+    <h3>Review checklist</h3>
+    <table class="check"><tbody>
+      <tr><td>✓</td><td>No controller contains business decisions or raw cross-module table choreography.</td></tr>
+      <tr><td>✓</td><td>No tenant query runs outside the tenant transaction helper; RLS is a second control, not a replacement for correct code.</td></tr>
+      <tr><td>✓</td><td>Expected conflicts map to 409/422 with stable codes; unknown faults map to a safe 500 and retain a trace ID.</td></tr>
+      <tr><td>✓</td><td>Mutation replay returns the original semantic result or a defined in-progress state.</td></tr>
+      <tr><td>✓</td><td>External network calls do not occur inside a ledger-critical database transaction unless the pattern explicitly reconciles ambiguity.</td></tr>
+      <tr><td>✓</td><td>Every list endpoint has bounded pagination, deterministic ordering and indexed tenant filters.</td></tr>
+      <tr><td>✓</td><td>No log contains token, password, full document body, bank data or unrestricted request payload.</td></tr>
+    </tbody></table>
+    <h3>Error envelope</h3>
+    <pre>{
+  "error": {
+    "code": "INVENTORY_INSUFFICIENT",
+    "message": "Available stock cannot satisfy this issue.",
+    "details": { "itemId": "...", "available": "8.000" },
+    "traceId": "01J..."
+  }
+}</pre>
+    <p class="small">Expose only safe, actionable details. Preserve the full internal cause in protected telemetry keyed by <code>traceId</code>.</p>
+  </section>
+
+  <section class="page">
+    <h2>16. Full-stack and frontend implementation guide</h2>
+    <h3>Screen delivery sequence</h3>
+    <div class="flow"><div>Manifest + permission</div><div class="arrow">→</div><div>Typed API adapter</div><div class="arrow">→</div><div>States + mutation</div><div class="arrow">→</div><div>Accessible E2E proof</div></div>
+    <table>
+      <thead><tr><th>Concern</th><th>Required behavior</th><th>Common failure to reject</th></tr></thead>
+      <tbody>
+        <tr><td>Data access</td><td>All operational data goes through same-origin <code>/api/v1</code>; API client maps the common error envelope.</td><td>Server component imports database package or uses an owner/service credential.</td></tr>
+        <tr><td>Permissions</td><td>Navigation and actions reflect permission, while API remains authoritative.</td><td>Hidden button treated as security.</td></tr>
+        <tr><td>Loading</td><td>Stable skeleton/progress; prevent layout jump; preserve user context.</td><td>Blank screen or spinner with no scope.</td></tr>
+        <tr><td>Empty</td><td>Explain why empty and the permitted next action.</td><td>Zero state that looks like a failed request.</td></tr>
+        <tr><td>Error</td><td>Plain-language action, safe retry and trace ID for support.</td><td>Raw stack/SQL message or infinite automatic retry.</td></tr>
+        <tr><td>Mutation</td><td>Stable idempotency key per user intent; disable/reconcile double submit; confirm consequential effects.</td><td>Generate a new key on every network retry.</td></tr>
+        <tr><td>Concurrency</td><td>Use version/precondition where stale editing matters and explain a conflict.</td><td>Last write silently overwrites approved state.</td></tr>
+        <tr><td>Accessibility</td><td>Keyboard flow, visible focus, semantic labels, dialogs, tables and contrast; reduced motion respected.</td><td>Clickable <code>div</code>, icon-only action without accessible name.</td></tr>
+        <tr><td>Evidence</td><td>Show source, observation time, confidence/verification status and human owner for AI/decision output.</td><td>Estimated benefit rendered as realised value.</td></tr>
+      </tbody>
+    </table>
+    <h3>Browser test matrix for each critical journey</h3>
+    <p>Happy path; permission denied; wrong tenant; empty state; slow response; API 409; API 422; API 500 with trace; lost network/retry; refresh mid-flow; double click; stale version; session expiry; keyboard only; narrow viewport; long text/large number/time zone; back/forward navigation; direct URL; worker-delayed outcome; approval rejected.</p>
+  </section>
+
+  <section class="page">
+    <h2>17. Transactional event and worker pipeline</h2>
+    <div class="flow"><div>Domain transaction<br>state + outbox</div><div class="arrow">→</div><div>Relay claims batch<br><code>SKIP LOCKED</code></div><div class="arrow">→</div><div>BullMQ / Valkey<br>delivery</div><div class="arrow">→</div><div>Idempotent consumer<br>effect + evidence</div></div>
+    <h3>Event envelope</h3>
+    <pre>{
+  "eventId": "uuid",
+  "eventType": "quality.inspection.rejected.v1",
+  "occurredAt": "ISO-8601",
+  "tenantId": "uuid",
+  "aggregate": { "type": "inspection", "id": "uuid", "version": 4 },
+  "traceId": "...",
+  "payload": { "contractVersion": 1, "...": "minimum data" }
+}</pre>
+    <table>
+      <thead><tr><th>Component</th><th>Contract</th><th>Metric</th></tr></thead>
+      <tbody>
+        <tr><td>Producer</td><td>Writes event only with the authoritative commit; never publishes before commit.</td><td>Outbox insert failures; events per domain transaction.</td></tr>
+        <tr><td>Relay</td><td>Claims bounded rows, publishes with <code>eventId</code>, records attempts and retry time; lease recovers abandoned work.</td><td>Oldest pending age, batch latency, publish failures.</td></tr>
+        <tr><td>Queue</td><td>At-least-once delivery is expected. Retention and retry policy are explicit.</td><td>Depth, delayed count, processing age.</td></tr>
+        <tr><td>Consumer</td><td>Persists an idempotency/inbox record before or with its effect; duplicate is success/no-op.</td><td>Duration, duplicates, business refusals, technical failures.</td></tr>
+        <tr><td>DLQ</td><td>Poison event retains payload reference, error classification and replay authority.</td><td>Count and oldest age; any increase pages an owner for critical flows.</td></tr>
+        <tr><td>Replay</td><td>Named operator selects exact event(s), records reason and preview, then requeues under audit.</td><td>Replay success and repeated failure.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>Correctness rule:</b> ledger-critical movements stay synchronous in the owning database transaction. Events notify, integrate and build projections; they do not replace the atomic inventory/accounting/approval commit.</div>
+  </section>
+
+  <section class="page">
+    <h2>18. Document intelligence pipeline</h2>
+    <div class="flow"><div>Presigned upload<br>quarantine</div><div class="arrow">→</div><div>Scan + classify<br>OCR/extract</div><div class="arrow">→</div><div>Human verify<br>exceptions</div><div class="arrow">→</div><div>Approved record<br>version + evidence</div></div>
+    <table>
+      <thead><tr><th>Stage</th><th>Implementation</th><th>Security/data rule</th><th>Acceptance</th></tr></thead>
+      <tbody>
+        <tr><td>Upload intent</td><td>API authorizes tenant, purpose, MIME/size and issues short-lived presigned URL plus document ID.</td><td>Object key is server-generated; client cannot choose another tenant prefix.</td><td>Wrong tenant/type/oversize is refused before use.</td></tr>
+        <tr><td>Quarantine</td><td>S3 receives encrypted object; event starts malware and file-structure inspection.</td><td>No download or OCR from approved area until clean result.</td><td>Malicious and malformed fixtures remain inaccessible.</td></tr>
+        <tr><td>Extraction</td><td>OCR/classifier/provider adapter produces fields, coordinates, confidence, model/version and cost.</td><td>Provider receives only permitted content; retention and region contract recorded.</td><td>Golden document set meets per-field thresholds.</td></tr>
+        <tr><td>Review</td><td>Human sees original page beside extracted fields; low-confidence/financial/legal fields require confirmation.</td><td>Reviewer permission and decision note audited.</td><td>Corrections become labeled evaluation data with privacy controls.</td></tr>
+        <tr><td>Commit</td><td>Validated values enter the owning business transaction; document link, checksum and version are retained.</td><td>OCR never writes directly to ledger/master tables.</td><td>Business record can be traced to exact object and reviewer.</td></tr>
+        <tr><td>Retention</td><td>Lifecycle, legal hold and deletion schedule by document class.</td><td>Deletion handles object versions and derived text/vector data.</td><td>Retention report and tested deletion evidence.</td></tr>
+      </tbody>
+    </table>
+    <p><b>Initial use cases:</b> supplier invoices/three-way match, quality certificates, purchase documents, employee receipts and controlled SOP/drawing ingestion. Start with one document type, one golden set and explicit human verification; do not begin with a generic “upload anything” platform.</p>
+  </section>
+
+  <section class="page">
+    <h2>19. AI, decision and agent execution pipeline</h2>
+    <div class="flow"><div>Registered intent<br>+ permission</div><div class="arrow">→</div><div>Policy / budget<br>retrieval + model</div><div class="arrow">→</div><div>Grounded proposal<br>confidence</div><div class="arrow">→</div><div>Human gate<br>capability broker</div></div>
+    <h3>Execution stages</h3>
+    <ol>
+      <li><b>Register:</b> capability declares owner, input/output schema, required permissions, effect class, cost ceiling and test set.</li>
+      <li><b>Authorize:</b> tenant/user/mission context and opt-out/budget/kill policy are checked before retrieval or model call.</li>
+      <li><b>Retrieve:</b> use fixed, tenant-authorized queries and evidence references; never let a prompt bypass data services or RLS.</li>
+      <li><b>Generate:</b> provider adapter receives minimized context, hard token/time/cost limits and a structured output schema.</li>
+      <li><b>Ground:</b> validate identifiers, calculations, source timestamps and domain constraints. Unsupported statements are labeled or refused.</li>
+      <li><b>Propose:</b> present recommendation, consequence, evidence, confidence limits and a named human owner.</li>
+      <li><b>Approve:</b> effectful capabilities pause durably. The approval grants only the exact payload and expires when context changes.</li>
+      <li><b>Execute:</b> a capability broker calls the same domain API/service a human action would use; the model has no database credential.</li>
+      <li><b>Verify:</b> record postcondition, action/effect IDs, actual outcome and exceptions; estimated and verified value remain separate.</li>
+    </ol>
+    <h3>Promotion ladder</h3>
+    <table>
+      <thead><tr><th>Level</th><th>Behavior</th><th>Exit gate</th></tr></thead>
+      <tbody>
+        <tr><td>0 · Stub</td><td>Deterministic fixtures and workflow mechanics.</td><td>Correct permissions, evidence, refusal, checkpoint and approval behavior.</td></tr>
+        <tr><td>1 · Shadow</td><td>Real provider runs unseen beside stub/human decision; no action.</td><td>Golden-set quality, hallucination, latency, cost and privacy thresholds.</td></tr>
+        <tr><td>2 · Assist</td><td>User sees proposal and sources; human performs/approves action.</td><td>Measured usefulness with safe rejection and no material control failure.</td></tr>
+        <tr><td>3 · Controlled action</td><td>Exact pre-approved low-risk capability executes with postcondition.</td><td>Low exception rate, reversal/recovery, continuous evaluation and kill switch.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>20. Knowledge graph and digital twin implementation</h2>
+    <p class="lead">Implement both as trustworthy projections over XELOR records and events—not as a new database or a 3-D visualization project.</p>
+    <div class="grid2">
+      <div class="card"><h3>Knowledge graph</h3><ul><li>Node: stable reference to an existing tenant entity or evidence object.</li><li>Edge: typed relationship with source, observed time, valid time, confidence and creator.</li><li>Query: permission-filtered traversal, always returning provenance.</li><li>Start in PostgreSQL using indexed adjacency/evidence tables.</li><li>Add a graph engine only when measured multi-hop queries cannot meet the SLO.</li></ul></div>
+      <div class="card"><h3>Digital twin</h3><ul><li>Projection: machine/order/batch/material/quality states derived from durable domain events.</li><li>Version: last applied event and projection schema version.</li><li>Rebuild: deterministic replay into a new projection.</li><li>Correction: new event or governed repair, never silent history rewrite.</li><li>Visualization consumes the projection; it is not the twin.</li></ul></div>
+    </div>
+    <div class="flow"><div>ERP commit<br>authoritative event</div><div class="arrow">→</div><div>Projection worker<br>idempotent</div><div class="arrow">→</div><div>Graph / twin tables<br>provenance</div><div class="arrow">→</div><div>Decision / UI query<br>time-aware</div></div>
+    <h3>Minimum edge contract</h3>
+    <pre>tenant_id, edge_id, edge_type
+from_entity_type, from_entity_id
+to_entity_type, to_entity_id
+source_type, source_id, source_version
+observed_at, valid_from, valid_to
+confidence, verification_status, created_by</pre>
+    <h3>Projection operating checks</h3>
+    <ul><li>Projection lag and last applied event are visible per tenant/partition.</li><li>Rebuild runs into shadow tables, compares counts/checksums, then swaps after approval.</li><li>Queries distinguish “current observed state,” “planned state” and “model-estimated state.”</li><li>A missing projection never changes ledger truth; user receives a stale/unavailable indication.</li></ul>
+  </section>
+
+  <section class="page">
+    <h2>21. Health, observability and service objectives</h2>
+    <table>
+      <thead><tr><th>Probe</th><th>What it means</th><th>Dependencies</th><th>Platform action</th></tr></thead>
+      <tbody>
+        <tr><td><code>/health/live</code></td><td>Process event loop/server is alive.</td><td>None; no DB query.</td><td>Restart only after repeated failure.</td></tr>
+        <tr><td><code>/health/ready</code></td><td>Task can serve this runtime role safely.</td><td>DB connection, compatible migration range; required broker for broker-dependent routes.</td><td>Remove from target group; do not restart on a brief downstream outage unless policy requires.</td></tr>
+        <tr><td>Startup</td><td>Boot/config/instrumentation completed.</td><td>Validated config and initialized resources.</td><td>Allow slow boot without premature liveness restart.</td></tr>
+      </tbody>
+    </table>
+    <h3>Telemetry path</h3>
+    <div class="flow"><div>Browser error / web vital</div><div class="arrow">→</div><div>Trace context in request</div><div class="arrow">→</div><div>API + DB + queue spans</div><div class="arrow">→</div><div>Collector + alerts</div></div>
+    <p>Use JSON logs with timestamp, level, service, environment, release, trace/span IDs, route template, safe tenant pseudonym, outcome code and duration. Redact authorization headers, cookies, passwords, secrets, full prompts/documents, personal financial data and arbitrary request bodies.</p>
+    <h3>Initial SLOs—confirm with pilot users</h3>
+    <table>
+      <thead><tr><th>User journey</th><th>SLI</th><th>Initial objective</th><th>Alert signal</th></tr></thead>
+      <tbody>
+        <tr><td>Authenticated read API</td><td>Successful eligible requests and p95 latency.</td><td>99.9% monthly; p95 &lt; 500 ms for normal list/detail requests.</td><td>Fast/slow burn of error budget, not one isolated 500.</td></tr>
+        <tr><td>Ledger mutation</td><td>Definitive accepted/refused response without ambiguity.</td><td>99.95% processing availability; p95 &lt; 1.5 s excluding deliberate external waits.</td><td>Ambiguous result, transaction error or elevated conflict anomaly.</td></tr>
+        <tr><td>Outbox delivery</td><td>Age of oldest undispatched critical event.</td><td>99% under 60 s; no critical event stranded 5 min.</td><td>Age and DLQ, not only worker CPU.</td></tr>
+        <tr><td>Approval visibility</td><td>Committed pending approval visible to authorized inbox.</td><td>99% within 30 s.</td><td>Projection/queue lag or mismatch count.</td></tr>
+        <tr><td>Restore</td><td>Successful rehearsal within approved RPO/RTO.</td><td>Initial RPO ≤15 min, RTO ≤4 h; tighten from business impact.</td><td>Missed drill or failed evidence.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>22. Verification strategy and release test matrix</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Runs</th><th>Must prove</th></tr></thead>
+      <tbody>
+        <tr><td>Static</td><td>Every PR, seconds/minutes.</td><td>Type, lint, import boundary, manifest and config schema correctness.</td></tr>
+        <tr><td>Unit/property</td><td>Every PR.</td><td>Business invariants, monetary/quantity boundaries, state machines, refusal codes and deterministic AI tools.</td></tr>
+        <tr><td>Database</td><td>Every DB PR against PostgreSQL 17.</td><td>Fresh/upgrade migration, RLS/force, constraints, concurrent write conflicts, idempotency and query plan threshold.</td></tr>
+        <tr><td>API contract</td><td>Every PR.</td><td>Auth, permission, validation, error envelope, pagination, idempotency and version compatibility.</td></tr>
+        <tr><td>Integration</td><td>Every PR for affected paths.</td><td>Real PostgreSQL/Valkey/Keycloak, outbox/worker and cross-module transactions.</td></tr>
+        <tr><td>Browser</td><td>Critical per PR; full before release/nightly.</td><td>20 state/interaction variants listed in §16, using normal OIDC as well as demo separately.</td></tr>
+        <tr><td>Acceptance</td><td>Staging release.</td><td>Current 97-item matrix plus investor Northstar, approval and recovery stories.</td></tr>
+        <tr><td>Performance</td><td>Baseline before pilot; scheduled/regression threshold.</td><td>API latency, DB pool, hot tenant/list queries, lock behavior, worker throughput and resource saturation.</td></tr>
+        <tr><td>Security</td><td>Continuous scans; threat/pentest before customer data.</td><td>Tenant escape, IDOR, auth/session, SSRF/upload, injection, secret, dependency and privilege escalation controls.</td></tr>
+        <tr><td>Resilience</td><td>Pre-pilot and quarterly.</td><td>Task loss, DB failover, broker interruption, poison message, provider timeout and partial connector response.</td></tr>
+        <tr><td>Recovery</td><td>Scheduled restore drill.</td><td>Backup can restore into a new environment, migrate, reconcile and meet RPO/RTO.</td></tr>
+      </tbody>
+    </table>
+    <h3>Release evidence bundle</h3>
+    <p>Commit and PR; reviewers; dependency lock hash; test results; migration checksums; SBOM/scan/signature; Web/runtime digests; IaC plan; staging deployment and acceptance results; production approver; deploy timeline; smoke/SLO outcome; rollback/incident reference if any.</p>
+    <div class="callout good"><b>Verification principle:</b> count scenarios only when their assertion is meaningful. Fifty variations that all check “page loads” are weaker than ten tests that prove authority, atomicity, replay, refusal and recovery.</div>
+  </section>
+
+  <section class="page">
+    <h2>23. Rollback, backup and disaster recovery</h2>
+    <h3>Deployment rollback decision tree</h3>
+    <table>
+      <thead><tr><th>Observation</th><th>Immediate action</th><th>Data action</th></tr></thead>
+      <tbody>
+        <tr><td>New tasks fail readiness before traffic.</td><td>ECS circuit breaker stops/rolls to last completed task definition.</td><td>Inspect migration compatibility; no schema reverse by default.</td></tr>
+        <tr><td>Error/latency alarm during rolling deployment.</td><td>Automatic rollback when alarm policy is linked; freeze further promotion.</td><td>If additive schema, leave it. Forward-fix if data was written in new form.</td></tr>
+        <tr><td>Application bug with compatible schema.</td><td>Redeploy last known-good image digest.</td><td>Reconcile any affected transactions using audit/idempotency evidence.</td></tr>
+        <tr><td>Bad migration before new writes.</td><td>Stop rollout; execute a reviewed forward correction.</td><td>Restore only if forward correction is unsafe and loss window is accepted.</td></tr>
+        <tr><td>Corruption or accidental destructive write.</td><td>Contain writes, preserve evidence, declare incident.</td><td>Point-in-time restore creates a new RDS instance/cluster; compare and reconcile before cutover.</td></tr>
+        <tr><td>Regional outage.</td><td>Invoke DR authority and DNS/runbook after data recovery condition is known.</td><td>Restore/replicate into recovery region and verify tenant/audit integrity before traffic.</td></tr>
+      </tbody>
+    </table>
+    <h3>Restore drill</h3>
+    <ol>
+      <li>Select an approved recovery point and restore RDS into a new isolated environment—never over the source.</li>
+      <li>Restore/attach required S3 object versions and configuration; rotate credentials for the drill environment.</li>
+      <li>Deploy the matching historical image digests, then apply only compatible migrations.</li>
+      <li>Run schema, RLS, audit-chain, tenant counts, ledger balances, outbox and document-reference reconciliation.</li>
+      <li>Execute representative read/mutation/approval flows with synthetic accounts.</li>
+      <li>Measure actual RPO/RTO; record gaps, owner and due date; destroy the isolated environment through reviewed cleanup after evidence retention.</li>
+    </ol>
+    <div class="callout warn"><b>Backup is not recovery:</b> PITR capability is only proven when a team can restore, validate and make a safe cutover decision inside the business target.</div>
+  </section>
+
+  <section class="page">
+    <h2>24. Railway public-demo pipeline</h2>
+    <p class="lead">Keep Railway as a disposable investor channel. It is intentionally simpler than production and must stay unable to receive real data.</p>
+    <div class="flow"><div>GitHub repository</div><div class="arrow">→</div><div>Railway config-as-code</div><div class="arrow">→</div><div>Web public<br>API private</div><div class="arrow">→</div><div>Seeded demo world</div></div>
+    <table>
+      <thead><tr><th>Service</th><th>Config</th><th>Start dependency</th><th>Public?</th></tr></thead>
+      <tbody>
+        <tr><td><code>xelor-postgres</code></td><td><code>postgres.railway.json</code>; volume.</td><td>Role/database initialization.</td><td>No.</td></tr>
+        <tr><td><code>xelor-valkey</code></td><td><code>valkey.railway.json</code>.</td><td>Valkey starts.</td><td>No.</td></tr>
+        <tr><td><code>xelor-api</code></td><td><code>api.railway.json</code>.</td><td>Wait DB → migrate → API live → versioned seed → 97 checks → ready.</td><td>No.</td></tr>
+        <tr><td><code>xelor-worker</code></td><td><code>worker.railway.json</code>.</td><td>Wait for API ready and Valkey.</td><td>No.</td></tr>
+        <tr><td><code>xelor-web</code></td><td><code>web.railway.json</code>.</td><td>Wait for API ready; same-origin rewrite.</td><td>Yes.</td></tr>
+      </tbody>
+    </table>
+    <h3>Deploy order</h3>
+    <ol><li>Create shared strong, different owner/app database secrets.</li><li>Add the same GitHub repo as exactly five named Railway services and attach the supplied config paths.</li><li>Attach the PostgreSQL volume at <code>/var/lib/postgresql/data</code>.</li><li>Deploy PostgreSQL and Valkey, then API, then Worker and Web.</li><li>Create a domain only for Web; check same-origin <code>/api/v1/health</code> and the investor journey.</li><li>Optionally add <code>xelor.kisancred.com</code> as Web custom domain after the generated Railway URL works.</li></ol>
+    <div class="callout bad"><b>Isolation policy:</b> public-demo flags are acceptable only because the dataset is disposable and integrations are disabled. Do not connect this environment to customer identity, bank, GST, email, production ERP, documents or analytics destinations.</div>
+    <h3>Demo release checks</h3>
+    <p>Local five-container parity; cold database boot; second boot without duplicate seed; public URL and API proxy; all presenter personas; 97-item matrix; worker event delivery; mobile/desktop display; suspend/resume; no sign-in page; no non-Web public service.</p>
+  </section>
+
+  <section class="page">
+    <h2>25. AWS build sequence—exact order</h2>
+    <table>
+      <thead><tr><th>Wave</th><th>Implementation</th><th>Exit criterion</th></tr></thead>
+      <tbody>
+        <tr><td>0 · Decisions</td><td>Confirm AWS Organization/accounts, Mumbai primary, approved recovery region, DNS authority, pilot RPO/RTO, data classes and named owners.</td><td>Architecture decision records and risk owners approved.</td></tr>
+        <tr><td>1 · Bootstrap</td><td>Create OpenTofu state bucket, versioning, KMS, state locking, GitHub OIDC providers/roles and break-glass roles through a small audited bootstrap.</td><td>A clean runner can plan with short-lived identity; state is encrypted/locked.</td></tr>
+        <tr><td>2 · Network</td><td>VPC across at least two AZs; public edge subnets, private application/data subnets, NAT/VPC endpoints, route tables, flow logs and security groups.</td><td>Only edge is reachable publicly; connectivity tests match the matrix.</td></tr>
+        <tr><td>3 · Data</td><td>RDS Multi-AZ, parameter/option/subnet groups, backups/PITR, alarms; managed Valkey; S3/KMS buckets and lifecycle.</td><td>Encrypted private services; restore and failover smoke succeeds.</td></tr>
+        <tr><td>4 · Platform</td><td>ECR, ECS cluster, task roles, CloudWatch logs, OTel Collector, ALB target groups/listeners, autoscaling and deployment alarms.</td><td>Hello/health workloads deploy by digest with circuit breaker.</td></tr>
+        <tr><td>5 · Identity</td><td>Keycloak service/database, realm-as-code/export, MFA/session/brute-force policy, OIDC client and application mapping.</td><td>Normal user login and token/tenant/permission negative tests pass.</td></tr>
+        <tr><td>6 · Application</td><td>Migration task; API/Worker/Web services; same-origin routing; config assertions; readiness and graceful shutdown.</td><td>Staging completes 97 checks and critical browser journeys.</td></tr>
+        <tr><td>7 · Operations</td><td>SLO dashboards, alert routing, runbooks, on-call, vulnerability flow, backup/restore, incident exercise and cost budgets.</td><td>Named operators complete a game day without repository author assistance.</td></tr>
+        <tr><td>8 · Production</td><td>Production account plan/apply, approved release promotion, DNS/TLS, pilot tenant onboarding and heightened observation.</td><td>Go-live checklist signed; rollback/restore authority on call.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Region note:</b> Mumbai (<code>ap-south-1</code>) is the recommended primary for India-facing latency and residency discussions. Hyderabad (<code>ap-south-2</code>) is a candidate recovery region; final selection must verify service availability, contractual residency and business recovery cost at implementation time.</div>
+  </section>
+
+  <section class="page">
+    <h2>26. OpenTofu and infrastructure change flow</h2>
+    <div class="flow"><div>Module change</div><div class="arrow">→</div><div>fmt / validate / scan</div><div class="arrow">→</div><div>Plan artifact + review</div><div class="arrow">→</div><div>Approved apply + evidence</div></div>
+    <h3>State and account rules</h3>
+    <ul>
+      <li>Separate AWS accounts and OpenTofu state for staging and production. Do not use workspaces alone as the isolation boundary.</li>
+      <li>Use an encrypted, versioned S3 backend with state locking and short-lived OIDC credentials. Restrict read access because state can contain sensitive values.</li>
+      <li>Pin provider/module versions and commit lock files. Modules expose small typed inputs and meaningful outputs; environment roots compose them.</li>
+      <li>Pull requests run formatting, validation, static security checks and a read-only plan. Apply runs only from protected environments.</li>
+      <li>Detect drift on a schedule. Import deliberate console changes or revert them; never let drift become the undocumented source of truth.</li>
+    </ul>
+    <h3>Module boundaries</h3>
+    <table>
+      <thead><tr><th>Module</th><th>Owns</th><th>Does not own</th></tr></thead>
+      <tbody>
+        <tr><td><code>network</code></td><td>VPC, subnets, routes, endpoints, flow logs, baseline security groups.</td><td>Application task policies.</td></tr>
+        <tr><td><code>edge</code></td><td>Certificates, CloudFront, WAF, ALB/listeners/target groups.</td><td>DNS delegation outside the managed zone.</td></tr>
+        <tr><td><code>ecs-service</code></td><td>Task/service, autoscaling, health and deployment alarms.</td><td>Image build or schema migration.</td></tr>
+        <tr><td><code>rds</code></td><td>Database, subnet/parameter groups, monitoring, backup/restore policy.</td><td>Application schema.</td></tr>
+        <tr><td><code>telemetry</code></td><td>Logs, collector, dashboards, alarms and destinations.</td><td>Business metric definitions in code.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>Destroy protection:</b> production databases, KMS keys, evidence buckets and state backends need deletion protection and explicit two-person break-glass procedure. A routine pipeline must not contain a broad automatic destroy path.</div>
+  </section>
+
+  <section class="page">
+    <h2>27. Domain, TLS and <code>xelor.kisancred.com</code></h2>
+    <h3>Public demo on Railway</h3>
+    <ol><li>First prove the Railway-generated <code>*.up.railway.app</code> URL.</li><li>Add <code>xelor.kisancred.com</code> only to <code>xelor-web</code>.</li><li>Railway provides a DNS target; create the exact CNAME at the authoritative DNS provider.</li><li>Do not change the apex <code>kisancred.com</code> records. Keep proxying off until Railway validates and issues TLS if the DNS provider has a proxy mode.</li><li>Verify certificate, redirect to HTTPS, Web route, same-origin API route and no public ports on API/data services.</li></ol>
+    <h3>AWS production</h3>
+    <div class="flow five"><div><code>xelor.kisancred.com</code><br>DNS alias/CNAME</div><div class="arrow">→</div><div>CloudFront<br>ACM certificate</div><div class="arrow">→</div><div>ALB origin<br>Web/API routing</div></div>
+    <ul>
+      <li>Request ACM certificate in the region required by CloudFront and validate through controlled DNS.</li>
+      <li>Set HTTP→HTTPS redirect, HSTS only after the HTTPS path is stable, secure cookies and the response headers already begun in Next config.</li>
+      <li>Use low DNS TTL during initial cutover. Preserve the previous endpoint until the observation window ends.</li>
+      <li>Prepare rollback: switch DNS/alias to the known-good endpoint only when data/schema compatibility is understood; DNS alone cannot undo database writes.</li>
+    </ul>
+    <h3>Cutover checks</h3>
+    <table class="check"><tbody>
+      <tr><td>✓</td><td>Certificate chain, hostname and expiry monitoring pass.</td></tr>
+      <tr><td>✓</td><td><code>/</code>, deep link, static asset and <code>/api/v1/health/ready</code> work over HTTPS.</td></tr>
+      <tr><td>✓</td><td>OIDC redirect/logout URLs exactly match the new origin.</td></tr>
+      <tr><td>✓</td><td>No CORS wildcard, mixed content, internal hostname or server banner is exposed.</td></tr>
+      <tr><td>✓</td><td>WAF logs, request traces and error alerts show the synthetic cutover requests.</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="page">
+    <h2>28. Failure-mode review</h2>
+    <table>
+      <thead><tr><th>Failure</th><th>User-visible behavior</th><th>Detection</th><th>Recovery</th></tr></thead>
+      <tbody>
+        <tr><td>API task dies</td><td>Other AZ task serves; in-flight mutation safely retryable with same key.</td><td>Target health, task exit, 5xx/latency.</td><td>ECS replaces task; investigate trace/crash.</td></tr>
+        <tr><td>PostgreSQL failover</td><td>Brief errors/latency; no false success.</td><td>RDS event, connection/error rate.</td><td>Pool reconnect with bounded jitter; reconcile ambiguous mutations by idempotency key.</td></tr>
+        <tr><td>Valkey unavailable</td><td>Synchronous ERP continues where designed; async effects delayed and shown as pending.</td><td>Queue connection, oldest outbox age.</td><td>Reconnect, relay durable outbox, inspect duplicates/DLQ.</td></tr>
+        <tr><td>Worker poison event</td><td>One integration/effect delayed; unrelated work continues.</td><td>Retry count/DLQ and event age.</td><td>Classify, fix, audited replay exact event.</td></tr>
+        <tr><td>Keycloak outage</td><td>New sign-ins/refresh fail; existing valid token behavior follows policy.</td><td>OIDC endpoint and auth error rate.</td><td>Restore IdP service/database; no insecure auth bypass.</td></tr>
+        <tr><td>AI provider timeout</td><td>Deterministic fallback/refusal; no partial action.</td><td>Provider latency/error/budget.</td><td>Circuit/open policy, alternate approved provider or human workflow.</td></tr>
+        <tr><td>Document scanner down</td><td>Upload remains quarantined/pending.</td><td>Oldest quarantine age.</td><td>Resume scan; never release unscanned object.</td></tr>
+        <tr><td>Bad deployment</td><td>Old tasks remain or return automatically.</td><td>ECS circuit breaker/CloudWatch alarms.</td><td>Last completed task definition; forward-fix data if needed.</td></tr>
+        <tr><td>Tenant-isolation regression</td><td>Request refused or release stopped—never accepted as degraded behavior.</td><td>RLS/IDOR tests, anomaly/security alert.</td><td>Contain, revoke sessions if required, incident/privacy assessment and audited correction.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Design target:</b> every dependency failure produces one of three explicit outcomes—committed, refused or pending/reconcilable. “Probably succeeded” is not acceptable for money, stock, quality disposition or approval.</div>
+  </section>
+
+  <section class="page">
+    <h2>29. Twelve-week implementation plan</h2>
+    <table>
+      <thead><tr><th>Weeks</th><th>Workstream</th><th>Concrete output</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr><td>1–2</td><td>Release foundation</td><td>CODEOWNERS, protected checks, <code>ci.yml</code>, container hardening, SBOM/scan, release manifest.</td><td>PR cannot merge with a broken current test suite.</td></tr>
+        <tr><td>1–2</td><td>Runtime corrections</td><td>Same-origin runtime API route, environment schema/startup assertions, live/ready/startup probes, SIGTERM drain.</td><td>Same Web digest in two local configs; task leaves load balancer gracefully.</td></tr>
+        <tr><td>3–4</td><td>Cloud bootstrap</td><td>AWS accounts/roles, OIDC, state backend, core OpenTofu modules, staging network/ECR/ECS skeleton.</td><td>Reviewed plan/apply with no static AWS key.</td></tr>
+        <tr><td>5–6</td><td>Managed state</td><td>RDS Multi-AZ, Valkey, S3/KMS, Secrets Manager, migration task and connection budget.</td><td>Migration and restore/failover rehearsal.</td></tr>
+        <tr><td>5–7</td><td>Identity</td><td>HA Keycloak/approved IdP, MFA/session policy, realm config, tenant mapping tests.</td><td>OIDC negative matrix and admin recovery procedure.</td></tr>
+        <tr><td>7–8</td><td>Staging delivery</td><td>Deploy-staging workflow, ECS circuit breaker/alarms, critical acceptance and browser pipeline.</td><td>One-click repeatable staging release from <code>main</code>.</td></tr>
+        <tr><td>8–9</td><td>Observability</td><td>OTel, structured/redacted logs, SLO dashboards, paging and trace-linked support view.</td><td>Injected API/worker failure produces actionable alert and trace.</td></tr>
+        <tr><td>9–10</td><td>Production promotion</td><td>Protected production workflow, same-digest verification, rollback/incident runbooks.</td><td>Game day rolls back an intentionally bad release.</td></tr>
+        <tr><td>10–11</td><td>Recovery/security</td><td>PITR restore drill, threat model, tenant/IDOR test, dependency/secret remediation flow.</td><td>RPO/RTO evidence and no unresolved critical finding.</td></tr>
+        <tr><td>12</td><td>Pilot readiness</td><td>Capacity baseline, support ownership, DNS/TLS cutover plan and pilot go/no-go dossier.</td><td>Joint engineering/product/security/operations sign-off.</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Calendar assumes a small focused team and one pilot region. Identity procurement, enterprise integration certification or compliance assessment can extend it; do not hide those dependencies inside an engineering estimate.</p>
+  </section>
+
+  <section class="page">
+    <h2>30. Team ownership and operating model</h2>
+    <table>
+      <thead><tr><th>Role</th><th>Owns</th><th>Must review</th><th>Primary evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Senior/backend lead</td><td>Domain boundaries, transaction design, API contracts, DB change policy.</td><td>Ledger writes, migrations, auth/effect code.</td><td>Invariant tests, migration/compatibility proof.</td></tr>
+        <tr><td>Frontend/full-stack</td><td>Web shell, API integration, interaction/accessibility, browser tests.</td><td>Response contract and permission-facing changes.</td><td>State matrix, Playwright and accessibility results.</td></tr>
+        <tr><td>Platform/SRE</td><td>IaC, pipelines, compute/network, telemetry, recovery and on-call tooling.</td><td>Runtime config, health, scaling and dependency changes.</td><td>Plan/apply, deploy manifest, SLO and drill report.</td></tr>
+        <tr><td>Security/identity</td><td>Threat model, OIDC policy, secrets, tenant test, incident/privacy controls.</td><td>New data path, external connector, AI/provider and privilege.</td><td>Risk decision, scan/pentest and access review.</td></tr>
+        <tr><td>QA/product domain</td><td>Business acceptance, golden scenarios, refusal/recovery expectations.</td><td>User-facing workflow and value claim.</td><td>Signed scenario result and known-limit register.</td></tr>
+        <tr><td>Release approver</td><td>Production go/no-go against evidence.</td><td>Migration, risk, rollback, incident coverage.</td><td>GitHub Environment approval and release record.</td></tr>
+      </tbody>
+    </table>
+    <h3>Minimum staffing for this plan</h3>
+    <p>One experienced backend/architecture owner, one full-stack/frontend owner, and one platform engineer can establish the foundation, with part-time product/QA and security/identity review. A single person may cover two roles in an MVP team, but approvals and production infrastructure should still receive independent review.</p>
+    <h3>Operating cadence</h3>
+    <ul><li>Daily: failed release checks, critical alerts, queue age and security notifications.</li><li>Weekly: dependency updates, error-budget and slow-query review, demo reset/rebuild proof.</li><li>Monthly: access/secret/cost review, SLO report, recovery action tracking.</li><li>Quarterly: restore/game day, permission/SoD review, threat model and external provider review.</li><li>Per release: compatibility, migration, same-digest, acceptance and observation evidence.</li></ul>
+  </section>
+
+  <section class="page">
+    <h2>31. “Ready to build” acceptance checklist</h2>
+    <table class="check">
+      <thead><tr><th></th><th>Architecture and delivery condition</th></tr></thead>
+      <tbody>
+        <tr><td>✓</td><td>Target environment/account/region and DNS authority are named.</td></tr>
+        <tr><td>✓</td><td>Protected <code>main</code> requires the complete CI success gate.</td></tr>
+        <tr><td>✓</td><td>GitHub uses OIDC; staging and production roles are separate and subject-restricted.</td></tr>
+        <tr><td>✓</td><td>Web/runtime images build once, are scanned/signed and promote by digest.</td></tr>
+        <tr><td>✓</td><td>Web makes same-origin API calls without an environment-specific public build variable.</td></tr>
+        <tr><td>✓</td><td>Live/ready/startup semantics and graceful task draining are exercised.</td></tr>
+        <tr><td>✓</td><td>Production migrations run once with owner authority and use expand/contract compatibility.</td></tr>
+        <tr><td>✓</td><td>API/Worker use only the restricted RLS-enforced application database role.</td></tr>
+        <tr><td>✓</td><td>Production cannot start with demo identity flags or default credentials.</td></tr>
+        <tr><td>✓</td><td>RDS, Valkey, S3 and application tasks are private and security-group scoped.</td></tr>
+        <tr><td>✓</td><td>Every critical request can be traced across API, database and worker without leaking sensitive data.</td></tr>
+        <tr><td>✓</td><td>Deployment alarms can stop/rollback; last known-good digests are retained.</td></tr>
+        <tr><td>✓</td><td>PITR restore and application reconciliation have been proven in an isolated environment.</td></tr>
+        <tr><td>✓</td><td>Critical happy, refusal, duplicate, concurrency, failure and recovery paths pass.</td></tr>
+        <tr><td>✓</td><td>Named humans own release, incident, data recovery, identity and customer communication decisions.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Go/no-go rule:</b> production readiness is a body of evidence, not a confidence statement. If a mandatory item has no named owner, test result or runbook, it is not complete.</div>
+  </section>
+
+  <section class="page">
+    <h2>32. Developer review of this playbook</h2>
+    <h3>Backend developer review</h3>
+    <table>
+      <thead><tr><th>Question</th><th>Finding</th><th>Resolution in this playbook</th></tr></thead>
+      <tbody>
+        <tr><td>Can I tell where business logic and transaction ownership belong?</td><td>Yes.</td><td>Platform invariant → owning application service → tenant transaction → audit/outbox, §§14–15.</td></tr>
+        <tr><td>Can I add a table without weakening tenancy?</td><td>Yes, with explicit checks.</td><td>Migration pipeline and tenant-table proof, §11.</td></tr>
+        <tr><td>Can I deploy a DB change safely with mixed task versions?</td><td>Yes, if expand/contract is followed.</td><td>Compatibility releases and service order, §§10–11.</td></tr>
+        <tr><td>What happens to duplicate requests/events?</td><td>Defined.</td><td>Stable mutation key and idempotent consumer/inbox, §§15 and 17.</td></tr>
+        <tr><td>Who can migrate the production database?</td><td>Only the one-shot task role.</td><td>Owner secret never reaches API/Worker, §§11–13.</td></tr>
+        <tr><td>How do I debug a failure?</td><td>Traceable contract is defined.</td><td>Error <code>traceId</code>, structured/redacted telemetry and SLOs, §§15 and 21.</td></tr>
+      </tbody>
+    </table>
+    <h3>Full-stack developer review</h3>
+    <table>
+      <thead><tr><th>Question</th><th>Finding</th><th>Resolution in this playbook</th></tr></thead>
+      <tbody>
+        <tr><td>Do I know how Web reaches API in every environment?</td><td>Yes; current build-time coupling is explicitly corrected.</td><td>Same-origin ALB routing/runtime local rewrite, §§3 and 5.</td></tr>
+        <tr><td>Do I know the required UI states and negative paths?</td><td>Yes.</td><td>Screen state and 20-scenario browser matrix, §16.</td></tr>
+        <tr><td>Can I ship the same Web artifact through staging/production?</td><td>Yes after the named prerequisite.</td><td>Remove public environment API origin, §§2, 3 and 7.</td></tr>
+        <tr><td>Can I understand CI/CD without undocumented steps?</td><td>Yes.</td><td>Named files, jobs, sequence, roles and proof bundle, §§6–10.</td></tr>
+        <tr><td>Can I tell whether a screen is “done”?</td><td>Yes.</td><td>Cross-layer definition of done and acceptance checklist, §§14, 16 and 31.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>Remaining decisions requiring the actual delivery team:</b> confirmed pilot RPO/RTO and SLOs, final recovery region, managed IdP versus operated Keycloak, compliance scope, expected concurrency/data volume, notification/integration providers and monthly cloud budget. This document makes their decision points explicit rather than inventing answers.</div>
+  </section>
+
+  <section class="page">
+    <h2>33. Cross-functional review</h2>
+    <table>
+      <thead><tr><th>Perspective</th><th>Question asked</th><th>Finding</th><th>Implemented answer</th></tr></thead>
+      <tbody>
+        <tr><td>Architecture</td><td>Does this add distributed complexity before evidence?</td><td>No.</td><td>Modular monolith remains; extraction triggers are measurable, §§1 and 4.</td></tr>
+        <tr><td>Database</td><td>Can schema and application versions overlap safely?</td><td>Yes with discipline.</td><td>One-shot migration, advisory lock, expand/migrate/contract and forward-fix policy, §11.</td></tr>
+        <tr><td>Security</td><td>Can an environment or pipeline silently gain broad authority?</td><td>Controls are explicit.</td><td>OIDC subject restrictions, separate roles/accounts, secret separation and startup refusal, §§9 and 12.</td></tr>
+        <tr><td>Tenant privacy</td><td>Is tenant filtering only an application convention?</td><td>No.</td><td>Verified identity, tenant transaction helper and FORCE RLS with release checks, §§5 and 11.</td></tr>
+        <tr><td>SRE</td><td>Can a bad release fail before affecting all traffic?</td><td>Yes.</td><td>Readiness, rolling overlap, circuit breaker, alarms and known-good digest, §§10, 21 and 23.</td></tr>
+        <tr><td>Recovery</td><td>Is backup restoration actually testable?</td><td>Yes.</td><td>Scheduled isolated PITR restore and reconciliation sequence, §23.</td></tr>
+        <tr><td>QA</td><td>Are correctness and recovery tested beyond happy paths?</td><td>Yes.</td><td>Layered matrix including permission, duplicate, concurrency, failure, replay and restore, §22.</td></tr>
+        <tr><td>Accessibility</td><td>Can a keyboard/small-screen user complete critical work?</td><td>Required but must remain a release gate.</td><td>Explicit UI states and browser matrix, §16.</td></tr>
+        <tr><td>AI governance</td><td>Can a model directly write to ERP or invent authority?</td><td>No.</td><td>Registered capability, fixed retrieval, human gate and domain broker, §19.</td></tr>
+        <tr><td>Cost</td><td>Does the MVP require EKS/Kafka/graph DB/warehouse?</td><td>No.</td><td>Managed essentials first; adoption triggers defer optional platforms, §4.</td></tr>
+        <tr><td>Support</td><td>Can a normal developer trace and explain one failure?</td><td>Yes after telemetry work.</td><td>Stable error code/trace ID, structured redaction and evidence bundle, §§15 and 21.</td></tr>
+        <tr><td>Investor demo</td><td>Can public access stay simple without weakening production?</td><td>Yes only through isolation.</td><td>Railway public demo is disposable; production startup rejects its flags, §§3, 12 and 24.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Review conclusion:</b> the design is implementable by a small full-stack team because it strengthens the existing architecture instead of replacing it. The largest remaining risks are operational execution, identity ownership, restore proof and pilot-specific business requirements—not an absent technology category.</div>
+  </section>
+
+  <section class="page">
+    <h2>34. Exact developer command runbook</h2>
+    <h3>First local setup</h3>
+    <pre>corepack enable
+pnpm install --frozen-lockfile
+test -e .env || cp .env.example .env # review local values; never use them in cloud
+pnpm infra:up
+pnpm db:migrate
+pnpm demo:seed
+pnpm demo:northstar</pre>
+    <h3>Run the application in separate terminals</h3>
+    <pre># Terminal 1 — supporting services were started by pnpm infra:up
+
+# Terminal 2 — API on http://localhost:3000
+pnpm dev
+
+# Terminal 3 — Web on http://localhost:3001
+pnpm --filter @ind-core/web dev
+
+# Terminal 4 — Worker (build its runtime first)
+pnpm --filter @ind-core/api build
+pnpm --filter @ind-core/api worker</pre>
+    <h3>Run the current repository gates</h3>
+    <pre>pnpm lint
+pnpm typecheck
+pnpm test
+pnpm --filter @ind-core/web module-check
+pnpm db:rls-check
+pnpm db:perm-check
+pnpm demo:verify
+pnpm --filter @ind-core/web exec playwright test --list</pre>
+    <h3>Rebuild the disposable demo world</h3>
+    <pre>pnpm demo:rebuild
+# This intentionally deletes/recreates demo data. Never aim it at production.</pre>
+    <h3>Local Railway parity</h3>
+    <pre>export POSTGRES_PASSWORD="$(openssl rand -hex 24)"
+export APP_DATABASE_PASSWORD="$(openssl rand -hex 24)"
+docker compose -f infra/railway/docker-compose.demo.yml build
+docker compose -f infra/railway/docker-compose.demo.yml up</pre>
+    <p class="small">The future AWS deployment commands belong inside reviewed GitHub workflows and OpenTofu roots, not in a developer copy/paste procedure. Their task definitions, cluster/subnet/security-group identifiers and release digests must come from environment outputs and the signed release manifest.</p>
+  </section>
+
+  <section class="page">
+    <h2>35. Source and verification record</h2>
+    <p class="lead">The implementation recommendations were checked against the live repository and current primary platform documentation. Provider behavior and pricing should be rechecked at implementation time.</p>
+    <h3>Repository sources</h3>
+    <ul class="source">
+      <li><code>package.json</code> and four workspace package manifests.</li>
+      <li><code>apps/web/next.config.ts</code>, Web API/session implementation and Playwright suite.</li>
+      <li><code>apps/api</code> controllers, identity/tenant guards, health code, Worker and demo verification scripts.</li>
+      <li><code>packages/platform</code> module manifests, services, Agent OS and boundary rules.</li>
+      <li><code>packages/db</code> schema, 64 SQL migrations, tenant helper, migration/RLS/permission scripts.</li>
+      <li><code>infra/docker-compose.yml</code>, <code>infra/railway</code> Dockerfiles/config/start scripts and deployment guide.</li>
+    </ul>
+    <h3>Primary official references</h3>
+    <ul class="source">
+      <li><a href="https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws">GitHub Docs — Configuring OpenID Connect in Amazon Web Services</a></li>
+      <li><a href="https://docs.github.com/en/actions/reference/security/oidc">GitHub Docs — OpenID Connect reference</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html">AWS — Amazon ECS deployment circuit breaker</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-failure-detection.html">AWS — ECS deployment failure detection and rollback</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_service-options.html">AWS — ECS deployment strategies</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.MultiAZDBCluster.html">AWS — Point-in-time recovery for Multi-AZ DB clusters</a></li>
+      <li><a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotating-secrets.html">AWS — Secrets Manager rotation</a></li>
+      <li><a href="https://opentelemetry.io/docs/languages/js/">OpenTelemetry — JavaScript instrumentation status</a></li>
+      <li><a href="https://opentofu.org/docs/language/settings/backends/s3/">OpenTofu — S3 backend, locking and encryption</a></li>
+      <li><a href="https://docs.railway.com/config-as-code/reference">Railway — Config as code reference</a></li>
+    </ul>
+    <h3>Document validation to perform after rendering</h3>
+    <table class="check"><tbody>
+      <tr><td>✓</td><td>HTML headings, tables, diagrams, links and page order programmatically inspected.</td></tr>
+      <tr><td>✓</td><td>PDF rendered with print backgrounds and A4 sizing; file/page metadata checked.</td></tr>
+      <tr><td>✓</td><td>Representative architecture, pipeline, implementation and review pages visually inspected.</td></tr>
+      <tr><td>✓</td><td>Repository-specific claims cross-checked; future recommendations labeled as target decisions.</td></tr>
+      <tr><td>✓</td><td>Backend, full-stack, architecture, database, security, SRE, recovery, QA, accessibility, AI, cost and support reviews completed; unresolved business choices stated explicitly.</td></tr>
+    </tbody></table>
+    <p class="small">This is an engineering implementation blueprint, not a certification, penetration-test report, legal opinion or guarantee of uninterrupted service.</p>
+  </section>
+</body>
+</html>

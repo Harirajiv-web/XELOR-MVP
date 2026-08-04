@@ -48,6 +48,12 @@ const outcomeSchema = z.object({
   verificationMethod: z.string().min(3).max(500).optional(),
   evidence: z.record(z.unknown()).default({}),
 });
+const controlModeSchema = z.object({
+  mode: z.enum(["autonomous_guarded", "step_by_step"]),
+  reason: z.string().min(5).max(500),
+});
+const controlReasonSchema = z.object({ reason: z.string().min(5).max(500) });
+const proceedSchema = z.object({ note: z.string().min(3).max(500) });
 
 function parse<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body);
@@ -68,8 +74,50 @@ export class AgentOsController {
 
   @Get("catalogue")
   @RequirePermission("agentos.run.read")
-  catalogue() {
-    return { data: this.agentOs.catalogue() };
+  async catalogue() {
+    return { data: await this.agentOs.catalogue() };
+  }
+
+  @Get("control")
+  @RequirePermission("agentos.run.read")
+  async control() {
+    return { data: await this.agentOs.controlCenter() };
+  }
+
+  @Post("control/mode")
+  @RequirePermission("agentos.run.operate")
+  async setControlMode(@Body() body: unknown) {
+    const input = parse(controlModeSchema, body);
+    return {
+      data: await this.agentOs.setControlMode(input.mode, input.reason),
+    };
+  }
+
+  @Post("control/kill-switch/engage")
+  @RequirePermission("aiops.killswitch.operate")
+  async engageControlKillSwitch(@Body() body: unknown) {
+    const input = parse(controlReasonSchema, body);
+    return { data: await this.agentOs.engageKillSwitch(input.reason) };
+  }
+
+  @Post("control/kill-switch/release")
+  @RequirePermission("aiops.killswitch.operate")
+  async releaseControlKillSwitch() {
+    return { data: await this.agentOs.releaseKillSwitch() };
+  }
+
+  @Post("control/steps/:gateId/proceed")
+  @RequirePermission("agentos.run.operate")
+  async proceedControlStep(@Param("gateId") gateId: string, @Body() body: unknown) {
+    const route = parse(z.object({ gateId: z.string().uuid() }), { gateId });
+    const input = parse(proceedSchema, body);
+    return { data: await this.agentOs.proceedStep(route.gateId, input.note) };
+  }
+
+  @Post("control/resume-halted")
+  @RequirePermission("agentos.run.operate")
+  async resumeHaltedControlRuns() {
+    return { data: await this.agentOs.resumeHalted() };
   }
 
   @Get("runs")

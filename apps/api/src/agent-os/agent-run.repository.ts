@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { schema, withTenant, type Tx } from "@ind-core/db";
 import {
   AppError,
@@ -18,6 +18,7 @@ const {
   agentCheckpoint,
   agentApproval,
   agentRunEvent,
+  agentStepGate,
 } = schema;
 
 export interface AgentRunState {
@@ -189,6 +190,90 @@ export class AgentRunRepository {
     );
   }
 
+  async runIdsWithStatus(statuses: readonly string[]): Promise<string[]> {
+    if (statuses.length === 0) return [];
+    return withTenant(async (tx) => {
+      const rows = await tx
+        .select({ id: agentRun.id })
+        .from(agentRun)
+        .where(inArray(agentRun.status, [...statuses]));
+      return rows.map((row) => row.id);
+    });
+  }
+
+  /** A compact, safe operational view for the Control Center — no node payloads. */
+  async controlSnapshot(limit = 12) {
+    return withTenant(async (tx) => {
+      const runs = await tx
+        .select()
+        .from(agentRun)
+        .orderBy(desc(agentRun.createdAt))
+        .limit(limit);
+      const runIds = runs.map((run) => run.id);
+      if (runIds.length === 0) {
+        return { runs, nodes: [], approvals: [], stepGates: [], events: [] };
+      }
+      const nodes = await tx
+        .select({
+          id: agentNodeRun.id,
+          runId: agentNodeRun.runId,
+          nodeId: agentNodeRun.nodeId,
+          nodeName: agentNodeRun.nodeName,
+          nodeKind: agentNodeRun.nodeKind,
+          agentKey: agentNodeRun.agentKey,
+          capabilityKey: agentNodeRun.capabilityKey,
+          status: agentNodeRun.status,
+          attempt: agentNodeRun.attempt,
+          errorCode: agentNodeRun.errorCode,
+          errorMessage: agentNodeRun.errorMessage,
+          startedAt: agentNodeRun.startedAt,
+          completedAt: agentNodeRun.completedAt,
+          createdAt: agentNodeRun.createdAt,
+        })
+        .from(agentNodeRun)
+        .where(inArray(agentNodeRun.runId, runIds))
+        .orderBy(asc(agentNodeRun.createdAt));
+      const approvals = await tx
+        .select({
+          id: agentApproval.id,
+          runId: agentApproval.runId,
+          nodeId: agentApproval.nodeId,
+          title: agentApproval.title,
+          risk: agentApproval.risk,
+          proposedAction: agentApproval.proposedAction,
+          status: agentApproval.status,
+          createdAt: agentApproval.createdAt,
+        })
+        .from(agentApproval)
+        .where(inArray(agentApproval.runId, runIds))
+        .orderBy(desc(agentApproval.createdAt));
+      const stepGates = await tx
+        .select()
+        .from(agentStepGate)
+        .where(
+          and(
+            inArray(agentStepGate.runId, runIds),
+            eq(agentStepGate.isActive, true),
+          ),
+        )
+        .orderBy(desc(agentStepGate.requestedAt));
+      const events = await tx
+        .select({
+          id: agentRunEvent.id,
+          runId: agentRunEvent.runId,
+          sequence: agentRunEvent.sequence,
+          eventType: agentRunEvent.eventType,
+          nodeId: agentRunEvent.nodeId,
+          createdAt: agentRunEvent.createdAt,
+        })
+        .from(agentRunEvent)
+        .where(inArray(agentRunEvent.runId, runIds))
+        .orderBy(desc(agentRunEvent.createdAt))
+        .limit(80);
+      return { runs, nodes, approvals, stepGates, events };
+    });
+  }
+
   async pendingApprovals(): Promise<Array<typeof agentApproval.$inferSelect>> {
     return withTenant((tx) =>
       tx
@@ -213,7 +298,7 @@ export class AgentRunRepository {
         .where(
           and(
             eq(agentRun.id, runId),
-            sql`${agentRun.status} in ('pending','waiting_approval')`,
+            sql`${agentRun.status} in ('pending','waiting_step','waiting_approval','halted')`,
           ),
         )
         .returning({ id: agentRun.id });
@@ -221,6 +306,148 @@ export class AgentRunRepository {
         await this.appendEventInTx(tx, runId, "run.running", null, {});
       }
     });
+  }
+
+  async requestStepGate(
+    runId: string,
+    waveKey: string,
+    nodeIds: readonly string[],
+  ): Promise<{ approved: boolean; gateId: string }> {
+    const { tenantId, actorId } = currentTenant();
+    return withTenant(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`${runId}:step-gate`}))`);
+      const [existing] = await tx
+        .select()
+        .from(agentStepGate)
+        .where(and(eq(agentStepGate.runId, runId), eq(agentStepGate.waveKey, waveKey)))
+        .limit(1);
+      if (existing) {
+        return { approved: existing.status === "approved", gateId: existing.id };
+      }
+      const [last] = await tx
+        .select({ sequence: agentStepGate.sequence })
+        .from(agentStepGate)
+        .where(eq(agentStepGate.runId, runId))
+        .orderBy(desc(agentStepGate.sequence))
+        .limit(1);
+      const gateId = newId();
+      await tx.insert(agentStepGate).values({
+        id: gateId,
+        tenantId,
+        createdBy: actorId,
+        updatedBy: actorId,
+        runId,
+        waveKey,
+        sequence: (last?.sequence ?? 0) + 1,
+        nodeIds: [...nodeIds],
+        status: "pending",
+      });
+      await tx
+        .update(agentRun)
+        .set({ status: "waiting_step", updatedAt: new Date(), updatedBy: actorId })
+        .where(eq(agentRun.id, runId));
+      await this.appendEventInTx(tx, runId, "step.waiting", null, {
+        gateId,
+        nodeIds: [...nodeIds],
+      });
+      await this.appendCheckpointInTx(tx, runId, "waiting_for_step_permission");
+      return { approved: false, gateId };
+    });
+  }
+
+  async approveStepGate(gateId: string, note: string): Promise<string> {
+    const { actorId } = currentTenant();
+    return withTenant(async (tx) => {
+      const [gate] = await tx
+        .select()
+        .from(agentStepGate)
+        .where(and(eq(agentStepGate.id, gateId), eq(agentStepGate.isActive, true)))
+        .limit(1);
+      if (!gate) throw Errors.notFound(`agent step gate ${gateId}`);
+      const [run] = await tx
+        .select({ status: agentRun.status })
+        .from(agentRun)
+        .where(eq(agentRun.id, gate.runId))
+        .limit(1);
+      if (!run || ["completed", "failed", "cancelled"].includes(run.status)) {
+        throw new AppError(
+          "STEP_GATE_RUN_TERMINAL",
+          409,
+          "This mission is already closed, so its Proceed gate is no longer valid.",
+        );
+      }
+      if (gate.status !== "pending") {
+        throw new AppError("STEP_ALREADY_PROCEEDED", 409, "This step has already been authorised.");
+      }
+      const now = new Date();
+      await tx
+        .update(agentStepGate)
+        .set({
+          status: "approved",
+          decidedBy: actorId,
+          decidedAt: now,
+          decisionNote: note,
+          resumed: true,
+          updatedAt: now,
+          updatedBy: actorId,
+        })
+        .where(eq(agentStepGate.id, gateId));
+      await tx
+        .update(agentRun)
+        .set({ status: "pending", updatedAt: now, updatedBy: actorId })
+        .where(and(eq(agentRun.id, gate.runId), eq(agentRun.status, "waiting_step")));
+      await this.appendEventInTx(tx, gate.runId, "step.proceeded", null, {
+        gateId,
+        sequence: gate.sequence,
+        note,
+      });
+      await this.audit.appendInTx(tx, {
+        action: "agentos.step.proceeded",
+        entityType: "agent_step_gate",
+        entityId: gate.id,
+        data: { runId: gate.runId, sequence: gate.sequence, note },
+      });
+      return gate.runId;
+    });
+  }
+
+  async haltRun(runId: string, reason: string): Promise<boolean> {
+    const { actorId } = currentTenant();
+    return withTenant(async (tx) => {
+      const [run] = await tx
+        .select({ status: agentRun.status })
+        .from(agentRun)
+        .where(eq(agentRun.id, runId))
+        .limit(1);
+      if (!run || ["completed", "failed", "cancelled", "halted"].includes(run.status)) return false;
+      const now = new Date();
+      await tx
+        .update(agentRun)
+        .set({ status: "halted", updatedAt: now, updatedBy: actorId })
+        .where(eq(agentRun.id, runId));
+      await tx
+        .update(agentNodeRun)
+        .set({ status: "pending", startedAt: null, updatedAt: now, updatedBy: actorId })
+        .where(and(eq(agentNodeRun.runId, runId), eq(agentNodeRun.status, "running")));
+      await this.appendEventInTx(tx, runId, "run.halted", null, { reason });
+      await this.appendCheckpointInTx(tx, runId, "kill_switch_halt");
+      await this.audit.appendInTx(tx, {
+        action: "agentos.run.halted",
+        entityType: "agent_run",
+        entityId: runId,
+        data: { reason },
+      });
+      return true;
+    });
+  }
+
+  async haltActiveRuns(reason: string): Promise<number> {
+    const ids = await this.runIdsWithStatus(["pending", "running", "waiting_step", "waiting_approval"]);
+    let halted = 0;
+    for (const id of ids) {
+      if (await this.haltRun(id, reason)) halted += 1;
+    }
+    return halted;
   }
 
   /**
@@ -661,6 +888,16 @@ export class AgentRunRepository {
           and(
             eq(agentNodeRun.runId, runId),
             sql`${agentNodeRun.status} in ('pending','running','waiting_approval')`,
+          ),
+        );
+      await tx
+        .update(agentStepGate)
+        .set({ isActive: false, updatedAt: now, updatedBy: actorId })
+        .where(
+          and(
+            eq(agentStepGate.runId, runId),
+            eq(agentStepGate.status, "pending"),
+            eq(agentStepGate.isActive, true),
           ),
         );
       await this.appendEventInTx(tx, runId, "run.cancelled", null, { reason });

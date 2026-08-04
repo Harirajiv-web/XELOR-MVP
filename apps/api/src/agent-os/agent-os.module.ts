@@ -22,6 +22,7 @@ import { GraphRegistryService } from "./graph-registry.service.js";
 import { DecisionIntelligenceRepository } from "./decision-intelligence.repository.js";
 import { DecisionIntelligenceService } from "./decision-intelligence.service.js";
 import { MvpReadinessService } from "./mvp-readiness.service.js";
+import { AgentControlService } from "./agent-control.service.js";
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { MvpReadinessService } from "./mvp-readiness.service.js";
     CapabilityRegistryService,
     DeterministicAgentReasoner,
     AgentRunRepository,
+    AgentControlService,
     AgentGraphEngine,
     DecisionIntelligenceRepository,
     DecisionIntelligenceService,

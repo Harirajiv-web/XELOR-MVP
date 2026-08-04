@@ -18,6 +18,7 @@ import {
 } from "./agent-run.repository.js";
 import { CapabilityRegistryService } from "./capability-registry.service.js";
 import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
+import { AgentControlService } from "./agent-control.service.js";
 
 const TERMINAL_RUNS = new Set(["completed", "failed", "cancelled"]);
 
@@ -31,6 +32,7 @@ export class AgentGraphEngine {
     private readonly agents: AgentRegistryService,
     private readonly capabilities: CapabilityRegistryService,
     private readonly reasoner: DeterministicAgentReasoner,
+    private readonly control: AgentControlService,
   ) {}
 
   async execute(runId: string): Promise<AgentRunState> {
@@ -46,6 +48,10 @@ export class AgentGraphEngine {
 
       const gate = await this.governance.check("agent-os.runtime");
       if (!gate.allowed) {
+        if (gate.reason === "kill_switch") {
+          await this.repository.haltRun(runId, "Global AI kill switch engaged.");
+          return this.repository.get(runId);
+        }
         await this.repository.failRun(
           runId,
           new AppError(
@@ -75,6 +81,14 @@ export class AgentGraphEngine {
       for (;;) {
         state = await this.repository.get(runId);
         if (TERMINAL_RUNS.has(state.run.status)) return state;
+        const runtimeGate = await this.control.runtimeGate();
+        if (!runtimeGate.allowed) {
+          await this.repository.haltRun(
+            runId,
+            runtimeGate.reason ?? "Global AI kill switch engaged.",
+          );
+          return this.repository.get(runId);
+        }
         if (new Date() >= state.run.timeoutAt) {
           await this.repository.failRun(
             runId,
@@ -126,6 +140,10 @@ export class AgentGraphEngine {
               "No graph node can make progress.",
             ),
           );
+          return this.repository.get(runId);
+        }
+
+        if (!(await this.control.allowWave(runId, readyIds))) {
           return this.repository.get(runId);
         }
 

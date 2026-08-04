@@ -66,6 +66,11 @@
     .toc p { margin:0 0 7px; break-inside:avoid; }
     .num { display:inline-grid; width:22px; height:22px; place-items:center; margin-right:6px; border-radius:6px; background:var(--blue); color:white; font-size:8pt; font-weight:800; }
     .check { color:var(--green); font-weight:700; }
+    .module-matrix { font-size:7.65pt; line-height:1.34; }
+    .module-matrix th:nth-child(1) { width:15%; }
+    .module-matrix th:nth-child(2) { width:25%; }
+    .module-matrix th:nth-child(3) { width:34%; }
+    .module-matrix th:nth-child(4) { width:26%; }
     .footer-note { margin-top:10px; padding-top:6px; border-top:1px solid var(--line); color:var(--muted); font-size:7.8pt; }
   </style>
 </head>
@@ -75,8 +80,8 @@
     <div class="eyebrow">XELOR · ENGINEERING HANDOFF</div>
     <h1>MVP Technical Handoff &amp; Implementation Brief</h1>
     <div class="sub">What XELOR is, how it handles the complete operating loop, what was changed, how the investor demo works, how to rebuild and verify it, and what the technical team should do next.</div>
-    <div class="scope"><b>Snapshot:</b> investor-demo build based on the live Northstar PX-400 workflow.<br><b>Audience:</b> engineering, product, QA, DevOps and technical leadership.<br><b>Repository:</b> <code style="color:#bdeaff">MVP_PROTOTYPE_1</code> · local production build verified on 1 August 2026.</div>
-    <div class="meta"><span>Prepared from the running application, migrations, API contracts and automated checks</span><span>1 August 2026</span></div>
+    <div class="scope"><b>Snapshot:</b> investor-demo build based on the live Northstar PX-400 workflow.<br><b>Audience:</b> engineering, product, QA, DevOps and technical leadership.<br><b>Repository:</b> <code style="color:#bdeaff">MVP_PROTOTYPE_1</code> · working-directory analysis updated on 3 August 2026.</div>
+    <div class="meta"><span>Prepared from the application, migrations, API contracts, deployment files and automated checks</span><span>3 August 2026</span></div>
   </section>
 
   <section>
@@ -84,9 +89,9 @@
     <p class="lead">The MVP was changed from a broad collection of screens and fictional presenter stories into one controlled, evidence-backed investor demonstration. The central story is a real seeded customer commitment that crosses Sales, Planning, Purchase, Inventory, Production, Quality, Maintenance, Employee Spend, Accounts and Agent OS without pretending that unfinished production features are complete.</p>
     <div class="callout good"><b>Current result:</b> the build is demo-ready, deterministic, locally reproducible and protected by automated evidence. The application is not being represented as production-complete; its remaining gaps are named in this document.</div>
     <div class="kpi">
-      <div><b>87 / 87</b>live acceptance checks</div>
-      <div><b>17 / 17</b>browser journeys</div>
-      <div><b>712</b>executable unit tests</div>
+      <div><b>97 / 97</b>live acceptance checks</div>
+      <div><b>20</b>browser tests defined</div>
+      <div><b>722 / 722</b>unit and service tests pass</div>
       <div><b>19</b>registered web modules</div>
     </div>
     <div class="grid2">
@@ -169,6 +174,85 @@
     <h3>How the Northstar example demonstrates the model</h3>
     <p>Northstar's order starts in MICA's Sales records. AXLE calculates material/capacity needs. SPAR supplies and traces material. KILN executes four operations, records a failed inspection, quarantines twelve units and connects Furnace 02 downtime. RASP follows the credit and accounting consequences. HEXA prevents the recovery proposal and CAPA from approving themselves. ONYX presents the entire case as one decision while every department remains owner of its own source record.</p>
     <div class="callout violet"><b>The key technical distinction:</b> XELOR is not one chatbot sitting above an ERP. The ERP transactions, permissions, calculations and constraints remain authoritative. The intelligence layer is allowed to read, connect, explain and propose within those boundaries; it does not become a second system of record.</div>
+  </section>
+
+  <section class="page">
+    <h2>2A. Module atlas — ONYX intelligence and coordination</h2>
+    <p class="lead">These three modules are often described together as “the AI layer”, but they have different jobs. Copilot answers one bounded question, Agent OS coordinates a multi-step decision, and AI Operations controls whether model-assisted features are allowed to run.</p>
+    <table class="module-matrix">
+      <thead><tr><th>Module</th><th>Purpose and core records</th><th>Actual workflow</th><th>Controls and current boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX Copilot</b></td><td>Read-only factory question surface. Stores 21 known intents and a log of every question, matched intent, outcome, sources, row count and correlation id.</td><td>Rules match first; optional model routing may only select a known intent. The user permission is checked, one hand-written query runs inside the tenant transaction, a deterministic answer is rendered, optional narration is checked for numeric provenance, and the event is logged.</td><td>No SQL generation or write tool; per-intent permission and row cap; unknown questions refuse; narration falls back safely. The 21 questions are live, but unrestricted conversation and general business advice are not.</td></tr>
+        <tr><td><b>Agent OS</b></td><td>Durable cross-functional decision runtime. Persists agent/capability catalogue, graph hash/version, runs, node attempts, events, checkpoints, approvals, signals, outcomes and governed work items.</td><td>Freeze tenant/user/graph context; run all ready nodes in parallel waves; checkpoint; join evidence; ask HEXA to verify; pause for the named person; resume; publish the result or append only the approved work item.</td><td>Allow-listed tools intersect with the user's permissions; bounded steps, retries and timeout; content-hashed graph; engine checks approval ancestry before an effect. Five graphs are live; reasoning is deterministic and a work item is not completed ERP work.</td></tr>
+        <tr><td><b>AI Operations</b></td><td>Governance console for registered AI features, providers, kill state, tenant opt-outs, budgets, usage/cost events, evaluations, human review, incidents and the AI action chain.</td><td>Caller names a feature; router checks registration, global/tenant policy and budget; provider or fallback runs; usage and outcome are logged; golden-set evaluation and human feedback decide eligibility.</td><td>Closed registry, kill switch, budget ceiling, privacy mode, deterministic fallback and no-ship evaluation rule. Governance plumbing is real; the demo does not configure a live external provider and some features still lack implementation or golden sets.</td></tr>
+      </tbody>
+    </table>
+    <h3>How the three fit together</h3>
+    <div class="relation"><div>Copilot<br>one known question</div><div class="arrow">→</div><div>Agent OS<br>one governed mission</div><div class="arrow">→</div><div>AI Operations<br>policy, cost and evaluation</div></div>
+    <div class="callout good"><b>Engineering rule:</b> no one should add a hidden general-purpose prompt or action endpoint to connect these modules. New behavior must enter through a registered intent, capability, graph and permission so the existing refusal, audit and evaluation controls remain meaningful.</div>
+  </section>
+
+  <section class="page">
+    <h2>2B. Module atlas — HEXA control plane</h2>
+    <p class="lead">HEXA's modules are used by every other department. They establish the company context, decide and prove authority, and make external failures visible instead of silently losing them.</p>
+    <table class="module-matrix">
+      <thead><tr><th>Module</th><th>Purpose and core records</th><th>Actual workflow</th><th>Controls and current boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>Organisation</b></td><td>Company/legal identity, GST registrations, addresses, departments, base currency and financial-year document sequences.</td><td>Resolve the company and seller registration for the transaction; let tax/statutory modules use that state; allocate the next document number inside the same transaction that creates the document.</td><td>Tenant RLS, typed permissions, unique registration constraints and transaction-safe numbering. It is a live foundation, not a consolidation or corporate-secretarial suite.</td></tr>
+        <tr><td><b>Administration</b></td><td>138 permission keys, roles/grants, SoD rules/findings, access preview, incident and privacy clocks, security posture, audit verification/anchors and licence state.</td><td>Build roles from catalogue permissions; grant them; scan conflicting role pairs; enforce server guards; append sensitive events; re-hash audit chains; review open statutory clocks and evidence.</td><td>Unknown permission trigger, tenant RLS, server-side guards, named SoD rules, append-only audit and break-specific verification. Row/field policy is mainly preview-only; inactive-grant handling and approval escalation still need work.</td></tr>
+        <tr><td><b>Integration</b></td><td>Connector/connection definitions, flow state, message attempts, traces, dead letters, circuits, statutory filing records, webhooks and secret rotation history.</td><td>Preflight a flow; classify success/transient/terminal outcome; retry only transient faults; trip a circuit; quarantine terminal messages; require reviewed replay/resolution; sign webhooks and rotate secrets.</td><td>Correlation/idempotency, bounded retry, circuit breaker, dead-letter custody and signature verification are tested. External GST, bank, supplier and messaging transports are simulate-driven in this MVP.</td></tr>
+      </tbody>
+    </table>
+    <div class="flow"><div>Verified identity<br>tenant + actor</div><div class="arrow">→</div><div>Permission / approval<br>exact boundary</div><div class="arrow">→</div><div>Audit / integration<br>evidence and failure state</div></div>
+    <div class="callout warn"><b>Important deployment distinction:</b> the normal local mode uses Keycloak OIDC. The public investor deployment can deliberately enable a fixed, sign-in-free demo persona against an isolated seeded database. That mode is an explicit demo exception and must never protect real customer data.</div>
+  </section>
+
+  <section class="page">
+    <h2>2C. Module atlas — MICA commercial and SPAR supply</h2>
+    <table class="module-matrix">
+      <thead><tr><th>Module</th><th>Purpose and core records</th><th>Actual workflow</th><th>Controls and current boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>Sales</b><br>MICA</td><td>Customers, GST/ship-to data, orders/lines, credit snapshots and overrides, delivery notes, invoices and receivables.</td><td>Create/check customer; draft order; derive GST from supplier/place-of-supply; confirm through credit gate; dispatch only stock that exists; write delivery, stock-out, invoice and receivable atomically.</td><td>Duplicate evidence, immutable credit snapshot, mandatory override reason, server tax, credit/stock refusal and idempotency. Order-to-dispatch is live; lead, quote/tender, reservation and cancellation depth are missing.</td></tr>
+        <tr><td><b>Service</b><br>MICA</td><td>Customer accounts/users, installed base, warranty/AMC, tickets/comments, SLA pauses/breaches, complaints, spares, knowledge articles, drafts and CSAT.</td><td>Open/triage ticket; compute business-time clock; check entitlement; assign; prepare a suggestion; require staff review before send; capture complaint/spare/satisfaction outcome.</td><td>Tenant plus customer-account RLS, business-time recomputation, immutable sent comment and refusal of unsupported promises. Ticket and portal controls are live; outbound transport and automatic warranty population are not.</td></tr>
+        <tr><td><b>Purchase</b><br>SPAR</td><td>Vendors, duplicate candidates, purchase orders/lines, W1 approvals/decisions and goods receipts.</td><td>Create/check vendor; draft PO; submit to version-pinned approval route; let only the resolved approver decide; receive only approved outstanding quantity; post receipt and stock together.</td><td>Duplicate evidence, named approver, idempotency, approved-only receipt, over-receipt refusal and atomic stock posting. Vendor-to-GRN is live; supplier invoice, three-way match, AP and payment are not.</td></tr>
+        <tr><td><b>Inventory</b><br>SPAR</td><td>Warehouses, append-only movements, reference/idempotency key, batch/expiry and row-locked on-hand balances.</td><td>Owning module requests a movement; Inventory validates, serialises competing issues, chooses eligible FIFO batches, locks balances, refuses negative stock, appends ledger and updates balance atomically.</td><td>One stock write path, advisory/row locks, negative-stock refusal and no-update/no-delete ledger. On-hand is live; bins, reservations, cycle count, serial genealogy and full valuation are not.</td></tr>
+      </tbody>
+    </table>
+    <h3>Critical cross-module transactions</h3>
+    <ul>
+      <li><b>PO receipt:</b> approved Purchase quantity and Inventory movement commit together; a failed movement cannot leave a completed receipt.</li>
+      <li><b>Customer dispatch:</b> Inventory stock-out, Sales delivery/invoice and Accounts receivable commit together; credit and stock gates run before the effect.</li>
+      <li><b>Service isolation:</b> customer portal rows carry a restrictive account policy in addition to the tenant fence.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>2D. Module atlas — AXLE planning and KILN plant execution</h2>
+    <table class="module-matrix">
+      <thead><tr><th>Module</th><th>Purpose and core records</th><th>Actual workflow</th><th>Controls and current boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>Engineering</b><br>AXLE</td><td>Items, UOM/type/status, tax/planning attributes, BOM headers/versions and component quantities/scrap.</td><td>Define item; create/version BOM; validate graph; expose product structure to Planning; let Production pin the structure when work is created.</td><td>Tenant/permission controls and cycle detection exist. Item/BOM foundation is live; ECR/ECO intent, impact, approval and effectivity are missing.</td></tr>
+        <tr><td><b>Planning</b><br>AXLE</td><td>Policies, calendars, forecast/demand/MPS, immutable MRP workings, planned orders/pegs, exceptions, requisitions, capacity and draft schedule.</td><td>Compute levels; consume forecast; net by bucket; protect safety stock; apply lot rules; offset working days; explode into release buckets; persist explanation/pegs; rank exceptions; optionally firm/convert.</td><td>Cycle/calendar refusal, immutable completed run, round-up lot sizing, past-due flag and execution uniqueness. MRP is live; capacity is infinite and scheduling remains a draft heuristic.</td></tr>
+        <tr><td><b>Production</b><br>KILN</td><td>Orders, BOM/component snapshot, operation sequence/state, operator/evidence, material issue and finished receipt.</td><td>Create and pin components; define/start/complete predecessor-gated operations; issue through Inventory; require routed work complete; receive finished quantity; expose execution history.</td><td>Idempotency, predecessor gates, accountable evidence and all-blockers completion response. Operations are live; auto-armed quality gate, scrap movement, genealogy and detailed costing are incomplete.</td></tr>
+        <tr><td><b>QMS &amp; Audit</b><br>KILN</td><td>Specification/sampling snapshots, inspections/readings/verdicts, dispositions, findings/NCR, CAPA/actions/effectiveness, documents, training, audits and packs.</td><td>Choose/store sample derivation; snapshot applied limits; record readings; calculate verdict; quarantine/release; investigate finding; complete actions; let a person judge effectiveness; version evidence pack.</td><td>Immutable limits, critical-defect override, movement-linked disposition and human CAPA effectiveness. Core inspection/NCR/CAPA is live; auto-created inspections, calibration and full genealogy are missing.</td></tr>
+        <tr><td><b>Maintenance</b><br>KILN</td><td>Assets, readings, requests, work orders/tasks/labour/safety/spares, downtime corrections/disputes, PM occurrences and KPI snapshots.</td><td>Acknowledge/triage request; assign and work the job; record asset downtime to handback; enforce close gates; generate PM; calculate reliability from source intervals.</td><td>Exclusion constraint prevents overlap; corrections preserve original times; all blockers return together; KPI snapshot becomes stale after correction. Sensors, shift calendars and predictive maintenance are future work.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout violet"><b>Why this group matters:</b> AXLE states what should happen; KILN proves what did happen. The system must never silently replace execution evidence with a plan, or quality/reliability arithmetic with an AI explanation.</div>
+  </section>
+
+  <section class="page">
+    <h2>2E. Module atlas — RASP finance, spend and people</h2>
+    <table class="module-matrix">
+      <thead><tr><th>Module</th><th>Purpose and core records</th><th>Actual workflow</th><th>Controls and current boundary</th></tr></thead>
+      <tbody>
+        <tr><td><b>Accounts</b></td><td>Chart, balanced vouchers/lines, posting date/status/reference, reversal links, receivables and receipt allocations.</td><td>Validate/post voucher; deferred database check re-sums at commit; create receivable from invoice; allocate receipts oldest first; correct with a linked opposite voucher.</td><td>Triple balance checks, append-only posting, reversal-not-edit, idempotency and dated reporting. Ledger/trial balance/receivables are live; period close, AP, bank reconciliation and statements are incomplete.</td></tr>
+        <tr><td><b>Employee Spend</b></td><td>Budget reservations, travel/claims/lines, attachments/extraction decision, advances, indirect expenses, posting queue, TDS/ITC and duplicate reports.</td><td>Lock/check budget; create request; attach/confirm receipt; submit and reserve in-approval; approve/reject; move signed reservation rows to committed/actual; prepare accounting posting.</td><td>Atomic reservation, unbudgeted warning, written override, human extraction confirmation and tax gates. Core controls are live; spend-to-ledger posting and cost-centre alignment are incomplete.</td></tr>
+        <tr><td><b>People</b></td><td>Employees, grade/bank/statutory data, punches, attendance/regularisation, leave, payroll/payslip, dated rates and posting reference.</td><td>Derive days from punches; hold incomplete days; append correction/replay; calculate deemed wage and dated statutory deductions; separate prepare/approve; post payroll to Accounts.</td><td>No one-punch shortcut, dated rate lookup, missing-rate refusal, separation of duties and encrypted sensitive fields. Foundations are live; recruitment/performance/learning and device transport are not.</td></tr>
+        <tr><td><b>Working Capital</b></td><td>Decision workspace for money in/out, stock cash, margin, 13-week outlook, scenarios and finance-pack gaps; current cash evidence starts from Accounts.</td><td>Read posted ledger; add Sales commitments and stock; label assumptions; compare bounded scenarios; prioritise follow-up; draft evidence manifest; pass through HEXA and human approval.</td><td>Read/analyse/simulate/draft only, no payment/posting, explicit boundary notes. Cash-position read and mission are live; most workspace values and three finance tools remain illustrative/evidence wrappers.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Accounting truth versus decision aid:</b> a posted voucher and dated trial balance are verified facts. A cash scenario, collection priority or margin explanation is a decision aid until its inputs, calculation and outcome are implemented and reconciled. RASP must keep those labels visible.</div>
   </section>
 
   <section class="page">
@@ -458,7 +542,7 @@
       <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>64 migration files<br>through 0065</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
     </div>
     <div class="flow">
-      <div>Northstar story<br>98 successful steps</div><div class="arrow">→</div><div>Worker drains<br>transactional outbox</div><div class="arrow">→</div><div>87-check matrix<br>must pass</div>
+      <div>Northstar story<br>98 successful steps</div><div class="arrow">→</div><div>Worker drains<br>transactional outbox</div><div class="arrow">→</div><div>97-check matrix<br>must pass</div>
     </div>
     <h3>Normal rebuild commands</h3>
     <pre>corepack enable
@@ -482,12 +566,12 @@ pnpm demo:verify</pre>
 
   <section class="page">
     <h2>12. Verification and acceptance evidence</h2>
-    <h3>Live investor acceptance matrix — 87/87</h3>
+    <h3>Live investor acceptance matrix — 97/97 on 3 August 2026</h3>
     <table>
       <thead><tr><th>Check family</th><th>Examples</th><th>Result</th></tr></thead>
       <tbody>
         <tr><td>Runtime and identity</td><td>Web, Keycloak realm, OIDC discovery, admin/stores tokens, unauthenticated and malformed-token rejection.</td><td class="check">PASS</td></tr>
-        <tr><td>Authenticated surfaces</td><td>29 operational reads across masters, orders, stock, QMS, spend, accounting, Agent OS and administration.</td><td class="check">PASS</td></tr>
+        <tr><td>Authenticated surfaces</td><td>32 operational reads across masters, orders, stock, QMS, spend, accounting, Copilot, Agent OS, knowledge graph and administration.</td><td class="check">PASS</td></tr>
         <tr><td>Northstar commercial facts</td><td>120 units, ₹74.34 lakh, 04-Sep-2026, 28 dispatched, 80 remaining and credit snapshots.</td><td class="check">PASS</td></tr>
         <tr><td>Production and quality</td><td>Four complete operations, 40 received, 0.034/0.020 rejection, 12 quarantine, 28 + 12 reconciliation.</td><td class="check">PASS</td></tr>
         <tr><td>NCR/CAPA and maintenance</td><td>Inspection link, non-self-closing CAPA, Furnace 02, accountable work order and 4.5-hour downtime.</td><td class="check">PASS</td></tr>
@@ -496,22 +580,22 @@ pnpm demo:verify</pre>
         <tr><td>Negative/error paths</td><td>Persona denial, invalid pagination, missing idempotency, unknown order and malformed spend query.</td><td class="check">PASS</td></tr>
       </tbody>
     </table>
-    <h3>Browser verification — 17/17 full suite</h3>
+    <h3>Browser verification — 20 current scenarios</h3>
     <ul>
       <li>Administrator traverses more than 40 application routes and uses ONYX evidence.</li>
       <li>All nine Northstar steps navigate to a visible target without business mutations.</li>
       <li>Agent OS runs the seven-agent controlled-autonomy flow and human approval boundary.</li>
       <li>Specialist personas see only their departments and the API enforces the same wall.</li>
-      <li>Desktop, phone, dark mode and reduced-motion sign-in variants render correctly.</li>
-      <li>Unknown credentials are rejected; the labelled presenter flow works repeatedly.</li>
+      <li>Desktop, phone, dark mode and reduced-motion identity variants are covered in the normal Keycloak configuration.</li>
+      <li>Unknown credentials are rejected in normal mode; public-demo mode is separately checked for sign-in-free entry and persona scoping.</li>
       <li>A dedicated regression leaves Sales Orders untouched for 32 seconds and confirms no redirect.</li>
     </ul>
     <h3>Static and policy gates</h3>
     <div class="kpi">
-      <div><b>695</b>platform tests</div>
-      <div><b>17</b>API tests</div>
+      <div><b>698</b>platform tests</div>
+      <div><b>3</b>database tests</div>
+      <div><b>21</b>API tests</div>
       <div><b>224</b>RLS tables</div>
-      <div><b>138 / 138</b>route permissions</div>
     </div>
     <ul>
       <li>Lint passes with zero warnings.</li>
@@ -572,7 +656,39 @@ pnpm db:perm-check
 pnpm --filter @ind-core/db naming-check
 pnpm --filter @ind-core/web module-check
 pnpm --filter @ind-core/web exec playwright test</pre>
-    <div class="callout good"><b>Presenter login:</b> open <code>http://localhost:3001</code> and use <code>hari</code> / <code>1234</code>, or leave the labelled local presenter fields blank and press Enter XELOR.</div>
+    <div class="callout good"><b>Presenter access:</b> normal local mode uses Keycloak and the seeded presenter account. The five-container public-demo mode below sets <code>API_PUBLIC_DEMO=true</code> and <code>NEXT_PUBLIC_PUBLIC_DEMO=true</code>, so the product opens directly with a fixed demo persona and no sign-in page.</div>
+  </section>
+
+  <section class="page">
+    <h2>13A. Public demo deployment architecture</h2>
+    <p class="lead">The repository now contains a complete Railway-ready five-service package designed for a temporary, sign-in-free investor URL. It is deliberately smaller than local Compose: Keycloak is replaced only in explicit public-demo mode and unused Gotenberg is omitted.</p>
+    <div class="relation"><div>Public browser<br>HTTPS</div><div class="arrow">→</div><div>xelor-web<br>Next.js</div><div class="arrow">→</div><div>xelor-api<br>NestJS + private DNS</div></div>
+    <div class="grid2">
+      <div class="card"><h3>Durable services</h3><p><b>xelor-postgres</b> holds the application records and a mounted data volume. <b>xelor-worker</b> consumes the transactional outbox. <b>xelor-valkey</b> provides Redis-compatible coordination/cache and is not the business source of truth.</p></div>
+      <div class="card"><h3>Only one public surface</h3><p>Generate a public Railway domain for <b>xelor-web</b> only. Web proxies the API path over Railway private DNS. Database, Valkey, API and worker stay private.</p></div>
+    </div>
+    <h3>Five GitHub services and supplied config</h3>
+    <table>
+      <thead><tr><th>Railway service</th><th>Config-as-code file</th><th>Start behavior</th></tr></thead>
+      <tbody>
+        <tr><td><code>xelor-postgres</code></td><td><code>infra/railway/postgres.railway.json</code></td><td>PostgreSQL 17 + pgvector; bootstraps the non-owner <code>app_user</code>; requires a persistent volume.</td></tr>
+        <tr><td><code>xelor-valkey</code></td><td><code>infra/railway/valkey.railway.json</code></td><td>Pinned Valkey 8 with health check; disposable in demo mode.</td></tr>
+        <tr><td><code>xelor-api</code></td><td><code>infra/railway/api.railway.json</code></td><td>Wait for DB → migrate → start API → seed/checkpoint once → expose readiness.</td></tr>
+        <tr><td><code>xelor-worker</code></td><td><code>infra/railway/worker.railway.json</code></td><td>Wait for API/Valkey → start independent outbox worker.</td></tr>
+        <tr><td><code>xelor-web</code></td><td><code>infra/railway/web.railway.json</code></td><td>Wait for API health → run Next.js on Railway's dynamic port.</td></tr>
+      </tbody>
+    </table>
+    <h3>Required configuration boundaries</h3>
+    <ul class="small">
+      <li>Shared secrets: separate strong <code>POSTGRES_PASSWORD</code> and <code>APP_DATABASE_PASSWORD</code>.</li>
+      <li>API: owner/app database URLs, <code>VALKEY_URL</code>, <code>API_PUBLIC_DEMO=true</code>, <code>AI_PROVIDER=stub</code>, <code>SEED_DEMO_ON_BOOT=true</code> and a versioned <code>DEMO_SEED_VERSION</code>.</li>
+      <li>Web: <code>NEXT_PUBLIC_PUBLIC_DEMO=true</code>, the private API origin and API health URL. This setting is baked into the web build as well as present at runtime.</li>
+      <li>The public-demo API still requires its dedicated header and maps only known seeded personas; unauthenticated ordinary API calls continue to return 401.</li>
+    </ul>
+    <h3>GitHub-to-public-URL flow</h3>
+    <div class="flow"><div>Push selected branch</div><div class="arrow">→</div><div>Railway watch pattern<br>builds changed service</div><div class="arrow">→</div><div>Health check passes<br>deployment replaces prior</div></div>
+    <div class="callout warn"><b>Cost and production warning:</b> five services fit Railway's trial topology but are unlikely to remain inside the long-term free allowance. Suspend the project between demos. This setup has disposable demo data, no HA/restore/SLO claim and must not carry real company data.</div>
+    <div class="callout good"><b>Custom subdomain:</b> after the Railway URL works, add <code>xelor.kisancred.com</code> to <code>xelor-web</code>, copy Railway's exact CNAME target into the authoritative DNS provider, wait for TLS, and keep the generated Railway domain as fallback.</div>
   </section>
 
   <section class="page">
@@ -597,7 +713,7 @@ pnpm --filter @ind-core/web exec playwright test</pre>
         <tr><td>“Did AI change the ledger?”</td><td>No. ONYX gathers and explains evidence. Governed actions require a human gate, and the demo does not claim external execution.</td></tr>
         <tr><td>“Are seven LLMs running?”</td><td>No. Seven governed agent identities and workflows are live; language reasoning is deterministic in this environment.</td></tr>
         <tr><td>“How is tenant isolation enforced?”</td><td>Verified identity establishes tenant context, route guards enforce permissions and PostgreSQL FORCE RLS provides the final fail-closed boundary.</td></tr>
-        <tr><td>“Can the demo be rebuilt?”</td><td>Yes. Guarded reset, migrations, two seeders and the 87-check matrix reproduce and verify it.</td></tr>
+        <tr><td>“Can the demo be rebuilt?”</td><td>Yes. Guarded reset, migrations, two seeders and the 97-check matrix reproduce and verify it.</td></tr>
         <tr><td>“Is it production-ready?”</td><td>No. The core architecture is credible, but cloud operations, security assurance and named workflow gaps remain roadmap work.</td></tr>
       </tbody>
     </table>
@@ -614,7 +730,7 @@ pnpm --filter @ind-core/web exec playwright test</pre>
         <tr><td>Production depth</td><td>Operation execution is real for the demo path.</td><td>Deeper WIP, labour/machine costing, terminal UX, rework and dispatch sequencing.</td></tr>
         <tr><td>QMS breadth</td><td>NCR/CAPA is real for the Northstar thread; several document/audit workspaces remain illustrative.</td><td>Full 8D, attachments, document lifecycle, audit programme persistence and customer-specific routes.</td></tr>
         <tr><td>AI provider</td><td>Deterministic stub; no hosted model active.</td><td>Provider security/privacy review, eval gates, shadow mode, cost controls and rollback before activation.</td></tr>
-        <tr><td>Infrastructure</td><td>Local processes and containers.</td><td>CI/CD, managed database/broker, object storage, secrets, observability, backup restore, HA and incident response.</td></tr>
+        <tr><td>Infrastructure</td><td>Local Compose plus Railway-ready Web/API/Worker/PostgreSQL/Valkey images and service descriptors. No live cloud URL is confirmed.</td><td>Operate a hosted environment, then add CI release policy, managed recovery, secrets, observability, restore evidence, HA and incident response.</td></tr>
       </tbody>
     </table>
     <div class="callout bad"><b>Do not market around these boundaries.</b> The demo is strong because it is precise about what it proves. Adding unsupported claims would reduce technical credibility more than adding another screen would increase it.</div>
@@ -625,8 +741,8 @@ pnpm --filter @ind-core/web exec playwright test</pre>
     <h3>Next 30 days — turn the demo into a governed release</h3>
     <ul>
       <li>Review and commit the current large working tree in small, domain-labelled changes; preserve the two new migrations and acceptance tooling.</li>
-      <li>Add the 87-check matrix and the critical Playwright journeys to CI.</li>
-      <li>Build immutable Web/API/Worker containers and run migrations as a deployment gate.</li>
+      <li>Add the 97-check matrix and the critical Playwright journeys to CI.</li>
+      <li>Promote the supplied Web/API/Worker/PostgreSQL/Valkey images through CI and retain the API startup migration/readiness gate.</li>
       <li>Introduce structured logs, correlation IDs across browser/API/worker and basic error tracking.</li>
       <li>Move repeated module modals into a shared spine component and retain focus/locked-write behaviour.</li>
       <li>Formalise demo reset/runbook ownership and a pre-meeting checklist.</li>
@@ -671,7 +787,7 @@ pnpm --filter @ind-core/web exec playwright test</pre>
     </table>
     <h3>Technical handoff checklist</h3>
     <ul>
-      <li>☐ Every engineer can rebuild the demo database and reach 87/87.</li>
+      <li>☐ Every engineer can rebuild the demo database and reach 97/97.</li>
       <li>☐ QA can run the Playwright suite and identify the nine canonical acts.</li>
       <li>☐ Backend owners understand the new operation and NCR/CAPA state machines.</li>
       <li>☐ Database owners review the RLS, no-delete and constraint choices in migrations 0064/0065.</li>

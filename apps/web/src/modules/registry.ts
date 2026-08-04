@@ -19,6 +19,7 @@ import { aiopsManifest } from "./aiops/manifest";
 import { administrationManifest } from "./administration/manifest";
 import { integrationManifest } from "./integration/manifest";
 import { agentosManifest } from "./agentos/manifest";
+import { aiControlManifest } from "./aicontrol/manifest";
 
 /**
  * THE INSTALLED MODULES. This list is the whole of "which modules does this build contain".
@@ -67,6 +68,7 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   workingCapitalManifest,
   agentosManifest,
   aiopsManifest,
+  aiControlManifest,
   administrationManifest,
   integrationManifest,
 ];

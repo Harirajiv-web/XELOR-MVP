@@ -1,0 +1,4 @@
+FROM valkey/valkey:8
+
+CMD ["valkey-server", "--save", "60", "1", "--appendonly", "no"]
+HEALTHCHECK --interval=5s --timeout=3s --retries=20 CMD valkey-cli ping | grep PONG

@@ -9,7 +9,10 @@ import * as schema from "./schema/index.js";
  * (NOBYPASSRLS), so FORCE RLS actually fences every query (DECISIONS-V2 §1.2).
  */
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  // Marketplace integrations reserve DATABASE_URL for the managed owner. The
+  // Vercel demo supplies XELOR_DATABASE_URL for the restricted app_user so the
+  // runtime never inherits schema-owner/BYPASSRLS authority.
+  connectionString: process.env.XELOR_DATABASE_URL ?? process.env.DATABASE_URL,
   max: Number(process.env.DB_POOL_MAX ?? 10),
 });
 

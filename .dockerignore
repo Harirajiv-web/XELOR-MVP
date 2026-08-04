@@ -1,0 +1,22 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+**/node_modules
+**/dist
+**/.next
+**/.vercel
+**/test-results
+**/playwright-report
+**/*.tsbuildinfo
+docs/reports
+*.pdf
+# The local pnpm store is a full package cache — hundreds of megabytes of build context
+# that the image rebuilds from the lockfile anyway.
+.pnpm-store
+XELOR_AGENT_GUIDES
+**/e2e
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*

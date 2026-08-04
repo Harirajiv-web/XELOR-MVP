@@ -15,6 +15,7 @@
     "build": "tsc -b",
     "typecheck": "tsc -b",
     "migrate": "node --env-file-if-exists=../../.env --import tsx src/migrate.ts",
+    "bootstrap-app-role": "node --env-file-if-exists=../../.env --import tsx src/bootstrap-app-role.ts",
     "rls-check": "node --env-file-if-exists=../../.env --import tsx src/rls-check.ts",
     "naming-check": "node --env-file-if-exists=../../.env --import tsx src/naming-check.ts",
     "perm-check": "node --env-file-if-exists=../../.env --import tsx src/perm-check.ts",

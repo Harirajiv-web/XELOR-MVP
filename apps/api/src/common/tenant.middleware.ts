@@ -30,6 +30,49 @@ const PUBLIC_DEMO_CONTEXT: TenantContext = {
   principal: "staff",
 };
 
+// Seed scripts need the same small set of identities that Keycloak supplies in
+// local development (for example, a requester must not approve their own PO).
+// These selectors are honoured only inside the explicitly enabled, isolated
+// public-demo mode; they are not an authentication mechanism.
+const PUBLIC_DEMO_PERSONAS: Readonly<Record<string, TenantContext>> = {
+  hari: PUBLIC_DEMO_CONTEXT,
+  venkat: {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "22222222-2222-4222-8222-222222222222",
+    principal: "staff",
+  },
+  poongodi: {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "11111111-1111-4111-8111-111111111111",
+    principal: "staff",
+  },
+  "kaveri-admin": {
+    tenantId: "0192a8c0-0000-7000-8000-000000000002",
+    actorId: "33333333-3333-4333-8333-333333333333",
+    principal: "staff",
+  },
+  "mica.commercial": {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "d0000000-0000-4000-8000-00000000000b",
+    principal: "staff",
+  },
+  "hexa.admin": {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "d0000000-0000-4000-8000-00000000000c",
+    principal: "staff",
+  },
+  "kiln.operations": {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "d0000000-0000-4000-8000-00000000000d",
+    principal: "staff",
+  },
+  "spar.supply": {
+    tenantId: "0192a8c0-0000-7000-8000-000000000001",
+    actorId: "d0000000-0000-4000-8000-00000000000e",
+    principal: "staff",
+  },
+};
+
 // Group name → tenant id (the canonical demo universe, §7). Stands in for the
 // Keycloak-org → tenant registry; the guard logic is identical either way.
 const GROUP_TENANT: Readonly<Record<string, string>> = {
@@ -45,6 +88,19 @@ const jwks = createRemoteJWKSet(
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // A platform health check cannot attach a user's token and does not touch data.
+    const pathname = req.originalUrl.split("?", 1)[0]?.replace(/\/$/, "");
+    if (
+      pathname === "/api/v1/health" ||
+      pathname?.startsWith("/api/v1/health/") ||
+      pathname === "/api/v1/internal/outbox/drain" ||
+      pathname === "/health" ||
+      pathname?.startsWith("/health/")
+    ) {
+      next();
+      return;
+    }
+
     try {
       const ctx = await resolveTenant(req);
       runWithTenant(ctx, () => next());
@@ -68,7 +124,8 @@ async function resolveTenant(req: Request): Promise<TenantContext> {
     PUBLIC_DEMO_ENABLED &&
     req.header("x-xelor-public-demo") === PUBLIC_DEMO_HEADER
   ) {
-    return PUBLIC_DEMO_CONTEXT;
+    const requestedPersona = req.header("x-xelor-demo-persona")?.trim().toLowerCase();
+    return (requestedPersona && PUBLIC_DEMO_PERSONAS[requestedPersona]) || PUBLIC_DEMO_CONTEXT;
   }
   const auth = req.header("authorization") ?? "";
   const [scheme, token] = auth.split(" ");

@@ -5,8 +5,13 @@ build/
 !apps/web/scripts/build/*.mjs
 coverage/
 *.tsbuildinfo
+# Every env file except the two committed templates. Written as a wildcard rather than a
+# list because the list was already short by one: `.env.production` was not covered, and
+# this repository is public.
 .env
-.env.local
+.env.*
+!.env.example
+!.env.production.example
 .DS_Store
 *.log
 .pnpm-store/
@@ -22,3 +27,8 @@ next-env.d.ts
 # Browser-level UI verification artefacts.
 apps/web/test-results/
 apps/web/playwright-report/
+.vercel
+
+# Machine-local Codex/plugin skill packages are not application dependencies.
+.agents/
+skills-lock.json
