@@ -34,6 +34,7 @@ export interface ManagedServiceResponsibility {
     | "AXLE"
     | "KILN"
     | "RASP"
+    | "ACHILES"
     | "HUMAN";
   responsibility: string;
   handoff: string;
@@ -108,6 +109,16 @@ export const MANAGED_SERVICE_LIFECYCLE: readonly ManagedServiceLifecycleStage[] 
 export const MANAGED_SERVICE_RESPONSIBILITIES: readonly ManagedServiceResponsibility[] =
   [
     {
+      key: "platform-health-detection",
+      accountable: "ACHILES",
+      responsibility:
+        "Privately check XELOR platform availability, latency and evidence freshness every hour and retain the tenant-isolated result history.",
+      handoff:
+        "Supplies failed-check evidence to RELAY for incident coordination and to the relevant technical owner for diagnosis and repair.",
+      boundary:
+        "Cannot diagnose root cause, restart a service, change ERP data, open a customer conversation or close an incident.",
+    },
+    {
       key: "service-relationship",
       accountable: "RELAY",
       responsibility:
@@ -123,7 +134,7 @@ export const MANAGED_SERVICE_RESPONSIBILITIES: readonly ManagedServiceResponsibi
       responsibility:
         "Own operational incident coordination, severity, SLA clocks, escalation, timeline and customer updates.",
       handoff:
-        "Routes technical diagnosis and remediation to the owner of the affected service component.",
+        "Consumes ACHILES availability evidence and routes technical diagnosis and remediation to the owner of the affected service component.",
       boundary:
         "Does not declare a technical fix complete until the specialist supplies evidence and RELAY verifies the service outcome.",
     },

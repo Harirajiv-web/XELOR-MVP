@@ -9,7 +9,7 @@
  *
  *   A  MISSION COMMAND BAR      what is running, for how long, how far through, on what
  *   B  ONYX STRATEGY RAIL       the supervisor: phase, decision, decomposition, guardrail
- *   C  ORCHESTRATION RUNWAY     seven specialist lanes, in the brief's stable order
+ *   C  ORCHESTRATION RUNWAY     eight specialist lanes, in the brief's stable order
  *   D  SHARED EVIDENCE RAIL     what was retrieved, by whom, verified, used in the result
  *   E  SYNTHESIS & REVIEW DOCK  convergence, the human gate, the published outcome
  *
@@ -65,10 +65,10 @@
  * ───────────────────────────────────────────────────────────────────────────────
  * EIGHT AGENTS, SEVEN LANES
  * ───────────────────────────────────────────────────────────────────────────────
- * `AGENT_KEYS` is ONYX plus HEXA, MICA, SPAR, AXLE, KILN, RASP and RELAY. ONYX is the
+ * `AGENT_KEYS` is ONYX plus HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY and ACHILES. ONYX is the
  * supervisor and has its own region; the runway therefore has seven lanes and the network
- * is eight agents. Both numbers are true and they are not interchangeable — "8/8 connected"
- * counts the registry, "seven specialists" counts the delegates.
+ * is nine agents. Both numbers are true and they are not interchangeable — "9/9 connected"
+ * counts the registry, "eight specialists" counts the delegates.
  *
  * Colours come from `--dept-*` by way of the department registry, the same source the deck's
  * agent map and the gateway read. The previous version hard-coded agent hexes here, which
@@ -104,7 +104,7 @@ import {
 const BRAIN: AgentKey = "ONYX";
 
 /**
- * The seven delegates, in their stable operating order.
+ * The eight delegates, in their stable operating order.
  *
  * Written down rather than derived from `catalogue.agents`, and that is the point: the runway
  * is a place people learn by position within a week, so a lane must not move because the API
@@ -120,6 +120,7 @@ const SPECIALISTS: readonly AgentKey[] = [
   "KILN",
   "RASP",
   "RELAY",
+  "ACHILES",
 ];
 
 /** Accent and monogram, from the one registry the deck and the gateway also read. */
@@ -1221,7 +1222,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
           is a picture only sighted users are invited to. */}
       <p className="sr-only" role="status" aria-live="polite">
         {active
-          ? `${PHASE[phase].label}. ${activeAgents} of seven specialists working. ` +
+          ? `${PHASE[phase].label}. ${activeAgents} of ${SPECIALISTS.length} specialists working. ` +
             `${nodeDone} of ${nodeTotal} tasks complete.` +
             (pendingApproval ? " A human decision is waiting." : "")
           : "No mission is running."}
@@ -1241,7 +1242,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
             onTogglePlan={() => setShowPlan((open) => !open)}
           />
 
-          {/* ═══════════════ C · SEVEN-SPECIALIST RUNWAY (§9.C) ═══════════════ */}
+          {/* ═══════════════ C · EIGHT-SPECIALIST RUNWAY (§9.C) ═══════════════ */}
           <section
             className="agent-panel"
             aria-labelledby="agent-runway-heading"
@@ -1464,7 +1465,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 ? "Coordinating…"
                 : selectedGraphKey === "operations.controlled-action-mission"
                   ? "Run controlled-action mission"
-                  : "Run eight-agent review"}
+                  : "Run nine-agent review"}
             </button>
             <button
               type="button"
@@ -1785,7 +1786,7 @@ function StrategyRail({
           <h2 id="agent-rail-heading">ONYX Supervisor</h2>
           <p className="agent-rail-role">
             Accepts the goal, bounds and decomposes it into task packets,
-            delegates to seven specialists, verifies the evidence and publishes
+            delegates to eight specialists, verifies the evidence and publishes
             one accountable result.
           </p>
         </div>

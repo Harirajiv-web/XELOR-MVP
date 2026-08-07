@@ -37,7 +37,7 @@ export const agentosManifest: ModuleManifest = {
       permission: "agentos.run.read",
       icon: "Network",
       description:
-        "The live operating surface for ONYX and its seven specialist agents. Start a bounded cross-functional review, watch registered capabilities execute, inspect evidence and checkpoints, and approve or reject the final synthesis. The graph and data reads are live; language reasoning is explicitly deterministic until a model provider is connected.",
+        "The live operating surface for ONYX and its eight specialist agents. Start a bounded cross-functional review, watch registered capabilities execute, inspect evidence and checkpoints, and approve or reject the final synthesis. The graph and data reads are live; language reasoning is explicitly deterministic until a model provider is connected.",
     },
   ],
   screens: {

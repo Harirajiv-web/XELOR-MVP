@@ -871,14 +871,18 @@ await verify(
     );
   },
 );
-await verify("all eight governed agents are registered", async () => {
+await verify("all nine governed agents are registered in the intended order", async () => {
   assert(
-    agentCatalogue.agents.length === 8,
+    agentCatalogue.agents.length === 9,
     `catalogue has ${agentCatalogue.agents.length} agents`,
   );
   assert(
     agentCatalogue.agents.some((agent) => agent.key === "RELAY"),
     "RELAY is absent from the catalogue",
+  );
+  assert(
+    agentCatalogue.agents.at(-1)?.key === "ACHILES",
+    "ACHILES is not the final registered agent",
   );
 });
 await verify(

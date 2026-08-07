@@ -1,4 +1,4 @@
-# Investor demo — One decision, eight agents, complete evidence
+# Investor demo — One decision, nine agents, complete evidence
 
 Everything below is live data in the running system. No slides, no mock screens. Every
 document was created by a real request through the real guards, so anything on screen can be
@@ -74,8 +74,13 @@ Press **Start Demo**. There are exactly two choices:
   audience. It begins in Sales, follows planning, buying, stock, production, quality,
   approval and finance, and finishes by separating MICA product care from RELAY's XELOR
   technology service.
-- **Meet the agents** is the optional 8-step overview. It opens each agent map and gives one
+- **Meet the agents** is the optional 9-step overview. It opens each agent map and gives one
   high-level explanation of the role and one simple hand-off line—nothing technical.
+
+The ninth and final stop is **ACHILES**, the private platform watcher. Explain it in one
+sentence: “ACHILES quietly checks whether XELOR is working every hour; it records evidence
+but cannot repair anything or contact the customer.” Its status page is visible only to
+authorised XELOR/IT roles, not ordinary customer users.
 
 At the first Sales step, click **New order**, create and save a real sales order, show the
 saved detail page, and then click **Next**. Repeat that pattern at the Purchase step for a

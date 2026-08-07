@@ -8,6 +8,7 @@ interface RouteResult {
 }
 
 const LEGACY_BRAND = /\bIND[- ]?(?:CORE|AI|ERP|Copilot)\b/i;
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
 
 async function signInThroughKeycloak(page: Page): Promise<void> {
   await page.goto("/");
@@ -20,7 +21,7 @@ async function signInThroughKeycloak(page: Page): Promise<void> {
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
     await page.getByRole("button", { name: "Enter XELOR" }).click();
   }
-  await expect(page).toHaveURL(/^http:\/\/localhost:3001\//);
+  expect(new URL(page.url()).origin).toBe(baseUrl);
   await expect(page.getByText("XELOR", { exact: true }).first()).toBeVisible();
 }
 
@@ -55,7 +56,7 @@ test("an administrator can traverse the complete XELOR demo and use ONYX", async
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
   await expect(brain).toBeVisible();
   await brain.click();
-  await expect(page.getByText(/7\/7 agents connected/i)).toBeVisible();
+  await expect(page.getByText(/9\/9 agents connected/i)).toBeVisible();
   await page.getByRole("button", { name: /HEXA — Platform & Governance/i }).click();
   await expect(page).toHaveURL(/\/department\/HEXA$/);
   await page.waitForTimeout(650);

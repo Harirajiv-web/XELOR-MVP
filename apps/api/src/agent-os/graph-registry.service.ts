@@ -110,10 +110,10 @@ const FOUNDATION_MISSION: AgentGraphDefinition = {
 
 const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
   key: "operations.full-command-review",
-  version: 1,
-  name: "Eight-agent operating review",
+  version: 2,
+  name: "Nine-agent operating review",
   description:
-    "Connects ONYX to every specialist agent, including RELAY service assurance, for one bounded, evidence-backed operating review.",
+    "Connects ONYX to every specialist agent, including RELAY service assurance and ACHILES private platform health, for one bounded, evidence-backed operating review.",
   maxSteps: 28,
   timeoutSeconds: 300,
   nodes: [
@@ -197,6 +197,16 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       dependsOn: ["onyx-intake"],
     },
     {
+      id: "achiles-health",
+      name: "ACHILES reads private platform health",
+      kind: "capability",
+      agentKey: "ACHILES",
+      capabilityKey: "platform-health.status.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
       id: "hexa-assessment",
       name: "HEXA control assessment",
       kind: "agent",
@@ -260,6 +270,15 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       dependsOn: ["relay-services"],
     },
     {
+      id: "achiles-assessment",
+      name: "ACHILES platform-health assessment",
+      kind: "agent",
+      agentKey: "ACHILES",
+      instruction:
+        "Report availability, freshness and failed probes from private monitoring evidence. Do not diagnose a cause, perform a repair or prepare a customer message.",
+      dependsOn: ["achiles-health"],
+    },
+    {
       id: "evidence-join",
       name: "ONYX joins specialist evidence",
       kind: "transform",
@@ -272,6 +291,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
         "kiln-assessment",
         "rasp-assessment",
         "relay-assessment",
+        "achiles-assessment",
       ],
     },
     {
@@ -282,7 +302,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       checks: [
         "every specialist used only registered capabilities",
         "every domain read stayed tenant-scoped",
-        "all seven specialist assessments are present",
+        "all eight specialist assessments are present",
         "no business record was changed",
       ],
       dependsOn: ["evidence-join"],
@@ -291,7 +311,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       id: "human-approval",
       name: "Human authorizes the command brief",
       kind: "approval",
-      title: "Approve the eight-agent operating brief",
+      title: "Approve the nine-agent operating brief",
       risk: "low",
       proposedAction:
         "Allow ONYX to publish the verified cross-functional brief. No ERP write will occur.",
@@ -303,7 +323,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Synthesize the seven verified specialist assessments into a concise operating brief, separating business actions from managed-service coordination.",
+        "Synthesize the eight verified specialist assessments into a concise operating brief, separating business actions, managed-service coordination and private platform-health evidence.",
       dependsOn: ["human-approval"],
       condition: {
         nodeId: "human-approval",
@@ -318,16 +338,16 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
  * Phase 3's controlled-autonomy contract:
  * read live evidence -> propose -> verify -> human gate -> dispatch -> verify outcome.
  *
- * The seven execution nodes create attributable domain or service-coordination work items. They do not give a model
+ * Seven execution nodes create attributable domain or service-coordination work items. ACHILES remains read-only and creates no repair action. They do not give a model
  * SQL access and they do not claim an external connector ran. Each node is structurally
  * downstream of the approval, and the engine independently enforces that ancestry.
  */
 const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
   key: "operations.controlled-action-mission",
-  version: 1,
-  name: "Eight-agent controlled action mission",
+  version: 2,
+  name: "Nine-agent controlled action mission",
   description:
-    "Coordinates every specialist, pauses on a high-visibility human gate, then dispatches six domain actions plus one RELAY service-coordination action and verifies the outcome.",
+    "Coordinates all eight specialists, including ACHILES platform assurance, pauses on a high-visibility human gate, then dispatches six domain actions plus one RELAY service-coordination action and verifies the outcome. ACHILES remains read-only.",
   maxSteps: 36,
   timeoutSeconds: 600,
   nodes: [
@@ -410,6 +430,16 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       maxAttempts: 2,
       dependsOn: ["onyx-intake"],
     },
+    {
+      id: "achiles-health",
+      name: "ACHILES reads private platform exposure",
+      kind: "capability",
+      agentKey: "ACHILES",
+      capabilityKey: "platform-health.status.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
     ...(
       [
         ["hexa", "HEXA", "control"],
@@ -419,6 +449,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         ["kiln", "KILN", "operations"],
         ["rasp", "RASP", "finance and people"],
         ["relay", "RELAY", "managed service"],
+        ["achiles", "ACHILES", "private platform assurance"],
       ] as const
     ).map(([prefix, agentKey, domain]) => ({
       id: `${prefix}-assessment`,
@@ -440,12 +471,14 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
                   ? "kiln-production"
                   : prefix === "rasp"
                     ? "rasp-finance"
-                    : "relay-services",
+                    : prefix === "relay"
+                      ? "relay-services"
+                      : "achiles-health",
       ],
     })),
     {
       id: "recommendation-join",
-      name: "ONYX joins seven specialist recommendations",
+      name: "ONYX joins eight specialist recommendations",
       kind: "transform",
       operation: "collect",
       dependsOn: [
@@ -456,6 +489,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         "kiln-assessment",
         "rasp-assessment",
         "relay-assessment",
+        "achiles-assessment",
       ],
     },
     {
@@ -464,7 +498,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Produce one coordinated plan across six business domains and managed-service assurance. Separate evidence, recommendation, technical ownership and proposed execution.",
+        "Produce one coordinated plan across six business domains, managed-service assurance and private platform health. Separate evidence, recommendation, technical ownership and proposed execution. ACHILES must remain read-only.",
       dependsOn: ["recommendation-join"],
     },
     {
@@ -474,7 +508,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       agentKey: "HEXA",
       checks: [
         "all evidence calls are registered and tenant-scoped",
-        "all seven specialist recommendations are present",
+        "all eight specialist recommendations are present",
         "no action has executed before approval",
         "each future action is a governed work item",
       ],

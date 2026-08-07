@@ -40,9 +40,9 @@
  *     under whatever it touches. Ends that vanish under a disc are how you get six lines
  *     that could each belong to anybody.
  *
- * The closest pair of bearings on this layout is 40.6° (MICA against SPAR, and KILN against
- * RASP — the ellipse squashes the deck's even 60° spacing horizontally). `CONNECTIONS` below
- * publishes that figure for the harness rather than leaving it to be eyeballed.
+ * The closest pair of bearings on this layout is 45° after ACHILES joins the eight
+ * specialists. `CONNECTIONS` below publishes that figure for the harness rather than
+ * leaving it to be eyeballed.
  *
  * ───────────────────────────────────────────────────────────────────────────────
  * WHAT A NODE IS
@@ -198,8 +198,8 @@ export function mapLayout(codes: readonly string[]): {
  *
  * The hub resolves first — it is what the camera flew into. Then each connection DRAWS
  * outward from it, and each node rides out along the line that had just reached its place.
- * That order is the argument the screen is making: ONYX is not one of seven things in a
- * ring, it is the thing the other six hang off.
+ * That order is the argument the screen is making: ONYX is not one of nine equal things in
+ * a ring, it is the supervisor the eight specialists hang off.
  *
  * Delays are per element rather than a chain of timers. A timer chain re-renders React six
  * times during the most performance-sensitive second of the product; a transition-delay is
@@ -237,9 +237,9 @@ const LABEL_MS = 180;
  */
 export const MAP_SETTLE_MS = Math.max(
   HUB_MS,
-  LINE_AT + 5 * STAGGER + LINE_MS,
-  NODE_AT + 5 * STAGGER + NODE_MS,
-  LABEL_AT + 5 * STAGGER + LABEL_MS,
+  LINE_AT + 7 * STAGGER + LINE_MS,
+  NODE_AT + 7 * STAGGER + NODE_MS,
+  LABEL_AT + 7 * STAGGER + LABEL_MS,
 );
 
 /** The hub's own door. ONYX owns `aiops`, so its reachability is that module's. */
@@ -445,7 +445,7 @@ function OnyxVoidMapInner({
                 most of the picture, which is a lot of paint to say "there is light here"
                 when the Gateway is already laying two aurora fields behind this. Shrinking
                 it to the hub does the one job that is actually this component's: marking
-                which of the eight agents the other seven answer to. */}
+                which of the nine agents the other eight answer to. */}
             <radialGradient id="ind-void-core">
               <stop offset="0%" stopColor="var(--void-core-a)" />
               <stop offset="60%" stopColor="var(--void-core-b)" />
@@ -772,7 +772,7 @@ function OnyxVoidMapInner({
             onBlur={() => setHubOn(false)}
             aria-label={
               onyx.reachable
-                ? `ONYX Decision Commander. The live decision room connected to seven specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
+                ? `ONYX Decision Commander. The live decision room connected to eight specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
                 : "ONYX Decision Commander. You do not have access to this surface."
             }
             className="pointer-events-auto absolute cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--void-focus) focus-visible:ring-offset-4 focus-visible:ring-offset-(--void-bg) disabled:cursor-default"
@@ -852,7 +852,7 @@ function OnyxVoidMapInner({
                       // connected specialist stays visually connected even when this viewer
                       // cannot open that department; the button remains disabled and the
                       // caption still says "No access". Dimming the whole node previously made
-                      // a live 8/8 graph look partially disconnected.
+                      // a live 9/9 graph look partially disconnected.
                       opacity: visible
                         ? connected
                           ? 1
@@ -978,7 +978,7 @@ function OnyxVoidMapInner({
                         ) : null}
                         {/* THE DEPARTMENT'S MARK, WITH ITS OWN LIGHT.
                           `color` carries the accent so `.ind-mark-glow` can read it as
-                          `currentColor` — one CSS rule serves all seven and nothing here
+                          `currentColor` — one CSS rule serves all specialists and nothing here
                           needs to know which agent it is drawing. A halo in dark, a tight
                           coloured shadow in light; see globals.css for why those are
                           different effects rather than the same one at two strengths.
@@ -1068,7 +1068,8 @@ function OnyxVoidMapInner({
         that were hard-coded, so the dark scene is unchanged and the light one is fixed.
 
         THE TYPE WAS 9px. This pill carries the sentence the whole screen exists to justify
-        — "7/7 agents connected" — and it was the smallest text in the product. 11px with
+        — "9/9 agents connected" (ONYX plus its eight specialists) — and it was the
+        smallest text in the product. 11px with
         the same tracking is still quiet and is actually readable in a bright plant office.
       */}
       <div
@@ -1100,7 +1101,7 @@ function OnyxVoidMapInner({
           }}
         />
         {runtime.state === "live"
-          ? `${runtime.connectedAgentKeys.length}/7 agents connected · ${runtime.providerMode ?? "provider"}`
+          ? `${runtime.connectedAgentKeys.length}/${departments.length + 1} agents connected · ${runtime.providerMode ?? "provider"}`
           : runtime.state === "checking"
             ? "Verifying Agent OS connections"
             : "Agent runtime unavailable"}

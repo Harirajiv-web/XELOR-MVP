@@ -941,7 +941,7 @@ const focusedDemoScenarios: DemoScenario[] = [
 
 const agentOverviewScenario: DemoScenario = {
   id: "meet-the-agents",
-  title: "Meet the eight XELOR agents",
+  title: "Meet the nine XELOR agents",
   category: "High-level product tour",
   severity: "Medium",
   duration: "5–6 min",
@@ -950,7 +950,7 @@ const agentOverviewScenario: DemoScenario = {
   decision:
     "Open each agent's own map, say what it is responsible for and name the main hand-off to the rest of the system.",
   outcome:
-    "The viewer understands all eight agents, their boundaries and how they connect without needing to understand ERP terminology.",
+    "The viewer understands all nine agents, their boundaries and how they connect without needing to understand ERP terminology.",
   icon: "Network",
   accent: "#0f766e",
   scale: "full",
@@ -963,7 +963,7 @@ const agentOverviewScenario: DemoScenario = {
       path: "/department/ONYX",
       body: "ONYX brings information from the right agents into one understandable answer or plan. It coordinates the work but does not own sales, stock, production or finance records.",
       presenterLine: "ONYX connects to every specialist and pauses for a person when approval is required.",
-      connectionLine: "Connects all seven specialist agents into one controlled decision.",
+      connectionLine: "Connects all eight specialist agents into one controlled decision.",
       agents: ["ONYX"],
     },
     {
@@ -1028,6 +1028,15 @@ const agentOverviewScenario: DemoScenario = {
       presenterLine: "RELAY coordinates the service clock and customer hand-off while the affected specialist still performs the technical repair.",
       connectionLine: "Connects the customer-facing XELOR service to every technical owner without duplicating their work.",
       agents: ["RELAY"],
+    },
+    {
+      phase: "Discover",
+      title: "ACHILES · private platform health",
+      path: "/department/ACHILES",
+      body: "ACHILES quietly checks whether XELOR itself is working—its web application, API, database and supporting runtime—and keeps the result private for authorised internal operators.",
+      presenterLine: "ACHILES detects and records the problem; RELAY coordinates the incident, and the correct technical owner performs the repair.",
+      connectionLine: "Connects private availability evidence to RELAY and the accountable technical owner without exposing monitoring to customers.",
+      agents: ["ACHILES"],
     },
   ],
 };

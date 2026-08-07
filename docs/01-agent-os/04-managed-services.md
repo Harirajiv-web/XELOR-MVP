@@ -21,6 +21,11 @@ The key ownership rule is:
 > **RELAY owns the service clock, the handoff and the customer update. The specialist owns
 > the technical diagnosis and repair. A human owns contractual commitments.**
 
+ACHILES sits immediately before that service process. It privately detects whether XELOR's
+application, API, database and supporting runtime are responding, then records the result.
+It does not create a customer incident, diagnose the cause or perform a repair. A failed
+check becomes evidence for RELAY and the relevant technical specialist.
+
 This avoids creating a second version of Integration, AI Operations, customer product
 support or factory maintenance inside Managed Services.
 
@@ -109,6 +114,7 @@ with the customer. Specialists implement domain changes; people approve scope an
 
 | Work                                                             | Accountable owner      | RELAY's role                                     | Explicit boundary                                         |
 | ---------------------------------------------------------------- | ---------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| Private platform availability and freshness checks               | ACHILES                | Consume failed-check evidence                    | ACHILES cannot coordinate incidents, diagnose or repair   |
 | Managed-service catalogue, support model and reviews             | RELAY                  | Own                                              | Does not replace MICA's product relationship              |
 | Operational incident, severity, clock, escalation and update     | RELAY                  | Own                                              | Specialist owns diagnosis and repair                      |
 | Customer change calendar, notice and service verification        | RELAY                  | Own                                              | Specialist designs and executes; controls still apply     |
@@ -143,7 +149,7 @@ Coverage should be sold only after staffing is real. Until then, the product mus
 ## 7. How a service incident flows
 
 ```text
-Telemetry / user contact / XELOR signal
+ACHILES failed check / telemetry / user contact / XELOR signal
                  │
                  ▼
       RELAY creates one service incident
@@ -217,6 +223,8 @@ item alongside the six specialist domain work items.
   only to RELAY.
 - `managed-services.assurance-review@1`, a verified and human-gated mission graph.
 - RELAY participation in the full operating review and controlled-action mission.
+- ACHILES hourly private checks and immutable result history as an incident-detection input;
+  ACHILES has no managed-service or ERP write capability.
 
 ## 11. Honest MVP boundary
 
@@ -270,6 +278,9 @@ tests. Expand coverage and services only after evidence shows the team can meet 
 ## 13. Minimum acceptance tests for production
 
 - Every incident has one RELAY coordinator and one technical owner.
+- Every ACHILES result is tenant-isolated, time-stamped and traceable to a scheduled or
+  authorised manual trigger.
+- ACHILES cannot dispatch actions, restart services or communicate with customers.
 - A technical owner cannot close the customer service outcome without restoration proof.
 - RELAY cannot change AI autonomy, the kill switch, a security determination, a connector
   mapping, a factory work order or a product warranty case.

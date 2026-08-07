@@ -222,7 +222,7 @@ function mountExperienceChrome(): void {
   stage.setAttribute("aria-label", "XELOR manufacturing intelligence");
   stage.innerHTML = `
     <div class="ind-stage-eyebrow"><span></span> Manufacturing intelligence, alive</div>
-    <h1>One factory.<br><em>Seven governed agents.</em></h1>
+    <h1>One factory.<br><em>Nine governed agents.</em></h1>
     <p>See the plant, its decisions and its AI operating system as one connected digital twin.</p>
     <div class="ind-stage-pills" aria-label="Platform capabilities">
       <span>Live operations</span>

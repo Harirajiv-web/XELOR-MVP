@@ -9,6 +9,7 @@ import { MaintenanceModule } from "../modules/maintenance/maintenance.module.js"
 import { ExpenditureModule } from "../modules/expenditure/expenditure.module.js";
 import { IntegrationModule } from "../modules/integration/integration.module.js";
 import { AiOpsModule } from "../modules/aiops/aiops.module.js";
+import { PlatformHealthModule } from "../modules/platform-health/platform-health.module.js";
 import { AgentActionService } from "./agent-action.service.js";
 import { AgentAuthorizationService } from "./agent-authorization.service.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
@@ -36,6 +37,7 @@ import { AgentControlService } from "./agent-control.service.js";
     ExpenditureModule,
     IntegrationModule,
     AiOpsModule,
+    PlatformHealthModule,
   ],
   controllers: [AgentOsController],
   providers: [

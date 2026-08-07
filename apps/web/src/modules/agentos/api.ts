@@ -3,7 +3,7 @@
 import { api } from "@spine/api/client";
 
 export type AgentKey =
-  "ONYX" | "HEXA" | "MICA" | "SPAR" | "AXLE" | "KILN" | "RASP" | "RELAY";
+  "ONYX" | "HEXA" | "MICA" | "SPAR" | "AXLE" | "KILN" | "RASP" | "RELAY" | "ACHILES";
 
 export interface AgentDefinition {
   key: AgentKey;

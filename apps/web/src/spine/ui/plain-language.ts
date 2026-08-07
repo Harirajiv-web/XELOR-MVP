@@ -43,6 +43,8 @@ const DEPARTMENT_NAMES: Readonly<Record<string, string>> = {
   KILN: "Factory Operations",
   MICA: "Sales & Product Care",
   RASP: "People & Accounts",
+  RELAY: "Managed Services",
+  ACHILES: "Private Platform Health",
 };
 
 export function plainDepartmentName(code: string, fallback: string): string {
@@ -57,6 +59,8 @@ const DEPARTMENT_SUMMARIES: Readonly<Record<string, string>> = {
   KILN: "Tracks production, quality, equipment and daily factory work.",
   MICA: "Manages customers, sales, deliveries, product warranty and after-sales care.",
   RASP: "Manages employees, spending and accounts.",
+  RELAY: "Coordinates the service around XELOR, including incidents, changes and customer updates.",
+  ACHILES: "Privately checks whether XELOR is working and records the evidence for authorised internal operators.",
 };
 
 export function plainDepartmentSummary(code: string, fallback: string): string {

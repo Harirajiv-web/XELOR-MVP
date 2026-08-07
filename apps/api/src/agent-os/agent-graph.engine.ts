@@ -22,6 +22,19 @@ import { AgentControlService } from "./agent-control.service.js";
 
 const TERMINAL_RUNS = new Set(["completed", "failed", "cancelled"]);
 
+/**
+ * True only for the PER-OPERATOR RBAC refusal raised by AgentAuthorizationService — the
+ * running user does not hold the capability's permission.
+ *
+ * `AGENT_CAPABILITY_FORBIDDEN` is deliberately NOT included. That one means the registered
+ * graph names a capability its own agent may never invoke: a static misconfiguration that
+ * is identical for every operator and must fail loudly rather than quietly skip on every
+ * single run.
+ */
+function isAuthorizationDenial(error: unknown): boolean {
+  return error instanceof AppError && error.code === "AGENT_TOOL_FORBIDDEN";
+}
+
 @Injectable()
 export class AgentGraphEngine {
   private readonly activeRuns = new Set<string>();
@@ -165,6 +178,22 @@ export class AgentGraphEngine {
                 return;
               }
             }
+            // No input, no work. A node whose every dependency was skipped has nothing to
+            // reason over, so running it would invent an assessment from an empty evidence
+            // set — the one thing this system must never do. A node with even ONE succeeded
+            // dependency still runs: the eight-way evidence join proceeds on seven live
+            // specialists and records the eighth as unavailable.
+            if (
+              node.dependsOn.length > 0 &&
+              node.dependsOn.every((dep) => statuses[dep] === "skipped")
+            ) {
+              await this.repository.skipNode(
+                runId,
+                node.id,
+                "dependencies_skipped",
+              );
+              return;
+            }
             await this.executeNode(state, graph, node, outputs);
           }),
         );
@@ -220,16 +249,44 @@ export class AgentGraphEngine {
               `Capability '${node.capabilityKey}' cannot execute before an approved human gate.`,
             );
           }
-          const output = await this.capabilities.invoke(
-            node.agentKey,
-            node.capabilityKey,
-            node.input ?? {},
-            {
-              runId: state.run.id,
-              nodeId: node.id,
-              approvalNodeId,
-            },
-          );
+          let output: unknown;
+          try {
+            output = await this.capabilities.invoke(
+              node.agentKey,
+              node.capabilityKey,
+              node.input ?? {},
+              {
+                runId: state.run.id,
+                nodeId: node.id,
+                approvalNodeId,
+              },
+            );
+          } catch (error) {
+            // A READ-ONLY evidence source that this operator is not entitled to must not
+            // sink the mission. The graph is one shape for everyone, but authority is per
+            // person: ACHILES' platform health is XELOR-internal and a plant operations
+            // lead deliberately cannot read it (migration 0070 grants it to xelor_admin,
+            // it_admin and demo_admin only). Failing the whole run there means the mission
+            // never reaches its human approval gate — the decision a person was waiting to
+            // make is lost because of a permission they were never meant to hold.
+            //
+            // The skip is RECORDED, not hidden: `capability_not_permitted` reaches the
+            // evidence join and the brief, so the mission says it did not see this source
+            // rather than implying it did. An agent still cannot widen a user's authority —
+            // the operator sees nothing they could not already see.
+            //
+            // Anything that ACTS keeps failing hard. A side-effecting capability that is
+            // refused is a control that fired, and the mission must stop.
+            if (!descriptor.sideEffecting && isAuthorizationDenial(error)) {
+              await this.repository.skipNode(
+                state.run.id,
+                node.id,
+                "capability_not_permitted",
+              );
+              return;
+            }
+            throw error;
+          }
           await this.repository.succeedNode(state.run.id, node.id, {
             capabilityKey: node.capabilityKey,
             agentKey: node.agentKey,

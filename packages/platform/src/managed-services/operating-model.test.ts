@@ -35,6 +35,18 @@ describe("RELAY managed-service operating model", () => {
     }
   });
 
+  it("separates private detection from incident coordination and repair", () => {
+    const detection = MANAGED_SERVICE_RESPONSIBILITIES.find(
+      (item) => item.key === "platform-health-detection",
+    );
+    const incident = MANAGED_SERVICE_RESPONSIBILITIES.find(
+      (item) => item.key === "service-incident",
+    );
+    assert.equal(detection?.accountable, "ACHILES");
+    assert.equal(incident?.accountable, "RELAY");
+    assert.match(detection?.boundary ?? "", /cannot diagnose root cause/i);
+  });
+
   it("labels the MVP dataset as illustrative rather than a live 24x7 claim", () => {
     const snapshot = managedServiceDemoSnapshot();
     assert.equal(snapshot.evidenceMode, "illustrative_demo_operating_model");

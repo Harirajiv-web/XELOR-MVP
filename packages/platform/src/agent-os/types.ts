@@ -13,6 +13,7 @@ export const AGENT_KEYS = [
   "KILN",
   "RASP",
   "RELAY",
+  "ACHILES",
 ] as const;
 export type AgentKey = (typeof AGENT_KEYS)[number];
 
@@ -36,7 +37,7 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
     purpose:
       "Accept goals, coordinate specialists and synthesize evidence-backed outcomes.",
     allowedCapabilityPrefixes: ["agent.", "workflow.", "general."],
-    delegatesTo: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP", "RELAY"],
+    delegatesTo: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP", "RELAY", "ACHILES"],
   },
   {
     key: "HEXA",
@@ -118,6 +119,15 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
     purpose:
       "Own the service lifecycle, event triage, incident coordination, change calendar, service levels, customer updates and continual improvement around XELOR.",
     allowedCapabilityPrefixes: ["managed-services.", "agent."],
+    delegatesTo: [],
+  },
+  {
+    key: "ACHILES",
+    name: "ACHILES Platform Assurance",
+    department: "Private Platform Health",
+    purpose:
+      "Run deterministic availability checks, keep private health history and hand failures to RELAY and the accountable technical owner without exposing monitoring to customers.",
+    allowedCapabilityPrefixes: ["platform-health."],
     delegatesTo: [],
   },
 ] as const;

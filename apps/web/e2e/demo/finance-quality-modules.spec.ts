@@ -1,12 +1,27 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
-  await page.getByRole("textbox", { name: "Password" }).fill("1234");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
-  await expect(page).toHaveURL(/^http:\/\/localhost:3001\//);
-  await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
+  const brain = page.getByRole("button", {
+    name: "Enter the factory intelligence",
+  });
+  // Two valid front doors, one test — see the note in
+  // `e2e/agent-os/controlled-autonomy.spec.ts`. With the public demo enabled `/` is the
+  // arrival experience and the Keycloak form does not exist, so it is only filled when it
+  // is genuinely on screen.
+  await Promise.race([
+    page.locator("#username").waitFor({ state: "visible" }),
+    brain.waitFor({ state: "visible" }),
+  ]);
+  if (await page.locator("#username").isVisible()) {
+    await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
+    await page.getByRole("textbox", { name: "Password" }).fill("1234");
+    await page.getByRole("button", { name: "Enter XELOR" }).click();
+  }
+  expect(new URL(page.url()).origin).toBe(baseUrl);
+  await expect(brain).toBeVisible();
 }
 
 test("Working Capital and QMS & Audit are clear, complete and horizontally navigable", async ({

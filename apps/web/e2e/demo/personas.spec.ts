@@ -1,5 +1,28 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+
+/**
+ * THIS TEST NEEDS FIVE DISTINCT REAL IDENTITIES, SO IT NEEDS KEYCLOAK.
+ *
+ * Unlike the other demo specs, signing in is not incidental here — it is the subject. The
+ * test proves that five different people, holding five different sets of permissions, see
+ * only their own departments AND are refused by the API on the same boundary. The public
+ * demo deliberately has ONE identity, so there is no second persona to be walled off from
+ * the first and nothing left to prove.
+ *
+ * It is skipped rather than adapted because a version that ran here would assert the wall
+ * holds while never testing a wall — worse than not running, since it reports green.
+ *
+ * IMPORTANT: this is the suite's RBAC-enforcement proof. Run it in the Keycloak
+ * configuration (NEXT_PUBLIC_PUBLIC_DEMO=false, web rebuilt, Keycloak up on :8080) before
+ * trusting any claim about the permission wall.
+ */
+test.skip(
+  process.env.NEXT_PUBLIC_PUBLIC_DEMO === "true",
+  "Five distinct personas require Keycloak; the public demo has a single identity.",
+);
+
 const DEPARTMENTS = [
   "HEXA",
   "MICA",
@@ -57,11 +80,12 @@ async function signIn(
   await page.getByRole("textbox", { name: "Username or email" }).fill(username);
   await page.getByRole("textbox", { name: "Password" }).fill(password);
   await page.getByRole("button", { name: "Enter XELOR" }).click();
-  await expect(page).toHaveURL(/^http:\/\/localhost:3001\/(?!callback)/);
   const brain = page.getByRole("button", {
     name: "Enter the factory intelligence",
   });
   await expect(brain).toBeVisible();
+  expect(new URL(page.url()).origin).toBe(baseUrl);
+  expect(new URL(page.url()).pathname).not.toBe("/callback");
   await brain.click();
   await expect(
     page.getByRole("button", { name: /^ONYX Decision Commander/ }),
@@ -72,6 +96,26 @@ test("five real personas see only their departments and the API enforces the sam
   browser,
 }, testInfo) => {
   test.setTimeout(180_000);
+  const preflightContext = await browser.newContext();
+  const preflightPage = await preflightContext.newPage();
+  await preflightPage.goto("/");
+  const keycloakForm = preflightPage.getByRole("textbox", {
+    name: "Username or email",
+  });
+  const publicDemoEntry = preflightPage.getByRole("button", {
+    name: "Enter the factory intelligence",
+  });
+  await Promise.race([
+    keycloakForm.waitFor({ state: "visible" }),
+    publicDemoEntry.waitFor({ state: "visible" }),
+  ]);
+  const publicDemo = await publicDemoEntry.isVisible();
+  await preflightContext.close();
+  test.skip(
+    publicDemo,
+    "Runtime has one public-demo identity; the five-persona Keycloak proof does not apply.",
+  );
+
   const results: Array<Record<string, unknown>> = [];
 
   for (const persona of PERSONAS) {
@@ -108,13 +152,13 @@ test("five real personas see only their departments and the API enforces the sam
     };
     const api = {
       allowed: (
-        await page.request.get(`http://localhost:3001${persona.allowed}`, {
+        await page.request.get(`${baseUrl}${persona.allowed}`, {
           headers,
         })
       ).status(),
       denied: persona.denied
         ? (
-            await page.request.get(`http://localhost:3001${persona.denied}`, {
+            await page.request.get(`${baseUrl}${persona.denied}`, {
               headers,
             })
           ).status()

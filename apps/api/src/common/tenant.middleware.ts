@@ -2,6 +2,7 @@ import { Injectable, type NestMiddleware } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { db, schema } from "@ind-core/db";
 import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@ind-core/platform";
 
 /**
@@ -80,6 +81,68 @@ const GROUP_TENANT: Readonly<Record<string, string>> = {
   kaveri: "0192a8c0-0000-7000-8000-000000000002",
 };
 
+/* -------------------------------------------------------------------------
+ * THE PUBLIC-DEMO GATE — GUARDED BY THE DATA, NOT BY A FLAG
+ * -------------------------------------------------------------------------
+ * `API_PUBLIC_DEMO=true` turns a STATIC HEADER into a signed-in administrator. That is
+ * correct for the hosted investor stack, which deliberately ships without Keycloak, and
+ * catastrophic anywhere else: the header value is a constant in this repository, so the
+ * flag alone is the whole authentication boundary.
+ *
+ * An env var is a weak place to put that. `infra/railway/Dockerfile.api` already sets
+ * NODE_ENV=production, so "is this production" cannot distinguish the two cases, and one
+ * copied environment block is all it takes to carry the flag somewhere real.
+ *
+ * So this refuses on a property of the CONTENTS, exactly as `demo-reset` does: the `tenant`
+ * table must hold nothing except the two §7 demo tenants. One real customer in there and
+ * the bypass never activates, whatever the flag says. Verified once, on the first request
+ * that tries to use it, and cached — including the refusal.
+ *
+ * Fail-closed both ways: if the check itself cannot run, the bypass stays off. An
+ * unverifiable auth bypass is not a bypass worth having.
+ */
+const DEMO_TENANTS: ReadonlySet<string> = new Set([
+  "0192a8c0-0000-7000-8000-000000000001", // Trishul Precision Components Pvt Ltd
+  "0192a8c0-0000-7000-8000-000000000002", // Kaveri ElectroFab Industries
+]);
+
+let publicDemoGate: Promise<boolean> | null = null;
+
+function isolatedDemoDatabase(): Promise<boolean> {
+  publicDemoGate ??= (async () => {
+    try {
+      const rows = await db
+        .select({ id: schema.tenant.id, legalName: schema.tenant.legalName })
+        .from(schema.tenant);
+      const strangers = rows.filter((row) => !DEMO_TENANTS.has(row.id));
+      if (strangers.length > 0) {
+        console.error(
+          `[public-demo] REFUSED. API_PUBLIC_DEMO is set, but this database holds ` +
+            `${strangers.length} tenant(s) outside the §7 demo universe:\n` +
+            strangers.map((s) => `    ${s.id}  ${s.legalName}`).join("\n") +
+            `\n[public-demo] The sign-in-free bypass is DISABLED. Every request now ` +
+            `requires a verified Keycloak token.`,
+        );
+        return false;
+      }
+      console.warn(
+        `[public-demo] ENABLED — a static header authenticates as a demo administrator ` +
+          `without any token. Verified isolated: ${rows.length} demo tenant(s), no ` +
+          `strangers. This must never front real customer data.`,
+      );
+      return true;
+    } catch (error) {
+      console.error(
+        `[public-demo] REFUSED — could not verify that this is an isolated demo ` +
+          `database: ${error instanceof Error ? error.message : String(error)}. ` +
+          `The bypass stays off.`,
+      );
+      return false;
+    }
+  })();
+  return publicDemoGate;
+}
+
 // JWKS is fetched once and cached by jose (keys rotate transparently).
 const jwks = createRemoteJWKSet(
   new URL(`${ISSUER}/protocol/openid-connect/certs`),
@@ -94,6 +157,7 @@ export class TenantMiddleware implements NestMiddleware {
       pathname === "/api/v1/health" ||
       pathname?.startsWith("/api/v1/health/") ||
       pathname === "/api/v1/internal/outbox/drain" ||
+      pathname === "/api/v1/internal/platform-health/run" ||
       pathname === "/health" ||
       pathname?.startsWith("/health/")
     ) {
@@ -122,7 +186,10 @@ export class TenantMiddleware implements NestMiddleware {
 async function resolveTenant(req: Request): Promise<TenantContext> {
   if (
     PUBLIC_DEMO_ENABLED &&
-    req.header("x-xelor-public-demo") === PUBLIC_DEMO_HEADER
+    req.header("x-xelor-public-demo") === PUBLIC_DEMO_HEADER &&
+    // Checked last, and only when the header actually asks for the bypass, so a normal
+    // token request never waits on it.
+    (await isolatedDemoDatabase())
   ) {
     const requestedPersona = req.header("x-xelor-demo-persona")?.trim().toLowerCase();
     return (requestedPersona && PUBLIC_DEMO_PERSONAS[requestedPersona]) || PUBLIC_DEMO_CONTEXT;

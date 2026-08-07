@@ -21,7 +21,7 @@ interface ScreenEvidence {
 /**
  * A small, presenter-only evidence vocabulary for every screen used by Demo Mode.
  * These values never enter an API request or a business table. They connect each presenter
- * step to the evidence vocabulary of the highlighted screen while the ERP underneath remains
+ * step to the evidence vocabulary of the current screen while the ERP underneath remains
  * the live, read-only source of truth.
  */
 const screenEvidence: Record<string, ScreenEvidence> = {

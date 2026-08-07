@@ -152,7 +152,7 @@
   --ramp-mix: #ffffff;
 
   /* ==========================================================================
-     THE EIGHT AGENTS, IN THE DECK'S OWN COLOURS.
+     THE NINE AGENTS, IN DISTINCT OWNER COLOURS.
      ==========================================================================
      Taken verbatim from the Agent Brain map in AIKYANTRA-Pitch-Deck_2.html. The product
      previously coloured departments from the status palette, which had two faults the deck
@@ -171,6 +171,7 @@
   --dept-kiln: #c2410c;
   --dept-rasp: #c8912a;
   --dept-relay: #0f766e;
+  --dept-achiles: #86198f;
 
   /* The deck's layout system: sidebar, copilot rail, topbar. */
   --side: 236px;
@@ -286,6 +287,7 @@
   --dept-kiln: #f07f45;
   --dept-rasp: #e2bb63;
   --dept-relay: #2dd4bf;
+  --dept-achiles: #e879f9;
 
   --ambient-brand: rgba(91, 141, 239, 0.11);
   --ambient-ai: rgba(157, 127, 224, 0.08);
@@ -624,11 +626,10 @@ table,
 /*
  * A guided-demo dock is useful beside an ERP screen but must never cover a modal's Save
  * action. The presenter has already read the instruction before opening the form; while a
- * real dialog is open, both guide overlays step aside and return as soon as the dialog
+ * real dialog is open, the guide steps aside and returns as soon as the dialog
  * closes. This also keeps the modal's focus trap visually honest on narrow screens.
  */
-body:has([role="dialog"]) .x-demo-dock,
-body:has([role="dialog"]) .x-demo-spotlight {
+body:has([role="dialog"]) .x-demo-dock {
   visibility: hidden;
   pointer-events: none;
   opacity: 0;
@@ -1346,6 +1347,7 @@ body:has([role="dialog"]) .x-demo-spotlight {
   --dept-kiln: #c2410c;
   --dept-rasp: #9a6a14;
   --dept-relay: #0f766e;
+  --dept-achiles: #86198f;
 }
 
 :root[data-theme="dark"] .ind-void {
@@ -1402,13 +1404,14 @@ body:has([role="dialog"]) .x-demo-spotlight {
   --dept-kiln: #f07f45;
   --dept-rasp: #e2bb63;
   --dept-relay: #2dd4bf;
+  --dept-achiles: #e879f9;
 }
 
 /* ----------------------------------------------------------------------------
    THE MARK GLOW.
    ----------------------------------------------------------------------------
    Applied to a department's letter and to the ONYX wordmark. It reads `currentColor`, so
-   one rule serves all seven and the colour comes from the mark itself — nothing here needs
+   one rule serves every specialist and the colour comes from the mark itself — nothing here needs
    to know which agent it is drawing.
 
    Deliberately SMALL. The brief asks for a glow "close to the logo edge" that does not blur

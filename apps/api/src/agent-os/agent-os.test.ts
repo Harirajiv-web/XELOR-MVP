@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AGENT_KEYS, validateAgentGraph } from "@ind-core/platform";
+import { AGENT_KEYS, AppError, validateAgentGraph } from "@ind-core/platform";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
 import type { AgentRunRepository } from "./agent-run.repository.js";
@@ -60,6 +60,9 @@ test("finance and quality capabilities stay separate from the approval-bound act
   const quality = {
     listInspections: async () => ({ items: [], nextCursor: null }),
   };
+  const platformHealth = {
+    overview: async () => ({ latest: null, history: [] }),
+  };
   const actions = { dispatch: async () => ({ status: "dispatched" }) };
   const capabilities = new CapabilityRegistryService(
     authorization as never,
@@ -71,6 +74,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
     production as never,
     accounts as never,
     quality as never,
+    platformHealth as never,
     actions as never,
   );
   const listed = capabilities.list();
@@ -83,6 +87,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
   assert.equal(keys.has("quality.capa-plan.draft"), true);
   assert.equal(keys.has("quality.audit-pack.draft"), true);
   assert.equal(keys.has("managed-services.service-assurance.read"), true);
+  assert.equal(keys.has("platform-health.status.read"), true);
   assert.equal(
     listed.filter((capability) => capability.sideEffecting).length,
     1,
@@ -120,7 +125,7 @@ test("Working Capital and QMS missions are bounded, verified and human-gated", (
   }
 });
 
-test("Phase 3 connects all agents and places every execute node after one human gate", () => {
+test("Phase 3 connects all agents while ACHILES stays read-only and every execute node follows one human gate", () => {
   const graph = new GraphRegistryService().get(
     "operations.controlled-action-mission",
   );
@@ -139,6 +144,7 @@ test("Phase 3 connects all agents and places every execute node after one human 
       node.capabilityKey === "agent.action.dispatch",
   );
   assert.equal(dispatches.length, 7);
+  assert.equal(dispatches.some((node) => node.agentKey === "ACHILES"), false);
   assert.equal(
     dispatches.every((node) =>
       node.dependsOn.includes("human-action-approval"),
@@ -158,7 +164,7 @@ test("Phase 2 command review connects ONYX to every specialist agent", () => {
   assert.deepEqual([...participating].sort(), [...AGENT_KEYS].sort());
   assert.equal(
     graph.nodes.filter((node) => node.kind === "capability").length,
-    7,
+    8,
   );
 });
 
@@ -426,4 +432,151 @@ test("engine runs parallel evidence waves, pauses, resumes and completes after a
     state.nodes.find((node) => node.nodeId === "onyx-synthesis")?.status,
     "succeeded",
   );
+});
+
+/**
+ * Build the engine harness used by the two authorization-boundary tests below.
+ *
+ * `deny` names the capability whose invocation raises the per-operator RBAC refusal that
+ * AgentAuthorizationService throws when the running user does not hold the permission.
+ */
+function missionHarness(deny: string, denySideEffecting = false) {
+  const graph = new GraphRegistryService().get(
+    "operations.controlled-action-mission",
+  );
+  const state = {
+    run: {
+      id: "0192a8c0-0070-7000-8000-000000000001",
+      status: "pending",
+      graphSnapshot: graph,
+      goal: "Resolve the delivery commitment safely",
+      input: {},
+      timeoutAt: new Date(Date.now() + 60_000),
+    },
+    nodes: graph.nodes.map((node) => ({
+      nodeId: node.id,
+      status: "pending",
+      attempt: 0,
+      output: null as unknown,
+    })),
+    approvals: [],
+    events: [],
+    checkpoints: [],
+  };
+  const find = (nodeId: string) =>
+    state.nodes.find((candidate) => candidate.nodeId === nodeId)!;
+  const repository = {
+    get: async () => state,
+    recoverInterruptedNodes: async () => 0,
+    markRunRunning: async () => {
+      state.run.status = "running";
+    },
+    statusRecord: () =>
+      Object.fromEntries(state.nodes.map((node) => [node.nodeId, node.status])),
+    outputRecord: () =>
+      Object.fromEntries(state.nodes.map((node) => [node.nodeId, node.output])),
+    startNode: async (_runId: string, nodeId: string) => {
+      const node = find(nodeId);
+      node.status = "running";
+      node.attempt++;
+    },
+    succeedNode: async (_runId: string, nodeId: string, output: unknown) => {
+      const node = find(nodeId);
+      node.status = "succeeded";
+      node.output = output;
+    },
+    // Mirrors the real repository: a started node can still be skipped, and the reason is
+    // recorded rather than discarded.
+    skipNode: async (_runId: string, nodeId: string, reason: string) => {
+      const node = find(nodeId);
+      node.status = "skipped";
+      node.output = { reason };
+    },
+    waitForApproval: async (_runId: string, nodeId: string) => {
+      find(nodeId).status = "waiting_approval";
+      state.run.status = "waiting_approval";
+    },
+    checkpoint: async () => undefined,
+    retryNode: async (_runId: string, nodeId: string) => {
+      find(nodeId).status = "pending";
+    },
+    failNode: async (_runId: string, nodeId: string) => {
+      find(nodeId).status = "failed";
+    },
+    failRun: async () => {
+      state.run.status = "failed";
+    },
+    completeRun: async () => {
+      state.run.status = "completed";
+    },
+  };
+  const capabilities = {
+    invoke: async (_agent: string, key: string) => {
+      if (key === deny) {
+        throw new AppError(
+          "AGENT_TOOL_FORBIDDEN",
+          403,
+          `The requesting user is not permitted to use capability '${key}'.`,
+        );
+      }
+      return { items: [] };
+    },
+    get: (key: string) => ({
+      key,
+      executionBoundary: "domain_service",
+      sideEffecting: key === deny ? denySideEffecting : false,
+    }),
+  };
+  const engine = new AgentGraphEngine(
+    { check: async () => ({ allowed: true }), recordUsage: async () => undefined },
+    repository as unknown as AgentRunRepository,
+    new AgentRegistryService(),
+    capabilities as never,
+    new DeterministicAgentReasoner(),
+    {
+      runtimeGate: async () => ({ allowed: true, reason: null }),
+      allowWave: async () => true,
+    } as never,
+  );
+  return { engine, state, find };
+}
+
+test("a read-only evidence source the operator may not read is skipped, not fatal, and the mission still reaches its human gate", async () => {
+  // The regression this locks down: ACHILES' platform health is XELOR-internal and a plant
+  // operations lead deliberately cannot read it, so the ACHILES capability raised a 403 and
+  // failed the ENTIRE mission. The decision a named person was waiting to approve was lost
+  // to a permission they were never meant to hold.
+  const { engine, state, find } = missionHarness("platform-health.status.read");
+
+  const paused = await engine.execute(state.run.id);
+
+  assert.equal(paused.run.status, "waiting_approval");
+  // Skipped, with the reason on the record — the mission says it did not see this source
+  // rather than implying it did.
+  assert.equal(find("achiles-health").status, "skipped");
+  assert.deepEqual(find("achiles-health").output, {
+    reason: "capability_not_permitted",
+  });
+  // Nothing to reason over, so no assessment is invented from an empty evidence set.
+  assert.equal(find("achiles-assessment").status, "skipped");
+  assert.deepEqual(find("achiles-assessment").output, {
+    reason: "dependencies_skipped",
+  });
+  // The seven specialists the operator IS entitled to still ran, and the join proceeded.
+  assert.equal(find("relay-assessment").status, "succeeded");
+  assert.equal(find("recommendation-join").status, "succeeded");
+  assert.equal(find("hexa-preflight").status, "succeeded");
+  assert.equal(find("human-action-approval").status, "waiting_approval");
+});
+
+test("a refused SIDE-EFFECTING capability still stops the mission", async () => {
+  // The other half of the boundary. Skipping is only ever safe for a read. A capability
+  // that ACTS and is refused is a control that fired, and the run must stop rather than
+  // quietly carry on having dispatched nothing.
+  const { engine, state, find } = missionHarness("sales.orders.read", true);
+
+  const halted = await engine.execute(state.run.id);
+
+  assert.equal(halted.run.status, "failed");
+  assert.equal(find("mica-orders").status, "failed");
 });

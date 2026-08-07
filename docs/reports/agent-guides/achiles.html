@@ -1,0 +1,192 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>ACHILES — XELOR agent guide</title><style>
+  :root { --ink:#132238; --muted:#5f6f83; --line:#dfe5ed; --paper:#fff; --navy:#101d31; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:#dfe4ec; color:var(--ink); font-family:Inter,Arial,sans-serif; }
+  @page { size:A4; margin:0; }
+  .page { width:210mm; height:297mm; padding:16mm 16mm 14mm; margin:8mm auto; background:var(--paper); position:relative; overflow:hidden; page-break-after:always; }
+  .page:last-child { page-break-after:auto; }
+  @media print { html,body{background:#fff}.page{margin:0} }
+  h1,h2,h3,p { margin-top:0; }
+  h1 { font-size:35px; line-height:1.03; letter-spacing:-1.2px; margin-bottom:8px; }
+  h2 { font-size:25px; line-height:1.1; letter-spacing:-.5px; margin-bottom:6px; }
+  h3 { font-size:13.5px; line-height:1.25; margin-bottom:5px; }
+  p,li,td,th { font-size:11.8px; line-height:1.5; }
+  p { color:var(--muted); margin-bottom:8px; }
+  ul { margin:5px 0 0; padding-left:17px; }
+  li { margin-bottom:6px; color:#33445a; }
+  small { font-size:9px; color:#67758a; font-weight:500; }
+  .eyebrow { color:var(--accent); font-size:9.5px; letter-spacing:1.7px; text-transform:uppercase; font-weight:800; margin-bottom:9px; }
+  .lead { font-size:16px; line-height:1.45; max-width:158mm; color:#34465d; }
+  .rule { height:3px; width:24mm; background:var(--accent); margin:10px 0 15px; border-radius:4px; }
+  .section-head { display:flex; justify-content:space-between; gap:9mm; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:7px; margin-bottom:12px; }
+  .section-head p { max-width:74mm; text-align:right; margin:0; font-size:11px; }
+  .footer { position:absolute; left:16mm; right:16mm; bottom:7mm; display:flex; justify-content:space-between; color:#8994a5; font-size:7.5px; border-top:1px solid #e7ebf0; padding-top:3px; }
+  .cover { background:linear-gradient(145deg,var(--navy) 0 60%,var(--accent) 60% 100%); color:white; }
+  .cover p { color:#d7dfec; }
+  .cover .eyebrow { color:#fff; opacity:.8; margin-top:14mm; }
+  .cover h1 { font-size:52px; max-width:142mm; margin-top:38mm; }
+  .cover .lead { color:#e8edf5; font-size:16px; max-width:132mm; }
+  .cover .cover-note { position:absolute; bottom:26mm; left:16mm; width:112mm; padding:11px 13px; border:1px solid #ffffff42; border-radius:12px; background:#ffffff0d; font-size:9.5px; line-height:1.5; }
+  .cover .footer { color:#d6dfed; border-color:#ffffff25; }
+  .big-mark { position:absolute; right:10mm; bottom:17mm; font-size:70px; line-height:.9; font-weight:900; color:#ffffff18; writing-mode:vertical-rl; transform:rotate(180deg); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; background:#fff; break-inside:avoid; }
+  .card h3 { color:var(--accent); }
+  .card p { margin:0; font-size:10.8px; line-height:1.48; }
+  .tint { background:var(--pale); border-color:color-mix(in srgb,var(--accent) 20%,white); }
+  .callout { border-left:4px solid var(--accent); background:var(--pale); padding:12px 14px; border-radius:0 9px 9px 0; margin:11px 0; }
+  .callout strong { display:block; font-size:12px; margin-bottom:4px; color:var(--ink); }
+  .callout p { margin:0; font-size:11.2px; line-height:1.5; }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; margin:7px 0 11px; }
+  .pills span { font-size:9.2px; font-weight:700; border:1px solid var(--line); border-radius:99px; padding:5px 9px; background:#fff; color:#4b5b70; }
+  .flow { display:flex; align-items:stretch; gap:4px; margin:14px 0; }
+  .flow-block { flex:1; min-width:0; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:8px; padding:6px; font-size:9.8px; font-weight:750; background:#fff; }
+  .arrow { display:flex; align-items:center; color:var(--accent); font-size:16px; }
+  .swim { display:grid; grid-template-columns:30mm 1fr; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin:8px 0; }
+  .swim .who { background:var(--pale); color:var(--accent); font-weight:800; padding:9px; font-size:10.5px; }
+  .swim .what { padding:9px; font-size:10.5px; color:#33445a; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
+  th { color:#fff; background:var(--accent); text-align:left; font-size:9.2px; padding:7px; }
+  td { border-bottom:1px solid var(--line); padding:7px; font-size:9.8px; vertical-align:top; overflow-wrap:anywhere; }
+  tr:nth-child(even) td { background:#f8fafc; }
+  .cap-table th:nth-child(1){width:27%}.cap-table th:nth-child(2){width:11%}.cap-table th:nth-child(3){width:21%}.cap-table th:nth-child(4){width:26%}.cap-table th:nth-child(5){width:15%}
+  .mission-table th:nth-child(1){width:34%}
+  .matrix th:nth-child(1){width:26%}.matrix th:nth-child(2){width:10%}.matrix th:nth-child(3){width:15%}.matrix th:nth-child(4){width:26%}.matrix th:nth-child(5){width:23%}
+  .steps { display:grid; gap:8px; counter-reset:step; }
+  .step { display:grid; grid-template-columns:9mm 1fr; gap:9px; align-items:start; border:1px solid var(--line); border-radius:8px; padding:9px 11px; }
+  .step:before { counter-increment:step; content:counter(step); width:7.5mm; height:7.5mm; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:10px; }
+  .step b { font-size:11.5px; color:var(--ink); }
+  .step p { margin:2px 0 0; font-size:11px; line-height:1.48; }
+  .plain .step { grid-template-columns:1fr; }
+  .plain .step:before { content:none; }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:13px 0; }
+  .stat { background:var(--navy); color:#fff; border-radius:9px; padding:12px; }
+  .stat b { display:block; font-size:25px; color:#fff; }
+  .stat span { font-size:9px; color:#c8d1de; }
+  .agent-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .agent-card { border:1px solid var(--line); border-left:6px solid var(--c); padding:9px 11px; border-radius:8px; }
+  .agent-card b { color:var(--c); font-size:12px; }
+  .agent-card p { margin:3px 0 0; font-size:10px; line-height:1.45; }
+  .stack { display:grid; gap:7px; margin:12px auto; max-width:162mm; }
+  .stack-row { border:1px solid var(--line); border-left:6px solid var(--accent); padding:10px 13px; border-radius:8px; display:flex; justify-content:space-between; gap:14px; }
+  .stack-row b { font-size:11.5px; }
+  .stack-row span { font-size:10.2px; color:var(--muted); text-align:right; }
+  .truth { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .truth > div { border-radius:9px; padding:13px; border:1px solid var(--line); }
+  .truth .yes { border-top:5px solid #2a9160; }.truth .no { border-top:5px solid #d94b4b; }
+  .truth h3 { font-size:12.5px; }
+  .truth li { font-size:10.8px; }
+  .glossary td:first-child { width:27%; font-weight:800; color:var(--accent); }
+  .source { font-family:ui-monospace,Menlo,monospace; font-size:9.4px; overflow-wrap:anywhere; }
+  .mini { font-size:10px; line-height:1.5; }
+  .graph-card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:8px; border-left:5px solid var(--accent); }
+  .graph-card b { font-size:12px; }
+  .graph-card .meta { font-family:ui-monospace,Menlo,monospace; font-size:9px; color:#7a879a; margin:3px 0 4px; }
+  .graph-card p { margin:0; font-size:10.6px; line-height:1.45; }
+  .module-detail { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px; break-inside:avoid; }
+  .module-title { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:8px 10px; color:#fff; background:var(--accent); }
+  .module-title b { font-size:12.5px; }.module-title span { font-size:8.5px; opacity:.84; }
+  .module-line { display:grid; grid-template-columns:28mm 1fr; border-top:1px solid var(--line); }
+  .module-line strong { padding:5px 8px; font-size:8.8px; color:var(--accent); background:#f7f9fc; }
+  .module-line p { padding:5px 8px; margin:0; font-size:9.1px; line-height:1.35; color:#405066; }
+  .module-line.boundary strong,.module-line.boundary p { background:var(--pale); }
+  .module-line.code-map p { font-family:ui-monospace,Menlo,monospace; font-size:8.2px; }
+  .master-module-map td { padding:5px 6px; font-size:8.9px; line-height:1.28; }
+  .master-module-map .callout { margin:7px 0; padding:9px 12px; }
+</style></head><body><section class="page cover" style="--accent:#2563a8;--pale:#eaf3fb">
+    <div class="eyebrow">XELOR agent handbook · built from the implementation</div>
+    <h1>ACHILES<br>Platform Assurance</h1><div class="rule"></div>
+    <p class="lead">The quiet platform heartbeat. Privately checks whether XELOR is responding, preserves the result history and hands failed evidence to the people and agents responsible for incident coordination and repair.</p>
+    <div class="cover-note"><b>Who this is for:</b> product, engineering, operations and anyone who has to explain XELOR to somebody else.<br><b>What it covers:</b> the work ACHILES reasons about, the rules it cannot break, the exact tools it can call, and what is honestly not built yet.<br><b>Truth standard:</b> the repository as it stands on 7 August 2026.</div>
+    <div class="big-mark">ACHILES</div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>01</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">01 · At a glance</div><h2>What ACHILES is for</h2></div><p>A role with a fixed tool list, not a general assistant</p></header>
+    <div class="callout"><strong>In one sentence</strong><p>Privately checks whether XELOR is responding, preserves the result history and hands failed evidence to the people and agents responsible for incident coordination and repair.</p></div>
+    <div class="stat-grid">
+      <div class="stat"><b>3</b><span>business areas it speaks for</span></div>
+      <div class="stat"><b>1</b><span>tools it can actually call</span></div>
+      <div class="stat"><b>1</b><span>capability families allowed</span></div>
+      <div class="stat"><b>0</b><span>agents it may delegate to</span></div>
+    </div>
+    <div class="grid-2"><article class="card"><h3>What reaches it</h3><p>Hourly scheduler trigger · Authorised internal operator trigger · Configured private service endpoints · Tenant identity and access context</p></article><article class="card"><h3>What it hands back</h3><p>Healthy, degraded or unavailable status · Per-component pass/fail evidence and latency · Freshness warning after 90 minutes · A bounded hand-off to RELAY and the technical owner</p></article></div>
+    <h3 style="margin-top:13px">Capability families it is allowed to touch</h3><div class="pills"><span>platform-health.</span></div>
+    <div class="callout"><strong>Ownership and authority are not the same thing</strong><p>The areas above are where ACHILES is the right specialist to ask. The tool table on page 8 is the much smaller set it can invoke at runtime. Owning a business area does not grant runtime power over it — and for ONYX, the supervisor, the gap between the two is the widest in the system.</p></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>02</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">02 · Module deep dive · 1 of 2</div><h2>What sits behind ACHILES</h2></div><p>Records, screens, workflow, controls and hand-offs</p></header>
+
+  <article class="module-detail">
+    <div class="module-title"><b>Private Platform Assurance</b><span>ACHILES module · platform-health</span></div>
+    <div class="module-line"><strong>Purpose</strong><p>Quietly checks whether XELOR's API, tenant database, event queue, public web application and declared AI runtime are responding, then keeps the evidence private.</p></div>
+    <div class="module-line"><strong>Core records</strong><p>Append-only platform-health runs with tenant, trigger, overall status, component results, latency, start/completion time and total duration.</p></div>
+    <div class="module-line"><strong>User surface</strong><p>Private status. APIs: /platform-health/overview, /platform-health/run and the secret-protected /internal/platform-health/run scheduler endpoint.</p></div>
+    <div class="module-line"><strong>End-to-end flow</strong><p>Run deterministic probes with four-second timeouts; classify required and optional failures; save the tenant-isolated result; mark evidence stale after 90 minutes; hand failed evidence to RELAY and the technical owner.</p></div>
+    <div class="module-line"><strong>Enforced controls</strong><p>Internal-only permissions, tenant RLS, append-only storage, one concurrent sweep, no model judgement, no ERP write, no service restart, no customer message and no action-dispatch capability.</p></div>
+    <div class="module-line"><strong>Inputs and outputs</strong><p>ACHILES detects and records. RELAY coordinates the incident and customer update. HEXA, ONYX or the affected specialist diagnoses and repairs.</p></div>
+    <div class="module-line boundary"><strong>Current boundary</strong><p>The probes, scheduler paths, permissions, screen and durable history are live MVP capability. It is not a production observability stack, paging service, root-cause engine or autonomous remediation system.</p></div>
+    <div class="module-line code-map"><strong>Primary code map</strong><p>apps/web/src/modules/platform-health/manifest.ts · apps/api/src/modules/platform-health/</p></div>
+  </article>
+    <div class="callout"><strong>How to read these module pages</strong><p>“Live” means the records, service rules and user/API surface exist in this repository. It does not mean every surrounding enterprise process is complete. The boundary row names what remains illustrative, manual, simulate-driven or outside the MVP.</p></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>03</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">02 · Module deep dive · 2 of 2</div><h2>How ACHILES's modules connect</h2></div><p>A module owns its records; the agent explains the combined evidence</p></header>
+
+    <div class="callout"><strong>Cross-module coordination</strong><p>ACHILES detects and records only. RELAY owns incident severity, clock and customer updates. HEXA, ONYX or the affected specialist owns diagnosis and repair. A person keeps control of high-impact decisions.</p></div>
+    <div class="flow"><div class="flow-block">Private Platform Assurance</div><span class="arrow">→</span><div class="flow-block">ACHILES<br><small>bounded evidence</small></div><span class="arrow">→</span><div class="flow-block">ONYX / person<br><small>decision</small></div></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>04</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">03 · The work itself</div><h2>How ACHILES's world actually runs</h2></div><p>The business pipeline, not the agent plumbing</p></header>
+    <p class="lead" style="font-size:13px;margin-bottom:12px">ACHILES is deliberately simpler than a general AI agent. It answers one operational question using explicit technical probes, records exactly what happened and stops before diagnosis or repair.</p>
+    <div class="steps"><div class="step"><div><b>Wake privately</b><p>An internal interval or secret-protected external scheduler starts one sweep. A second overlapping sweep is refused.</p></div></div><div class="step"><div><b>Enter tenant context</b><p>Each active tenant is checked inside its own identity and row-level-security boundary.</p></div></div><div class="step"><div><b>Probe fixed components</b><p>Check API, PostgreSQL, Valkey and the configured web URL with explicit timeouts. Declare the AI runtime mode without inventing an external model result.</p></div></div><div class="step"><div><b>Classify honestly</b><p>A required failure means unavailable; an optional failure means degraded; an unconfigured optional endpoint is shown as not configured, never passed.</p></div></div><div class="step"><div><b>Preserve evidence</b><p>Insert one immutable run with component details, latencies, trigger and timestamps. The latest 24 are shown to authorised operators.</p></div></div><div class="step"><div><b>Hand off and stop</b><p>Failed evidence goes to RELAY and the relevant technical owner. ACHILES does not diagnose, restart, repair, message a customer or close an incident.</p></div></div></div>
+    <div class="callout"><strong>How much of this ACHILES can actually see</strong><p>Of everything above, ACHILES can read exactly one thing directly — latest private status, freshness and append-only history. The rest of this pipeline is context for judging what it reads; it is not data the agent can reach. Where a mission needs more, it asks the specialist who owns it or it says the evidence is missing.</p></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>05</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">04 · The rules underneath</div><h2>What the code will not let anyone do</h2></div><p>Enforced by constraints and locks, not by wording</p></header>
+    <div class="grid-2"><article class="card"><h3>Evidence, not an AI guess</h3><p>Platform state comes from deterministic probes with timeouts. No language model decides whether XELOR is healthy.</p></article><article class="card"><h3>Private by permission</h3><p>Only xelor_admin, it_admin and demo_admin receive the view/run permissions; ordinary customer roles do not see the module.</p></article><article class="card"><h3>Observation is not remediation</h3><p>The allow-list contains one read capability and no agent.action.dispatch entry.</p></article><article class="card"><h3>Missing is not healthy</h3><p>An endpoint that was not configured is labelled not configured. A check older than 90 minutes is labelled stale.</p></article><article class="card"><h3>Every tenant remains separate</h3><p>The scheduler enters explicit tenant context and the database applies row-level security before reading or saving evidence.</p></article><article class="card"><h3>One failure does not hide the rest</h3><p>A failed tenant check is counted as unavailable while the sweep continues across the other active tenants.</p></article></div>
+    <div class="callout" style="margin-top:13px"><strong>Why this page matters more than the agent pages</strong><p>An agent is only as trustworthy as the system it reads. Every rule here holds whether the request came from a person, a screen, a seeder or ACHILES — which is precisely why an agent can be given a read tool without also being given a way to do damage.</p></div>
+    <h3 style="margin-top:12px">Where these rules are kept</h3>
+    <div class="card source" style="margin:5px 0">apps/api/src/modules/platform-health/</div><div class="card source" style="margin:5px 0">apps/web/src/modules/platform-health/</div><div class="card source" style="margin:5px 0">packages/db/src/schema/platform-health.ts</div><div class="card source" style="margin:5px 0">packages/db/migrations/0070_achiles_platform_health.sql</div><div class="card source" style="margin:5px 0">apps/api/src/agent-os/capability-registry.service.ts</div><div class="card source" style="margin:5px 0">docs/01-agent-os/05-achiles-platform-assurance.md</div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>06</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">05 · Runtime contract</div><h2>How ACHILES takes part in a mission</h2></div><p>The engine controls order, parallelism and recovery</p></header>
+    <div class="flow"><div class="flow-block">Person or signal</div><span class="arrow">→</span><div class="flow-block">ONYX<br><small>scope the mission</small></div><span class="arrow">→</span><div class="flow-block">ACHILES<br><small>Platform Assurance</small></div><span class="arrow">→</span><div class="flow-block">Capability registry<br><small>allow-listed tool</small></div><span class="arrow">→</span><div class="flow-block">Domain service<br><small>business rules</small></div><span class="arrow">→</span><div class="flow-block">Tenant data<br><small>+ audit</small></div></div>
+    <div class="grid-2">
+      <article class="card tint"><h3>1 · Scope</h3><p>ONYX turns the goal into a run against a frozen graph version, with a fixed tenant, user, step budget and timeout.</p></article>
+      <article class="card tint"><h3>2 · Authorise</h3><p>Two checks, both required: the tool must be on ACHILES's allow-list, and the signed-in person must independently hold the permission.</p></article>
+      <article class="card tint"><h3>3 · Execute</h3><p>A registered domain service does the work under the same rules a screen would face. There is no general SQL doorway.</p></article>
+      <article class="card tint"><h3>4 · Preserve</h3><p>Inputs, outputs, events and a checkpoint after every wave, so the run can be explained or resumed.</p></article>
+    </div>
+    <div class="callout"><strong>An agent can narrow authority, never widen it</strong><p>ACHILES is a specialist and delegates to nobody. Because the permission check is repeated against the requesting person, a mission can never reach data that person could not have opened themselves.</p></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>07</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">06 · Exact callable surface</div><h2>Everything ACHILES can call</h2></div><p>This table is the complete list — there is no other door</p></header>
+    <table class="cap-table"><thead><tr><th>Capability</th><th>Mode</th><th>What comes back</th><th>Permission required</th><th>Needs approval</th></tr></thead><tbody><tr><td>platform-health.status.read</td><td>Read</td><td>Latest private status, freshness and append-only history</td><td>platform_health.overview.read</td><td>No</td></tr></tbody></table>
+    <div class="grid-2" style="margin-top:11px">
+      <article class="card"><h3>Read · Analyse · Simulate</h3><p>Return evidence or a reproducible view. Nothing in the business changes.</p></article>
+      <article class="card"><h3>Draft</h3><p>Produce reviewable content that is labelled a draft and can never present itself as an approved outcome.</p></article>
+      <article class="card"><h3>Execute</h3><p>The only side-effecting mode in the whole system, and the only one that requires an approved human gate above it.</p></article>
+      <article class="card"><h3>Both locks must open</h3><p>The agent's allow-list AND the person's permission. Either one failing is a refusal.</p></article>
+    </div>
+    <div class="callout"><strong>ACHILES cannot act in the business at all</strong><p>There is no execute capability on this list, and ACHILES is not on the allow-list for the one that exists. The agent that coordinates every mission is the only one that cannot cause an effect — which is the point, not an oversight.</p></div>
+    <div class="footer"><span>XELOR · ACHILES agent guide</span><span>08</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">07 · In the six missions</div><h2>Where ACHILES actually appears</h2></div><p>Node by node, from the registered graph definitions</p></header>
+    <table class="mission-table"><thead><tr><th>Mission graph</th><th>What ACHILES does in it</th></tr></thead><tbody><tr><td><b>Cross-functional readiness</b></td><td>Not involved</td></tr><tr><td><b>Nine-agent operating review</b></td><td>Reads private platform status and assesses availability and evidence freshness</td></tr><tr><td><b>Controlled action mission</b></td><td>Reads and assesses platform health, then remains read-only after the human gate</td></tr><tr><td><b>Working Capital Review</b></td><td>Not involved</td></tr><tr><td><b>QMS &amp; Audit Readiness</b></td><td>Not involved</td></tr><tr><td><b>Managed Service Assurance</b></td><td>Not a graph participant; supplies private detection evidence upstream of RELAY</td></tr></tbody></table>
+    <div class="callout" style="margin-top:12px"><strong>Reading this honestly</strong><p>“Not involved” is not a limitation, it is the design. A mission asks only the specialists whose evidence it needs, and a specialist cannot add itself to a graph at runtime. The graph is written down, versioned and content-hashed before the run starts.</p></div>
+    <h3 style="margin-top:12px">The shape every mission shares</h3>
+    <div class="flow"><div class="flow-block">Goal</div><span class="arrow">→</span><div class="flow-block">Parallel reads</div><span class="arrow">→</span><div class="flow-block">Assessments</div><span class="arrow">→</span><div class="flow-block">Join</div><span class="arrow">→</span><div class="flow-block">HEXA verify</div><span class="arrow">→</span><div class="flow-block">Human gate</div><span class="arrow">→</span><div class="flow-block">Outcome</div></div><div class="footer"><span>XELOR · ACHILES agent guide</span><span>09</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">08 · Worked example</div><h2>An authorised operator checks the demo before a meeting</h2></div><p>Real records from the running demo, not an illustration</p></header>
+    <div class="steps plain"><div class="step"><div><p style="font-size:9.8px">The operator opens ACHILES → Private status and presses Run private check now. Ordinary customer roles cannot open this screen.</p></div></div><div class="step"><div><p style="font-size:9.8px">The API and tenant database pass. Valkey returns PONG. The configured public web page returns a healthy HTTP response. Each result carries measured latency.</p></div></div><div class="step"><div><p style="font-size:9.8px">ACHILES records one manual observation and the screen changes to XELOR is working. The new append-only row appears above earlier hourly observations.</p></div></div><div class="step"><div><p style="font-size:9.8px">If a component fails, the screen says degraded or needs attention. ACHILES records the evidence and stops; RELAY and the technical owner take over from there.</p></div></div></div>
+    <div class="callout"><strong>The sentence to say out loud</strong><p>“ACHILES contributes evidence from its own area, with the source records behind it and its limits stated. It does not claim an action is done until the system has recorded and verified it.”</p></div>
+    <h3 style="margin-top:12px">Fair questions to ask while watching</h3>
+    <ul><li>Which records is this answer standing on?</li><li>Which permission was checked, and against whom?</li><li>Is this a recorded fact, a simulation, a draft, or a completed result?</li><li>Would this step have waited for a person?</li><li>What happens if the service restarts halfway through?</li></ul><div class="footer"><span>XELOR · ACHILES agent guide</span><span>10</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">09 · What is real</div><h2>Live today, and deliberately not</h2></div><p>The second column is the one worth reading</p></header>
+    <div class="truth">
+      <div class="yes"><h3>Working now</h3><ul><li>ACHILES as the ninth and final agent in the registry, map, catalogue and guided agent tour</li><li>Permission-gated Private Platform Assurance module and manual check</li><li>Hourly in-process scheduler for long-running deployments</li><li>Secret-protected scheduler endpoint and Vercel cron declaration</li><li>Real API, PostgreSQL, Valkey and web probes with bounded timeouts</li><li>Tenant-fenced append-only result table, freshness state and latest-24 history</li><li>Read-only Agent OS capability in both nine-agent mission graphs</li></ul></div>
+      <div class="no"><h3>Not built — stated plainly</h3><ul><li>No production telemetry aggregation, distributed tracing, paging or on-call integration</li><li>No root-cause diagnosis, predictive anomaly model or automatic remediation</li><li>No customer-facing status page or outbound notification channel</li><li>A simple endpoint response does not prove every business workflow is correct</li><li>Exact hourly execution depends on the selected host or external scheduler supporting that cadence</li></ul></div>
+    </div>
+    <div class="stack">
+      <div class="stack-row"><b>Identity boundary</b><span>Verified token → tenant and actor</span></div>
+      <div class="stack-row"><b>Authority boundary</b><span>Agent allow-list AND the person's permission</span></div>
+      <div class="stack-row"><b>Action boundary</b><span>Side effects need an approved ancestor node</span></div>
+      <div class="stack-row"><b>Data boundary</b><span>Domain service over a tenant-fenced database</span></div>
+      <div class="stack-row"><b>Evidence boundary</b><span>Append-only runs, events, checkpoints and audit</span></div>
+    </div>
+    <p class="mini">Gaps are listed because a guide that hides them fails the first hour of technical due diligence. Every item on the right is either a roadmap decision or a known defect, and both are recorded in the project's own capability-gap register.</p><div class="footer"><span>XELOR · ACHILES agent guide</span><span>11</span></div></section><section class="page " style="--accent:#2563a8;--pale:#eaf3fb">
+    <header class="section-head"><div><div class="eyebrow">10 · Quick reference</div><h2>ACHILES on one page</h2></div><p>For explaining the agent to somebody new</p></header>
+    <div class="grid-2"><article class="card"><h3>Its job</h3><p>Privately checks whether XELOR is responding, preserves the result history and hands failed evidence to the people and agents responsible for incident coordination and repair.</p></article><article class="card"><h3>Speaks for</h3><p>Private platform status, Hourly deterministic checks, Availability evidence history</p></article><article class="card"><h3>Takes in</h3><p>Hourly scheduler trigger · Authorised internal operator trigger · Configured private service endpoints · Tenant identity and access context</p></article><article class="card"><h3>Gives back</h3><p>Healthy, degraded or unavailable status · Per-component pass/fail evidence and latency · Freshness warning after 90 minutes · A bounded hand-off to RELAY and the technical owner</p></article><article class="card"><h3>Can call</h3><p>platform-health.status.read</p></article><article class="card"><h3>Cannot do</h3><p>No production telemetry aggregation, distributed tracing, paging or on-call integration · No root-cause diagnosis, predictive anomaly model or automatic remediation · No customer-facing status page or outbound notification channel</p></article></div>
+    <h3 style="margin-top:12px">Words used on these pages</h3>
+    <table class="glossary"><tbody>
+      <tr><td>Agent</td><td>A named specialist with a fixed, allow-listed set of tools — not a process that can roam.</td></tr>
+      <tr><td>Capability</td><td>One registered operation with a declared mode, owner and required permission.</td></tr>
+      <tr><td>Mission graph</td><td>A versioned recipe: which steps run, which run together, where it waits for a person.</td></tr>
+      <tr><td>Checkpoint</td><td>A stored snapshot after each wave, used to explain a run and to resume it safely.</td></tr>
+      <tr><td>Governed work item</td><td>An approved, append-only assignment for a human team — not the business change itself.</td></tr>
+    </tbody></table><div class="footer"><span>XELOR · ACHILES agent guide</span><span>12</span></div></section></body></html>

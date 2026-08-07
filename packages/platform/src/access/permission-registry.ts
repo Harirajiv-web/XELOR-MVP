@@ -944,6 +944,20 @@ export const PERMISSION_REGISTRY = [
       "Read the managed-service command centre, service catalogue, incidents, changes, reviews and responsibility map.",
     privileged: false,
   },
+
+  // ---- PRIVATE PLATFORM ASSURANCE ---------------------------------------------
+  {
+    permission: "platform_health.overview.read",
+    docType: "platform_health_run",
+    description: "Read private ACHILES platform-health status and check history.",
+    privileged: false,
+  },
+  {
+    permission: "platform_health.run.execute",
+    docType: "platform_health_run",
+    description: "Run a private, read-only ACHILES platform-health check.",
+    privileged: true,
+  },
 ] as const satisfies readonly PermissionSpec[];
 
 /**

@@ -10,22 +10,22 @@ const reports = [
   {
     id: "handoff",
     source: "docs/reports/xelor-mvp-technical-handoff-brief.html",
-    output: "XELOR_MVP_TECHNICAL_HANDOFF_BRIEF.pdf",
+    output: "docs/05-deliverables/project-reports/XELOR_MVP_TECHNICAL_HANDOFF_BRIEF.pdf",
   },
   {
     id: "stack",
     source: "docs/reports/xelor-technology-stack-roadmap.html",
-    output: "XELOR_TECHNOLOGY_STACK_AND_PRODUCTION_ROADMAP.pdf",
+    output: "docs/05-deliverables/project-reports/XELOR_TECHNOLOGY_STACK_AND_PRODUCTION_ROADMAP.pdf",
   },
   {
     id: "agentic",
     source: "docs/reports/xelor-agentic-ai-implementation-strategy.html",
-    output: "XELOR_AGENTIC_AI_IMPLEMENTATION_AND_STRATEGY.pdf",
+    output: "docs/05-deliverables/project-reports/XELOR_AGENTIC_AI_IMPLEMENTATION_AND_STRATEGY.pdf",
   },
   {
     id: "architecture-playbook",
     source: "docs/reports/xelor-architecture-implementation-playbook.html",
-    output: "XELOR_ARCHITECTURE_AND_IMPLEMENTATION_PLAYBOOK.pdf",
+    output: "docs/05-deliverables/project-reports/XELOR_ARCHITECTURE_AND_IMPLEMENTATION_PLAYBOOK.pdf",
   },
 ];
 
@@ -42,6 +42,7 @@ await mkdir(proofDir, { recursive: true });
 const browser = await chromium.launch();
 try {
   for (const report of selectedReports) {
+    await mkdir(dirname(resolve(root, report.output)), { recursive: true });
     const page = await browser.newPage({ viewport: { width: 1200, height: 1600 } });
     await page.goto(pathToFileURL(resolve(root, report.source)).href, {
       waitUntil: "load",

@@ -2,7 +2,7 @@ import type { ModuleManifest } from "./manifest";
 import { orderedModules } from "@modules/registry";
 
 /**
- * THE EIGHT AGENTS — seven accountable departments plus ONYX, made visible.
+ * THE NINE AGENTS — eight accountable specialists plus ONYX, made visible.
  *
  * Every module already declares its `department`. Until now nothing read it, so the
  * sidebar was sixteen flat groups and the structure existed only in `NAME.md`. It is the
@@ -76,7 +76,7 @@ export interface Department {
      Transcribed from the Agent Brain view in `AIKYANTRA-Pitch-Deck_2.html` (the `AGENTS`
      and `ONYX` constants inside its embedded demo). Held here rather than written into a
      screen for one reason: the deck and the product were saying different things about the
-     same eight agents, and the first investor to open both would find it. There is one
+     same nine agents, and the first investor to open both would find it. There is one
      description of HEXA now, and this is it.
 
      Where the deck's demo showed a figure it had invented — events on the bus today,
@@ -231,7 +231,7 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "PLANNING.md", moduleKey: "planning" },
     ],
     letter: "A",
-    angle: 64.29,
+    angle: 45,
     tagline: "Owns intent — what we build, and when.",
     blurb:
       "AXLE holds the item, BOM and routing masters and the change control that governs them, then turns confirmed demand into MPS, MRP and a finite schedule the floor can actually run.",
@@ -292,7 +292,7 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "INVENTORY.md", moduleKey: "inventory" },
     ],
     letter: "S",
-    angle: 12.86,
+    angle: 0,
     tagline: "Owns supplier, material and the stock ledger.",
     blurb:
       "SPAR closes the reorder → requisition → RFQ → PO → GRN → invoice → payment loop inside one department, and owns the single write path to the stock ledger. Nobody else touches stock tables.",
@@ -355,7 +355,7 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "CSP.md", moduleKey: "csp" },
     ],
     letter: "M",
-    angle: -38.57,
+    angle: -45,
     tagline: "Owns sales and the manufactured-product relationship after delivery.",
     blurb:
       "MICA runs the customer journey from enquiry and quotation through sales order and dispatch, then keeps the manufactured product connected to complaints, warranty, AMC and spares. It does not run the XELOR technology service; operational incidents affecting XELOR belong to RELAY.",
@@ -421,7 +421,7 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "MAINTENANCE.md", moduleKey: "maintenance" },
     ],
     letter: "K",
-    angle: 115.71,
+    angle: 90,
     tagline: "Owns execution on the physical spine.",
     blurb:
       "KILN runs work orders, material moves, scrap and batch genealogy, with quality gates firing inside the production flow and maintenance downtime feeding straight back into OEE. One item, one work centre, one work order, one asset.",
@@ -487,7 +487,7 @@ export const DEPARTMENTS: readonly Department[] = [
       { file: "ACCOUNTS.md", moduleKey: "accounts", missing: true },
     ],
     letter: "R",
-    angle: 167.14,
+    angle: 135,
     tagline: "Owns people and rupees.",
     blurb:
       "RASP holds the employee master, shifts, attendance, payroll and Indian statutory compliance on one side, and budgets, claims, indirect spend and the general ledger on the other — with labour cost flowing into work-order costing.",
@@ -547,7 +547,7 @@ export const DEPARTMENTS: readonly Department[] = [
       },
     ],
     letter: "R",
-    angle: -141.43,
+    angle: 180,
     tagline: "Owns the service clock and the customer handoff.",
     blurb:
       "RELAY wraps XELOR in a managed operating service. It coordinates onboarding, event triage, incidents, changes, service levels and reviews, while the affected specialist still diagnoses and repairs its own technology or business domain. That separation prevents a second support desk from quietly duplicating everyone else's work.",
@@ -611,6 +611,75 @@ export const DEPARTMENTS: readonly Department[] = [
     ],
     accent: "var(--dept-relay)",
     icon: "Headset",
+  },
+  {
+    code: "ACHILES",
+    name: "Platform Assurance",
+    owns: "Private, time-stamped evidence that XELOR's web application, API, database and supporting runtime are responding as expected.",
+    blueprints: [
+      {
+        file: "docs/01-agent-os/05-achiles-platform-assurance.md",
+        moduleKey: "platform-health",
+      },
+    ],
+    letter: "A",
+    angle: -135,
+    tagline: "Quietly checks whether XELOR is working.",
+    blurb:
+      "ACHILES is XELOR's private platform-health guardian. It runs deterministic, read-only availability checks, keeps an immutable tenant-fenced history and tells authorised internal operators when evidence is missing, stale or failing. Ordinary customers never see the monitor. ACHILES observes; it does not repair systems, alter ERP records or send customer communications.",
+    capabilities: [
+      {
+        icon: "TimerReset",
+        title: "Hourly private checks",
+        detail:
+          "Tests the web entry, API, tenant-fenced database query, event queue and configured AI runtime on a fixed schedule.",
+      },
+      {
+        icon: "History",
+        title: "Evidence, not a green guess",
+        detail:
+          "Keeps the exact result, response time, trigger and timestamp of each completed observation.",
+      },
+      {
+        icon: "ClockAlert",
+        title: "Stale-monitor detection",
+        detail:
+          "Treats a missing recent run as a warning, so a stopped monitor cannot leave an old green result looking current.",
+      },
+      {
+        icon: "GitPullRequestArrow",
+        title: "Clean incident hand-off",
+        detail:
+          "Hands failure evidence to RELAY and the accountable technical owner without duplicating incident, security or AI-control ownership.",
+      },
+    ],
+    systemOfRecord: [
+      "Platform check runs",
+      "Component availability",
+      "Response latency",
+      "Check freshness",
+      "Scheduler trigger",
+      "Private status history",
+    ],
+    contracts: [
+      {
+        between: "ACHILES ↔ RELAY",
+        through:
+          "ACHILES supplies detection time and failed-probe evidence; RELAY owns the incident clock, coordination and any approved customer update",
+      },
+      {
+        between: "ACHILES ↔ HEXA / ONYX",
+        through:
+          "HEXA diagnoses platform, identity, database and integration controls; ONYX diagnoses AI runtime controls; ACHILES never changes either",
+      },
+      {
+        between: "ACHILES ↔ all specialists",
+        through:
+          "ACHILES names the unavailable component and observation; the accountable owner diagnoses, repairs and proves recovery",
+      },
+    ],
+    accent: "var(--dept-achiles)",
+    icon: "HeartPulse",
   },
 ];
 

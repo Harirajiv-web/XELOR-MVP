@@ -48,6 +48,9 @@ services:
       SEED_DEMO_ON_BOOT: "true"
       DEMO_SEED_VERSION: railway-public-demo-v1
       READINESS_FILE: /tmp/xelor-api-ready
+      ACHILES_BACKGROUND_ENABLED: "true"
+      ACHILES_INTERVAL_MS: "3600000"
+      XELOR_WEB_URL: http://xelor-web:3001
     ports:
       - "${XELOR_API_HOST_PORT:-3000}:3000"
     healthcheck:

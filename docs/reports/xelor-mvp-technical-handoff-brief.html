@@ -80,7 +80,7 @@
     <div class="eyebrow">XELOR · ENGINEERING HANDOFF</div>
     <h1>MVP Technical Handoff &amp; Implementation Brief</h1>
     <div class="sub">What XELOR is, how it handles the complete operating loop, what was changed, how the investor demo works, how to rebuild and verify it, and what the technical team should do next.</div>
-    <div class="scope"><b>Snapshot:</b> investor-demo build based on the live Northstar PX-400 workflow plus the illustrative RELAY managed-service operating model.<br><b>Audience:</b> engineering, product, QA, service operations, DevOps and technical leadership.<br><b>Repository:</b> <code style="color:#bdeaff">MVP_PROTOTYPE_1</code> · working-directory analysis updated on 6 August 2026.</div>
+    <div class="scope"><b>Snapshot:</b> investor-demo build based on the live Northstar PX-400 workflow, RELAY managed-service operating model and ACHILES private platform assurance.<br><b>Audience:</b> engineering, product, QA, service operations, DevOps and technical leadership.<br><b>Repository:</b> <code style="color:#bdeaff">MVP_PROTOTYPE_1</code> · working-directory analysis updated on 7 August 2026.</div>
     <div class="meta"><span>Prepared from the application, migrations, API contracts, deployment files, supplied deck, primary standards and automated checks</span><span>6 August 2026</span></div>
   </section>
 
@@ -125,7 +125,7 @@
     <div class="callout good"><b>In one sentence:</b> XELOR turns a factory event into a permission-checked, evidence-linked decision; lets deterministic software calculate the facts; lets AI organise and explain them; requires a human for consequential approval; and records the result for audit and learning.</div>
     <h3>The problem XELOR is designed to solve</h3>
     <p>A conventional ERP stores departmental truth but usually makes people assemble the operating picture through calls, spreadsheets and experience. XELOR keeps those modules separate for ownership and control, connects their evidence through ONYX, and uses RELAY to coordinate the human managed service around the technology.</p>
-    <h3>The eight-agent operating model</h3>
+    <h3>The nine-agent operating model</h3>
     <table>
       <thead><tr><th>Agent</th><th>Business responsibility</th><th>What it contributes</th><th>What it cannot do alone</th></tr></thead>
       <tbody>
@@ -136,6 +136,8 @@
         <tr><td><b>KILN</b></td><td>Production, quality and maintenance</td><td>Operation execution, inspection, quarantine, NCR/CAPA, equipment and downtime evidence.</td><td>Cannot release failed material or self-certify CAPA effectiveness.</td></tr>
         <tr><td><b>RASP</b></td><td>Finance, working capital and spend</td><td>Posted value, budget position, cash/credit context and financial consequence.</td><td>Cannot call an unsupported estimate a verified loss.</td></tr>
         <tr><td><b>HEXA</b></td><td>Governance and compliance</td><td>Authority checks, policy, approval boundary, audit and verification requirements.</td><td>Cannot replace the accountable human approver.</td></tr>
+        <tr><td><b>RELAY</b></td><td>Managed Services</td><td>Incident clocks, customer updates, service change coordination and improvement evidence.</td><td>Cannot diagnose or repair the affected technical component.</td></tr>
+        <tr><td><b>ACHILES</b></td><td>Private Platform Assurance</td><td>Hourly availability, latency, freshness and append-only check history.</td><td>Cannot dispatch work, restart services, change ERP data or contact customers.</td></tr>
       </tbody>
     </table>
     <h3>How XELOR handles a business event from start to finish</h3>
@@ -316,7 +318,7 @@
     <table>
       <thead><tr><th>Component</th><th>Responsibility</th><th>Important implementation boundary</th></tr></thead>
       <tbody>
-        <tr><td><code>apps/web</code></td><td>Product shell, 21 modules, presenter guide, ONYX and RELAY surfaces and authentication callback.</td><td>UI permission checks improve usability; API guards remain authoritative.</td></tr>
+        <tr><td><code>apps/web</code></td><td>Product shell, 22 modules, presenter guide, ONYX, RELAY and ACHILES surfaces and authentication callback.</td><td>UI permission checks improve usability; API guards remain authoritative.</td></tr>
         <tr><td><code>apps/api</code></td><td>Domain services, controllers, Agent OS, audit, validation and worker entrypoint.</td><td>Ledger and workflow writes remain inside tenant-scoped transactions.</td></tr>
         <tr><td><code>packages/platform</code></td><td>Permissions, error types, deterministic business rules, Agent OS contracts.</td><td>No browser or database coupling; pure rules remain unit-testable.</td></tr>
         <tr><td><code>packages/db</code></td><td>Drizzle schema, SQL migrations, tenancy checks, reset and migration tooling.</td><td>PostgreSQL constraints and FORCE RLS defend invariants below the API.</td></tr>
@@ -374,14 +376,14 @@
         <tr><td>11</td><td><code>/managed-services/responsibilities</code></td><td>Show RELAY's separate technology-service responsibility.</td><td>XELOR application, integration and AI incidents are coordinated by RELAY, with technical repair retained by the right specialist.</td></tr>
       </tbody>
     </table>
-    <h3>Demo 2 — meet the eight agents</h3>
-    <p>The guide visits <code>/department/ONYX</code>, <code>HEXA</code>, <code>MICA</code>, <code>SPAR</code>, <code>AXLE</code>, <code>KILN</code>, <code>RASP</code> and <code>RELAY</code>. Each step spotlights the agent map and provides one plain-language role explanation plus one hand-off line. It intentionally omits technical internals, live-record claims and lengthy evidence notes.</p>
+    <h3>Demo 2 — meet the nine agents</h3>
+    <p>The guide visits <code>/department/ONYX</code>, <code>HEXA</code>, <code>MICA</code>, <code>SPAR</code>, <code>AXLE</code>, <code>KILN</code>, <code>RASP</code>, <code>RELAY</code> and finally <code>ACHILES</code>. Each step opens the agent map normally and provides one plain-language role explanation plus one hand-off line. It intentionally omits technical internals, live-record claims and lengthy evidence notes.</p>
     <h3>Presenter guide behaviour</h3>
     <ul>
       <li>The guide never writes a business record itself. At Sales and Purchase, the presenter deliberately uses the normal real form.</li>
       <li>Saving the required sales or purchase order unlocks Next but never auto-advances, so the presenter can show the saved detail page first.</li>
-      <li>While either order form is open, the floating guide and spotlight temporarily hide so they cannot cover the form footer or intercept the Save action; they return after the dialog closes.</li>
-      <li>A cyan spotlight points to the relevant screen evidence; expanded notes provide a simple explanation, facts and a presenter line.</li>
+      <li>While either order form is open, the floating guide temporarily hides so it cannot cover the form footer or intercept the Save action; it returns after the dialog closes.</li>
+      <li>A plain “On this screen” line provides context without covering or highlighting the ERP interface; expanded notes provide a simple explanation, facts and a presenter line.</li>
       <li>The business-story dock states that it uses real ERP screens and never saves for the presenter.</li>
       <li>The top control says <b>Stop demo</b>, not Reset demo, because it only removes the presentation layer.</li>
       <li>Refreshing or stopping the guide returns the user to normal product use without altering the ERP record.</li>
@@ -603,16 +605,16 @@ pnpm demo:verify</pre>
         <tr><td>Production and quality</td><td>Four complete operations, 40 received, 0.034/0.020 rejection, 12 quarantine, 28 + 12 reconciliation.</td><td class="check">PASS</td></tr>
         <tr><td>NCR/CAPA and maintenance</td><td>Inspection link, non-self-closing CAPA, Furnace 02, accountable work order and 4.5-hour downtime.</td><td class="check">PASS</td></tr>
         <tr><td>Spend and finance</td><td>Expense claim reconciliation, employee attribution, posted voucher and balanced trial balance.</td><td class="check">PASS</td></tr>
-        <tr><td>Decision and governance</td><td>Five source families, partially dispatched promise, exposure labelling and eight registered agents.</td><td class="check">PASS</td></tr>
+        <tr><td>Decision and governance</td><td>Five source families, partially dispatched promise, exposure labelling and nine registered agents.</td><td class="check">PASS</td></tr>
         <tr><td>Negative/error paths</td><td>Persona denial, invalid pagination, missing idempotency, unknown order and malformed spend query.</td><td class="check">PASS</td></tr>
       </tbody>
     </table>
     <h3>Browser verification — 20 current scenarios</h3>
     <ul>
       <li>Administrator traverses more than 40 application routes and uses ONYX evidence.</li>
-      <li>All 19 guided steps reach a visible target: 11 business-story steps and 8 agent-overview steps.</li>
+      <li>All 20 guided steps reach a visible target: 11 business-story steps and 9 agent-overview steps.</li>
       <li>The sales-order and purchase-order gates remain locked until the matching form reports a successful save; saving unlocks Next but never changes the route automatically.</li>
-      <li>Agent OS runs the eight-agent controlled-autonomy flow and human approval boundary.</li>
+      <li>Agent OS runs the nine-agent controlled-autonomy flow; ACHILES contributes read-only health evidence and the same human approval boundary remains intact.</li>
       <li>Specialist personas see only their departments and the API enforces the same wall.</li>
       <li>Desktop, phone, dark mode and reduced-motion identity variants are covered in the normal Keycloak configuration.</li>
       <li>Unknown credentials are rejected in normal mode; public-demo mode is separately checked for sign-in-free entry and persona scoping.</li>
@@ -620,7 +622,7 @@ pnpm demo:verify</pre>
     </ul>
     <h3>Static and policy gates</h3>
     <div class="kpi">
-      <div><b>702</b>platform tests</div>
+      <div><b>703</b>platform tests</div>
       <div><b>3</b>database tests</div>
       <div><b>22</b>API tests</div>
       <div><b>224</b>RLS tables</div>

@@ -20,8 +20,10 @@ The ordered project documentation starts at [docs/README.md](docs/README.md):
 - `00-project/` — technology and architecture;
 - `01-agent-os/` — the three implemented Agent OS phases, in order; and
 - `02-investor-demo/` — the presenter walkthrough and honest capability-gap register; and
-- `03-agent-guides/` — the master Agent System guide and seven detailed agent handbooks.
+- `03-agent-guides/` — the master Agent System guide and nine detailed agent handbooks;
 - `04-deployment/` — the reproducible Railway public-demo deployment and operating notes.
+- `05-deliverables/` — final project-report and agent-guide PDFs, ready to share.
+- `99-archive/` — historical planning material retained for reference, not current truth.
 
 Repository discovery files remain at the root because tools expect them there:
 `README.md` for project entry and `CLAUDE.md` for environment notes.

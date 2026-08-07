@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 /**
  * THE XELOR AGENT GUIDE SET.
  *
- * Nine PDFs: one master guide and one per agent. Everything on these pages is taken from
+ * Ten PDFs: one master guide and one per agent. Everything on these pages is taken from
  * the implementation — the capability registry, the graph catalogue, the module services,
  * the migrations and the investor-demo gap register — and not from the pitch deck.
  *
@@ -24,21 +24,21 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../../..");
 const htmlDir = resolve(root, "docs/reports/agent-guides");
-const pdfDir = resolve(root, "XELOR_AGENT_GUIDES");
+const pdfDir = resolve(root, "docs/05-deliverables/agent-guides");
 const proofDir = resolve(root, "apps/web/test-results/agent-guide-proofs");
 
-const SNAPSHOT = "6 August 2026";
+const SNAPSHOT = "7 August 2026";
 
 /* ============================================================================
    SYSTEM FACTS — counted from the implementation, not estimated.
    ============================================================================ */
 const SYSTEM = {
-  agents: 8,
-  capabilities: 17,
+  agents: 9,
+  capabilities: 18,
   graphs: 6,
-  graphNodes: 80,
-  modules: 21,
-  permissions: 139,
+  graphNodes: 84,
+  modules: 22,
+  permissions: 141,
   copilotIntents: 21,
   aiFeatures: 8,
   sideEffecting: 1,
@@ -85,7 +85,7 @@ const MODULES = [
     controls:
       "Fixed tool allow-lists, user-permission intersection, maximum steps and timeouts, bounded retries, content-hashed graphs, resumable checkpoints and engine-enforced approval ancestry for every effect.",
     handoffs:
-      "Coordinates all seven specialists. Domain reads still pass through their normal services, and the single effect writes a governed assignment rather than modifying ERP records.",
+      "Coordinates all eight specialists. Domain reads still pass through their normal services, and the single effect writes a governed assignment rather than modifying ERP records. ACHILES has no effectful tool.",
     boundary:
       "Six mission graphs and durable orchestration are live. Agent language reasoning is deterministic and dispatched work remains work for a person, not proof of completion.",
   },
@@ -126,6 +126,25 @@ const MODULES = [
       "HEXA fixes connectors and owns security; ONYX fixes AI operations and coordinates business missions; MICA owns manufactured-product support; KILN owns factory assets; other specialists fix their own domains. RELAY keeps the service timeline and verifies the customer-facing outcome.",
     boundary:
       "The operating model, agent, graph, API and screens are implemented. The data is explicitly illustrative: there is no staffed 24×7 desk, live ITSM integration, active telemetry pipeline or contractual SLA measurement yet.",
+  },
+  {
+    key: "platform-health",
+    agent: "ACHILES",
+    name: "Private Platform Assurance",
+    purpose:
+      "Quietly checks whether XELOR's API, tenant database, event queue, public web application and declared AI runtime are responding, then keeps the evidence private.",
+    records:
+      "Append-only platform-health runs with tenant, trigger, overall status, component results, latency, start/completion time and total duration.",
+    screens:
+      "Private status. APIs: /platform-health/overview, /platform-health/run and the secret-protected /internal/platform-health/run scheduler endpoint.",
+    workflow:
+      "Run deterministic probes with four-second timeouts; classify required and optional failures; save the tenant-isolated result; mark evidence stale after 90 minutes; hand failed evidence to RELAY and the technical owner.",
+    controls:
+      "Internal-only permissions, tenant RLS, append-only storage, one concurrent sweep, no model judgement, no ERP write, no service restart, no customer message and no action-dispatch capability.",
+    handoffs:
+      "ACHILES detects and records. RELAY coordinates the incident and customer update. HEXA, ONYX or the affected specialist diagnoses and repairs.",
+    boundary:
+      "The probes, scheduler paths, permissions, screen and durable history are live MVP capability. It is not a production observability stack, paging service, root-cause engine or autonomous remediation system.",
   },
   {
     key: "general",
@@ -444,23 +463,23 @@ const GRAPHS = [
   },
   {
     key: "operations.full-command-review",
-    name: "Eight-agent operating review",
-    nodes: 19,
+    name: "Nine-agent operating review",
+    nodes: 21,
     maxSteps: 28,
     timeout: "300s",
     dispatches: 0,
     shape:
-      "All seven specialists read their own evidence at once, each assesses, ONYX joins, HEXA verifies four checks, a human approves, ONYX issues the brief.",
+      "All eight specialists read their own evidence at once, each assesses, ONYX joins, HEXA verifies four checks, a human approves, ONYX issues the brief.",
   },
   {
     key: "operations.controlled-action-mission",
-    name: "Eight-agent controlled action mission",
-    nodes: 29,
+    name: "Nine-agent controlled action mission",
+    nodes: 31,
     maxSteps: 36,
     timeout: "600s",
     dispatches: 7,
     shape:
-      "The read-propose-verify-approve-dispatch-verify contract. Seven reads, seven recommendations, one plan, a preflight, ONE human gate, then six domain work items plus one RELAY service-coordination item and an outcome check.",
+      "The read-propose-verify-approve-dispatch-verify contract. Eight reads and recommendations, one plan, a preflight, ONE human gate, then six domain work items plus one RELAY service-coordination item and an outcome check. ACHILES remains read-only.",
   },
   {
     key: "finance.working-capital-review",
@@ -526,7 +545,7 @@ const agents = [
     coordination:
       "Copilot handles one bounded question; Agent OS handles a cross-functional mission; AI Operations governs any model-assisted feature. They share identity, permissions, logging and refusal rules, but they do not share a hidden general-purpose action channel.",
     prefixes: ["agent.", "workflow.", "general."],
-    delegates: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP", "RELAY"],
+    delegates: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP", "RELAY", "ACHILES"],
     tools: [
       [
         "general.companies.read",
@@ -611,7 +630,7 @@ const agents = [
       steps: [
         "The Copilot refuses. This is not a judgement the model got right — there is no endpoint that takes a question and runs it, none that takes SQL, and none that writes. The read-only promise is kept by there being nothing to call.",
         "Asked instead for what it does hold — “how much PMP-PX400 do we have” — it answers from stock_balance, item and warehouse, and cites all three.",
-        "For the cross-functional version of the question, ONYX starts a mission instead: seven specialists read their own evidence in parallel, HEXA verifies, a person approves, and only then is a brief published.",
+        "For the cross-functional version of the question, ONYX starts a mission instead: the relevant specialists read their own evidence in parallel, HEXA verifies, a person approves, and only then is a brief published.",
       ],
     },
     live: [
@@ -1612,7 +1631,7 @@ const agents = [
       ],
     },
     live: [
-      "RELAY in the eight-agent registry and visible department map",
+      "RELAY in the nine-agent registry and visible department map",
       "Shared four-stage lifecycle and non-overlapping responsibility model",
       "Permission-gated API and five-screen Managed Services workspace",
       "Read-only service-assurance capability",
@@ -1637,6 +1656,145 @@ const agents = [
       "OpenTelemetry — opentelemetry.io/docs/what-is-opentelemetry/",
     ],
   },
+
+  /* --------------------------------------------------------------- ACHILES */
+  {
+    id: "achiles",
+    name: "ACHILES",
+    label: "Platform Assurance",
+    colour: "#2563a8",
+    pale: "#eaf3fb",
+    tagline: "The quiet platform heartbeat",
+    summary:
+      "Privately checks whether XELOR is responding, preserves the result history and hands failed evidence to the people and agents responsible for incident coordination and repair.",
+    owns: [
+      [
+        "Private platform status",
+        "A single internal answer to whether XELOR is working, degraded or unavailable.",
+      ],
+      [
+        "Hourly deterministic checks",
+        "Fixed probes for the API, tenant database, event queue, public web application and declared AI runtime.",
+      ],
+      [
+        "Availability evidence history",
+        "Append-only component results, latency, trigger, timestamps, freshness and overall status.",
+      ],
+    ],
+    moduleKeys: ["platform-health"],
+    coordination:
+      "ACHILES detects and records only. RELAY owns incident severity, clock and customer updates. HEXA, ONYX or the affected specialist owns diagnosis and repair. A person keeps control of high-impact decisions.",
+    prefixes: ["platform-health."],
+    delegates: [],
+    tools: [
+      [
+        "platform-health.status.read",
+        "Read",
+        "Latest private status, freshness and append-only history",
+        "platform_health.overview.read",
+        "No",
+      ],
+    ],
+    receives: [
+      "Hourly scheduler trigger",
+      "Authorised internal operator trigger",
+      "Configured private service endpoints",
+      "Tenant identity and access context",
+    ],
+    produces: [
+      "Healthy, degraded or unavailable status",
+      "Per-component pass/fail evidence and latency",
+      "Freshness warning after 90 minutes",
+      "A bounded hand-off to RELAY and the technical owner",
+    ],
+    pipelineLead:
+      "ACHILES is deliberately simpler than a general AI agent. It answers one operational question using explicit technical probes, records exactly what happened and stops before diagnosis or repair.",
+    pipeline: [
+      [
+        "Wake privately",
+        "An internal interval or secret-protected external scheduler starts one sweep. A second overlapping sweep is refused.",
+      ],
+      [
+        "Enter tenant context",
+        "Each active tenant is checked inside its own identity and row-level-security boundary.",
+      ],
+      [
+        "Probe fixed components",
+        "Check API, PostgreSQL, Valkey and the configured web URL with explicit timeouts. Declare the AI runtime mode without inventing an external model result.",
+      ],
+      [
+        "Classify honestly",
+        "A required failure means unavailable; an optional failure means degraded; an unconfigured optional endpoint is shown as not configured, never passed.",
+      ],
+      [
+        "Preserve evidence",
+        "Insert one immutable run with component details, latencies, trigger and timestamps. The latest 24 are shown to authorised operators.",
+      ],
+      [
+        "Hand off and stop",
+        "Failed evidence goes to RELAY and the relevant technical owner. ACHILES does not diagnose, restart, repair, message a customer or close an incident.",
+      ],
+    ],
+    rules: [
+      [
+        "Evidence, not an AI guess",
+        "Platform state comes from deterministic probes with timeouts. No language model decides whether XELOR is healthy.",
+      ],
+      [
+        "Private by permission",
+        "Only xelor_admin, it_admin and demo_admin receive the view/run permissions; ordinary customer roles do not see the module.",
+      ],
+      [
+        "Observation is not remediation",
+        "The allow-list contains one read capability and no agent.action.dispatch entry.",
+      ],
+      [
+        "Missing is not healthy",
+        "An endpoint that was not configured is labelled not configured. A check older than 90 minutes is labelled stale.",
+      ],
+      [
+        "Every tenant remains separate",
+        "The scheduler enters explicit tenant context and the database applies row-level security before reading or saving evidence.",
+      ],
+      [
+        "One failure does not hide the rest",
+        "A failed tenant check is counted as unavailable while the sweep continues across the other active tenants.",
+      ],
+    ],
+    example: {
+      title: "An authorised operator checks the demo before a meeting",
+      steps: [
+        "The operator opens ACHILES → Private status and presses Run private check now. Ordinary customer roles cannot open this screen.",
+        "The API and tenant database pass. Valkey returns PONG. The configured public web page returns a healthy HTTP response. Each result carries measured latency.",
+        "ACHILES records one manual observation and the screen changes to XELOR is working. The new append-only row appears above earlier hourly observations.",
+        "If a component fails, the screen says degraded or needs attention. ACHILES records the evidence and stops; RELAY and the technical owner take over from there.",
+      ],
+    },
+    live: [
+      "ACHILES as the ninth and final agent in the registry, map, catalogue and guided agent tour",
+      "Permission-gated Private Platform Assurance module and manual check",
+      "Hourly in-process scheduler for long-running deployments",
+      "Secret-protected scheduler endpoint and Vercel cron declaration",
+      "Real API, PostgreSQL, Valkey and web probes with bounded timeouts",
+      "Tenant-fenced append-only result table, freshness state and latest-24 history",
+      "Read-only Agent OS capability in both nine-agent mission graphs",
+    ],
+    limits: [
+      "No production telemetry aggregation, distributed tracing, paging or on-call integration",
+      "No root-cause diagnosis, predictive anomaly model or automatic remediation",
+      "No customer-facing status page or outbound notification channel",
+      "A simple endpoint response does not prove every business workflow is correct",
+      "Exact hourly execution depends on the selected host or external scheduler supporting that cadence",
+    ],
+    sources: [
+      "apps/api/src/modules/platform-health/",
+      "apps/web/src/modules/platform-health/",
+      "packages/db/src/schema/platform-health.ts",
+      "packages/db/migrations/0070_achiles_platform_health.sql",
+      "apps/api/src/agent-os/capability-registry.service.ts",
+      "docs/01-agent-os/05-achiles-platform-assurance.md",
+    ],
+  },
 ];
 
 /* Which nodes each agent owns, per graph — counted from the graph definitions. */
@@ -1647,7 +1805,7 @@ const MISSION_ROLES = {
       "Frames the mission, then writes the final synthesis after approval",
     ],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Frames it, then issues the command brief",
     ],
     [
@@ -1670,7 +1828,7 @@ const MISSION_ROLES = {
       "Verifies policy and evidence before the human gate",
     ],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads company context, assesses control, runs four checks",
     ],
     [
@@ -1696,7 +1854,7 @@ const MISSION_ROLES = {
       "Reads sales orders, then assesses commitments",
     ],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads orders, then the commercial assessment",
     ],
     [
@@ -1716,7 +1874,7 @@ const MISSION_ROLES = {
   SPAR: [
     ["Cross-functional readiness", "Reads stock, then assesses supply"],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads the stock position, then the supply assessment",
     ],
     [
@@ -1733,7 +1891,7 @@ const MISSION_ROLES = {
   AXLE: [
     ["Cross-functional readiness", "Not involved"],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads planned orders, then the planning assessment",
     ],
     [
@@ -1750,7 +1908,7 @@ const MISSION_ROLES = {
   KILN: [
     ["Cross-functional readiness", "Not involved"],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads production, then the operations assessment",
     ],
     [
@@ -1770,7 +1928,7 @@ const MISSION_ROLES = {
   RASP: [
     ["Cross-functional readiness", "Not involved"],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads vouchers, then the finance assessment",
     ],
     [
@@ -1790,7 +1948,7 @@ const MISSION_ROLES = {
   RELAY: [
     ["Cross-functional readiness", "Not involved"],
     [
-      "Eight-agent operating review",
+      "Nine-agent operating review",
       "Reads service assurance and assesses incidents, changes and customer communication",
     ],
     [
@@ -1802,6 +1960,23 @@ const MISSION_ROLES = {
     [
       "Managed Service Assurance",
       "Reads and assesses service evidence, then publishes the human-approved service brief",
+    ],
+  ],
+  ACHILES: [
+    ["Cross-functional readiness", "Not involved"],
+    [
+      "Nine-agent operating review",
+      "Reads private platform status and assesses availability and evidence freshness",
+    ],
+    [
+      "Controlled action mission",
+      "Reads and assesses platform health, then remains read-only after the human gate",
+    ],
+    ["Working Capital Review", "Not involved"],
+    ["QMS & Audit Readiness", "Not involved"],
+    [
+      "Managed Service Assurance",
+      "Not a graph participant; supplies private detection evidence upstream of RELAY",
     ],
   ],
 };
@@ -2228,8 +2403,8 @@ function masterGuide() {
       `
     <div class="eyebrow">XELOR system handbook · built from the implementation</div>
     <h1>The XELOR<br>agent system</h1><div class="rule"></div>
-    <p class="lead">Eight agents, seventeen tools and six missions — and the machinery that keeps all of it inside the authority of the person who asked.</p>
-    <div class="cover-note"><b>Covers:</b> what XELOR is, the eight agents, the architecture, every capability, all six mission graphs, how a run actually executes, the trust model, and what is honestly not built.<br><b>Companion set:</b> one guide per agent.<br><b>Truth standard:</b> the repository as it stands on ${SNAPSHOT}.</div>
+    <p class="lead">Nine agents, eighteen tools and six missions — and the machinery that keeps all of it inside the authority of the person who asked.</p>
+    <div class="cover-note"><b>Covers:</b> what XELOR is, the nine agents, the architecture, every capability, all six mission graphs, how a run actually executes, the trust model, and what is honestly not built.<br><b>Companion set:</b> one guide per agent.<br><b>Truth standard:</b> the repository as it stands on ${SNAPSHOT}.</div>
     <div class="big-mark">MASTER</div>`,
       "cover",
     ),
@@ -2265,7 +2440,7 @@ function masterGuide() {
       title,
       "03",
       `
-    ${heading("02 · The team", "Eight agents, one system", "Each has a full companion guide")}
+    ${heading("02 · The team", "Nine agents, one system", "Each has a full companion guide")}
     <div class="agent-grid">
       ${agents.map((a) => `<article class="agent-card" style="--c:${a.colour}"><b>${a.name} · ${esc(a.label)}</b><p>${esc(a.summary)}</p></article>`).join("")}
     </div>
@@ -2275,7 +2450,7 @@ function masterGuide() {
       [
         [
           "One supervisor",
-          "ONYX is the only agent that may delegate. The seven specialists cannot recruit each other or widen their own role.",
+          "ONYX is the only agent that may delegate. The eight specialists cannot recruit each other or widen their own role.",
         ],
         [
           "One control layer",
@@ -2294,7 +2469,7 @@ function masterGuide() {
       title,
       "04",
       `
-    ${heading("03 · Module map", "Twenty-one modules under eight agents", "The master gives the map; the agent guides explain each module in depth")}
+    ${heading("03 · Module map", "Twenty-two modules under nine agents", "The master gives the map; the agent guides explain each module in depth")}
     <table><thead><tr><th>Agent</th><th>Modules</th><th>What the group contributes</th></tr></thead><tbody>
       ${agents.map((a) => `<tr><td><b>${a.name}</b><br><span class="mini">${esc(a.label)}</span></td><td>${a.moduleKeys.map((key) => esc(MODULES.find((m) => m.key === key).name)).join(" · ")}</td><td>${esc(a.coordination)}</td></tr>`).join("")}
     </tbody></table>
@@ -2318,8 +2493,9 @@ function masterGuide() {
       <article class="card"><h3>3 · Execute and prove</h3><p>Production pins components and operations. Quality snapshots the limits it judged. Maintenance preserves the uptime evidence behind delivery risk.</p></article>
       <article class="card"><h3>4 · Deliver and account</h3><p>Dispatch posts stock-out and the invoice together. Accounts holds the receivable and later receipt; MICA's Customer Care & Warranty keeps the manufactured-product obligation after delivery.</p></article>
       <article class="card tint"><h3>HEXA surrounds every step</h3><p>Verified identity, tenant fence, permission, approval and audit apply before the business service is allowed to touch a record.</p></article>
-      <article class="card tint"><h3>ONYX crosses the loop safely</h3><p>It asks the seven specialists for evidence, joins their answers and waits for the person. It does not take ownership away from any module.</p></article>
+      <article class="card tint"><h3>ONYX crosses the loop safely</h3><p>It asks the eight specialists for evidence, joins their answers and waits for the person. It does not take ownership away from any module.</p></article>
       <article class="card tint"><h3>RELAY keeps the service whole</h3><p>It owns onboarding, incident clocks, hand-offs, customer updates, the change calendar and reviews; the affected specialist still owns the technical fix.</p></article>
+      <article class="card tint"><h3>ACHILES watches quietly</h3><p>It checks platform availability, records private evidence and stops. RELAY coordinates any incident; the technical owner diagnoses and repairs.</p></article>
     </div>
     <div class="callout"><strong>The Northstar proof</strong><p>The seeded evidence follows one 120-unit PX-400 customer order through MRP, purchase, three production orders, a rejected inspection, 12 quarantined units, 28 dispatched units, an invoice, a receipt, a manufactured-product case, employee spend and a Decision Commander approval. The same identifiers reconcile across the modules.</p></div>`,
     ),
@@ -2341,6 +2517,7 @@ function masterGuide() {
       <div class="stack-row"><b>Capability</b><span>A closed registry of ${SYSTEM.capabilities} operations</span></div>
       <div class="stack-row"><b>Business</b><span>Sales, stock, planning, production, quality, maintenance, finance, people</span></div>
       <div class="stack-row"><b>Managed service</b><span>Catalogue, transition, incident/change coordination, customer communication, improvement</span></div>
+      <div class="stack-row"><b>Platform assurance</b><span>Private deterministic checks, freshness and append-only availability history</span></div>
       <div class="stack-row"><b>Data</b><span>Tenant-fenced PostgreSQL, append-only ledgers, durable run records</span></div>
     </div>
     <div class="callout"><strong>There is no database agent</strong><p>An agent cannot write a query. It names a registered capability; the runtime checks who is asking and whether they may; the capability calls a service whose rules are already in force. The reason the Copilot can refuse “ship the held units anyway” is not good judgement — it is that no endpoint exists that would take such an instruction.</p></div>`,
@@ -2372,9 +2549,10 @@ function masterGuide() {
       <tr><td>quality.audit-pack.draft</td><td>Draft</td><td>KILN</td><td>Evidence manifest</td><td>quality.inspection.read</td></tr>
       <tr><td>finance.funding-pack.draft</td><td>Draft</td><td>RASP</td><td>Draft manifest</td><td>accounts.ledger.read</td></tr>
       <tr><td>managed-services.service-assurance.read</td><td>Read</td><td>RELAY</td><td>Service assurance view</td><td>managed_services.overview.read</td></tr>
+      <tr><td>platform-health.status.read</td><td>Read</td><td>ACHILES</td><td>Private platform status and history</td><td>platform_health.overview.read</td></tr>
       <tr><td><b>agent.action.dispatch</b></td><td><b>Execute</b></td><td>HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY</td><td>Governed work item</td><td>agentos.run.operate</td></tr>
     </tbody></table>
-    <div class="callout"><strong>Sixteen of seventeen cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX is absent from the execute row.</p></div>`,
+    <div class="callout"><strong>Seventeen of eighteen cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX and ACHILES are absent from the execute row.</p></div>`,
     ),
   );
 
@@ -2402,7 +2580,7 @@ function masterGuide() {
     ${steps([
       [
         "Everything ready runs together",
-        "The engine takes every node whose dependencies are finished and runs that whole wave at once. Seven specialists reading their evidence is one wave, not seven trips.",
+        "The engine takes every node whose dependencies are finished and runs that whole wave at once. Eight specialists reading their evidence is one wave, not eight trips.",
       ],
       [
         "A checkpoint after every wave",
@@ -2491,7 +2669,7 @@ function masterGuide() {
     ${heading("11 · The honest boundary", "What this build does and does not do", "Say the right-hand column out loud before anyone finds it")}
     <div class="truth">
       <div class="yes"><h3>Live in the repository</h3>${bullets([
-        "Eight agents with fixed allow-lists",
+        "Nine agents with fixed allow-lists",
         `${SYSTEM.capabilities} registered capabilities, one of them effectful`,
         "Six versioned, content-hashed mission graphs",
         "Parallel waves, checkpoints, bounded retries, recovery",

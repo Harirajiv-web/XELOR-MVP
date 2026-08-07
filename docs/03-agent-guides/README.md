@@ -5,7 +5,7 @@ based on the runtime types, capability registry, graph catalogue, graph engine, 
 dispatch service, Decision Commander, AI spine, domain modules, database migrations,
 tests and product documentation in this repository.
 
-The PDFs are generated into [`XELOR_AGENT_GUIDES/`](../../XELOR_AGENT_GUIDES/):
+The PDFs are generated into [`docs/05-deliverables/agent-guides/`](../05-deliverables/agent-guides/):
 
 1. `00_XELOR_AGENT_SYSTEM_MASTER_GUIDE.pdf` — the overall product, short agent
    summaries, architecture blocks, coordination model, human-control boundary and
@@ -20,6 +20,8 @@ The PDFs are generated into [`XELOR_AGENT_GUIDES/`](../../XELOR_AGENT_GUIDES/):
 9. `08_RELAY_AGENT_GUIDE.pdf` — the managed-service lifecycle, service desk,
    incidents, changes, service levels, customer communication and improvement, with the
    exact boundary between coordination and specialist technical ownership.
+10. `09_ACHILES_AGENT_GUIDE.pdf` — private platform-health checks, evidence history,
+    escalation boundaries and the separation between assurance and business decisions.
 
 Editable HTML is stored under [`docs/reports/agent-guides/`](../reports/agent-guides/).
 Regenerate every HTML/PDF file from the version-controlled source with:

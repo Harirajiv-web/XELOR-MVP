@@ -17,6 +17,7 @@ import { QualityService } from "../modules/quality/quality.service.js";
 import { AgentAuthorizationService } from "./agent-authorization.service.js";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentActionService } from "./agent-action.service.js";
+import { PlatformHealthService } from "../modules/platform-health/platform-health.service.js";
 
 export interface CapabilityDescriptor {
   key: string;
@@ -59,6 +60,7 @@ export class CapabilityRegistryService {
     private readonly production: ProductionService,
     private readonly accounts: AccountsService,
     private readonly quality: QualityService,
+    private readonly platformHealth: PlatformHealthService,
     private readonly actions: AgentActionService,
   ) {
     const registered: RegisteredCapability[] = [
@@ -396,6 +398,20 @@ export class CapabilityRegistryService {
         approvalRequired: false,
         parse: (input: unknown) => z.object({}).parse(input),
         execute: async () => managedServiceDemoSnapshot(),
+      },
+      {
+        key: "platform-health.status.read",
+        name: "Read private platform-health evidence",
+        description:
+          "Returns ACHILES' latest deterministic checks and tenant-fenced history. It does not expose customer data or perform a repair.",
+        mode: "read",
+        requiredPermission: "platform_health.overview.read",
+        allowedAgents: ["ACHILES"],
+        executionBoundary: "domain_service",
+        sideEffecting: false,
+        approvalRequired: false,
+        parse: (input: unknown) => z.object({}).parse(input),
+        execute: async () => this.platformHealth.overview(),
       },
       {
         key: "agent.action.dispatch",

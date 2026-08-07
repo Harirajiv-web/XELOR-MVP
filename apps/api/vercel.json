@@ -5,6 +5,10 @@
     {
       "path": "/api/v1/internal/outbox/drain",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/v1/internal/platform-health/run",
+      "schedule": "0 * * * *"
     }
   ]
 }

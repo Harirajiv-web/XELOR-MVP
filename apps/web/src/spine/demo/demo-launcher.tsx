@@ -2,8 +2,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Icons from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../ui/cn";
 import { demoScenarios, type DemoScenario } from "./demo-scenarios";
@@ -13,14 +13,6 @@ import {
   type DemoRecordCreatedDetail,
 } from "./demo-events";
 
-interface SpotlightBox {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  target: "action" | "record" | "workspace" | "screen";
-}
-
 function ScenarioIcon({ name, className }: { name: string; className?: string }) {
   const Component =
     (Icons as unknown as Record<string, Icons.LucideIcon>)[name] ?? Icons.PlayCircle;
@@ -29,13 +21,11 @@ function ScenarioIcon({ name, className }: { name: string; className?: string })
 
 export function DemoLauncher(): React.JSX.Element {
   const router = useRouter();
-  const pathname = usePathname();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(demoScenarios[0]?.id ?? "");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [spotlight, setSpotlight] = useState<SpotlightBox | null>(null);
   const [completedInteractions, setCompletedInteractions] = useState<
     Record<string, DemoRecordCreatedDetail>
   >({});
@@ -87,73 +77,6 @@ export function DemoLauncher(): React.JSX.Element {
     return () => window.removeEventListener(DEMO_RECORD_CREATED_EVENT, recordCreated);
   }, [active, step, stepIndex]);
 
-  /**
-   * Point the presenter at evidence already visible on the destination screen. A real row
-   * wins; while data loads (or on a card-only screen), the surrounding workspace or page
-   * heading becomes the safe fallback. Nothing is inserted into the business table.
-   */
-  const locateEvidence = useCallback((bringIntoView = false): void => {
-    const main = document.querySelector("main.x-shell-main");
-    if (!main) {
-      setSpotlight(null);
-      return;
-    }
-    const actionCandidates = step?.interaction
-      ? [...main.querySelectorAll<HTMLElement>('[data-demo-target="action"]')]
-      : [];
-    const candidates = [
-      ...actionCandidates,
-      ...main.querySelectorAll<HTMLElement>('[data-demo-target="record"]'),
-      ...main.querySelectorAll<HTMLElement>('[data-demo-target="workspace"]'),
-      ...main.querySelectorAll<HTMLElement>('[data-demo-target="screen"]'),
-      ...main.querySelectorAll<HTMLElement>(".x-workspace-page"),
-    ];
-    const visibleTarget = candidates.find((candidate) => {
-      const rect = candidate.getBoundingClientRect();
-      return rect.width > 40 && rect.height > 18 && rect.bottom > 64 && rect.top < window.innerHeight;
-    });
-    const target = visibleTarget ?? candidates[0];
-    if (!target) {
-      setSpotlight(null);
-      return;
-    }
-    if (bringIntoView || (isAgentTour && !visibleTarget)) {
-      target.scrollIntoView({ behavior: bringIntoView ? "smooth" : "auto", block: "center" });
-    }
-    window.requestAnimationFrame(() => {
-      const rect = target.getBoundingClientRect();
-      const targetName = target.dataset.demoTarget;
-      setSpotlight({
-        left: Math.max(4, rect.left - 4),
-        top: Math.max(64, rect.top - 4),
-        width: Math.min(window.innerWidth - Math.max(4, rect.left - 4) - 4, rect.width + 8),
-        height: Math.min(window.innerHeight - Math.max(64, rect.top - 4) - 4, rect.height + 8),
-        target:
-          targetName === "action" || targetName === "record" || targetName === "workspace"
-            ? targetName
-            : "screen",
-      });
-    });
-  }, [isAgentTour, step?.interaction]);
-
-  useEffect(() => {
-    if (!active || !step) {
-      setSpotlight(null);
-      return;
-    }
-    const timers = [180, 520, 1_100, 2_000].map((delay) =>
-      window.setTimeout(() => locateEvidence(), delay),
-    );
-    const update = (): void => locateEvidence();
-    window.addEventListener("resize", update);
-    document.querySelector("main.x-shell-main")?.addEventListener("scroll", update, { passive: true });
-    return () => {
-      timers.forEach(window.clearTimeout);
-      window.removeEventListener("resize", update);
-      document.querySelector("main.x-shell-main")?.removeEventListener("scroll", update);
-    };
-  }, [active, locateEvidence, pathname, step]);
-
   const start = (scenario: DemoScenario): void => {
     setActiveId(scenario.id);
     setStepIndex(0);
@@ -168,7 +91,6 @@ export function DemoLauncher(): React.JSX.Element {
     setActiveId(null);
     setStepIndex(0);
     setDetailsOpen(false);
-    setSpotlight(null);
   };
 
   const move = (nextIndex: number): void => {
@@ -232,7 +154,7 @@ export function DemoLauncher(): React.JSX.Element {
                   </span>
                   <Dialog.Title className="text-[25px] font-bold tracking-[-.025em]">Choose a demo</Dialog.Title>
                   <Dialog.Description id="demo-picker-description" className="mt-1 max-w-2xl text-[13px] leading-5 text-blue-100">
-                    Choose the real factory story for a non-technical audience, or the separate agent tour for a simple explanation of all eight agents and their connections.
+                    Choose the real factory story for a non-technical audience, or the separate agent tour for a simple explanation of all nine agents and their connections.
                   </Dialog.Description>
                 </div>
                 <Dialog.Close className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close demo chooser">
@@ -260,7 +182,7 @@ export function DemoLauncher(): React.JSX.Element {
                       ) : index === 1 ? (
                         <div className="col-span-full mt-2 flex items-center gap-2 rounded-[11px] border border-teal-500/18 bg-teal-500/8 px-3 py-2">
                           <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-teal-700 text-white"><Icons.Network className="h-3.5 w-3.5" aria-hidden /></span>
-                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 2 · Meet the agents</b><span className="block text-[9.5px] text-[var(--text-muted)]">Eight headings, eight simple roles, no transaction detail.</span></span>
+                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 2 · Meet the agents</b><span className="block text-[9.5px] text-[var(--text-muted)]">Nine headings, nine simple roles, no transaction detail.</span></span>
                         </div>
                       ) : null}
                       <button
@@ -319,28 +241,6 @@ export function DemoLauncher(): React.JSX.Element {
       </Dialog.Root>
 
       {active && step ? createPortal(
-        <>
-        {spotlight ? (
-          <div
-            className="x-demo-spotlight pointer-events-none fixed z-[75] rounded-[10px] border-2 border-cyan-400 shadow-[0_0_0_4px_rgba(34,211,238,.14),0_0_28px_rgba(34,211,238,.3)] transition-[left,top,width,height,opacity] duration-300"
-            style={{ left: spotlight.left, top: spotlight.top, width: spotlight.width, height: spotlight.height }}
-            data-testid="demo-screen-spotlight"
-            data-target-kind={spotlight.target}
-            aria-hidden="true"
-          >
-            <div className={cn(
-              "absolute left-0 flex w-[min(430px,calc(100vw-24px))] items-center gap-2 rounded-[9px] border border-cyan-300/30 bg-[#071426]/96 px-3 py-2 text-white shadow-[0_10px_28px_rgba(2,8,23,.36)] backdrop-blur-lg",
-              spotlight.top > 128 ? "bottom-[calc(100%+8px)]" : "top-2",
-            )}>
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400" />
-              </span>
-              <span className="shrink-0 text-[8.5px] font-extrabold uppercase tracking-[.11em] text-cyan-300">Show this</span>
-              <span className="truncate text-[10.5px] font-semibold text-slate-100">{presenterSnapshot?.headline ?? `${step.agents[0] ?? "Agent"} role and connections`}</span>
-            </div>
-          </div>
-        ) : null}
         <section
           className={cn(
             "x-demo-dock fixed bottom-3 right-3 z-[90] w-[min(520px,calc(100vw-24px))] overflow-hidden rounded-[16px] border border-white/10 bg-[#0b1426]/96 text-white shadow-[0_20px_60px_rgba(2,8,23,.4)] backdrop-blur-xl transition-[max-height,width,opacity,transform] duration-200 sm:bottom-4 sm:right-4",
@@ -370,18 +270,12 @@ export function DemoLauncher(): React.JSX.Element {
             <p className={cn("mt-2 text-[10.5px] font-semibold leading-4 text-slate-100", isAgentTour ? "line-clamp-4" : "line-clamp-2")} data-testid="demo-simple-explanation"><span className="mr-1 text-sky-300">{isAgentTour ? "What this agent does:" : "What’s happening:"}</span>{isAgentTour ? step.body : simpleStepLine}</p>
 
             {!isAgentTour && presenterSnapshot ? (
-              <button
-                type="button"
-                onClick={() => locateEvidence(true)}
-                className="mt-2 flex w-full items-center gap-2 rounded-[8px] border border-cyan-300/20 bg-cyan-300/[.07] px-2.5 py-1.5 text-left transition hover:bg-cyan-300/[.12]"
-                data-testid="demo-step-snapshot"
-                aria-label="Locate the highlighted evidence on this screen"
+              <p
+                className="mt-2 truncate text-[9.5px] text-slate-300"
+                data-testid="demo-screen-context"
               >
-                <Icons.Focus className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden />
-                <span className="shrink-0 text-[8px] font-extrabold uppercase tracking-[.1em] text-cyan-300">Show this</span>
-                <span className="min-w-0 flex-1 truncate text-[9.5px] font-semibold text-slate-100">{presenterSnapshot.headline}</span>
-                <span className="shrink-0 text-[8px] text-slate-500">Locate</span>
-              </button>
+                <b className="text-slate-100">On this screen:</b> {presenterSnapshot.headline}
+              </p>
             ) : null}
 
             {step.interaction ? (
@@ -459,8 +353,7 @@ export function DemoLauncher(): React.JSX.Element {
               <div className="mt-3 rounded-[9px] border border-white/8 px-3 py-2.5 text-[9.5px] leading-4 text-slate-300"><b className="text-slate-100">Presenter note:</b> {step.presenterLine}<div className="mt-2 flex flex-wrap gap-1.5">{step.agents.map((agent) => <span key={agent} className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[8.5px] font-semibold text-slate-300">{agent}</span>)}</div></div>
             </div>
           ) : null}
-        </section>
-        </>,
+        </section>,
         document.body,
       ) : null}
     </>

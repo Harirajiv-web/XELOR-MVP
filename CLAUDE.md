@@ -1,5 +1,43 @@
 # XELOR MVP prototype — environment notes
 
+## READ FIRST — this repository now runs on macOS, natively
+
+Everything below about **WSL, PowerShell, `/root/proj`, `E:\ERP\…` and corepack** describes
+the older Windows machine. None of it applies here and following it wastes real time: there
+is no WSL distro, no `/mnt/e`, and `pnpm` **is** on PATH.
+
+Verified working on this machine (macOS, Darwin 24.6, Node 22, pnpm 9.12.0, Docker Desktop):
+
+```bash
+docker compose -f infra/docker-compose.yml up -d   # postgres, valkey, keycloak, gotenberg
+pnpm install
+pnpm run ci        # build → lint → typecheck → test → migrate → rls/perm/naming/module proofs
+pnpm demo:rebuild  # reset → migrate → both seeders, from an empty schema
+pnpm demo:verify   # the 99-check investor acceptance matrix
+```
+
+The API and web app are ordinary local processes — no distro to keep alive, no
+`Start-Process`, no re-sync step. There IS still one trap that survives the move:
+**`next build` while `next start` is running breaks the running server** (see below). Since
+`pnpm run ci` builds, restart :3001 afterwards.
+
+```bash
+(cd apps/api && node --env-file-if-exists=../../.env dist/src/main.js) &   # :3000
+(cd apps/web && node scripts/run-next.mjs start) &                        # :3001
+```
+
+`web:200 · api:401 · kc:200` is still the healthy state, and the API's 401 is still the
+auth guard answering rather than a fault.
+
+**Running the demo seeders locally.** They authenticate one of two ways. With Keycloak up
+they exchange real tokens; against the isolated demo stack set `DEMO_PUBLIC_MODE=true` and
+they use the public-demo header instead. `API_BASE` defaults to `http://localhost:3000`,
+which is correct here — the WSL `localhost`-vs-`127.0.0.1` distinction no longer applies.
+
+**The DB-gated proofs run natively too.** `db:migrate`, `db:rls-check`, `db:perm-check`,
+`db:naming-check` and the two-tenant RLS leak probe all read `DATABASE_URL` /
+`DATABASE_OWNER_URL` from the root `.env` and need no copy of the tree anywhere.
+
 ## Four things about the web app that are easy to break by accident
 
 **1. The shell lives in a layout, not in the pages.** `src/app/(app)/layout.tsx` renders
@@ -132,6 +170,53 @@ node _scratch/probe-northstar.mjs    # every department screen actually renders 
 
 `probe-northstar.mjs` reads `main`, never `document.body` — the sidebar carries every module
 name in the product, so a body-wide search passes on a page that rendered nothing.
+
+## The e2e suite has TWO configurations, and skips are expected
+
+`npx playwright test` from `apps/web`. A healthy run in the default local setup is
+**14 passed, 12 skipped, 0 failed** — the skips are a precondition being declared, not
+tests quietly disappearing.
+
+`NEXT_PUBLIC_PUBLIC_DEMO` decides what `/` even is, and the two modes are mutually
+exclusive:
+
+| | `true` (local default, hosted demo) | `false` (Keycloak) |
+|---|---|---|
+| `/` | the arrival experience, one demo identity | redirects to the themed Keycloak form on :8080 |
+| runs | the demo, agent-os, RELAY and ACHILES specs | additionally `sign-in-responsive` and `personas` |
+
+`sign-in-responsive.spec.ts` tests the Keycloak login theme and `personas.spec.ts` needs
+five distinct real identities; neither exists in public-demo mode, so both call
+`test.skip(...)` with the reason. Left unguarded they produced ten red "element(s) not
+found" results that read as a broken sign-in page while the product worked exactly as
+configured — the expensive kind of false alarm, because it teaches people to ignore the
+suite. Specs that CAN work in both modes race `#username` against the arrival control and
+only type credentials into a form that is actually there; copy that pattern rather than
+calling `fill()` unconditionally.
+
+**`personas.spec.ts` is the suite's RBAC-enforcement proof.** It is the one that shows five
+people seeing only their own departments with the API refusing on the same boundary. It
+does not run in the default configuration — run it in Keycloak mode (rebuild the web app,
+the flag is inlined at build time) before trusting any claim about the permission wall.
+
+**ACHILES needs `XELOR_WEB_URL`.** Its `web` probe reports `not_configured` without it, so
+`achiles.spec.ts` — which asserts all five probes pass — fails on an otherwise healthy
+stack. It is in `.env.example`; both deployment composes already set it.
+
+## CI runs the proofs; it is not optional documentation
+
+`.github/workflows/ci.yml`, two jobs:
+
+- **verify** — build, lint (module boundaries), typecheck, 730 unit tests, migrate, then the
+  RLS, permission, naming and module-manifest proofs against a real PG17 + pgvector.
+- **investor-demo** — rebuilds the §7 world from an EMPTY database and runs the 99-check
+  acceptance matrix, in public-demo mode so no Keycloak realm is needed.
+
+The second job is not redundant, and the reason is worth keeping: a defect that failed the
+nine-agent mission for one persona passed every static check and all 703 platform tests,
+because the already-seeded database held the rows the matrix asserts on. Only a rebuild from
+nothing separates "the code produces this state" from "this state happens to be there".
+`pnpm run ci` runs the first job's contents locally.
 
 ## Docker is installed (inside WSL, not on Windows)
 

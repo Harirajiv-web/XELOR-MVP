@@ -21,6 +21,7 @@ const PUBLIC_DEMO_PERMISSIONS = [
   "agentos.run.operate",
   "agentos.approval.decide",
   "aiops.killswitch.operate",
+  "platform_health.run.execute",
 ] as const;
 
 const PUBLIC_DEMO_IDENTITY: Identity = {

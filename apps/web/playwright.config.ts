@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 1,
   reporter: "line",
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     ...devices["Desktop Chrome"],

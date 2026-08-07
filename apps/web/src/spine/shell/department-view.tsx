@@ -268,7 +268,7 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
 
       {/* ------------------------------- the brain ------------------------------ */}
       {/* ONYX is the only component whose satellites are OTHER AGENTS — it is the
-          brain, and the seven specialists are what it reasons across. Every other department puts
+          brain, and the eight specialists are what it reasons across. Every other department puts
           its own modules on the ring, in the same shape, so a reader who learned the picture
           on ONYX can already read HEXA's. */}
       <Reveal delay={150}>

@@ -29,6 +29,7 @@ import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
 import { AgentOsModule } from "./agent-os/agent-os.module.js";
 import { ManagedServicesModule } from "./modules/managed-services/managed-services.module.js";
+import { PlatformHealthModule } from "./modules/platform-health/platform-health.module.js";
 import { HealthController } from "./health.controller.js";
 import { ServerlessWorkerController } from "./serverless-worker.controller.js";
 
@@ -83,6 +84,9 @@ import { ServerlessWorkerController } from "./serverless-worker.controller.js";
     // RELAY's service-management control plane. The MVP endpoint is an explicitly labelled
     // operating-model snapshot; live telemetry and ITSM transports remain Integration work.
     ManagedServicesModule,
+    // ACHILES private platform assurance. Deterministic, read-only probes with an hourly
+    // scheduler entrypoint and tenant-fenced history; never customer-facing by default.
+    PlatformHealthModule,
     // GET /me — the bootstrap every front end calls before it draws anything.
     IdentityModule,
   ],

@@ -26,7 +26,7 @@ import { Disclosure } from "../ui/disclosure";
  * learned upstairs.
  *
  * So the map takes a CORE and a set of SATELLITES and knows nothing about what they are.
- * `/department/ONYX` hands it the brain and the seven specialist agents; `/department/KILN` hands it
+ * `/department/ONYX` hands it the brain and the eight specialist agents; `/department/KILN` hands it
  * KILN and its three modules. One component, one visual grammar, two levels — and a person
  * who learns to read the top one can already read the others.
  *

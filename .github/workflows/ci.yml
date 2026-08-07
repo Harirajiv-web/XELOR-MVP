@@ -1,0 +1,194 @@
+# XELOR CI — the invariant proofs, run by a machine instead of by memory.
+#
+# DECISIONS-V2 §1.1 requires boundary violations to fail CI, "wired in sprint 1, not
+# 'later'". The proofs all existed and all passed; nothing ran them automatically, so
+# "green" meant "somebody remembered", which is not a control.
+#
+# Two jobs, deliberately:
+#
+#   verify        — static + schema proofs. Fast, and gates every push.
+#   investor-demo — rebuilds the §7 demo world from an EMPTY database and runs the
+#                   acceptance matrix against it.
+#
+# The second job is not redundant. A defect that fails the mission graph for one persona
+# survived every static check and the whole 703-test unit suite, because the seeded
+# database already held the rows the matrix asserts on. Only a rebuild from nothing
+# distinguishes "the code produces this state" from "this state happens to be present".
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Match infra/docker-compose.yml and .env.example exactly, so a CI failure reproduces
+  # locally with the same commands.
+  DATABASE_URL: postgres://app_user:app_pw@localhost:5432/indcore
+  DATABASE_OWNER_URL: postgres://indcore_owner:owner_pw@localhost:5432/indcore
+
+jobs:
+  verify:
+    name: Static and schema proofs
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        # PG17 + pgvector, pinned to the DECISIONS-V2 §2 baseline. NOT PostgreSQL 16.
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: indcore
+          POSTGRES_USER: indcore_owner
+          POSTGRES_PASSWORD: owner_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U indcore_owner -d indcore"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The two-role model is what makes FORCE RLS a real backstop rather than decoration:
+      # the app connects as a NON-OWNER, NOBYPASSRLS role. A service container never runs
+      # docker-entrypoint-initdb.d, so the same script is applied by hand here.
+      - name: Bootstrap the two-role database model
+        run: psql "$DATABASE_OWNER_URL" -v ON_ERROR_STOP=1 -f infra/postgres/init/00-init.sql
+
+      # packages/platform and packages/db are consumed through dist/, not source. Without
+      # this, apps/api typecheck reports dozens of phantom "has no exported member" errors.
+      - name: Build workspace
+        run: pnpm build
+
+      - name: Lint (includes the module-boundary rules)
+        run: pnpm lint
+
+      # The API builds with SWC, which is transpile-only and never typechecks. Without an
+      # explicit pass, a type error ships.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Migrate
+        run: pnpm db:migrate
+
+      # Every tenant-scoped table carries FORCE RLS and a policy keying on the tenant GUC.
+      - name: RLS proof
+        run: pnpm db:rls-check
+
+      # Every route's demanded permission is registered, and every registered permission is
+      # actually enforced.
+      - name: Permission proof
+        run: pnpm db:perm-check
+
+      - name: Naming proof
+        run: pnpm --filter @ind-core/db naming-check
+
+      # A visible nav entry with no description, or a cross-module import, fails here.
+      - name: Module manifest proof
+        run: pnpm --filter @ind-core/web module-check
+
+  investor-demo:
+    name: Demo rebuild and acceptance matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verify
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: indcore
+          POSTGRES_USER: indcore_owner
+          POSTGRES_PASSWORD: owner_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U indcore_owner -d indcore"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+
+    env:
+      VALKEY_URL: redis://localhost:6379
+      API_BASE: http://localhost:3000
+      # The seeders drive the real API over HTTP. This isolated demo mode is what lets them
+      # do that without a Keycloak realm in CI; it is the same mode the hosted investor
+      # stack runs, and it reaches only the two §7 demo tenants.
+      API_PUBLIC_DEMO: "true"
+      DEMO_PUBLIC_MODE: "true"
+      AI_PROVIDER: stub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Bootstrap the two-role database model
+        run: psql "$DATABASE_OWNER_URL" -v ON_ERROR_STOP=1 -f infra/postgres/init/00-init.sql
+
+      - name: Build workspace
+        run: pnpm build
+
+      - name: Migrate
+        run: pnpm db:migrate
+
+      - name: Start the API
+        run: |
+          node apps/api/dist/src/main.js > /tmp/xelor-api.log 2>&1 &
+          echo "$!" > /tmp/xelor-api.pid
+          # A 401 is the healthy answer here: it is the auth guard responding, not a fault.
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/v1/general/companies || true)
+            if [ "$code" = "401" ] || [ "$code" = "200" ]; then
+              echo "API ready (HTTP $code)"; exit 0
+            fi
+            sleep 2
+          done
+          echo "API never became ready"; cat /tmp/xelor-api.log; exit 1
+
+      # Seeds the §7 base world and the Northstar investor story through the real HTTP API.
+      # Nothing is INSERTed behind the application's back, so a green run is evidence that
+      # the write paths work rather than that Postgres accepts rows.
+      - name: Seed the demo world
+        run: |
+          pnpm demo:seed
+          pnpm demo:northstar
+
+      - name: Acceptance matrix
+        run: pnpm demo:verify
+
+      - name: API log on failure
+        if: failure()
+        run: cat /tmp/xelor-api.log || true

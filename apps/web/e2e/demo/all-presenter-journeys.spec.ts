@@ -17,7 +17,7 @@ async function signIn(page: Page): Promise<void> {
   await expect(page.getByTestId("demo-launcher")).toBeVisible();
 }
 
-test("every presenter journey has visible step data and a highlighted screen target", async ({
+test("every presenter journey has visible step data without a screen highlight", async ({
   page,
 }, testInfo) => {
   test.setTimeout(420_000);
@@ -34,11 +34,11 @@ test("every presenter journey has visible step data and a highlighted screen tar
   expect(demoScenarios).toHaveLength(2);
   expect(demoScenarios[0]?.evidenceMode).toBe("live");
   expect(demoScenarios[1]?.evidenceMode).toBe("structural");
-  expect(demoScenarios.reduce((total, scenario) => total + scenario.steps.length, 0)).toBe(19);
+  expect(demoScenarios.reduce((total, scenario) => total + scenario.steps.length, 0)).toBe(20);
   for (const scenario of demoScenarios) {
     if (scenario.kind === "agent-tour") {
       expect(scenario.demoRecord).toBeUndefined();
-      expect(scenario.steps).toHaveLength(8);
+      expect(scenario.steps).toHaveLength(9);
       expect(scenario.steps.every((step) => step.path.startsWith("/department/"))).toBe(true);
       expect(scenario.steps.every((step) => Boolean(step.connectionLine))).toBe(true);
     } else {
@@ -70,13 +70,14 @@ test("every presenter journey has visible step data and a highlighted screen tar
     for (const [stepIndex, step] of scenario.steps.entries()) {
       await expect(page).toHaveURL(new RegExp(`${step.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
       await expect(dock.getByText(`${stepIndex + 1} of ${scenario.steps.length}`, { exact: true })).toBeVisible();
-      await expect(page.getByTestId("demo-screen-spotlight")).toBeVisible();
+      await expect(page.getByTestId("demo-screen-spotlight")).toHaveCount(0);
       if (scenario.kind === "agent-tour") {
-        await expect(dock.getByTestId("demo-step-snapshot")).toHaveCount(0);
+        await expect(dock.getByTestId("demo-screen-context")).toHaveCount(0);
         await expect(dock.getByTestId("demo-live-record")).toContainText("Connection:");
         await expect(dock.getByTestId("demo-simple-explanation")).toContainText(step.body);
       } else {
-        await expect(dock.getByTestId("demo-step-snapshot")).toBeVisible();
+        await expect(dock.getByTestId("demo-screen-context")).toBeVisible();
+        await expect(dock.getByTestId("demo-screen-context")).toContainText("On this screen:");
         await expect(dock.getByTestId("demo-live-record")).toContainText(scenario.demoRecord!.reference);
       }
 
@@ -84,7 +85,7 @@ test("every presenter journey has visible step data and a highlighted screen tar
         await dock.getByRole("button", { name: "Expand demo guide" }).click();
         await expect(dock.getByTestId("demo-presenter-data")).toContainText("What to show on this screen");
         await expect(dock.getByTestId("demo-presenter-data")).toContainText(scenario.demoRecord!.reference);
-        await page.screenshot({ path: testInfo.outputPath("presenter-step-with-highlight.png"), fullPage: true });
+        await page.screenshot({ path: testInfo.outputPath("presenter-step-normal.png"), fullPage: true });
       }
 
       if (stepIndex < scenario.steps.length - 1) {

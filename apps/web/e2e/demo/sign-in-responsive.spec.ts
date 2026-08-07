@@ -1,5 +1,45 @@
 import { expect, test } from "@playwright/test";
 
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+
+/**
+ * THIS FILE TESTS THE KEYCLOAK SIGN-IN THEME, WHICH THE PUBLIC DEMO DELIBERATELY REMOVES.
+ *
+ * Every assertion below ("Username or email", "Enter XELOR", "real Keycloak access") is
+ * about the themed login form served from Keycloak on :8080, which the app reaches by
+ * redirecting away from `/`. With NEXT_PUBLIC_PUBLIC_DEMO=true there is no redirect: `/`
+ * opens the arrival experience with a demo identity, on purpose, and none of those controls
+ * exist.
+ *
+ * The two modes are mutually exclusive, so this is a PRECONDITION, not a failure. Left
+ * unguarded it produced ten red "element(s) not found" results that read as a broken
+ * sign-in page while the product was working exactly as configured — the most expensive
+ * kind of false alarm, because it trains people to ignore the suite.
+ *
+ * To run these: set NEXT_PUBLIC_PUBLIC_DEMO=false, rebuild the web app (the flag is inlined
+ * at build time) and have Keycloak up on :8080.
+ */
+test.skip(
+  process.env.NEXT_PUBLIC_PUBLIC_DEMO === "true",
+  "Keycloak sign-in theme is not reachable while the public demo is enabled.",
+);
+
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  const keycloakForm = page.getByRole("textbox", { name: "Username or email" });
+  const publicDemoEntry = page.getByRole("button", {
+    name: "Enter the factory intelligence",
+  });
+  await Promise.race([
+    keycloakForm.waitFor({ state: "visible" }),
+    publicDemoEntry.waitFor({ state: "visible" }),
+  ]);
+  test.skip(
+    await publicDemoEntry.isVisible(),
+    "Runtime is the sign-in-free public demo; Keycloak theme assertions do not apply.",
+  );
+});
+
 test("the desktop sign-in renders the live cinematic digital twin", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -30,7 +70,7 @@ test("the cinematic sign-in keeps its depth and contrast in dark mode", async ({
     {
       name: "xelor.theme",
       value: "dark",
-      url: "http://localhost:3001",
+      url: baseUrl,
     },
   ]);
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -66,7 +106,7 @@ test("the sign-in honours reduced motion without losing the product story", asyn
   await page.goto("/");
 
   await expect(page.getByRole("textbox", { name: "Username or email" })).toBeVisible();
-  await expect(page.getByText(/One factory\.\s*Seven governed agents\./)).toBeVisible();
+  await expect(page.getByText(/One factory\.\s*Nine governed agents\./)).toBeVisible();
   await expect(page.getByText("Human approvals", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("sign-in-reduced-motion.png"), fullPage: true });
 });
@@ -77,7 +117,7 @@ test("the fresh demo login succeeds on the first attempt", async ({ page }) => {
   await expect(page.getByRole("textbox", { name: "Password" })).toHaveValue("1234");
   await page.getByRole("button", { name: "Enter XELOR" }).click();
 
-  await expect(page).toHaveURL("http://localhost:3001/");
+  await expect(page).toHaveURL(`${baseUrl}/`);
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
 });
 
@@ -98,7 +138,7 @@ test("one action enters the demo even when both fields are empty", async ({ page
   await page.getByRole("textbox", { name: "Password" }).fill("");
   await page.getByRole("button", { name: "Enter XELOR" }).click();
 
-  await expect(page).toHaveURL("http://localhost:3001/");
+  await expect(page).toHaveURL(`${baseUrl}/`);
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
 });
 
@@ -106,7 +146,7 @@ test("one Enter XELOR click works repeatedly in the same browser tab", async ({ 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.goto("/");
     await page.getByRole("button", { name: "Enter XELOR" }).click();
-    await expect(page).toHaveURL("http://localhost:3001/");
+    await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
   }
 });
@@ -132,7 +172,7 @@ test("returning to the root always requires credentials again", async ({ page })
   await page.getByRole("textbox", { name: "Password" }).fill("1234");
   await page.getByRole("button", { name: "Enter XELOR" }).click();
 
-  await expect(page).toHaveURL("http://localhost:3001/");
+  await expect(page).toHaveURL(`${baseUrl}/`);
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
   await expect(brain).toBeVisible();
   await brain.click();
@@ -152,7 +192,7 @@ test("dark mode uses a calm background after sign-in", async ({ context, page },
     {
       name: "xelor.theme",
       value: "dark",
-      url: "http://localhost:3001",
+      url: baseUrl,
     },
   ]);
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -168,7 +208,7 @@ test("dark mode uses a calm background after sign-in", async ({ context, page },
   await page.screenshot({ path: testInfo.outputPath("dark-brain-calm-background.png"), fullPage: true });
 
   await brain.click();
-  await expect(page.getByText(/7\/7 agents connected/i)).toBeVisible();
+  await expect(page.getByText(/9\/9 agents connected/i)).toBeVisible();
   await expect(page.locator("[data-gaussian-field]")).toHaveCount(0);
   await page.waitForTimeout(900);
   await page.screenshot({ path: testInfo.outputPath("dark-agents-calm-background.png"), fullPage: true });

@@ -569,6 +569,15 @@ export class AgentRunRepository {
     });
   }
 
+  /**
+   * Retire a node that will produce no output, on purpose, with the reason recorded.
+   *
+   * Both `pending` and `running` are accepted. A node skipped by an unmet `condition` is
+   * still pending, but a read-only evidence node the OPERATOR is not entitled to is only
+   * discovered to be unavailable after `startNode` has already moved it to `running`.
+   * Matching `pending` alone made that second case a silent no-op: the update touched zero
+   * rows, the node stayed `running`, and the run deadlocked instead of skipping cleanly.
+   */
   async skipNode(runId: string, nodeId: string, reason: string): Promise<void> {
     const { actorId } = currentTenant();
     await withTenant(async (tx) => {
@@ -585,7 +594,7 @@ export class AgentRunRepository {
           and(
             eq(agentNodeRun.runId, runId),
             eq(agentNodeRun.nodeId, nodeId),
-            eq(agentNodeRun.status, "pending"),
+            inArray(agentNodeRun.status, ["pending", "running"]),
           ),
         );
       await this.appendEventInTx(tx, runId, "node.skipped", nodeId, { reason });
@@ -898,6 +907,22 @@ export class AgentRunRepository {
             eq(agentStepGate.runId, runId),
             eq(agentStepGate.status, "pending"),
             eq(agentStepGate.isActive, true),
+          ),
+        );
+      await tx
+        .update(agentApproval)
+        .set({
+          status: "cancelled",
+          decisionNote: reason,
+          decidedBy: actorId,
+          decidedAt: now,
+          updatedAt: now,
+          updatedBy: actorId,
+        })
+        .where(
+          and(
+            eq(agentApproval.runId, runId),
+            eq(agentApproval.status, "pending"),
           ),
         );
       await this.appendEventInTx(tx, runId, "run.cancelled", null, { reason });

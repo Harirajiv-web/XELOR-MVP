@@ -1,21 +1,68 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-test("ONYX runs the connected eight-agent controlled-autonomy flow", async ({
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+
+async function ensureAutomationActive(page: Page): Promise<void> {
+  const token = await page.evaluate(() => {
+    const raw = sessionStorage.getItem("aikyantra.session");
+    return raw
+      ? ((JSON.parse(raw) as { accessToken?: string }).accessToken ?? null)
+      : null;
+  });
+  // Authenticate the same way the app itself does (`src/spine/api/client.ts`): a bearer
+  // token when Keycloak minted one, and otherwise the public-demo selector header. The
+  // public demo never manufactures a token — that is the point of it — so demanding one
+  // here failed the whole nine-agent flow on a stack that was working correctly.
+  const headers: Record<string, string> =
+    token !== null
+      ? { authorization: `Bearer ${token}` }
+      : { "x-xelor-public-demo": "investor-presentation" };
+
+  const state = await page.request.get(
+    `${baseUrl}/api/v1/agent-os/control`,
+    { headers },
+  );
+  expect(state.status()).toBe(200);
+  const body = (await state.json()) as {
+    data: { automation: { status: "active" | "stopped" } };
+  };
+  if (body.data.automation.status === "active") return;
+
+  const release = await page.request.post(
+    `${baseUrl}/api/v1/agent-os/control/kill-switch/release`,
+    { headers, data: {} },
+  );
+  expect(release.status()).toBe(201);
+}
+
+test("ONYX runs the connected nine-agent controlled-autonomy flow", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Username or email" }).fill("venkat");
-  await page.getByRole("textbox", { name: "Password" }).fill("demo");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
   const brain = page.getByRole("button", {
     name: "Enter the factory intelligence",
   });
+  // Two valid front doors, one test. With Keycloak in front, `/` is the themed sign-in
+  // form; with the public demo enabled it is the arrival experience and no form exists.
+  // Race them and only type credentials into a form that is actually there — the same
+  // dual-mode approach `e2e/demo/full-workflow.spec.ts` already uses. Filling
+  // unconditionally made this fail on a perfectly working demo stack.
+  await Promise.race([
+    page.locator("#username").waitFor({ state: "visible" }),
+    brain.waitFor({ state: "visible" }),
+  ]);
+  if (await page.locator("#username").isVisible()) {
+    await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
+    await page.getByRole("textbox", { name: "Password" }).fill("1234");
+    await page.getByRole("button", { name: "Enter XELOR" }).click();
+  }
   await expect(brain).toBeVisible();
+  await ensureAutomationActive(page);
   await brain.click();
   await expect(
     page.getByRole("button", { name: "Enter the factory intelligence" }),
   ).toHaveCount(0);
-  await expect(page.getByText(/8\/8 agents connected/i)).toBeVisible();
+  await expect(page.getByText(/9\/9 agents connected/i)).toBeVisible();
   const onyxDoor = page.getByRole("button", {
     name: /ONYX Decision Commander/i,
   });
@@ -47,7 +94,7 @@ test("ONYX runs the connected eight-agent controlled-autonomy flow", async ({
   ).toBeVisible();
   await expect(
     page.getByRole("option", {
-      name: "Eight-agent controlled action mission",
+      name: "Nine-agent controlled action mission",
     }),
   ).toBeAttached();
   await page

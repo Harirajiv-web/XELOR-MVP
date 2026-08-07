@@ -183,7 +183,7 @@ export function Gateway(): React.JSX.Element {
    *
    * It is the visual handshake between authentication and the operating system: sign-in
    * establishes who is present, the Brain establishes what XELOR is, and activating it
-   * reveals the catalogue-backed eight-agent topology. Starting in `onyx` skipped that
+   * reveals the catalogue-backed nine-agent topology. Starting in `onyx` skipped that
    * handshake entirely and left the Brain mounted but permanently hidden.
    */
   const [stance, setStance] = useState<Stance>("brain");
@@ -493,7 +493,7 @@ export function Gateway(): React.JSX.Element {
         That is bad on any screen and specifically wrong on this one. This is the product's
         entrance and the frame somebody stands in front of while they talk about it — the
         investor walkthrough in `docs/02-investor-demo/` has a presenter describing the
-        eight-agent topology out loud, which takes considerably longer than half a minute.
+        nine-agent topology out loud, which takes considerably longer than half a minute.
         The page moving on its own mid-sentence reads as a crash.
 
         A launcher does not decide where you go. Both real ways in remain, and both are
