@@ -9,13 +9,14 @@ connector is configured.
 `operations.controlled-action-mission@1`:
 
 1. ONYX bounds the operating objective.
-2. HEXA, MICA, SPAR, AXLE, KILN and RASP read six live, tenant-scoped ERP domains in one
+2. HEXA, MICA, SPAR, AXLE, KILN, RASP and RELAY read seven live, tenant-scoped service or ERP views in one
    parallel wave.
 3. Every specialist produces an evidence-backed recommendation.
 4. ONYX joins the recommendations into one action plan.
 5. HEXA verifies the evidence and consequence boundaries.
 6. The graph pauses at a durable, attributable human approval.
-7. After approval, all six specialists dispatch one governed domain work item in parallel.
+7. After approval, all seven specialists dispatch one governed work item in parallel. RELAY's
+   item coordinates service communication; the other six remain owned by their domains.
 8. HEXA verifies that every side effect has an approved graph ancestor.
 9. ONYX publishes the execution outcome.
 
@@ -61,18 +62,18 @@ event-started orchestration without claiming that an external webhook or paid AP
 
 The default mission is:
 
-> Protect the Northstar delivery commitment with a governed six-domain recovery plan.
+> Protect the Northstar delivery commitment with a governed seven-lane recovery plan.
 
-The investor can see all seven agents connected on the first authenticated frame, open
+The investor can see all eight agents connected on the first authenticated frame, open
 Mission Control, start the controlled mission, inspect the complete human gate, approve it,
-and watch six attributable domain actions appear in the live dispatch ledger.
+and watch seven attributable work items appear in the live dispatch ledger.
 
 ## Verification
 
 `pnpm --filter @ind-core/web e2e:agent-os` verifies:
 
-- the initial page contains the live 7/7 ONYX topology without an intermediate Brain;
+- the initial page contains the live 8/8 ONYX topology without an intermediate Brain;
 - the same ONYX hub opens Mission Control;
 - the Phase 3 graph reaches its approval gate;
 - approval resumes the durable graph; and
-- exactly six governed action dispatches are recorded and shown.
+- exactly seven governed action dispatches are recorded and shown.

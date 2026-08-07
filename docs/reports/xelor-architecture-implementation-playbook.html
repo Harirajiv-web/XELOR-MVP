@@ -105,7 +105,7 @@
         <tr><td>Async</td><td>Transactional outbox, BullMQ, Valkey and idempotent worker patterns.</td><td>Effects can be retried without pretending the queue is the source of truth.</td></tr>
         <tr><td>Identity</td><td>Keycloak 26, authorization code + PKCE, JWKS verification and in-application permission registry.</td><td>The OIDC boundary is portable; the demo bypass must remain isolated.</td></tr>
         <tr><td>AI/agents</td><td>7 agents, 16 capabilities, 5 graphs, durable checkpoints, approval gates, evidence and deterministic provider stub.</td><td>AI can be introduced behind governance and evaluation without giving a model direct ERP writes.</td></tr>
-        <tr><td>Quality gates</td><td>Lint, typecheck, module manifest check, 722 service/unit tests, DB RLS/permission checks, 97-item live acceptance matrix and 20 listed browser scenarios.</td><td>Existing local checks can become enforceable release policy.</td></tr>
+        <tr><td>Quality gates</td><td>Lint, typecheck, module manifest check, 727 service/unit tests, DB RLS/permission checks, 99-item live acceptance matrix and browser scenarios.</td><td>Existing local checks can become enforceable release policy.</td></tr>
         <tr><td>Deployment</td><td>Local Compose plus five-service Railway demo packaging and health/start scripts.</td><td>Demo packaging exists; production delivery and IaC do not yet.</td></tr>
       </tbody>
     </table>
@@ -289,7 +289,7 @@ apps/api/src/health/
         <tr><td>Static</td><td><code>pnpm lint</code>, <code>pnpm typecheck</code>, module-manifest/boundary validation, formatting check if adopted.</td><td>Code or architecture contract is invalid.</td></tr>
         <tr><td>Unit</td><td><code>pnpm test</code>; upload machine-readable test report and coverage trend.</td><td>Business/service contract regressed.</td></tr>
         <tr><td>Database</td><td>Start PostgreSQL/Valkey/Keycloak parity services; run migrations from empty DB; RLS check; permission reconciliation; migration idempotence/ordering check.</td><td>Schema, isolation or permission contract is unsafe.</td></tr>
-        <tr><td>Integration</td><td>Start API/Worker/Web with test identity; run the 97-item live matrix and API contract probes; confirm outbox consumption.</td><td>The assembled system does not behave like its units.</td></tr>
+        <tr><td>Integration</td><td>Start API/Worker/Web with test identity; run the 99-item live matrix and API contract probes; confirm outbox consumption.</td><td>The assembled system does not behave like its units.</td></tr>
         <tr><td>Browser</td><td>Playwright critical journeys on Chromium on every PR; broader browser/responsive matrix nightly or before release.</td><td>A user cannot complete a protected critical journey.</td></tr>
         <tr><td>Build</td><td>Build production Web/runtime images, boot them, run health probes and scan filesystem.</td><td>Passing source cannot produce a runnable artifact.</td></tr>
         <tr><td>Security</td><td>Dependency, secret and IaC/container scanning; CodeQL or equivalent scheduled/on PR for sensitive changes.</td><td>Known release-blocking exposure or leaked secret.</td></tr>
@@ -604,6 +604,33 @@ api_pool_max * max_api_tasks
   </section>
 
   <section class="page">
+    <h2>19A. RELAY managed-service pipeline</h2>
+    <p class="lead">RELAY is an operating service around the application, not a replacement for engineering. The design separates customer-facing service coordination from technical ownership so incidents, changes and reviews do not duplicate the Integration, AI Operations, Commercial or Maintenance registers.</p>
+    <div class="flow"><div>Design<br>catalogue + SLO</div><div class="arrow">→</div><div>Transition<br>discover + accept</div><div class="arrow">→</div><div>Operate<br>detect + restore</div><div class="arrow">→</div><div>Improve<br>problem + review</div></div>
+    <h3>Incident execution pipeline</h3>
+    <ol>
+      <li><b>Ingest:</b> accept a user contact, XELOR event, ITSM webhook or OpenTelemetry-derived signal with tenant, source, idempotency key and observed time.</li>
+      <li><b>Classify:</b> determine affected customer outcome, impact, urgency, severity, entitlement and next-update deadline. Preserve uncertain fields for human review.</li>
+      <li><b>Route:</b> create one RELAY service incident and link the affected specialist record. HEXA repairs connectors/security controls; ONYX repairs AI operations; MICA owns product support; KILN owns machines; other domains keep their records.</li>
+      <li><b>Coordinate:</b> maintain the response clock, escalation, timeline, decision log and authorised customer update. The specialist diagnoses and executes through its normal governed capability.</li>
+      <li><b>Verify:</b> require component restoration evidence and independently evaluate the customer-facing SLI before closure.</li>
+      <li><b>Learn:</b> create a problem/improvement item for repeat or material failure; include it in the next service review with owner, date and expected measure.</li>
+    </ol>
+    <h3>Target data and adapter boundaries</h3>
+    <table>
+      <thead><tr><th>Boundary</th><th>Contract</th><th>Failure behavior</th></tr></thead>
+      <tbody>
+        <tr><td>Telemetry → RELAY</td><td>Vendor-neutral observations: service/component, trace or metric identity, value, unit, window, source, freshness and tenant.</td><td>Quarantine invalid/unknown mapping; never invent customer impact from an unmapped component.</td></tr>
+        <tr><td>ITSM → RELAY</td><td>External incident/request/change ID, version, state, timestamps, participants and correlation key.</td><td>Idempotent replay; preserve conflicts for a human rather than last-write-wins.</td></tr>
+        <tr><td>RELAY → specialist</td><td>One attributable work item: customer impact, service clock, requested evidence and technical record link.</td><td>Escalate a missed acknowledgement; do not take over specialist credentials.</td></tr>
+        <tr><td>Specialist → RELAY</td><td>Diagnosis, action reference, verification evidence, residual risk and technical owner.</td><td>Service stays open when evidence is missing or the SLI remains outside objective.</td></tr>
+        <tr><td>RELAY → customer channel</td><td>Approved status, audience, incident/change reference, author and send idempotency key.</td><td>Queue/retry through HEXA Integration; never label a draft as sent.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>MVP truth:</b> today this pipeline is represented by typed illustrative data, a permission-gated read API, five UI screens and a verified/human-gated assurance graph. Live ITSM, telemetry, customer messaging, staffing and contractual SLOs are intentionally not claimed.</div>
+  </section>
+
+  <section class="page">
     <h2>20. Knowledge graph and digital twin implementation</h2>
     <p class="lead">Implement both as trustworthy projections over XELOR records and events—not as a new database or a 3-D visualization project.</p>
     <div class="grid2">
@@ -659,7 +686,7 @@ confidence, verification_status, created_by</pre>
         <tr><td>API contract</td><td>Every PR.</td><td>Auth, permission, validation, error envelope, pagination, idempotency and version compatibility.</td></tr>
         <tr><td>Integration</td><td>Every PR for affected paths.</td><td>Real PostgreSQL/Valkey/Keycloak, outbox/worker and cross-module transactions.</td></tr>
         <tr><td>Browser</td><td>Critical per PR; full before release/nightly.</td><td>20 state/interaction variants listed in §16, using normal OIDC as well as demo separately.</td></tr>
-        <tr><td>Acceptance</td><td>Staging release.</td><td>Current 97-item matrix plus investor Northstar, approval and recovery stories.</td></tr>
+        <tr><td>Acceptance</td><td>Staging release.</td><td>Current 99-item matrix plus investor Northstar, approval and recovery stories.</td></tr>
         <tr><td>Performance</td><td>Baseline before pilot; scheduled/regression threshold.</td><td>API latency, DB pool, hot tenant/list queries, lock behavior, worker throughput and resource saturation.</td></tr>
         <tr><td>Security</td><td>Continuous scans; threat/pentest before customer data.</td><td>Tenant escape, IDOR, auth/session, SSRF/upload, injection, secret, dependency and privilege escalation controls.</td></tr>
         <tr><td>Resilience</td><td>Pre-pilot and quarterly.</td><td>Task loss, DB failover, broker interruption, poison message, provider timeout and partial connector response.</td></tr>
@@ -715,7 +742,7 @@ confidence, verification_status, created_by</pre>
     <ol><li>Create shared strong, different owner/app database secrets.</li><li>Add the same GitHub repo as exactly five named Railway services and attach the supplied config paths.</li><li>Attach the PostgreSQL volume at <code>/var/lib/postgresql/data</code>.</li><li>Deploy PostgreSQL and Valkey, then API, then Worker and Web.</li><li>Create a domain only for Web; check same-origin <code>/api/v1/health</code> and the investor journey.</li><li>Optionally add <code>xelor.kisancred.com</code> as Web custom domain after the generated Railway URL works.</li></ol>
     <div class="callout bad"><b>Isolation policy:</b> public-demo flags are acceptable only because the dataset is disposable and integrations are disabled. Do not connect this environment to customer identity, bank, GST, email, production ERP, documents or analytics destinations.</div>
     <h3>Demo release checks</h3>
-    <p>Local five-container parity; cold database boot; second boot without duplicate seed; public URL and API proxy; all presenter personas; 97-item matrix; worker event delivery; mobile/desktop display; suspend/resume; no sign-in page; no non-Web public service.</p>
+    <p>Local five-container parity; cold database boot; second boot without duplicate seed; public URL and API proxy; all presenter personas; 99-item matrix; worker event delivery; mobile/desktop display; suspend/resume; no sign-in page; no non-Web public service.</p>
   </section>
 
   <section class="page">
@@ -833,6 +860,8 @@ confidence, verification_status, created_by</pre>
         <tr><td>Platform/SRE</td><td>IaC, pipelines, compute/network, telemetry, recovery and on-call tooling.</td><td>Runtime config, health, scaling and dependency changes.</td><td>Plan/apply, deploy manifest, SLO and drill report.</td></tr>
         <tr><td>Security/identity</td><td>Threat model, OIDC policy, secrets, tenant test, incident/privacy controls.</td><td>New data path, external connector, AI/provider and privilege.</td><td>Risk decision, scan/pentest and access review.</td></tr>
         <tr><td>QA/product domain</td><td>Business acceptance, golden scenarios, refusal/recovery expectations.</td><td>User-facing workflow and value claim.</td><td>Signed scenario result and known-limit register.</td></tr>
+        <tr><td>Managed-service owner / manager</td><td>Catalogue, transition, coverage, incident/change coordination, service reviews and improvement.</td><td>Customer outcome/SLO changes, support boundaries, escalation and external communication.</td><td>Acceptance record, incident/change timeline, service report and improvement register.</td></tr>
+        <tr><td>Service desk / operations lead</td><td>Contact intake, event triage, response clocks, specialist hand-offs and customer update cadence.</td><td>Runbooks, paging, major incident and post-restoration closure.</td><td>Shift/on-call evidence, incident log, update history and restoration proof.</td></tr>
         <tr><td>Release approver</td><td>Production go/no-go against evidence.</td><td>Migration, risk, rollback, incident coverage.</td><td>GitHub Environment approval and release record.</td></tr>
       </tbody>
     </table>
@@ -968,6 +997,7 @@ docker compose -f infra/railway/docker-compose.demo.yml up</pre>
       <li><code>apps/web/next.config.ts</code>, Web API/session implementation and Playwright suite.</li>
       <li><code>apps/api</code> controllers, identity/tenant guards, health code, Worker and demo verification scripts.</li>
       <li><code>packages/platform</code> module manifests, services, Agent OS and boundary rules.</li>
+      <li><code>packages/platform/src/managed-services</code>, RELAY API/UI module and managed-service assurance graph.</li>
       <li><code>packages/db</code> schema, 64 SQL migrations, tenant helper, migration/RLS/permission scripts.</li>
       <li><code>infra/docker-compose.yml</code>, <code>infra/railway</code> Dockerfiles/config/start scripts and deployment guide.</li>
     </ul>
@@ -981,6 +1011,9 @@ docker compose -f infra/railway/docker-compose.demo.yml up</pre>
       <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.MultiAZDBCluster.html">AWS — Point-in-time recovery for Multi-AZ DB clusters</a></li>
       <li><a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotating-secrets.html">AWS — Secrets Manager rotation</a></li>
       <li><a href="https://opentelemetry.io/docs/languages/js/">OpenTelemetry — JavaScript instrumentation status</a></li>
+      <li><a href="https://www.iso.org/standard/70636.html">ISO/IEC 20000-1 — service management systems</a></li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">NIST SP 800-61 Rev. 3 — incident response</a></li>
+      <li><a href="https://sre.google/sre-book/service-level-objectives/">Google SRE — Service Level Objectives</a></li>
       <li><a href="https://opentofu.org/docs/language/settings/backends/s3/">OpenTofu — S3 backend, locking and encryption</a></li>
       <li><a href="https://docs.railway.com/config-as-code/reference">Railway — Config as code reference</a></li>
     </ul>

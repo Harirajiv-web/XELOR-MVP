@@ -40,7 +40,9 @@ function hasWebGL(): boolean {
     // Hand the context straight back. Browsers cap how many may exist at once, and a probe
     // that keeps one alive for the lifetime of the page is a probe that can cost the real
     // scene the context it was probing for.
-    const lose = (gl as WebGLRenderingContext).getExtension("WEBGL_lose_context");
+    const lose = (gl as WebGLRenderingContext).getExtension(
+      "WEBGL_lose_context",
+    );
     lose?.loseContext();
     return true;
   } catch {
@@ -107,7 +109,9 @@ function readChoice(): Choice {
 
 function resolve(c: Choice): "light" | "dark" {
   if (c !== "system") return c;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function apply(c: Choice): void {
@@ -133,7 +137,8 @@ const ICONS: Readonly<Record<Choice, string>> = {
   light:
     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   dark: '<path d="M12 3a6.4 6.4 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
-  system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  system:
+    '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
 };
 const LABELS: Readonly<Record<Choice, string>> = {
   light: "Light",
@@ -168,7 +173,9 @@ function mountToggle(): void {
     // currently looking at, and that is the whole question they would be asking.
     b.setAttribute(
       "aria-label",
-      value === "system" ? `Match my device — currently ${resolve("system")}` : LABELS[value],
+      value === "system"
+        ? `Match my device — currently ${resolve("system")}`
+        : LABELS[value],
     );
     b.innerHTML =
       `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" ` +
@@ -238,7 +245,7 @@ function mountExperienceChrome(): void {
       <span><b>Digital twin online</b><small>PUNE / PLANT 01 / LIVE MODEL</small></span>
     </div>
     <div class="ind-hud-metrics">
-      <span><small>AGENTS</small><b>7 / 7</b></span>
+      <span><small>AGENTS</small><b>8 / 8</b></span>
       <span><small>CONTROL</small><b>HUMAN</b></span>
       <span><small>TRACE</small><b>VERIFIED</b></span>
     </div>
@@ -260,8 +267,14 @@ function mountExperienceChrome(): void {
       if (queued) return;
       queued = true;
       requestAnimationFrame(() => {
-        document.documentElement.style.setProperty("--x-pointer-x", `${x.toFixed(2)}%`);
-        document.documentElement.style.setProperty("--x-pointer-y", `${y.toFixed(2)}%`);
+        document.documentElement.style.setProperty(
+          "--x-pointer-x",
+          `${x.toFixed(2)}%`,
+        );
+        document.documentElement.style.setProperty(
+          "--x-pointer-y",
+          `${y.toFixed(2)}%`,
+        );
         queued = false;
       });
     },
@@ -277,12 +290,21 @@ function mountExperienceChrome(): void {
  */
 function mountDemoAccess(): void {
   if (document.getElementById("ind-demo-access")) return;
-  const form = document.getElementById("kc-form-login") as HTMLFormElement | null;
-  const username = document.getElementById("username") as HTMLInputElement | null;
-  const attemptedUsername = document.getElementById("kc-attempted-username") as HTMLInputElement | null;
-  const password = document.getElementById("password") as HTMLInputElement | null;
+  const form = document.getElementById(
+    "kc-form-login",
+  ) as HTMLFormElement | null;
+  const username = document.getElementById(
+    "username",
+  ) as HTMLInputElement | null;
+  const attemptedUsername = document.getElementById(
+    "kc-attempted-username",
+  ) as HTMLInputElement | null;
+  const password = document.getElementById(
+    "password",
+  ) as HTMLInputElement | null;
   if (!form || !password) return;
-  const submit = document.getElementById("kc-login") as HTMLButtonElement | HTMLInputElement | null;
+  const submit = document.getElementById("kc-login") as
+    HTMLButtonElement | HTMLInputElement | null;
 
   const hint = document.createElement("div");
   hint.id = "ind-demo-access";
@@ -294,7 +316,10 @@ function mountDemoAccess(): void {
   // like a failed login before the presenter has done anything. The fresh ceremony still
   // happens; only that misleading visual notice is removed.
   document.querySelectorAll<HTMLElement>(".pf-v5-c-alert").forEach((notice) => {
-    if (notice.textContent?.toLowerCase().includes("re-authenticate to continue")) notice.remove();
+    if (
+      notice.textContent?.toLowerCase().includes("re-authenticate to continue")
+    )
+      notice.remove();
   });
   const writeCredentials = (user: string, secret: string): void => {
     if (username) username.value = user;
@@ -310,7 +335,9 @@ function mountDemoAccess(): void {
     "spar.supply": "demo",
   };
   const prepareDemoCredentials = (): void => {
-    const requested = (username?.value ?? attemptedUsername?.value ?? "").trim().toLowerCase();
+    const requested = (username?.value ?? attemptedUsername?.value ?? "")
+      .trim()
+      .toLowerCase();
     const selectedPassword = demoPersonas[requested];
     // A blank form is the explicit one-click presenter shortcut. A known persona keeps its
     // own server-side permissions. Unknown input is never elevated into the admin account.
@@ -337,7 +364,12 @@ function mountDemoAccess(): void {
   form.addEventListener(
     "keydown",
     (event) => {
-      if (event.key !== "Enter" || event.isComposing || form.dataset.xelorSubmitting === "true") return;
+      if (
+        event.key !== "Enter" ||
+        event.isComposing ||
+        form.dataset.xelorSubmitting === "true"
+      )
+        return;
       event.preventDefault();
       prepareDemoCredentials();
       form.requestSubmit(submit ?? undefined);

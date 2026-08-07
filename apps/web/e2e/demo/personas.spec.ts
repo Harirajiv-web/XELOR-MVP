@@ -1,6 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const DEPARTMENTS = ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP"] as const;
+const DEPARTMENTS = [
+  "HEXA",
+  "MICA",
+  "SPAR",
+  "AXLE",
+  "KILN",
+  "RASP",
+  "RELAY",
+] as const;
 
 const PERSONAS = [
   {
@@ -40,16 +48,24 @@ const PERSONAS = [
   },
 ] as const;
 
-async function signIn(page: Page, username: string, password: string): Promise<void> {
+async function signIn(
+  page: Page,
+  username: string,
+  password: string,
+): Promise<void> {
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill(username);
   await page.getByRole("textbox", { name: "Password" }).fill(password);
   await page.getByRole("button", { name: "Enter XELOR" }).click();
   await expect(page).toHaveURL(/^http:\/\/localhost:3001\/(?!callback)/);
-  const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
+  const brain = page.getByRole("button", {
+    name: "Enter the factory intelligence",
+  });
   await expect(brain).toBeVisible();
   await brain.click();
-  await expect(page.getByRole("button", { name: /^ONYX Decision Commander/ })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /^ONYX Decision Commander/ }),
+  ).toBeVisible();
 }
 
 test("five real personas see only their departments and the API enforces the same wall", async ({
@@ -76,32 +92,49 @@ test("five real personas see only their departments and the API enforces the sam
       await expect(door).toBeVisible();
       ((await door.isDisabled()) ? restricted : visible).push(code);
     }
-    expect(visible.sort(), `${persona.user} open departments`).toEqual([...persona.open].sort());
+    expect(visible.sort(), `${persona.user} open departments`).toEqual(
+      [...persona.open].sort(),
+    );
 
     const token = await page.evaluate(() => {
       const raw = sessionStorage.getItem("aikyantra.session");
-      return raw ? ((JSON.parse(raw) as { accessToken?: string }).accessToken ?? null) : null;
+      return raw
+        ? ((JSON.parse(raw) as { accessToken?: string }).accessToken ?? null)
+        : null;
     });
     expect(token, `${persona.user} token`).toBeTruthy();
     const headers: Record<string, string> = {
       authorization: `Bearer ${token as string}`,
     };
     const api = {
-      allowed: (await page.request.get(`http://localhost:3001${persona.allowed}`, { headers })).status(),
+      allowed: (
+        await page.request.get(`http://localhost:3001${persona.allowed}`, {
+          headers,
+        })
+      ).status(),
       denied: persona.denied
-        ? (await page.request.get(`http://localhost:3001${persona.denied}`, { headers })).status()
+        ? (
+            await page.request.get(`http://localhost:3001${persona.denied}`, {
+              headers,
+            })
+          ).status()
         : null,
     };
     expect(api.allowed, `${persona.user} own API`).toBe(200);
-    if (persona.denied) expect(api.denied, `${persona.user} foreign API`).toBe(403);
+    if (persona.denied)
+      expect(api.denied, `${persona.user} foreign API`).toBe(403);
 
     const forbidden = DEPARTMENTS.find(
       (code) => !(persona.open as readonly string[]).includes(code),
     );
     if (forbidden) {
       await page.goto(`/department/${forbidden}`);
-      await expect(page.getByRole("heading", { name: "Access restricted" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Back to ONYX" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Access restricted" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Back to ONYX" }),
+      ).toBeVisible();
     }
 
     expect(errors, `${persona.user} browser errors`).toEqual([]);

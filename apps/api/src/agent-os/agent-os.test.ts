@@ -82,6 +82,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
   assert.equal(keys.has("quality.evidence.collect"), true);
   assert.equal(keys.has("quality.capa-plan.draft"), true);
   assert.equal(keys.has("quality.audit-pack.draft"), true);
+  assert.equal(keys.has("managed-services.service-assurance.read"), true);
   assert.equal(
     listed.filter((capability) => capability.sideEffecting).length,
     1,
@@ -110,7 +111,9 @@ test("Working Capital and QMS missions are bounded, verified and human-gated", (
     );
     assert.equal(
       graph.nodes.some(
-        (node) => node.kind === "capability" && node.capabilityKey === "agent.action.dispatch",
+        (node) =>
+          node.kind === "capability" &&
+          node.capabilityKey === "agent.action.dispatch",
       ),
       false,
     );
@@ -123,9 +126,7 @@ test("Phase 3 connects all agents and places every execute node after one human 
   );
   assert.equal(validateAgentGraph(graph).valid, true);
   const participating = new Set(
-    graph.nodes.flatMap((node) =>
-      "agentKey" in node ? [node.agentKey] : [],
-    ),
+    graph.nodes.flatMap((node) => ("agentKey" in node ? [node.agentKey] : [])),
   );
   assert.deepEqual([...participating].sort(), [...AGENT_KEYS].sort());
   const approval = graph.nodes.find(
@@ -137,7 +138,7 @@ test("Phase 3 connects all agents and places every execute node after one human 
       node.kind === "capability" &&
       node.capabilityKey === "agent.action.dispatch",
   );
-  assert.equal(dispatches.length, 6);
+  assert.equal(dispatches.length, 7);
   assert.equal(
     dispatches.every((node) =>
       node.dependsOn.includes("human-action-approval"),
@@ -152,14 +153,39 @@ test("Phase 2 command review connects ONYX to every specialist agent", () => {
   );
   assert.equal(validateAgentGraph(graph).valid, true);
   const participating = new Set(
-    graph.nodes.flatMap((node) =>
-      "agentKey" in node ? [node.agentKey] : [],
-    ),
+    graph.nodes.flatMap((node) => ("agentKey" in node ? [node.agentKey] : [])),
   );
   assert.deepEqual([...participating].sort(), [...AGENT_KEYS].sort());
   assert.equal(
     graph.nodes.filter((node) => node.kind === "capability").length,
-    6,
+    7,
+  );
+});
+
+test("RELAY service assurance is bounded, verified and human-gated", () => {
+  const graph = new GraphRegistryService().get(
+    "managed-services.assurance-review",
+  );
+  assert.equal(validateAgentGraph(graph).valid, true);
+  assert.equal(
+    graph.nodes.some((node) => "agentKey" in node && node.agentKey === "RELAY"),
+    true,
+  );
+  assert.equal(
+    graph.nodes.some(
+      (node) =>
+        node.kind === "capability" &&
+        node.capabilityKey === "agent.action.dispatch",
+    ),
+    false,
+  );
+  assert.equal(
+    graph.nodes.some((node) => node.kind === "verification"),
+    true,
+  );
+  assert.equal(
+    graph.nodes.some((node) => node.kind === "approval"),
+    true,
   );
 });
 
@@ -187,26 +213,68 @@ test("offline reasoner reports deterministic mode and evidence rather than hidde
 test("commander retries keep one fingerprint even when observation timestamps move", async () => {
   const fingerprints: string[] = [];
   let observation = 0;
-  const graph = new GraphRegistryService().get("operations.controlled-action-mission");
+  const graph = new GraphRegistryService().get(
+    "operations.controlled-action-mission",
+  );
   const repository = {
     create: async (input: { requestFingerprint: string }) => {
       fingerprints.push(input.requestFingerprint);
-      return { runId: "0192a8c0-0059-7000-8000-000000000099", replayed: fingerprints.length > 1 };
+      return {
+        runId: "0192a8c0-0059-7000-8000-000000000099",
+        replayed: fingerprints.length > 1,
+      };
     },
   };
   const engine = {
     execute: async () => ({
-      run: { id: "0192a8c0-0059-7000-8000-000000000099", status: "waiting_approval" },
-      nodes: [], approvals: [], events: [], checkpoints: [],
+      run: {
+        id: "0192a8c0-0059-7000-8000-000000000099",
+        status: "waiting_approval",
+      },
+      nodes: [],
+      approvals: [],
+      events: [],
+      checkpoints: [],
     }),
   };
   const decisions = {
     risk: async () => ({
-      key: "delivery:so-1", kind: "delivery", severity: "high", title: "SO-1", plainSummary: "Customer date needs review.", ownerAgent: "MICA", status: "needs_decision",
-      commitmentDate: "2026-08-04", daysToCommitment: 1,
-      exposure: { amount: 100, currency: "INR", basis: "Order value." }, causes: ["Supply is short."], recoveryOptions: [],
-      evidence: [{ domain: "sales", entityType: "sales_order", entityId: "so-1", reference: "SO-1", label: "Order", detail: "Open", observedAt: new Date(Date.now() + observation++).toISOString() }],
-      confidence: { score: 70, band: "medium", meaning: "Evidence confidence.", dimensions: { evidenceCoverage: 60, freshness: 100, completeness: 75, learningHistory: 50 }, strengths: [], gaps: [] },
+      key: "delivery:so-1",
+      kind: "delivery",
+      severity: "high",
+      title: "SO-1",
+      plainSummary: "Customer date needs review.",
+      ownerAgent: "MICA",
+      status: "needs_decision",
+      commitmentDate: "2026-08-04",
+      daysToCommitment: 1,
+      exposure: { amount: 100, currency: "INR", basis: "Order value." },
+      causes: ["Supply is short."],
+      recoveryOptions: [],
+      evidence: [
+        {
+          domain: "sales",
+          entityType: "sales_order",
+          entityId: "so-1",
+          reference: "SO-1",
+          label: "Order",
+          detail: "Open",
+          observedAt: new Date(Date.now() + observation++).toISOString(),
+        },
+      ],
+      confidence: {
+        score: 70,
+        band: "medium",
+        meaning: "Evidence confidence.",
+        dimensions: {
+          evidenceCoverage: 60,
+          freshness: 100,
+          completeness: 75,
+          learningHistory: 50,
+        },
+        strengths: [],
+        gaps: [],
+      },
     }),
     persistRiskEvidence: async () => undefined,
   };

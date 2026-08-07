@@ -8,13 +8,17 @@ import { createPortal } from "react-dom";
 import { cn } from "../ui/cn";
 import { demoScenarios, type DemoScenario } from "./demo-scenarios";
 import { buildPresenterSnapshot } from "./demo-presenter";
+import {
+  DEMO_RECORD_CREATED_EVENT,
+  type DemoRecordCreatedDetail,
+} from "./demo-events";
 
 interface SpotlightBox {
   left: number;
   top: number;
   width: number;
   height: number;
-  target: "record" | "workspace" | "screen";
+  target: "action" | "record" | "workspace" | "screen";
 }
 
 function ScenarioIcon({ name, className }: { name: string; className?: string }) {
@@ -32,6 +36,9 @@ export function DemoLauncher(): React.JSX.Element {
   const [stepIndex, setStepIndex] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [spotlight, setSpotlight] = useState<SpotlightBox | null>(null);
+  const [completedInteractions, setCompletedInteractions] = useState<
+    Record<string, DemoRecordCreatedDetail>
+  >({});
 
   const selected = useMemo(
     () => demoScenarios.find((scenario) => scenario.id === selectedId) ?? demoScenarios[0],
@@ -42,9 +49,14 @@ export function DemoLauncher(): React.JSX.Element {
     [activeId],
   );
   const step = active?.steps[stepIndex];
-  const fullScaleCount = demoScenarios.filter((scenario) => scenario.scale === "full").length;
+  const isAgentTour = active?.kind === "agent-tour";
+  const interactionKey = active && step ? `${active.id}:${stepIndex}` : null;
+  const completedInteraction = interactionKey
+    ? completedInteractions[interactionKey]
+    : undefined;
+  const interactionReady = !step?.interaction || Boolean(completedInteraction);
   const simpleStepLine = step ? `${step.body.split(/(?<=[.!?])\s/)[0] ?? step.body}` : "";
-  const demoRecord: NonNullable<DemoScenario["demoRecord"]> | null = active
+  const demoRecord: NonNullable<DemoScenario["demoRecord"]> | null = active && !isAgentTour
     ? active.demoRecord ?? {
         reference: `DEMO-${active.id.toUpperCase().replace(/[^A-Z0-9]+/g, "-").slice(0, 20)}`,
         subject: active.title,
@@ -61,6 +73,20 @@ export function DemoLauncher(): React.JSX.Element {
     ? active.steps.slice(Math.max(0, stepIndex - 2), Math.min(active.steps.length, stepIndex + 2))
     : [];
 
+  useEffect(() => {
+    const recordCreated = (event: Event): void => {
+      if (!active || !step?.interaction) return;
+      const detail = (event as CustomEvent<DemoRecordCreatedDetail>).detail;
+      if (!detail || detail.kind !== step.interaction.recordKind) return;
+      setCompletedInteractions((current) => ({
+        ...current,
+        [`${active.id}:${stepIndex}`]: detail,
+      }));
+    };
+    window.addEventListener(DEMO_RECORD_CREATED_EVENT, recordCreated);
+    return () => window.removeEventListener(DEMO_RECORD_CREATED_EVENT, recordCreated);
+  }, [active, step, stepIndex]);
+
   /**
    * Point the presenter at evidence already visible on the destination screen. A real row
    * wins; while data loads (or on a card-only screen), the surrounding workspace or page
@@ -72,21 +98,28 @@ export function DemoLauncher(): React.JSX.Element {
       setSpotlight(null);
       return;
     }
+    const actionCandidates = step?.interaction
+      ? [...main.querySelectorAll<HTMLElement>('[data-demo-target="action"]')]
+      : [];
     const candidates = [
+      ...actionCandidates,
       ...main.querySelectorAll<HTMLElement>('[data-demo-target="record"]'),
       ...main.querySelectorAll<HTMLElement>('[data-demo-target="workspace"]'),
       ...main.querySelectorAll<HTMLElement>('[data-demo-target="screen"]'),
       ...main.querySelectorAll<HTMLElement>(".x-workspace-page"),
     ];
-    const target = candidates.find((candidate) => {
+    const visibleTarget = candidates.find((candidate) => {
       const rect = candidate.getBoundingClientRect();
       return rect.width > 40 && rect.height > 18 && rect.bottom > 64 && rect.top < window.innerHeight;
-    }) ?? candidates[0];
+    });
+    const target = visibleTarget ?? candidates[0];
     if (!target) {
       setSpotlight(null);
       return;
     }
-    if (bringIntoView) target.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (bringIntoView || (isAgentTour && !visibleTarget)) {
+      target.scrollIntoView({ behavior: bringIntoView ? "smooth" : "auto", block: "center" });
+    }
     window.requestAnimationFrame(() => {
       const rect = target.getBoundingClientRect();
       const targetName = target.dataset.demoTarget;
@@ -95,10 +128,13 @@ export function DemoLauncher(): React.JSX.Element {
         top: Math.max(64, rect.top - 4),
         width: Math.min(window.innerWidth - Math.max(4, rect.left - 4) - 4, rect.width + 8),
         height: Math.min(window.innerHeight - Math.max(64, rect.top - 4) - 4, rect.height + 8),
-        target: targetName === "record" || targetName === "workspace" ? targetName : "screen",
+        target:
+          targetName === "action" || targetName === "record" || targetName === "workspace"
+            ? targetName
+            : "screen",
       });
     });
-  }, []);
+  }, [isAgentTour, step?.interaction]);
 
   useEffect(() => {
     if (!active || !step) {
@@ -122,6 +158,7 @@ export function DemoLauncher(): React.JSX.Element {
     setActiveId(scenario.id);
     setStepIndex(0);
     setDetailsOpen(false);
+    setCompletedInteractions({});
     setPickerOpen(false);
     const first = scenario.steps[0];
     if (first) router.push(first.path);
@@ -136,6 +173,7 @@ export function DemoLauncher(): React.JSX.Element {
 
   const move = (nextIndex: number): void => {
     if (!active) return;
+    if (nextIndex > stepIndex && !interactionReady) return;
     const next = active.steps[nextIndex];
     if (!next) return;
     setStepIndex(nextIndex);
@@ -192,9 +230,9 @@ export function DemoLauncher(): React.JSX.Element {
                   <span className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.13em]">
                     <Icons.Presentation className="h-3 w-3" aria-hidden /> Guided presenter mode
                   </span>
-                  <Dialog.Title className="text-[25px] font-bold tracking-[-.025em]">Choose a story to demonstrate</Dialog.Title>
+                  <Dialog.Title className="text-[25px] font-bold tracking-[-.025em]">Choose a demo</Dialog.Title>
                   <Dialog.Description id="demo-picker-description" className="mt-1 max-w-2xl text-[13px] leading-5 text-blue-100">
-                    Follow the seeded Northstar order through live XELOR screens, governed reasoning and a human approval. The guide navigates; it never fabricates or changes a business result.
+                    Choose the real factory story for a non-technical audience, or the separate agent tour for a simple explanation of all eight agents and their connections.
                   </Dialog.Description>
                 </div>
                 <Dialog.Close className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close demo chooser">
@@ -206,8 +244,8 @@ export function DemoLauncher(): React.JSX.Element {
             <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1.55fr)_minmax(310px,.85fr)]">
               <div className="overflow-y-auto p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="text-[11px] font-bold uppercase tracking-[.13em] text-[var(--text-muted)]">One canonical journey · {demoScenarios[0]?.steps.length ?? 0} evidence-linked acts</p>
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600"><Icons.ShieldCheck className="h-3.5 w-3.5" aria-hidden /> Seeded live records</span>
+                  <p className="text-[11px] font-bold uppercase tracking-[.13em] text-[var(--text-muted)]">Two separate presenter modes</p>
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600"><Icons.ShieldCheck className="h-3.5 w-3.5" aria-hidden /> User-controlled Next steps</span>
                 </div>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {demoScenarios.map((scenario, index) => {
@@ -217,18 +255,20 @@ export function DemoLauncher(): React.JSX.Element {
                       {index === 0 ? (
                         <div className="col-span-full mb-0.5 flex items-center gap-2 rounded-[11px] border border-violet-500/18 bg-violet-500/8 px-3 py-2">
                           <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-violet-600 text-white"><Icons.Route className="h-3.5 w-3.5" aria-hidden /></span>
-                          <span><b className="block text-[11px] text-[var(--text-primary)]">Canonical investor journey</b><span className="block text-[9.5px] text-[var(--text-muted)]">One live commitment across the entire company.</span></span>
+                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 1 · Real factory journey</b><span className="block text-[9.5px] text-[var(--text-muted)]">Create real demo orders, then follow the customer promise.</span></span>
                         </div>
-                      ) : null}
-                      {index === fullScaleCount ? (
-                        <div className="col-span-full mt-2 flex items-center gap-2"><span className="h-px flex-1 bg-[var(--border-subtle)]" /><span className="text-[9.5px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">Focused 6-step demos</span><span className="h-px flex-1 bg-[var(--border-subtle)]" /></div>
+                      ) : index === 1 ? (
+                        <div className="col-span-full mt-2 flex items-center gap-2 rounded-[11px] border border-teal-500/18 bg-teal-500/8 px-3 py-2">
+                          <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-teal-700 text-white"><Icons.Network className="h-3.5 w-3.5" aria-hidden /></span>
+                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 2 · Meet the agents</b><span className="block text-[9.5px] text-[var(--text-muted)]">Eight headings, eight simple roles, no transaction detail.</span></span>
+                        </div>
                       ) : null}
                       <button
                         type="button"
                         onClick={() => setSelectedId(scenario.id)}
                         className={cn(
                           "group flex min-h-[112px] items-start gap-3 rounded-[14px] border p-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]",
-                          scenario.scale === "full" && "sm:col-span-2 min-h-[122px]",
+                          "sm:col-span-2 min-h-[122px]",
                           chosen
                             ? "border-[var(--brand)] bg-[var(--brand-soft)] shadow-[0_8px_22px_rgba(37,99,235,.09)]"
                             : "border-[var(--border-subtle)] bg-[var(--surface)] hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)]",
@@ -240,7 +280,7 @@ export function DemoLauncher(): React.JSX.Element {
                         </span>
                         <span className="min-w-0">
                           <span className="mb-1 flex items-center gap-2 text-[9.5px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]"><span>{String(index + 1).padStart(2, "0")}</span><span>·</span><span className="truncate">{scenario.category}</span></span>
-                          <span className="flex items-center gap-2 text-[13px] font-bold leading-[1.25] text-[var(--text-primary)]">{scenario.title}{scenario.scale === "full" ? <span className="shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.08em] text-white">End to end</span> : null}</span>
+                          <span className="flex items-center gap-2 text-[13px] font-bold leading-[1.25] text-[var(--text-primary)]">{scenario.title}<span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-[.08em] text-white", scenario.kind === "agent-tour" ? "bg-teal-700" : "bg-violet-600")}>{scenario.kind === "agent-tour" ? "Agent overview" : "Live workflow"}</span></span>
                           <span className="mt-1.5 line-clamp-2 block text-[11px] leading-4 text-[var(--text-muted)]">{scenario.problem}</span>
                         </span>
                       </button>
@@ -258,9 +298,9 @@ export function DemoLauncher(): React.JSX.Element {
                       <div><p className="text-[15px] font-bold leading-5 text-[var(--text-primary)]">{selected.title}</p><p className="mt-1 text-[10.5px] font-semibold text-[var(--text-muted)]">{selected.duration} · {selected.steps.length} guided steps</p></div>
                     </div>
                     <div className="space-y-3 text-[11.5px] leading-[1.55]">
-                      <div><p className="mb-1 font-bold text-[var(--text-primary)]">The situation</p><p className="text-[var(--text-secondary)]">{selected.problem}</p></div>
-                      <div><p className="mb-1 font-bold text-[var(--text-primary)]">The decision</p><p className="text-[var(--text-secondary)]">{selected.decision}</p></div>
-                      <div className="rounded-[12px] border border-emerald-500/20 bg-emerald-500/8 p-3"><p className="mb-1 flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400"><Icons.Target className="h-3.5 w-3.5" aria-hidden /> Expected outcome</p><p className="text-[var(--text-secondary)]">{selected.outcome}</p></div>
+                      <div><p className="mb-1 font-bold text-[var(--text-primary)]">{selected.kind === "agent-tour" ? "What this demo explains" : "The real-life situation"}</p><p className="text-[var(--text-secondary)]">{selected.problem}</p></div>
+                      <div><p className="mb-1 font-bold text-[var(--text-primary)]">{selected.kind === "agent-tour" ? "How it works" : "What you will show"}</p><p className="text-[var(--text-secondary)]">{selected.decision}</p></div>
+                      <div className="rounded-[12px] border border-emerald-500/20 bg-emerald-500/8 p-3"><p className="mb-1 flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400"><Icons.Target className="h-3.5 w-3.5" aria-hidden /> What the viewer understands</p><p className="text-[var(--text-secondary)]">{selected.outcome}</p></div>
                     </div>
                     <ol className="my-5 space-y-2 border-l border-[var(--border-strong)] pl-4">
                       {selected.steps.map((item, index) => <li key={`${item.path}-${index}`} className="relative text-[10.5px] leading-4 text-[var(--text-muted)]"><span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-[var(--brand)] ring-2 ring-[var(--bg)]" /><b className="text-[var(--text-secondary)]">{item.phase}</b> · {item.title}</li>)}
@@ -268,7 +308,7 @@ export function DemoLauncher(): React.JSX.Element {
                     <div className="mt-auto">
                       {active ? <p className="mb-2 text-center text-[10.5px] font-semibold text-amber-600">Starting this story replaces the current demo.</p> : null}
                       <button type="button" onClick={() => start(selected)} className="btn btn-primary w-full justify-center" data-testid="start-selected-demo"><Icons.Play className="h-3.5 w-3.5 fill-current" aria-hidden /> Start this demo</button>
-                      <p className="mt-2 text-center text-[9.5px] leading-4 text-[var(--text-muted)]">Stop or finish at any time. Normal platform use resumes instantly.</p>
+                      <p className="mt-2 text-center text-[9.5px] leading-4 text-[var(--text-muted)]">The guide advances only when you press Next. In the factory story, order steps also wait for a successful save.</p>
                     </div>
                   </div>
                 ) : null}
@@ -280,9 +320,9 @@ export function DemoLauncher(): React.JSX.Element {
 
       {active && step ? createPortal(
         <>
-        {spotlight && presenterSnapshot ? (
+        {spotlight ? (
           <div
-            className="pointer-events-none fixed z-[75] rounded-[10px] border-2 border-cyan-400 shadow-[0_0_0_4px_rgba(34,211,238,.14),0_0_28px_rgba(34,211,238,.3)] transition-[left,top,width,height] duration-300"
+            className="x-demo-spotlight pointer-events-none fixed z-[75] rounded-[10px] border-2 border-cyan-400 shadow-[0_0_0_4px_rgba(34,211,238,.14),0_0_28px_rgba(34,211,238,.3)] transition-[left,top,width,height,opacity] duration-300"
             style={{ left: spotlight.left, top: spotlight.top, width: spotlight.width, height: spotlight.height }}
             data-testid="demo-screen-spotlight"
             data-target-kind={spotlight.target}
@@ -297,14 +337,20 @@ export function DemoLauncher(): React.JSX.Element {
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400" />
               </span>
               <span className="shrink-0 text-[8.5px] font-extrabold uppercase tracking-[.11em] text-cyan-300">Show this</span>
-              <span className="truncate text-[10.5px] font-semibold text-slate-100">{presenterSnapshot.headline}</span>
+              <span className="truncate text-[10.5px] font-semibold text-slate-100">{presenterSnapshot?.headline ?? `${step.agents[0] ?? "Agent"} role and connections`}</span>
             </div>
           </div>
         ) : null}
         <section
           className={cn(
-            "fixed bottom-3 right-3 z-[90] w-[min(520px,calc(100vw-24px))] overflow-hidden rounded-[16px] border border-white/10 bg-[#0b1426]/96 text-white shadow-[0_20px_60px_rgba(2,8,23,.4)] backdrop-blur-xl transition-[max-height,width] duration-200 sm:bottom-4 sm:right-4",
-            detailsOpen ? "max-h-[calc(100vh-88px)]" : "max-h-[190px]",
+            "x-demo-dock fixed bottom-3 right-3 z-[90] w-[min(520px,calc(100vw-24px))] overflow-hidden rounded-[16px] border border-white/10 bg-[#0b1426]/96 text-white shadow-[0_20px_60px_rgba(2,8,23,.4)] backdrop-blur-xl transition-[max-height,width,opacity,transform] duration-200 sm:bottom-4 sm:right-4",
+            detailsOpen
+              ? "max-h-[calc(100vh-88px)]"
+              : step.interaction
+                ? "max-h-[270px]"
+                : isAgentTour
+                  ? "max-h-[220px]"
+                  : "max-h-[190px]",
           )}
           aria-label="Active guided demo"
           data-testid="active-demo-dock"
@@ -315,15 +361,15 @@ export function DemoLauncher(): React.JSX.Element {
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] text-white" style={{ background: `linear-gradient(135deg, ${active.accent}, #334155)` }}><ScenarioIcon name={active.icon} className="h-3.5 w-3.5" /></span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2"><span className="text-[9px] font-extrabold uppercase tracking-[.1em] text-sky-300">{step.phase}</span><span className="truncate text-[11px] font-bold">{step.title}</span><span className="ml-auto shrink-0 text-[9px] font-semibold text-slate-400">{stepIndex + 1} of {active.steps.length}</span></div>
-                <p className="mt-0.5 truncate text-[9px] text-slate-500"><span className="font-semibold text-emerald-300">Live ERP evidence · guide makes no writes</span><span> · {active.title}</span></p>
+                <p className="mt-0.5 truncate text-[9px] text-slate-500"><span className="font-semibold text-emerald-300">{isAgentTour ? "High-level agent overview" : "Real ERP screens · guide never saves for you"}</span><span> · {active.title}</span></p>
               </div>
-              <button type="button" onClick={() => setDetailsOpen((open) => !open)} className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] text-slate-300 transition hover:bg-white/10 hover:text-white" aria-expanded={detailsOpen} aria-label={detailsOpen ? "Minimize demo guide" : "Expand demo guide"}>{detailsOpen ? <Icons.ChevronDown className="h-4 w-4" /> : <Icons.PanelTopOpen className="h-4 w-4" />}</button>
+              {!isAgentTour ? <button type="button" onClick={() => setDetailsOpen((open) => !open)} className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] text-slate-300 transition hover:bg-white/10 hover:text-white" aria-expanded={detailsOpen} aria-label={detailsOpen ? "Minimize demo guide" : "Expand demo guide"}>{detailsOpen ? <Icons.ChevronDown className="h-4 w-4" /> : <Icons.PanelTopOpen className="h-4 w-4" />}</button> : null}
               <button type="button" onClick={stop} className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-red-300/20 bg-red-400/10 text-red-200 transition hover:bg-red-400/20" data-testid="stop-demo" aria-label="Stop demo"><Icons.X className="h-3.5 w-3.5" aria-hidden /></button>
             </div>
 
-            <p className="mt-2 line-clamp-2 text-[10.5px] font-semibold leading-4 text-slate-100" data-testid="demo-simple-explanation"><span className="mr-1 text-sky-300">What’s happening:</span>{simpleStepLine}</p>
+            <p className={cn("mt-2 text-[10.5px] font-semibold leading-4 text-slate-100", isAgentTour ? "line-clamp-4" : "line-clamp-2")} data-testid="demo-simple-explanation"><span className="mr-1 text-sky-300">{isAgentTour ? "What this agent does:" : "What’s happening:"}</span>{isAgentTour ? step.body : simpleStepLine}</p>
 
-            {presenterSnapshot ? (
+            {!isAgentTour && presenterSnapshot ? (
               <button
                 type="button"
                 onClick={() => locateEvidence(true)}
@@ -338,18 +384,45 @@ export function DemoLauncher(): React.JSX.Element {
               </button>
             ) : null}
 
+            {step.interaction ? (
+              <div
+                className={cn(
+                  "mt-2 rounded-[9px] border px-2.5 py-2 text-[9.5px] leading-4",
+                  completedInteraction
+                    ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100"
+                    : "border-amber-300/25 bg-amber-400/10 text-amber-100",
+                )}
+                data-testid="demo-manual-action"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="flex items-start gap-2">
+                  {completedInteraction ? <Icons.CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden /> : <Icons.MousePointerClick className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />}
+                  <span><b>{completedInteraction ? `${completedInteraction.reference} saved.` : "Your turn—this step will wait."}</b> {completedInteraction ? "Show the saved document, then press Next." : step.interaction.instruction}</span>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mt-2 flex items-center gap-2" data-testid="demo-live-record">
-              <span className="min-w-0 flex-1 truncate text-[9px] text-slate-400"><b className="text-emerald-300">{active.evidenceMode === "live" ? "Live seeded case" : "Illustrative case"}</b>{demoRecord ? ` · ${demoRecord.reference} · ${demoRecord.subject}` : ""}</span>
+              <span className="min-w-0 flex-1 truncate text-[9px] text-slate-400">{isAgentTour ? <><b className="text-teal-300">Connection:</b>{` ${step.connectionLine ?? step.presenterLine}`}</> : <><b className="text-emerald-300">Live Northstar case</b>{demoRecord ? ` · ${demoRecord.reference} · ${demoRecord.subject}` : ""}</>}</span>
               <button type="button" disabled={stepIndex === 0} onClick={() => move(stepIndex - 1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] border border-white/10 text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30" aria-label="Previous demo step"><Icons.ArrowLeft className="h-3.5 w-3.5" aria-hidden /></button>
               {stepIndex === active.steps.length - 1 ? (
                 <button type="button" onClick={stop} className="inline-flex h-8 shrink-0 items-center gap-1 rounded-[8px] bg-emerald-500 px-3 text-[9.5px] font-extrabold text-white transition hover:bg-emerald-400" data-testid="finish-demo"><Icons.Check className="h-3 w-3" aria-hidden /> Finish</button>
               ) : (
-                <button type="button" onClick={() => move(stepIndex + 1)} className="inline-flex h-8 shrink-0 items-center gap-1 rounded-[8px] bg-blue-600 px-3 text-[9.5px] font-extrabold text-white transition hover:bg-blue-500" data-testid="next-demo-step">Next <Icons.ArrowRight className="h-3 w-3" aria-hidden /></button>
+                <button
+                  type="button"
+                  onClick={() => move(stepIndex + 1)}
+                  disabled={!interactionReady}
+                  className="inline-flex h-8 shrink-0 items-center gap-1 rounded-[8px] bg-blue-600 px-3 text-[9.5px] font-extrabold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+                  data-testid="next-demo-step"
+                >
+                  {interactionReady ? "Next" : "Save the order first"} {interactionReady ? <Icons.ArrowRight className="h-3 w-3" aria-hidden /> : null}
+                </button>
               )}
             </div>
           </div>
 
-          {detailsOpen ? (
+          {detailsOpen && !isAgentTour ? (
             <div className="max-h-[calc(100vh-285px)] overflow-y-auto border-t border-white/8 bg-white/[.035] px-3.5 py-3">
               <div className="flex items-center justify-between gap-2"><span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-[.09em] text-emerald-300">{active.evidenceMode === "live" ? "Live seeded ERP evidence" : "Illustrative narration"}</span><span className="text-[8.5px] text-slate-500">Guide navigation changes no record</span></div>
               {presenterSnapshot ? (

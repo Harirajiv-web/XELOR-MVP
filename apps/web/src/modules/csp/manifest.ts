@@ -70,7 +70,7 @@ function ticketFacts(data: unknown): TicketFact[] | null {
 }
 
 /**
- * SERVICE / CSP (MICA, Module 08).
+ * CUSTOMER CARE & WARRANTY / CSP (MICA, Module 08).
  *
  * The whole module is this folder. Delete it and remove one line from
  * `src/modules/registry.ts`, and the application compiles, runs, and has one fewer item in
@@ -89,30 +89,31 @@ function ticketFacts(data: unknown): TicketFact[] | null {
  */
 export const cspManifest: ModuleManifest = {
   key: "csp",
-  name: "Service",
-  summary: "Service tickets, their SLA clocks, spare requests and what customers said afterwards.",
+  name: "Customer Care & Warranty",
+  summary:
+    "After-sales product cases, warranty and AMC cover, spare requests and customer feedback. XELOR platform incidents belong to RELAY.",
   department: "MICA",
   icon: "Headset",
   licenceKey: "csp",
   order: 50,
   nav: [
     {
-      label: "Tickets",
+      label: "Product cases",
       path: "tickets",
       permission: "csp.ticket.read",
       icon: "Ticket",
       description:
-        "Every service request the desk is holding, with the clock the customer was promised. The clock starts when the customer called, not when somebody got round to typing it in — so a ticket entered late is already showing time spent, which is the honest figure.",
+        "Every after-sales case about a manufactured product, with the response target promised to the customer. XELOR application, integration and AI incidents are handled by RELAY instead.",
     },
     {
-      label: "Ticket",
+      label: "Product case",
       path: "ticket",
       permission: "csp.ticket.read",
       icon: "Ticket",
       hidden: true,
     },
     {
-      label: "Spare requests",
+      label: "Spares & warranty",
       path: "spares",
       permission: "csp.ticket.read",
       icon: "PackageSearch",
@@ -120,20 +121,20 @@ export const cspManifest: ModuleManifest = {
         "Parts asked for on service jobs, with the entitlement engine's verdict on whether the customer pays or the warranty does. The verdict is worked out from the contract dates and the part, not decided by whoever raised the request.",
     },
     {
-      label: "Service dashboard",
+      label: "Product care dashboard",
       path: "dashboard",
       permission: "csp.dashboard.read",
       icon: "Gauge",
       description:
-        "How the desk is doing right now: what is open, what is past its promise, what keeps breaking, and how often the assistant's suggestions have to be corrected. That last figure is deliberately on the same screen as the rest — a suggestion engine nobody is scoring is a suggestion engine nobody should trust.",
+        "How after-sales product care is doing: open cases, missed response targets, repeat product problems and how often AI suggestions need correction.",
     },
     {
-      label: "Customer satisfaction",
+      label: "Customer feedback",
       path: "csat",
       permission: "csp.dashboard.read",
       icon: "Smile",
       description:
-        "What customers said after their ticket was closed, how many of them bothered to reply, and how many low scores are still waiting on somebody. The response rate is shown beside the score because an excellent average from four replies is not an excellent service.",
+        "What customers said after a product case was closed, including response rate and low scores that still need follow-up.",
     },
   ],
   screens: {
@@ -164,7 +165,7 @@ export const cspManifest: ModuleManifest = {
    */
   signals: [
     {
-      label: "Open tickets",
+      label: "Open product cases",
       permission: "csp.ticket.read",
       path: "/csp/tickets",
       query: { status: OPEN_STATUSES },
@@ -225,7 +226,7 @@ export const cspManifest: ModuleManifest = {
         const series = [...counts.entries()]
           .sort(([la, ca], [lb, cb]) => severity(la) - severity(lb) || cb - ca)
           .map(([label, value]) => ({ label, value }));
-        return { value: String(rows.length), hint: "open tickets", series };
+        return { value: String(rows.length), hint: "open product cases", series };
       },
     },
   ],

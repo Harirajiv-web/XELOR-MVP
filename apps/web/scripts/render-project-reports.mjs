@@ -61,7 +61,7 @@ try {
           .join(", ")}\n`,
       );
     }
-    const proofPattern = /Module atlas|Module maturity|Transaction ownership|Railway demo|Public demo deployment|Agent-to-module|Exact capability|Coordination, deployment|Target production architecture|Pull-request CI pipeline|Release sequence|Database change pipeline|Identity, authorization|How to implement one XELOR module|Backend developer implementation guide|Full-stack and frontend implementation guide|Developer review|Cross-functional review|Exact developer command runbook/;
+    const proofPattern = /Module atlas|Module maturity|Transaction ownership|Railway demo|Public demo deployment|Agent-to-module|Exact capability|Coordination, deployment|Managed.service|RELAY|The two investor demos|Target production architecture|Pull-request CI pipeline|Release sequence|Database change pipeline|Identity, authorization|How to implement one XELOR module|Backend developer implementation guide|Full-stack and frontend implementation guide|Developer review|Cross-functional review|Exact developer command runbook/;
     for (const section of sections.filter((item) => proofPattern.test(item.title))) {
       const slug = section.title
         .toLowerCase()

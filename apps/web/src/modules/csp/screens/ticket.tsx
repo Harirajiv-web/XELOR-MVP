@@ -36,8 +36,8 @@ export default function TicketScreen({ params }: ScreenProps): React.JSX.Element
   if (!ticketNo) {
     return (
       <Empty
-        title="No ticket chosen"
-        body="Open a ticket from the queue to see its clock, its conversation and everything that has happened to it."
+        title="No product case chosen"
+        body="Open a product case to see its response clock, conversation, warranty context and history."
         action={<BackLink />}
       />
     );
@@ -59,7 +59,7 @@ export default function TicketScreen({ params }: ScreenProps): React.JSX.Element
         subtitle={t.subject}
         meta={[
           { label: "Status", value: <StatusBadge status={t.status} /> },
-          { label: "SLA", value: <StatusBadge tone={slaTone(clock.state)} label={clock.chip.label} /> },
+          { label: "Response target", value: <StatusBadge tone={slaTone(clock.state)} label={clock.chip.label} /> },
           { label: "Priority", value: humanise(t.priority) },
           ...(t.reopenCount > 0 ? [{ label: "Reopened", value: `${t.reopenCount}×` }] : []),
         ]}
@@ -224,7 +224,7 @@ function BackLink(): React.JSX.Element {
       className="inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
     >
       <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-      All tickets
+      All product cases
     </Link>
   );
 }

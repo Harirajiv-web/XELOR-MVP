@@ -16,6 +16,8 @@ const PUBLIC_DEMO_PERMISSIONS = [
   ),
   // The investor presenter is the isolated demo tenant's control-room operator. These
   // mutation permissions are still enforced again by the API against the seeded admin.
+  "sales.order.create",
+  "purchase.po.create",
   "agentos.run.operate",
   "agentos.approval.decide",
   "aiops.killswitch.operate",

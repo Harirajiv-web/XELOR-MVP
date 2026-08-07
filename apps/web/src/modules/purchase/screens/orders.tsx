@@ -15,6 +15,7 @@ import type { ScreenProps } from "@spine/registry/manifest";
 import type { PoSummaryRow } from "../api";
 import { purchaseApi, isLate } from "../api";
 import { NewPurchaseOrderModal } from "../components/new-purchase-order";
+import { announceDemoRecordCreated } from "@spine/demo/demo-events";
 
 /**
  * PURCHASE ORDERS — the list a plant manager opens to answer one question: what is
@@ -172,7 +173,12 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
           // but offering a Raise button to a stores clerk who cannot use it wastes a decision
           // they were never allowed to make.
           <Can permission="purchase.po.create">
-            <button type="button" className="btn btn-pri" onClick={() => setCreating(true)}>
+            <button
+              type="button"
+              className="btn btn-pri"
+              onClick={() => setCreating(true)}
+              data-demo-target="action"
+            >
               <Plus className="h-3.5 w-3.5" aria-hidden />
               New purchase order
             </button>
@@ -274,7 +280,14 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
           onClose={() => setCreating(false)}
           // The form navigates to the new order itself; reloading the list means the row is
           // already there when the user comes back to it.
-          onCreated={() => reload()}
+          onCreated={(order) => {
+            announceDemoRecordCreated({
+              kind: "purchase-order",
+              id: order.id,
+              reference: order.poNo,
+            });
+            reload();
+          }}
         />
       ) : null}
     </div>

@@ -293,7 +293,9 @@ function OnyxVoidMapInner({
    * each open pathway. Light travelling down a wire moves nothing you are trying to press.
    */
 
-  const { connections, minBearingGap } = mapLayout(departments.map((d) => d.dept.code));
+  const { connections, minBearingGap } = mapLayout(
+    departments.map((d) => d.dept.code),
+  );
   const byCode = new Map(connections.map((c) => [c.code, c]));
 
   const nodes = departments.map(({ dept, reachable, moduleCount }, i) => {
@@ -339,7 +341,9 @@ function OnyxVoidMapInner({
   const anim = !reduced;
   const ease = "cubic-bezier(.16,1,.3,1)";
   const step = (at: number, ms: number, i: number, prop: string): string =>
-    anim ? `${prop} ${ms}ms ${ease} ${at + i * STAGGER}ms` : `${prop} 240ms linear`;
+    anim
+      ? `${prop} ${ms}ms ${ease} ${at + i * STAGGER}ms`
+      : `${prop} 240ms linear`;
 
   /**
    * A CORRECTION THAT WAS NOT NEEDED, AND THE MEASUREMENT THAT SAID SO.
@@ -384,7 +388,9 @@ function OnyxVoidMapInner({
           inset-0` of THIS box, which is the box the svg fills exactly. */}
       <div
         className="relative w-full"
-        style={{ maxWidth: "min(94vw, 1180px, calc((100vh - 160px) * 1.4706))" }}
+        style={{
+          maxWidth: "min(94vw, 1180px, calc((100vh - 160px) * 1.4706))",
+        }}
       >
         <svg
           viewBox="0 0 1000 680"
@@ -394,7 +400,9 @@ function OnyxVoidMapInner({
           // particular cannot be judged from a picture: a barely-bowed quadratic looks
           // straight at demo size and is not.
           data-onyx-connections={connections.length}
-          data-onyx-min-bearing-gap={connections.length > 1 ? minBearingGap.toFixed(2) : "0"}
+          data-onyx-min-bearing-gap={
+            connections.length > 1 ? minBearingGap.toFixed(2) : "0"
+          }
         >
           <defs>
             {/* The Brain's aurora, unchanged. Same room, same light. */}
@@ -437,7 +445,7 @@ function OnyxVoidMapInner({
                 most of the picture, which is a lot of paint to say "there is light here"
                 when the Gateway is already laying two aurora fields behind this. Shrinking
                 it to the hub does the one job that is actually this component's: marking
-                which of the seven agents the other six answer to. */}
+                which of the eight agents the other seven answer to. */}
             <radialGradient id="ind-void-core">
               <stop offset="0%" stopColor="var(--void-core-a)" />
               <stop offset="60%" stopColor="var(--void-core-b)" />
@@ -445,7 +453,13 @@ function OnyxVoidMapInner({
             </radialGradient>
 
             {!lowPower ? (
-              <filter id="ind-void-bloom" x="-30%" y="-30%" width="160%" height="160%">
+              <filter
+                id="ind-void-bloom"
+                x="-30%"
+                y="-30%"
+                width="160%"
+                height="160%"
+              >
                 {/* 3.2, down from 4.5. The old radius was doing the work of a glow AND of a
                     fill; with the panels gone underneath the type it was only smearing. */}
                 <feGaussianBlur stdDeviation="3.2" result="b" />
@@ -496,8 +510,11 @@ function OnyxVoidMapInner({
                        * No dash at all under reduced motion: a line that draws itself is
                        * motion, whatever it is made of.
                        */
-                      strokeDasharray: anim ? link.length.toFixed(2) : undefined,
-                      strokeDashoffset: anim && !visible ? link.length.toFixed(2) : 0,
+                      strokeDasharray: anim
+                        ? link.length.toFixed(2)
+                        : undefined,
+                      strokeDashoffset:
+                        anim && !visible ? link.length.toFixed(2) : 0,
                       transition: [
                         step(LINE_AT, LINE_MS, i, "stroke-dashoffset"),
                         "stroke-width 300ms ease",
@@ -517,7 +534,10 @@ function OnyxVoidMapInner({
                   reachable &&
                   (connected || runtime.state === "checking") ? (
                     <circle r={2.2} fill="url(#ind-void-aurora)" opacity={0.85}>
-                      <animateMotion dur={`${(5 + i * 0.6).toFixed(2)}s`} repeatCount="indefinite">
+                      <animateMotion
+                        dur={`${(5 + i * 0.6).toFixed(2)}s`}
+                        repeatCount="indefinite"
+                      >
                         <mpath href={`#ind-void-path-${dept.code}`} />
                       </animateMotion>
                       <animate
@@ -565,15 +585,34 @@ function OnyxVoidMapInner({
                   of its own: a ring pulsing outward while the hub is still growing INTO place
                   is two motions arguing about which one the eye should follow. */}
               {settled && !reduced && !lowPower ? (
-                <circle r={HUB_R} fill="none" stroke="url(#ind-void-aurora)" strokeWidth={0.9}>
-                  <animate attributeName="r" values="54;78" dur="4.8s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.3;0" dur="4.8s" repeatCount="indefinite" />
+                <circle
+                  r={HUB_R}
+                  fill="none"
+                  stroke="url(#ind-void-aurora)"
+                  strokeWidth={0.9}
+                >
+                  <animate
+                    attributeName="r"
+                    values="54;78"
+                    dur="4.8s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0.3;0"
+                    dur="4.8s"
+                    repeatCount="indefinite"
+                  />
                 </circle>
               ) : null}
               {/* The accent on approach, exactly as a department node answers the pointer.
                   ONYX now IS a door, so it has to behave like one. */}
               {hubOn && onyx.reachable && !reduced ? (
-                <circle r={HUB_R + 12} fill="var(--dept-onyx)" opacity="var(--hub-halo-alpha)" />
+                <circle
+                  r={HUB_R + 12}
+                  fill="var(--dept-onyx)"
+                  opacity="var(--hub-halo-alpha)"
+                />
               ) : null}
               {/* Tagged because it is the ring a HAND aims at, and the harness has to be able
                   to tell it apart from the pulse above (whose radius sweeps 54→78) and the
@@ -587,7 +626,9 @@ function OnyxVoidMapInner({
                 strokeWidth={hubOn && onyx.reachable ? 2.3 : 1.5}
                 opacity={hubOn && onyx.reachable ? 1 : 0.9}
                 strokeDasharray={onyx.reachable ? undefined : "5 6"}
-                style={{ transition: "stroke-width 300ms ease, opacity 300ms ease" }}
+                style={{
+                  transition: "stroke-width 300ms ease, opacity 300ms ease",
+                }}
               />
               {/* The focal point of the whole map, in the XELOR face at its UNBOLDED step —
                   see `HUB`. It is the hub because of where it sits and how big it is, not
@@ -676,7 +717,6 @@ function OnyxVoidMapInner({
             {/* The hub's own button now lives in the HTML control layer below the svg, for
                 the reason written at the top of `<ControlLayer>`. The artwork stays here. */}
           </g>
-
         </svg>
 
         {/*
@@ -732,7 +772,7 @@ function OnyxVoidMapInner({
             onBlur={() => setHubOn(false)}
             aria-label={
               onyx.reachable
-                ? `ONYX Decision Commander. The live decision room connected to six specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
+                ? `ONYX Decision Commander. The live decision room connected to seven specialist agents. Opens ${onyx.moduleCount} module${onyx.moduleCount === 1 ? "" : "s"}.`
                 : "ONYX Decision Commander. You do not have access to this surface."
             }
             className="pointer-events-auto absolute cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--void-focus) focus-visible:ring-offset-4 focus-visible:ring-offset-(--void-bg) disabled:cursor-default"
@@ -746,44 +786,45 @@ function OnyxVoidMapInner({
             }}
           />
 
-          {/* ─────────────────────────────── the six doors ─────────────────────────────── */}
-          {nodes.map(({ dept, x, y, reachable, moduleCount, i, labelAbove }) => {
-            const on = hovered === dept.code;
-            const last = i === nodes.length - 1;
-            const connected = runtime.connectedAgentKeys.includes(dept.code);
-            // Declared once and placed on whichever side the radial rule chose, so the two
-            // arrangements cannot drift into being two different labels.
-            const nameLine = (
-              <p
-                className="pointer-events-none text-center text-(--void-ink-soft)"
-                style={{
-                  ...NOTE,
-                  maxWidth: cq(186),
-                  fontSize: cq(8.5),
-                  marginBlock: cq(6),
-                  opacity: on && settled ? 0.9 : 0,
-                  transition: "opacity 300ms ease",
-                }}
-              >
-                {reachable ? dept.name : "No access"}
-              </p>
-            );
+          {/* ─────────────────────────────── the specialist doors ─────────────────────────────── */}
+          {nodes.map(
+            ({ dept, x, y, reachable, moduleCount, i, labelAbove }) => {
+              const on = hovered === dept.code;
+              const last = i === nodes.length - 1;
+              const connected = runtime.connectedAgentKeys.includes(dept.code);
+              // Declared once and placed on whichever side the radial rule chose, so the two
+              // arrangements cannot drift into being two different labels.
+              const nameLine = (
+                <p
+                  className="pointer-events-none text-center text-(--void-ink-soft)"
+                  style={{
+                    ...NOTE,
+                    maxWidth: cq(186),
+                    fontSize: cq(8.5),
+                    marginBlock: cq(6),
+                    opacity: on && settled ? 0.9 : 0,
+                    transition: "opacity 300ms ease",
+                  }}
+                >
+                  {reachable ? dept.name : "No access"}
+                </p>
+              );
 
-            return (
-              // A ZERO-SIZED POINT AT THE NODE, with everything below placed against it.
-              // The drawn ring and the geometry the connections were trimmed against are then
-              // the same circle by construction, which is the only way they stay that way.
-              <div
-                key={dept.code}
-                className="absolute"
-                style={{
-                  left: `${(x / 1000) * 100}%`,
-                  top: `${(y / 680) * 100}%`,
-                  width: 0,
-                  height: 0,
-                }}
-              >
-                {/*
+              return (
+                // A ZERO-SIZED POINT AT THE NODE, with everything below placed against it.
+                // The drawn ring and the geometry the connections were trimmed against are then
+                // the same circle by construction, which is the only way they stay that way.
+                <div
+                  key={dept.code}
+                  className="absolute"
+                  style={{
+                    left: `${(x / 1000) * 100}%`,
+                    top: `${(y / 680) * 100}%`,
+                    width: 0,
+                    height: 0,
+                  }}
+                >
+                  {/*
                   Rides out from the hub along the line that has just reached its place.
                   Starting AT the hub rather than fading in place is the whole reason the
                   network reads as having come out of the Brain.
@@ -796,125 +837,146 @@ function OnyxVoidMapInner({
                   fixed prediction of a variable event. `transitionend` is the event itself;
                   the Gateway keeps a long backstop in case it never fires.
                 */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: 0,
-                    top: 0,
-                    width: 0,
-                    height: 0,
-                    transform:
-                      anim && !visible
-                        ? `translate(${cq(CX - x)}, ${cq(CY - y)}) scale(0.4)`
-                        : "translate(0px, 0px) scale(1)",
-                    // Runtime connection and screen permission are different facts. A
-                    // connected specialist stays visually connected even when this viewer
-                    // cannot open that department; the button remains disabled and the
-                    // caption still says "No access". Dimming the whole node previously made
-                    // a live 7/7 graph look partially disconnected.
-                    opacity: visible ? (connected ? 1 : reachable ? 0.72 : 0.32) : 0,
-                    transition: [
-                      step(NODE_AT, NODE_MS, i, "transform"),
-                      step(NODE_AT, NODE_MS, i, "opacity"),
-                    ].join(", "),
-                  }}
-                  onTransitionEnd={
-                    last
-                      ? (e) => {
-                          if (e.target !== e.currentTarget) return;
-                          if (e.propertyName !== "transform" && e.propertyName !== "opacity")
-                            return;
-                          // Also fires on the way OUT, when the map is folding back into the
-                          // hub. That is the opposite of settled.
-                          if (visible) onSettled();
-                        }
-                      : undefined
-                  }
-                >
-                  <button
-                    type="button"
-                    disabled={!reachable || !settled}
-                    onClick={() => router.push(`/department/${dept.code}`)}
-                    onPointerEnter={() => setHovered(dept.code)}
-                    onPointerLeave={() => setHovered(null)}
-                    onFocus={() => setHovered(dept.code)}
-                    onBlur={() => setHovered(null)}
-                    aria-label={
-                      reachable
-                        ? `${dept.code} — ${dept.name}. ${dept.tagline} Opens ${moduleCount} module${moduleCount === 1 ? "" : "s"}.`
-                        : `${dept.code} — ${dept.name}. You do not have access to this department.`
-                    }
-                    // Round focus ring in the scene's own light. The product's global ring
-                    // is a rectangle — right on every screen that has edges, wrong on the
-                    // two that do not.
-                    className="pointer-events-auto absolute grid cursor-pointer place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--void-focus) focus-visible:ring-offset-4 focus-visible:ring-offset-(--void-bg) disabled:cursor-default"
+                  <div
+                    className="absolute"
                     style={{
                       left: 0,
                       top: 0,
-                      width: cq(DISC),
-                      height: cq(DISC),
+                      width: 0,
+                      height: 0,
                       transform:
-                        on && reachable && settled
-                          ? "translate(-50%, -50%) scale(1.06)"
-                          : "translate(-50%, -50%) scale(1)",
-                      transition: `transform 360ms ${ease}`,
+                        anim && !visible
+                          ? `translate(${cq(CX - x)}, ${cq(CY - y)}) scale(0.4)`
+                          : "translate(0px, 0px) scale(1)",
+                      // Runtime connection and screen permission are different facts. A
+                      // connected specialist stays visually connected even when this viewer
+                      // cannot open that department; the button remains disabled and the
+                      // caption still says "No access". Dimming the whole node previously made
+                      // a live 8/8 graph look partially disconnected.
+                      opacity: visible
+                        ? connected
+                          ? 1
+                          : reachable
+                            ? 0.72
+                            : 0.32
+                        : 0,
+                      transition: [
+                        step(NODE_AT, NODE_MS, i, "transform"),
+                        step(NODE_AT, NODE_MS, i, "opacity"),
+                      ].join(", "),
                     }}
+                    onTransitionEnd={
+                      last
+                        ? (e) => {
+                            if (e.target !== e.currentTarget) return;
+                            if (
+                              e.propertyName !== "transform" &&
+                              e.propertyName !== "opacity"
+                            )
+                              return;
+                            // Also fires on the way OUT, when the map is folding back into the
+                            // hub. That is the opposite of settled.
+                            if (visible) onSettled();
+                          }
+                        : undefined
+                    }
                   >
-                    <svg viewBox={`0 0 ${DISC} ${DISC}`} width="100%" height="100%" aria-hidden>
-                      {/* The accent appears on approach and nowhere else. Six coloured
+                    <button
+                      type="button"
+                      disabled={!reachable || !settled}
+                      onClick={() => router.push(`/department/${dept.code}`)}
+                      onPointerEnter={() => setHovered(dept.code)}
+                      onPointerLeave={() => setHovered(null)}
+                      onFocus={() => setHovered(dept.code)}
+                      onBlur={() => setHovered(null)}
+                      aria-label={
+                        reachable
+                          ? `${dept.code} — ${dept.name}. ${dept.tagline} Opens ${moduleCount} module${moduleCount === 1 ? "" : "s"}.`
+                          : `${dept.code} — ${dept.name}. You do not have access to this department.`
+                      }
+                      // Round focus ring in the scene's own light. The product's global ring
+                      // is a rectangle — right on every screen that has edges, wrong on the
+                      // two that do not.
+                      className="pointer-events-auto absolute grid cursor-pointer place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--void-focus) focus-visible:ring-offset-4 focus-visible:ring-offset-(--void-bg) disabled:cursor-default"
+                      style={{
+                        left: 0,
+                        top: 0,
+                        width: cq(DISC),
+                        height: cq(DISC),
+                        transform:
+                          on && reachable && settled
+                            ? "translate(-50%, -50%) scale(1.06)"
+                            : "translate(-50%, -50%) scale(1)",
+                        transition: `transform 360ms ${ease}`,
+                      }}
+                    >
+                      <svg
+                        viewBox={`0 0 ${DISC} ${DISC}`}
+                        width="100%"
+                        height="100%"
+                        aria-hidden
+                      >
+                        {/* The accent appears on approach and nowhere else. Six coloured
                           haloes burning at rest is the "excess glow" this pass was asked
                           to take out; one under the pointer is an answer to the pointer. */}
-                      {on && reachable && !reduced ? (
+                        {on && reachable && !reduced ? (
+                          <circle
+                            cx={DISC / 2}
+                            cy={DISC / 2}
+                            r={NODE_R + 9}
+                            fill={dept.accent}
+                            // Halved on the light panel — a dark accent at 13% over near-white
+                            // is a grey blob rather than a coloured halo. See globals.css.
+                            opacity="var(--node-halo-alpha)"
+                          />
+                        ) : null}
                         <circle
+                          data-dept-ring
                           cx={DISC / 2}
                           cy={DISC / 2}
-                          r={NODE_R + 9}
-                          fill={dept.accent}
-                          // Halved on the light panel — a dark accent at 13% over near-white
-                          // is a grey blob rather than a coloured halo. See globals.css.
-                          opacity="var(--node-halo-alpha)"
+                          r={NODE_R}
+                          fill="none"
+                          stroke="url(#ind-void-aurora)"
+                          strokeWidth={
+                            connected || (on && reachable) ? 1.9 : 1.1
+                          }
+                          opacity={connected || (on && reachable) ? 1 : 0.7}
+                          // A door that will not open says so in its own outline, before
+                          // anybody reaches for it.
+                          strokeDasharray={
+                            connected || reachable ? undefined : "4 5"
+                          }
+                          style={{
+                            transition:
+                              "stroke-width 300ms ease, opacity 300ms ease",
+                          }}
                         />
-                      ) : null}
-                      <circle
-                        data-dept-ring
-                        cx={DISC / 2}
-                        cy={DISC / 2}
-                        r={NODE_R}
-                        fill="none"
-                        stroke="url(#ind-void-aurora)"
-                        strokeWidth={connected || (on && reachable) ? 1.9 : 1.1}
-                        opacity={connected || (on && reachable) ? 1 : 0.7}
-                        // A door that will not open says so in its own outline, before
-                        // anybody reaches for it.
-                        strokeDasharray={connected || reachable ? undefined : "4 5"}
-                        style={{ transition: "stroke-width 300ms ease, opacity 300ms ease" }}
-                      />
-                      {connected ? (
-                        <>
-                          {/* Tokens, not `#34d399`. This scene has a LIGHT theme and a
+                        {connected ? (
+                          <>
+                            {/* Tokens, not `#34d399`. This scene has a LIGHT theme and a
                               hard-coded mint dot was being drawn on a near-white panel in
                               it; `--ok` resolves per theme and in dark resolves to very
                               nearly the hex that was here. */}
-                          <circle
-                            cx={DISC / 2 + NODE_R * 0.72}
-                            cy={DISC / 2 - NODE_R * 0.72}
-                            r={5}
-                            fill="var(--ok)"
-                            stroke="var(--void-bg)"
-                            strokeWidth={2}
-                          />
-                          <circle
-                            cx={DISC / 2 + NODE_R * 0.72}
-                            cy={DISC / 2 - NODE_R * 0.72}
-                            r={8}
-                            fill="none"
-                            stroke="var(--ok)"
-                            strokeWidth={1}
-                            opacity={0.45}
-                          />
-                        </>
-                      ) : null}
-                      {/* THE DEPARTMENT'S MARK, WITH ITS OWN LIGHT.
+                            <circle
+                              cx={DISC / 2 + NODE_R * 0.72}
+                              cy={DISC / 2 - NODE_R * 0.72}
+                              r={5}
+                              fill="var(--ok)"
+                              stroke="var(--void-bg)"
+                              strokeWidth={2}
+                            />
+                            <circle
+                              cx={DISC / 2 + NODE_R * 0.72}
+                              cy={DISC / 2 - NODE_R * 0.72}
+                              r={8}
+                              fill="none"
+                              stroke="var(--ok)"
+                              strokeWidth={1}
+                              opacity={0.45}
+                            />
+                          </>
+                        ) : null}
+                        {/* THE DEPARTMENT'S MARK, WITH ITS OWN LIGHT.
                           `color` carries the accent so `.ind-mark-glow` can read it as
                           `currentColor` — one CSS rule serves all seven and nothing here
                           needs to know which agent it is drawing. A halo in dark, a tight
@@ -925,25 +987,27 @@ function OnyxVoidMapInner({
                           live", and saying that about a department the viewer has no
                           access to is the scene telling a small lie about their own
                           permissions. */}
-                      <text
-                        x={DISC / 2}
-                        y={DISC / 2 + 9}
-                        textAnchor="middle"
-                        className={connected || reachable ? "ind-mark-glow" : undefined}
-                        style={{
-                          ...MARK,
-                          fill: dept.accent,
-                          color: dept.accent,
-                          fontSize: 25,
-                          letterSpacing: 0,
-                        }}
-                      >
-                        {dept.letter}
-                      </text>
-                    </svg>
-                  </button>
+                        <text
+                          x={DISC / 2}
+                          y={DISC / 2 + 9}
+                          textAnchor="middle"
+                          className={
+                            connected || reachable ? "ind-mark-glow" : undefined
+                          }
+                          style={{
+                            ...MARK,
+                            fill: dept.accent,
+                            color: dept.accent,
+                            fontSize: 25,
+                            letterSpacing: 0,
+                          }}
+                        >
+                          {dept.letter}
+                        </text>
+                      </svg>
+                    </button>
 
-                  {/*
+                    {/*
                     THE CAPTION BLOCK, anchored on the outward side. Its height is the same
                     whichever side it is on and whether or not the name is showing — the
                     name is hidden with opacity, never with display, so approaching a node
@@ -955,36 +1019,39 @@ function OnyxVoidMapInner({
                     reversed. In both cases the primary label is the one nearest the thing
                     it names.
                   */}
-                  <div
-                    className="pointer-events-none absolute flex flex-col items-center"
-                    style={{
-                      left: 0,
-                      width: cq(BOX),
-                      transform: "translateX(-50%)",
-                      ...(labelAbove ? { bottom: cq(DISC / 2 - 8) } : { top: cq(DISC / 2 - 8) }),
-                    }}
-                  >
-                    {labelAbove ? nameLine : null}
-                    {/* The code is always legible; the department's full name arrives on
-                        hover or focus. Revealing the CODE too would leave six anonymous
-                        rings — mystery at the cost of usefulness. */}
-                    <p
-                      className="text-center text-(--void-ink)"
+                    <div
+                      className="pointer-events-none absolute flex flex-col items-center"
                       style={{
-                        ...NAME,
-                        fontSize: cq(12),
-                        opacity: visible ? 1 : 0,
-                        transition: step(LABEL_AT, LABEL_MS, i, "opacity"),
+                        left: 0,
+                        width: cq(BOX),
+                        transform: "translateX(-50%)",
+                        ...(labelAbove
+                          ? { bottom: cq(DISC / 2 - 8) }
+                          : { top: cq(DISC / 2 - 8) }),
                       }}
                     >
-                      {dept.code}
-                    </p>
-                    {labelAbove ? null : nameLine}
+                      {labelAbove ? nameLine : null}
+                      {/* The code is always legible; the department's full name arrives on
+                        hover or focus. Revealing the CODE too would leave six anonymous
+                        rings — mystery at the cost of usefulness. */}
+                      <p
+                        className="text-center text-(--void-ink)"
+                        style={{
+                          ...NAME,
+                          fontSize: cq(12),
+                          opacity: visible ? 1 : 0,
+                          transition: step(LABEL_AT, LABEL_MS, i, "opacity"),
+                        }}
+                      >
+                        {dept.code}
+                      </p>
+                      {labelAbove ? null : nameLine}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            },
+          )}
         </div>
       </div>
 
@@ -1008,7 +1075,8 @@ function OnyxVoidMapInner({
         className="pointer-events-none absolute top-[clamp(74px,9vh,108px)] left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border px-3.5 py-2 text-[11px] text-(--void-ink-soft) backdrop-blur-md"
         style={{
           ...NOTE,
-          borderColor: "color-mix(in srgb, var(--void-ink-soft) 20%, transparent)",
+          borderColor:
+            "color-mix(in srgb, var(--void-ink-soft) 20%, transparent)",
           background: "color-mix(in srgb, var(--void-bg) 72%, transparent)",
           letterSpacing: "0.13em",
           opacity: settled ? 0.9 : 0,

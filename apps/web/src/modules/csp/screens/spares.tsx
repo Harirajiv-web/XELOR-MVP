@@ -55,7 +55,7 @@ export default function SparesScreen(_props: ScreenProps): React.JSX.Element {
     },
     {
       key: "ticketNo",
-      header: "Against ticket",
+      header: "Against case",
       width: "w-44",
       // A spare request with no ticket is legitimate — a customer can order a part without
       // a breakdown — so say so rather than showing a dash that reads as missing data.
@@ -106,8 +106,8 @@ export default function SparesScreen(_props: ScreenProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Spare requests"
-        subtitle="Parts asked for on service jobs, with the entitlement engine's verdict on whether the customer or the warranty pays."
+        title="Spares & warranty"
+        subtitle="Parts requested for an after-sales product case, with the recorded decision on whether the customer, warranty or AMC pays."
         meta={
           all.length > 0
             ? [
@@ -137,7 +137,7 @@ export default function SparesScreen(_props: ScreenProps): React.JSX.Element {
           type="search"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter by request, part or ticket…"
+          placeholder="Filter by request, part or product case…"
           aria-label="Filter spare requests"
           className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
         />
@@ -155,7 +155,7 @@ export default function SparesScreen(_props: ScreenProps): React.JSX.Element {
           filter ? (
             <Empty
               title="Nothing matches that filter"
-              body={`No request, part or ticket matched “${filter}”.`}
+              body={`No request, part or product case matched “${filter}”.`}
             />
           ) : (
             <Empty

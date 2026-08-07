@@ -41,7 +41,8 @@ export const ONYX_DEMO_ALERTS: readonly OnyxDemoAlert[] = [
     severity: "critical",
     module: "maintenance",
     title: "CNC-03 is recorded as down",
-    detail: "The open downtime event can put today’s pump-casing sequence at risk.",
+    detail:
+      "The open downtime event can put today’s pump-casing sequence at risk.",
     evidence: "Maintenance downtime · demo scenario",
     href: "/maintenance/downtime",
   },
@@ -50,7 +51,8 @@ export const ONYX_DEMO_ALERTS: readonly OnyxDemoAlert[] = [
     severity: "urgent",
     module: "planning",
     title: "Northstar material cover is tight",
-    detail: "Two planned requirements need supply review before the protected delivery window.",
+    detail:
+      "Two planned requirements need supply review before the protected delivery window.",
     evidence: "Planning exceptions · demo scenario",
     href: "/planning/exceptions",
   },
@@ -70,7 +72,8 @@ export const ONYX_DEMO_BRIEF: readonly OnyxDemoBriefItem[] = [
     label: "Delivery",
     value: "At risk",
     tone: "bad",
-    detail: "The Northstar commitment needs a cross-functional recovery review.",
+    detail:
+      "The Northstar commitment needs a cross-functional recovery review.",
     href: "/agentos/command",
   },
   {
@@ -84,14 +87,16 @@ export const ONYX_DEMO_BRIEF: readonly OnyxDemoBriefItem[] = [
     label: "Supply",
     value: "2 reviews",
     tone: "warn",
-    detail: "Material cover and an awaiting purchase order need human attention.",
+    detail:
+      "Material cover and an awaiting purchase order need human attention.",
     href: "/planning/exceptions",
   },
   {
     label: "Governance",
     value: "Ready",
     tone: "ok",
-    detail: "ONYX can prepare a governed six-domain recovery review for approval.",
+    detail:
+      "ONYX can prepare a governed business-and-service recovery review for approval.",
     href: "/agentos/command",
   },
 ];
@@ -101,8 +106,10 @@ export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [
     id: "northstar-review",
     owner: "ONYX",
     title: "Start the Northstar recovery review",
-    reason: "Delivery, maintenance, supply, quality, commercial and finance evidence must converge.",
-    impact: "Produces one governed recommendation with evidence and a named human gate.",
+    reason:
+      "Delivery, maintenance, supply, quality, commercial and finance evidence must converge.",
+    impact:
+      "Produces one governed recommendation with evidence and a named human gate.",
     authority: "Plant Head",
     href: "/agentos/command",
   },
@@ -110,8 +117,10 @@ export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [
     id: "cnc-review",
     owner: "KILN",
     title: "Review the CNC-03 maintenance response",
-    reason: "An open downtime event is the scenario’s most immediate operational constraint.",
-    impact: "Prepares the maintenance decision; it does not close or create a work order.",
+    reason:
+      "An open downtime event is the scenario’s most immediate operational constraint.",
+    impact:
+      "Prepares the maintenance decision; it does not close or create a work order.",
     authority: "Maintenance Manager",
     href: "/maintenance/downtime",
   },
@@ -119,7 +128,8 @@ export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [
     id: "po-review",
     owner: "SPAR",
     title: "Review the awaiting purchase order",
-    reason: "Material cover is tight and commercial authority is still required.",
+    reason:
+      "Material cover is tight and commercial authority is still required.",
     impact: "Opens the real purchase workspace for a human decision.",
     authority: "Purchase Approver",
     href: "/purchase/orders",
@@ -127,13 +137,20 @@ export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [
 ];
 
 export const ONYX_CONTEXT_COPY: Readonly<Record<string, string>> = {
-  inventory: "I can read stock, warehouse balances and recent movements from your permitted records.",
-  sales: "I can read open customer orders, delivery dates and individual order status.",
-  purchase: "I can read open purchase orders, receipts and individual order status.",
-  production: "I can read the current production order book and order progress.",
-  planning: "I can read shortages, late requirements and what the plan says to buy or make.",
+  inventory:
+    "I can read stock, warehouse balances and recent movements from your permitted records.",
+  sales:
+    "I can read open customer orders, delivery dates and individual order status.",
+  purchase:
+    "I can read open purchase orders, receipts and individual order status.",
+  production:
+    "I can read the current production order book and order progress.",
+  planning:
+    "I can read shortages, late requirements and what the plan says to buy or make.",
   maintenance: "I can read open maintenance work and recorded breakdowns.",
   quality: "I can read open inspections and their recorded verdicts.",
-  accounts: "I can read ledger and trial-balance information available to your role.",
-  engineering: "I can read approved engineering and master-data information available to your role.",
+  accounts:
+    "I can read ledger and trial-balance information available to your role.",
+  engineering:
+    "I can read approved engineering and master-data information available to your role.",
 };

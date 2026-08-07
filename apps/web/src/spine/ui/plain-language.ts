@@ -41,7 +41,7 @@ const DEPARTMENT_NAMES: Readonly<Record<string, string>> = {
   AXLE: "Products & Planning",
   SPAR: "Purchasing & Stock",
   KILN: "Factory Operations",
-  MICA: "Sales & Service",
+  MICA: "Sales & Product Care",
   RASP: "People & Accounts",
 };
 
@@ -55,7 +55,7 @@ const DEPARTMENT_SUMMARIES: Readonly<Record<string, string>> = {
   AXLE: "Manages product designs and plans what needs to be made.",
   SPAR: "Manages suppliers, purchases and available stock.",
   KILN: "Tracks production, quality, equipment and daily factory work.",
-  MICA: "Manages customers, sales, deliveries and service.",
+  MICA: "Manages customers, sales, deliveries, product warranty and after-sales care.",
   RASP: "Manages employees, spending and accounts.",
 };
 

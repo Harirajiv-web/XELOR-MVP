@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { demoScenarios } from "../../src/spine/demo/demo-scenarios";
 import { buildPresenterSnapshot } from "../../src/spine/demo/demo-presenter";
+import { DEMO_RECORD_CREATED_EVENT } from "../../src/spine/demo/demo-events";
 
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");
@@ -28,20 +29,28 @@ test("every presenter journey has visible step data and a highlighted screen tar
   });
   page.on("pageerror", (error) => browserErrors.push(error.message));
 
-  // The investor build intentionally exposes one canonical, live-data story instead of a
-  // catalogue of fictional journeys. Validate every evidence-linked act before walking it.
-  expect(demoScenarios).toHaveLength(1);
+  // The investor build intentionally exposes one business story and one agent overview,
+  // rather than a catalogue of competing fictional journeys.
+  expect(demoScenarios).toHaveLength(2);
   expect(demoScenarios[0]?.evidenceMode).toBe("live");
-  expect(demoScenarios.reduce((total, scenario) => total + scenario.steps.length, 0)).toBe(9);
+  expect(demoScenarios[1]?.evidenceMode).toBe("structural");
+  expect(demoScenarios.reduce((total, scenario) => total + scenario.steps.length, 0)).toBe(19);
   for (const scenario of demoScenarios) {
-    expect(scenario.demoRecord, `${scenario.id} needs a dedicated seeded record`).toBeTruthy();
-    const record = scenario.demoRecord!;
-    for (const [index, step] of scenario.steps.entries()) {
-      const snapshot = buildPresenterSnapshot(scenario, step, index, record);
-      expect(snapshot.headline, `${scenario.id} step ${index + 1} headline`).not.toHaveLength(0);
-      expect(snapshot.explanation, `${scenario.id} step ${index + 1} explanation`).toContain(record.reference);
-      expect(snapshot.facts, `${scenario.id} step ${index + 1} facts`).toHaveLength(4);
-      expect(snapshot.facts.every((fact) => fact.label.length > 0 && fact.value.length > 0)).toBe(true);
+    if (scenario.kind === "agent-tour") {
+      expect(scenario.demoRecord).toBeUndefined();
+      expect(scenario.steps).toHaveLength(8);
+      expect(scenario.steps.every((step) => step.path.startsWith("/department/"))).toBe(true);
+      expect(scenario.steps.every((step) => Boolean(step.connectionLine))).toBe(true);
+    } else {
+      expect(scenario.demoRecord, `${scenario.id} needs a dedicated seeded record`).toBeTruthy();
+      const record = scenario.demoRecord!;
+      for (const [index, step] of scenario.steps.entries()) {
+        const snapshot = buildPresenterSnapshot(scenario, step, index, record);
+        expect(snapshot.headline, `${scenario.id} step ${index + 1} headline`).not.toHaveLength(0);
+        expect(snapshot.explanation, `${scenario.id} step ${index + 1} explanation`).toContain(record.reference);
+        expect(snapshot.facts, `${scenario.id} step ${index + 1} facts`).toHaveLength(4);
+        expect(snapshot.facts.every((fact) => fact.label.length > 0 && fact.value.length > 0)).toBe(true);
+      }
     }
   }
 
@@ -61,11 +70,17 @@ test("every presenter journey has visible step data and a highlighted screen tar
     for (const [stepIndex, step] of scenario.steps.entries()) {
       await expect(page).toHaveURL(new RegExp(`${step.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
       await expect(dock.getByText(`${stepIndex + 1} of ${scenario.steps.length}`, { exact: true })).toBeVisible();
-      await expect(dock.getByTestId("demo-step-snapshot")).toBeVisible();
       await expect(page.getByTestId("demo-screen-spotlight")).toBeVisible();
-      await expect(dock.getByTestId("demo-live-record")).toContainText(scenario.demoRecord!.reference);
+      if (scenario.kind === "agent-tour") {
+        await expect(dock.getByTestId("demo-step-snapshot")).toHaveCount(0);
+        await expect(dock.getByTestId("demo-live-record")).toContainText("Connection:");
+        await expect(dock.getByTestId("demo-simple-explanation")).toContainText(step.body);
+      } else {
+        await expect(dock.getByTestId("demo-step-snapshot")).toBeVisible();
+        await expect(dock.getByTestId("demo-live-record")).toContainText(scenario.demoRecord!.reference);
+      }
 
-      if (scenarioIndex === 0 && stepIndex === 0) {
+      if (scenarioIndex === 0 && stepIndex === 1) {
         await dock.getByRole("button", { name: "Expand demo guide" }).click();
         await expect(dock.getByTestId("demo-presenter-data")).toContainText("What to show on this screen");
         await expect(dock.getByTestId("demo-presenter-data")).toContainText(scenario.demoRecord!.reference);
@@ -73,6 +88,29 @@ test("every presenter journey has visible step data and a highlighted screen tar
       }
 
       if (stepIndex < scenario.steps.length - 1) {
+        if (step.interaction) {
+          await expect(page.getByTestId("next-demo-step")).toBeDisabled();
+          await page.evaluate(
+            ({ eventName, kind, index }) => {
+              window.dispatchEvent(
+                new CustomEvent(eventName, {
+                  detail: {
+                    kind,
+                    id: `browser-test-${index}`,
+                    reference: `SAVED-${index + 1}`,
+                  },
+                }),
+              );
+            },
+            {
+              eventName: DEMO_RECORD_CREATED_EVENT,
+              kind: step.interaction.recordKind,
+              index: stepIndex,
+            },
+          );
+          await expect(page.getByTestId("demo-manual-action")).toContainText("saved");
+          await expect(page.getByTestId("next-demo-step")).toBeEnabled();
+        }
         await page.getByTestId("next-demo-step").click();
       }
     }

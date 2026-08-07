@@ -1,20 +1,24 @@
 import { expect, test } from "@playwright/test";
 
-test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
+test("ONYX runs the connected eight-agent controlled-autonomy flow", async ({
   page,
 }) => {
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill("venkat");
   await page.getByRole("textbox", { name: "Password" }).fill("demo");
   await page.getByRole("button", { name: "Enter XELOR" }).click();
-  const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
+  const brain = page.getByRole("button", {
+    name: "Enter the factory intelligence",
+  });
   await expect(brain).toBeVisible();
   await brain.click();
   await expect(
     page.getByRole("button", { name: "Enter the factory intelligence" }),
   ).toHaveCount(0);
-  await expect(page.getByText(/7\/7 agents connected/i)).toBeVisible();
-  const onyxDoor = page.getByRole("button", { name: /ONYX Decision Commander/i });
+  await expect(page.getByText(/8\/8 agents connected/i)).toBeVisible();
+  const onyxDoor = page.getByRole("button", {
+    name: /ONYX Decision Commander/i,
+  });
   await expect(onyxDoor).toBeEnabled();
   await page.screenshot({
     path: "test-results/onyx-connected-gateway.png",
@@ -23,19 +27,27 @@ test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
 
   await onyxDoor.click();
   await expect(page).toHaveURL(/\/agentos\/commander$/);
-  await expect(page.getByRole("heading", { name: "Live operating decision room" })).toBeVisible();
-  await page.getByRole("link", { name: "Mission control", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Live operating decision room" }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Mission control", exact: true })
+    .click();
   await expect(page).toHaveURL(/\/agentos\/command$/);
   await expect(
     page.getByRole("heading", {
       name: "ONYX works across every department.",
     }),
   ).toBeVisible();
-  await expect(page.getByText("ONYX Supervisor", { exact: true })).toBeVisible();
-  await expect(page.getByText("Human authority", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("ONYX Supervisor", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Human authority", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("option", {
-      name: "Seven-agent controlled action mission",
+      name: "Eight-agent controlled action mission",
     }),
   ).toBeAttached();
   await page
@@ -51,7 +63,9 @@ test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
       name: "Authorize the Phase 3 controlled action plan",
     }),
   ).toBeVisible();
-  await expect(page.getByText("Human approval required", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Human approval required", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /human approval.*waiting/i }),
   ).toBeVisible();
@@ -76,15 +90,14 @@ test("ONYX runs the connected seven-agent controlled-autonomy flow", async ({
     .fill("Verified the evidence and controlled action boundary.");
   await approval.getByRole("button", { name: "Approve" }).click();
   await expect(
-    page.getByText(
-      "Approved: Authorize the Phase 3 controlled action plan",
-      { exact: true },
-    ),
+    page.getByText("Approved: Authorize the Phase 3 controlled action plan", {
+      exact: true,
+    }),
   ).toBeVisible();
 
   await page.getByRole("link", { name: "Open Mission Control" }).click();
   await expect(page).toHaveURL(/\/agentos\/command$/);
-  await expect(page.locator(".agent-action-ledger li")).toHaveCount(6);
+  await expect(page.locator(".agent-action-ledger li")).toHaveCount(7);
   await page.locator(".agent-command").screenshot({
     path: "test-results/onyx-mission-control-surface.png",
   });

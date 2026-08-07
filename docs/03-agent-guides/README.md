@@ -12,11 +12,14 @@ The PDFs are generated into [`XELOR_AGENT_GUIDES/`](../../XELOR_AGENT_GUIDES/):
    implementation truth.
 2. `01_ONYX_AGENT_GUIDE.pdf` — supervisor and mission coordination.
 3. `02_HEXA_AGENT_GUIDE.pdf` — governance, permissions, approvals and audit.
-4. `03_MICA_AGENT_GUIDE.pdf` — customer commitments, Sales and Service/CSP.
+4. `03_MICA_AGENT_GUIDE.pdf` — customer commitments, Sales and manufactured-product Customer Care & Warranty.
 5. `04_SPAR_AGENT_GUIDE.pdf` — procurement, inventory and material availability.
 6. `05_AXLE_AGENT_GUIDE.pdf` — Engineering, MRP and planning.
 7. `06_KILN_AGENT_GUIDE.pdf` — production, quality, audit and maintenance.
 8. `07_RASP_AGENT_GUIDE.pdf` — Accounts, working capital, spend and payroll.
+9. `08_RELAY_AGENT_GUIDE.pdf` — the managed-service lifecycle, service desk,
+   incidents, changes, service levels, customer communication and improvement, with the
+   exact boundary between coordination and specialist technical ownership.
 
 Editable HTML is stored under [`docs/reports/agent-guides/`](../reports/agent-guides/).
 Regenerate every HTML/PDF file from the version-controlled source with:

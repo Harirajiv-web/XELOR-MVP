@@ -1,0 +1,192 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>RELAY — XELOR agent guide</title><style>
+  :root { --ink:#132238; --muted:#5f6f83; --line:#dfe5ed; --paper:#fff; --navy:#101d31; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:#dfe4ec; color:var(--ink); font-family:Inter,Arial,sans-serif; }
+  @page { size:A4; margin:0; }
+  .page { width:210mm; height:297mm; padding:16mm 16mm 14mm; margin:8mm auto; background:var(--paper); position:relative; overflow:hidden; page-break-after:always; }
+  .page:last-child { page-break-after:auto; }
+  @media print { html,body{background:#fff}.page{margin:0} }
+  h1,h2,h3,p { margin-top:0; }
+  h1 { font-size:35px; line-height:1.03; letter-spacing:-1.2px; margin-bottom:8px; }
+  h2 { font-size:25px; line-height:1.1; letter-spacing:-.5px; margin-bottom:6px; }
+  h3 { font-size:13.5px; line-height:1.25; margin-bottom:5px; }
+  p,li,td,th { font-size:11.8px; line-height:1.5; }
+  p { color:var(--muted); margin-bottom:8px; }
+  ul { margin:5px 0 0; padding-left:17px; }
+  li { margin-bottom:6px; color:#33445a; }
+  small { font-size:9px; color:#67758a; font-weight:500; }
+  .eyebrow { color:var(--accent); font-size:9.5px; letter-spacing:1.7px; text-transform:uppercase; font-weight:800; margin-bottom:9px; }
+  .lead { font-size:16px; line-height:1.45; max-width:158mm; color:#34465d; }
+  .rule { height:3px; width:24mm; background:var(--accent); margin:10px 0 15px; border-radius:4px; }
+  .section-head { display:flex; justify-content:space-between; gap:9mm; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:7px; margin-bottom:12px; }
+  .section-head p { max-width:74mm; text-align:right; margin:0; font-size:11px; }
+  .footer { position:absolute; left:16mm; right:16mm; bottom:7mm; display:flex; justify-content:space-between; color:#8994a5; font-size:7.5px; border-top:1px solid #e7ebf0; padding-top:3px; }
+  .cover { background:linear-gradient(145deg,var(--navy) 0 60%,var(--accent) 60% 100%); color:white; }
+  .cover p { color:#d7dfec; }
+  .cover .eyebrow { color:#fff; opacity:.8; margin-top:14mm; }
+  .cover h1 { font-size:52px; max-width:142mm; margin-top:38mm; }
+  .cover .lead { color:#e8edf5; font-size:16px; max-width:132mm; }
+  .cover .cover-note { position:absolute; bottom:26mm; left:16mm; width:112mm; padding:11px 13px; border:1px solid #ffffff42; border-radius:12px; background:#ffffff0d; font-size:9.5px; line-height:1.5; }
+  .cover .footer { color:#d6dfed; border-color:#ffffff25; }
+  .big-mark { position:absolute; right:10mm; bottom:17mm; font-size:70px; line-height:.9; font-weight:900; color:#ffffff18; writing-mode:vertical-rl; transform:rotate(180deg); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; background:#fff; break-inside:avoid; }
+  .card h3 { color:var(--accent); }
+  .card p { margin:0; font-size:10.8px; line-height:1.48; }
+  .tint { background:var(--pale); border-color:color-mix(in srgb,var(--accent) 20%,white); }
+  .callout { border-left:4px solid var(--accent); background:var(--pale); padding:12px 14px; border-radius:0 9px 9px 0; margin:11px 0; }
+  .callout strong { display:block; font-size:12px; margin-bottom:4px; color:var(--ink); }
+  .callout p { margin:0; font-size:11.2px; line-height:1.5; }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; margin:7px 0 11px; }
+  .pills span { font-size:9.2px; font-weight:700; border:1px solid var(--line); border-radius:99px; padding:5px 9px; background:#fff; color:#4b5b70; }
+  .flow { display:flex; align-items:stretch; gap:4px; margin:14px 0; }
+  .flow-block { flex:1; min-width:0; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:8px; padding:6px; font-size:9.8px; font-weight:750; background:#fff; }
+  .arrow { display:flex; align-items:center; color:var(--accent); font-size:16px; }
+  .swim { display:grid; grid-template-columns:30mm 1fr; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin:8px 0; }
+  .swim .who { background:var(--pale); color:var(--accent); font-weight:800; padding:9px; font-size:10.5px; }
+  .swim .what { padding:9px; font-size:10.5px; color:#33445a; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
+  th { color:#fff; background:var(--accent); text-align:left; font-size:9.2px; padding:7px; }
+  td { border-bottom:1px solid var(--line); padding:7px; font-size:9.8px; vertical-align:top; overflow-wrap:anywhere; }
+  tr:nth-child(even) td { background:#f8fafc; }
+  .cap-table th:nth-child(1){width:27%}.cap-table th:nth-child(2){width:11%}.cap-table th:nth-child(3){width:21%}.cap-table th:nth-child(4){width:26%}.cap-table th:nth-child(5){width:15%}
+  .mission-table th:nth-child(1){width:34%}
+  .matrix th:nth-child(1){width:26%}.matrix th:nth-child(2){width:10%}.matrix th:nth-child(3){width:15%}.matrix th:nth-child(4){width:26%}.matrix th:nth-child(5){width:23%}
+  .steps { display:grid; gap:8px; counter-reset:step; }
+  .step { display:grid; grid-template-columns:9mm 1fr; gap:9px; align-items:start; border:1px solid var(--line); border-radius:8px; padding:9px 11px; }
+  .step:before { counter-increment:step; content:counter(step); width:7.5mm; height:7.5mm; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:10px; }
+  .step b { font-size:11.5px; color:var(--ink); }
+  .step p { margin:2px 0 0; font-size:11px; line-height:1.48; }
+  .plain .step { grid-template-columns:1fr; }
+  .plain .step:before { content:none; }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:13px 0; }
+  .stat { background:var(--navy); color:#fff; border-radius:9px; padding:12px; }
+  .stat b { display:block; font-size:25px; color:#fff; }
+  .stat span { font-size:9px; color:#c8d1de; }
+  .agent-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .agent-card { border:1px solid var(--line); border-left:6px solid var(--c); padding:9px 11px; border-radius:8px; }
+  .agent-card b { color:var(--c); font-size:12px; }
+  .agent-card p { margin:3px 0 0; font-size:10px; line-height:1.45; }
+  .stack { display:grid; gap:7px; margin:12px auto; max-width:162mm; }
+  .stack-row { border:1px solid var(--line); border-left:6px solid var(--accent); padding:10px 13px; border-radius:8px; display:flex; justify-content:space-between; gap:14px; }
+  .stack-row b { font-size:11.5px; }
+  .stack-row span { font-size:10.2px; color:var(--muted); text-align:right; }
+  .truth { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .truth > div { border-radius:9px; padding:13px; border:1px solid var(--line); }
+  .truth .yes { border-top:5px solid #2a9160; }.truth .no { border-top:5px solid #d94b4b; }
+  .truth h3 { font-size:12.5px; }
+  .truth li { font-size:10.8px; }
+  .glossary td:first-child { width:27%; font-weight:800; color:var(--accent); }
+  .source { font-family:ui-monospace,Menlo,monospace; font-size:9.4px; overflow-wrap:anywhere; }
+  .mini { font-size:10px; line-height:1.5; }
+  .graph-card { border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:8px; border-left:5px solid var(--accent); }
+  .graph-card b { font-size:12px; }
+  .graph-card .meta { font-family:ui-monospace,Menlo,monospace; font-size:9px; color:#7a879a; margin:3px 0 4px; }
+  .graph-card p { margin:0; font-size:10.6px; line-height:1.45; }
+  .module-detail { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px; break-inside:avoid; }
+  .module-title { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:8px 10px; color:#fff; background:var(--accent); }
+  .module-title b { font-size:12.5px; }.module-title span { font-size:8.5px; opacity:.84; }
+  .module-line { display:grid; grid-template-columns:28mm 1fr; border-top:1px solid var(--line); }
+  .module-line strong { padding:5px 8px; font-size:8.8px; color:var(--accent); background:#f7f9fc; }
+  .module-line p { padding:5px 8px; margin:0; font-size:9.1px; line-height:1.35; color:#405066; }
+  .module-line.boundary strong,.module-line.boundary p { background:var(--pale); }
+  .module-line.code-map p { font-family:ui-monospace,Menlo,monospace; font-size:8.2px; }
+  .master-module-map td { padding:5px 6px; font-size:8.9px; line-height:1.28; }
+  .master-module-map .callout { margin:7px 0; padding:9px 12px; }
+</style></head><body><section class="page cover" style="--accent:#0f766e;--pale:#e8f7f4">
+    <div class="eyebrow">XELOR agent handbook · built from the implementation</div>
+    <h1>RELAY<br>Managed Services</h1><div class="rule"></div>
+    <p class="lead">The service clock and customer hand-off. Coordinates the service around XELOR—from design and onboarding to incidents, changes, service reviews and improvement—while the accountable specialist still performs the technical work.</p>
+    <div class="cover-note"><b>Who this is for:</b> product, engineering, operations and anyone who has to explain XELOR to somebody else.<br><b>What it covers:</b> the work RELAY reasons about, the rules it cannot break, the exact tools it can call, and what is honestly not built yet.<br><b>Truth standard:</b> the repository as it stands on 6 August 2026.</div>
+    <div class="big-mark">RELAY</div><div class="footer"><span>XELOR · RELAY agent guide</span><span>01</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">01 · At a glance</div><h2>What RELAY is for</h2></div><p>A role with a fixed tool list, not a general assistant</p></header>
+    <div class="callout"><strong>In one sentence</strong><p>Coordinates the service around XELOR—from design and onboarding to incidents, changes, service reviews and improvement—while the accountable specialist still performs the technical work.</p></div>
+    <div class="stat-grid">
+      <div class="stat"><b>4</b><span>business areas it speaks for</span></div>
+      <div class="stat"><b>2</b><span>tools it can actually call</span></div>
+      <div class="stat"><b>2</b><span>capability families allowed</span></div>
+      <div class="stat"><b>0</b><span>agents it may delegate to</span></div>
+    </div>
+    <div class="grid-2"><article class="card"><h3>What reaches it</h3><p>Customer outcomes and entitlement · Operational signals and user contacts · Specialist diagnosis and restoration evidence · Approved changes and human decisions</p></article><article class="card"><h3>What it hands back</h3><p>One service incident and clock · A named specialist hand-off · A timed customer update · A verified service brief and improvement action</p></article></div>
+    <h3 style="margin-top:13px">Capability families it is allowed to touch</h3><div class="pills"><span>managed-services.</span><span>agent.</span></div>
+    <div class="callout"><strong>Ownership and authority are not the same thing</strong><p>The areas above are where RELAY is the right specialist to ask. The tool table on page 8 is the much smaller set it can invoke at runtime. Owning a business area does not grant runtime power over it — and for ONYX, the supervisor, the gap between the two is the widest in the system.</p></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>02</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">02 · Module deep dive · 1 of 2</div><h2>What sits behind RELAY</h2></div><p>Records, screens, workflow, controls and hand-offs</p></header>
+
+  <article class="module-detail">
+    <div class="module-title"><b>Managed Services</b><span>RELAY module · managed-services</span></div>
+    <div class="module-line"><strong>Purpose</strong><p>Wraps XELOR in an understandable service lifecycle: design, transition, operate and improve, with one owner for incident clocks, hand-offs and customer communication.</p></div>
+    <div class="module-line"><strong>Core records</strong><p>Service catalogue and outcomes, lifecycle stages, service incidents, severity and update cadence, customer change calendar, service-review evidence, improvement register and a responsibility/boundary matrix.</p></div>
+    <div class="module-line"><strong>User surface</strong><p>Service Command Centre; Incidents &amp; Escalation; Changes &amp; Releases; Service Reviews; Responsibility Map. API: /managed-services/overview.</p></div>
+    <div class="module-line"><strong>End-to-end flow</strong><p>Define a supportable service; transition the customer with acceptance evidence; triage events into one service incident; route technical repair to the accountable specialist; maintain the clock and customer update; verify restoration; turn repeat failure into an owned improvement.</p></div>
+    <div class="module-line"><strong>Enforced controls</strong><p>One accountable owner per responsibility, permission-gated read capability, human approval before a service brief, no specialist remediation privileges, no security determination, no AI-control override and no contractual credit authority.</p></div>
+    <div class="module-line"><strong>Inputs and outputs</strong><p>HEXA fixes connectors and owns security; ONYX fixes AI operations and coordinates business missions; MICA owns manufactured-product support; KILN owns factory assets; other specialists fix their own domains. RELAY keeps the service timeline and verifies the customer-facing outcome.</p></div>
+    <div class="module-line boundary"><strong>Current boundary</strong><p>The operating model, agent, graph, API and screens are implemented. The data is explicitly illustrative: there is no staffed 24×7 desk, live ITSM integration, active telemetry pipeline or contractual SLA measurement yet.</p></div>
+    <div class="module-line code-map"><strong>Primary code map</strong><p>apps/web/src/modules/managed-services/manifest.ts · apps/api/src/modules/managed-services/</p></div>
+  </article>
+    <div class="callout"><strong>How to read these module pages</strong><p>“Live” means the records, service rules and user/API surface exist in this repository. It does not mean every surrounding enterprise process is complete. The boundary row names what remains illustrative, manual, simulate-driven or outside the MVP.</p></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>03</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">02 · Module deep dive · 2 of 2</div><h2>How RELAY's modules connect</h2></div><p>A module owns its records; the agent explains the combined evidence</p></header>
+
+    <div class="callout"><strong>Cross-module coordination</strong><p>RELAY owns coordination, elapsed time and customer communication. HEXA, ONYX, MICA, SPAR, AXLE, KILN or RASP remains the technical/business owner for its domain and must supply closure evidence. A human owns contracts, credits and material promises.</p></div>
+    <div class="flow"><div class="flow-block">Managed Services</div><span class="arrow">→</span><div class="flow-block">RELAY<br><small>bounded evidence</small></div><span class="arrow">→</span><div class="flow-block">ONYX / person<br><small>decision</small></div></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>04</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">03 · The work itself</div><h2>How RELAY's world actually runs</h2></div><p>The business pipeline, not the agent plumbing</p></header>
+    <p class="lead" style="font-size:13px;margin-bottom:12px">Managed Services is the work that begins before go-live and continues after it. RELAY turns technology components into one supportable customer service without creating a second copy of every specialist team.</p>
+    <div class="steps"><div class="step"><div><b>Design</b><p>Agree customer outcomes, catalogue, coverage, severity, service indicators/objectives, responsibilities, continuity and exit. A human approves price and contract.</p></div></div><div class="step"><div><b>Transition</b><p>Discover the environment, connect data, prove monitoring, validate access, write runbooks, rehearse escalation, accept the service and run hypercare.</p></div></div><div class="step"><div><b>Detect and triage</b><p>Turn a signal or contact into one service record; identify customer impact, urgency, affected component, evidence and the next update time.</p></div></div><div class="step"><div><b>Coordinate restoration</b><p>Send technical diagnosis to the accountable specialist. RELAY keeps the incident clock, escalation, timeline and customer message; it does not fix the component.</p></div></div><div class="step"><div><b>Control change</b><p>Join specialist changes into one customer calendar, check collision and readiness, send approved notices and verify service after the window.</p></div></div><div class="step"><div><b>Close with proof</b><p>The specialist supplies restoration evidence. RELAY verifies the customer-facing outcome before closure; repeated failure creates a problem/improvement record.</p></div></div><div class="step"><div><b>Review and improve</b><p>Measure service objectives, explain misses, review incidents/requests/changes/capacity and agree the next improvement with an owner and date.</p></div></div></div>
+    <div class="callout"><strong>How much of this RELAY can actually see</strong><p>Of everything above, RELAY can read exactly one thing directly — service catalogue, incidents, changes, reviews and ownership boundaries. The rest of this pipeline is context for judging what it reads; it is not data the agent can reach. Where a mission needs more, it asks the specialist who owns it or it says the evidence is missing.</p></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>05</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">04 · The rules underneath</div><h2>What the code will not let anyone do</h2></div><p>Enforced by constraints and locks, not by wording</p></header>
+    <div class="grid-2"><article class="card"><h3>One task, one accountable owner</h3><p>RELAY owns service coordination. It never duplicates a connector incident, AI incident, product-support case or machine-maintenance work order as its own technical record.</p></article><article class="card"><h3>The customer measure comes first</h3><p>A component metric is evidence, not automatically an SLA. A production measure must declare the user outcome, observation window, target, exclusions and source.</p></article><article class="card"><h3>Security and AI controls stay separate</h3><p>HEXA alone makes breach/reportability decisions. ONYX AI Operations alone changes provider, prompt, evaluation, autonomy or kill-switch state.</p></article><article class="card"><h3>Closure needs two truths</h3><p>The specialist proves the component is restored; RELAY separately proves the agreed service outcome is restored and the customer update is complete.</p></article><article class="card"><h3>Commercial authority remains human</h3><p>RELAY may calculate and assemble breach evidence. It cannot grant an SLA credit, sign a contract or make an unapproved delivery commitment.</p></article><article class="card"><h3>Coverage is a staffing claim</h3><p>The product must not say 24×7 until shifts, on-call, backups and escalation have been staffed and rehearsed.</p></article></div>
+    <div class="callout" style="margin-top:13px"><strong>Why this page matters more than the agent pages</strong><p>An agent is only as trustworthy as the system it reads. Every rule here holds whether the request came from a person, a screen, a seeder or RELAY — which is precisely why an agent can be given a read tool without also being given a way to do damage.</p></div>
+    <h3 style="margin-top:12px">Where these rules are kept</h3>
+    <div class="card source" style="margin:5px 0">packages/platform/src/managed-services/operating-model.ts</div><div class="card source" style="margin:5px 0">apps/api/src/modules/managed-services/</div><div class="card source" style="margin:5px 0">apps/api/src/agent-os/graph-registry.service.ts</div><div class="card source" style="margin:5px 0">docs/01-agent-os/04-managed-services.md</div><div class="card source" style="margin:5px 0">ISO/IEC 20000-1 — iso.org/standard/70636.html</div><div class="card source" style="margin:5px 0">NIST SP 800-61 Rev. 3 — csrc.nist.gov/pubs/sp/800/61/r3/final</div><div class="card source" style="margin:5px 0">Google SRE SLO guidance — sre.google/sre-book/service-level-objectives/</div><div class="card source" style="margin:5px 0">OpenTelemetry — opentelemetry.io/docs/what-is-opentelemetry/</div><div class="footer"><span>XELOR · RELAY agent guide</span><span>06</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">05 · Runtime contract</div><h2>How RELAY takes part in a mission</h2></div><p>The engine controls order, parallelism and recovery</p></header>
+    <div class="flow"><div class="flow-block">Person or signal</div><span class="arrow">→</span><div class="flow-block">ONYX<br><small>scope the mission</small></div><span class="arrow">→</span><div class="flow-block">RELAY<br><small>Managed Services</small></div><span class="arrow">→</span><div class="flow-block">Capability registry<br><small>allow-listed tool</small></div><span class="arrow">→</span><div class="flow-block">Domain service<br><small>business rules</small></div><span class="arrow">→</span><div class="flow-block">Tenant data<br><small>+ audit</small></div></div>
+    <div class="grid-2">
+      <article class="card tint"><h3>1 · Scope</h3><p>ONYX turns the goal into a run against a frozen graph version, with a fixed tenant, user, step budget and timeout.</p></article>
+      <article class="card tint"><h3>2 · Authorise</h3><p>Two checks, both required: the tool must be on RELAY's allow-list, and the signed-in person must independently hold the permission.</p></article>
+      <article class="card tint"><h3>3 · Execute</h3><p>A registered domain service does the work under the same rules a screen would face. There is no general SQL doorway.</p></article>
+      <article class="card tint"><h3>4 · Preserve</h3><p>Inputs, outputs, events and a checkpoint after every wave, so the run can be explained or resumed.</p></article>
+    </div>
+    <div class="callout"><strong>An agent can narrow authority, never widen it</strong><p>RELAY is a specialist and delegates to nobody. Because the permission check is repeated against the requesting person, a mission can never reach data that person could not have opened themselves.</p></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>07</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">06 · Exact callable surface</div><h2>Everything RELAY can call</h2></div><p>This table is the complete list — there is no other door</p></header>
+    <table class="cap-table"><thead><tr><th>Capability</th><th>Mode</th><th>What comes back</th><th>Permission required</th><th>Needs approval</th></tr></thead><tbody><tr><td>managed-services.service-assurance.read</td><td>Read</td><td>Service catalogue, incidents, changes, reviews and ownership boundaries</td><td>managed_services.overview.read</td><td>No</td></tr><tr><td>agent.action.dispatch</td><td>Execute</td><td>Governed service-coordination work item</td><td>agentos.run.operate</td><td>Yes</td></tr></tbody></table>
+    <div class="grid-2" style="margin-top:11px">
+      <article class="card"><h3>Read · Analyse · Simulate</h3><p>Return evidence or a reproducible view. Nothing in the business changes.</p></article>
+      <article class="card"><h3>Draft</h3><p>Produce reviewable content that is labelled a draft and can never present itself as an approved outcome.</p></article>
+      <article class="card"><h3>Execute</h3><p>The only side-effecting mode in the whole system, and the only one that requires an approved human gate above it.</p></article>
+      <article class="card"><h3>Both locks must open</h3><p>The agent's allow-list AND the person's permission. Either one failing is a refusal.</p></article>
+    </div>
+    <div class="callout"><strong>What “dispatch” does and does not do</strong><p>It appends a governed work item naming the responsible specialist, the approval it came from and the exact payload. It does not change a sales order, a stock balance, a production order, a journal or a customer message — a person still does that work.</p></div>
+    <div class="footer"><span>XELOR · RELAY agent guide</span><span>08</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">07 · In the six missions</div><h2>Where RELAY actually appears</h2></div><p>Node by node, from the registered graph definitions</p></header>
+    <table class="mission-table"><thead><tr><th>Mission graph</th><th>What RELAY does in it</th></tr></thead><tbody><tr><td><b>Cross-functional readiness</b></td><td>Not involved</td></tr><tr><td><b>Eight-agent operating review</b></td><td>Reads service assurance and assesses incidents, changes and customer communication</td></tr><tr><td><b>Controlled action mission</b></td><td>Reads service exposure, recommends coordination and receives one approval-bound work item</td></tr><tr><td><b>Working Capital Review</b></td><td>Not involved</td></tr><tr><td><b>QMS &amp; Audit Readiness</b></td><td>Not involved</td></tr><tr><td><b>Managed Service Assurance</b></td><td>Reads and assesses service evidence, then publishes the human-approved service brief</td></tr></tbody></table>
+    <div class="callout" style="margin-top:12px"><strong>Reading this honestly</strong><p>“Not involved” is not a limitation, it is the design. A mission asks only the specialists whose evidence it needs, and a specialist cannot add itself to a graph at runtime. The graph is written down, versioned and content-hashed before the run starts.</p></div>
+    <h3 style="margin-top:12px">The shape every mission shares</h3>
+    <div class="flow"><div class="flow-block">Goal</div><span class="arrow">→</span><div class="flow-block">Parallel reads</div><span class="arrow">→</span><div class="flow-block">Assessments</div><span class="arrow">→</span><div class="flow-block">Join</div><span class="arrow">→</span><div class="flow-block">HEXA verify</div><span class="arrow">→</span><div class="flow-block">Human gate</div><span class="arrow">→</span><div class="flow-block">Outcome</div></div><div class="footer"><span>XELOR · RELAY agent guide</span><span>09</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">08 · Worked example</div><h2>An ERP connector falls behind its freshness objective</h2></div><p>Illustrative operating-model data, clearly labelled in the product</p></header>
+    <div class="steps plain"><div class="step"><div><p style="font-size:9.8px">RELAY records one P2 service incident, names the affected Integration Assurance outcome, starts the response clock and schedules the next customer update. It does not create a second HEXA connector record.</p></div></div><div class="step"><div><p style="font-size:9.8px">HEXA Integration owns queue diagnosis, circuit state, dead-letter evidence, retry and technical recovery. RELAY owns severity, escalation, timeline and the plain-language description of customer impact.</p></div></div><div class="step"><div><p style="font-size:9.8px">When throughput recovers, HEXA supplies technical evidence. RELAY verifies that data freshness is inside the agreed objective, issues the customer update and only then closes the service outcome.</p></div></div><div class="step"><div><p style="font-size:9.8px">If the failure repeats, RELAY opens a problem/improvement item with a named owner. A material change still follows the customer change calendar, HEXA control checks and any required human approval.</p></div></div></div>
+    <div class="callout"><strong>The sentence to say out loud</strong><p>“RELAY contributes evidence from its own area, with the source records behind it and its limits stated. It does not claim an action is done until the system has recorded and verified it.”</p></div>
+    <h3 style="margin-top:12px">Fair questions to ask while watching</h3>
+    <ul><li>Which records is this answer standing on?</li><li>Which permission was checked, and against whom?</li><li>Is this a recorded fact, a simulation, a draft, or a completed result?</li><li>Would this step have waited for a person?</li><li>What happens if the service restarts halfway through?</li></ul><div class="footer"><span>XELOR · RELAY agent guide</span><span>10</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">09 · What is real</div><h2>Live today, and deliberately not</h2></div><p>The second column is the one worth reading</p></header>
+    <div class="truth">
+      <div class="yes"><h3>Working now</h3><ul><li>RELAY in the eight-agent registry and visible department map</li><li>Shared four-stage lifecycle and non-overlapping responsibility model</li><li>Permission-gated API and five-screen Managed Services workspace</li><li>Read-only service-assurance capability</li><li>Dedicated HEXA-verified, human-gated assurance graph</li><li>One approval-bound service-coordination item in the larger action mission</li></ul></div>
+      <div class="no"><h3>Not built — stated plainly</h3><ul><li>The catalogue, incidents, changes, review and measures are seeded illustrative data—not live customer evidence</li><li>No staffed 24×7 desk, on-call roster, paging or customer communications channel is operating</li><li>No ITSM adapter, OpenTelemetry ingestion, automatic correlation or production service data tables exist yet</li><li>No contractual SLA, service credit calculation or customer entitlement engine is active</li><li>RELAY coordinates; it does not autonomously repair another agent's domain</li></ul></div>
+    </div>
+    <div class="stack">
+      <div class="stack-row"><b>Identity boundary</b><span>Verified token → tenant and actor</span></div>
+      <div class="stack-row"><b>Authority boundary</b><span>Agent allow-list AND the person's permission</span></div>
+      <div class="stack-row"><b>Action boundary</b><span>Side effects need an approved ancestor node</span></div>
+      <div class="stack-row"><b>Data boundary</b><span>Domain service over a tenant-fenced database</span></div>
+      <div class="stack-row"><b>Evidence boundary</b><span>Append-only runs, events, checkpoints and audit</span></div>
+    </div>
+    <p class="mini">Gaps are listed because a guide that hides them fails the first hour of technical due diligence. Every item on the right is either a roadmap decision or a known defect, and both are recorded in the project's own capability-gap register.</p><div class="footer"><span>XELOR · RELAY agent guide</span><span>11</span></div></section><section class="page " style="--accent:#0f766e;--pale:#e8f7f4">
+    <header class="section-head"><div><div class="eyebrow">10 · Quick reference</div><h2>RELAY on one page</h2></div><p>For explaining the agent to somebody new</p></header>
+    <div class="grid-2"><article class="card"><h3>Its job</h3><p>Coordinates the service around XELOR—from design and onboarding to incidents, changes, service reviews and improvement—while the accountable specialist still performs the technical work.</p></article><article class="card"><h3>Speaks for</h3><p>Managed-service design, Transition, Service operation, Service improvement</p></article><article class="card"><h3>Takes in</h3><p>Customer outcomes and entitlement · Operational signals and user contacts · Specialist diagnosis and restoration evidence · Approved changes and human decisions</p></article><article class="card"><h3>Gives back</h3><p>One service incident and clock · A named specialist hand-off · A timed customer update · A verified service brief and improvement action</p></article><article class="card"><h3>Can call</h3><p>managed-services.service-assurance.read, agent.action.dispatch</p></article><article class="card"><h3>Cannot do</h3><p>The catalogue, incidents, changes, review and measures are seeded illustrative data—not live customer evidence · No staffed 24×7 desk, on-call roster, paging or customer communications channel is operating · No ITSM adapter, OpenTelemetry ingestion, automatic correlation or production service data tables exist yet</p></article></div>
+    <h3 style="margin-top:12px">Words used on these pages</h3>
+    <table class="glossary"><tbody>
+      <tr><td>Agent</td><td>A named specialist with a fixed, allow-listed set of tools — not a process that can roam.</td></tr>
+      <tr><td>Capability</td><td>One registered operation with a declared mode, owner and required permission.</td></tr>
+      <tr><td>Mission graph</td><td>A versioned recipe: which steps run, which run together, where it waits for a person.</td></tr>
+      <tr><td>Checkpoint</td><td>A stored snapshot after each wave, used to explain a run and to resume it safely.</td></tr>
+      <tr><td>Governed work item</td><td>An approved, append-only assignment for a human team — not the business change itself.</td></tr>
+    </tbody></table><div class="footer"><span>XELOR · RELAY agent guide</span><span>12</span></div></section></body></html>

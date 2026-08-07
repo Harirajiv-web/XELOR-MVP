@@ -70,3 +70,4 @@ export * from "./copilot/answer.js";
 export * from "./agent-os/types.js";
 export * from "./agent-os/graph.js";
 export * from "./agent-os/confidence.js";
+export * from "./managed-services/operating-model.js";

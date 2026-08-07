@@ -1,4 +1,8 @@
-import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
+import {
+  Module,
+  type MiddlewareConsumer,
+  type NestModule,
+} from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { TenantMiddleware } from "./common/tenant.middleware.js";
 import { PermissionGuard } from "./common/permission.guard.js";
@@ -24,6 +28,7 @@ import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
 import { AgentOsModule } from "./agent-os/agent-os.module.js";
+import { ManagedServicesModule } from "./modules/managed-services/managed-services.module.js";
 import { HealthController } from "./health.controller.js";
 import { ServerlessWorkerController } from "./serverless-worker.controller.js";
 
@@ -75,6 +80,9 @@ import { ServerlessWorkerController } from "./serverless-worker.controller.js";
     // Governed execution layer above the ERP kernel. It calls domain services only through
     // registered capabilities; models never receive a database handle.
     AgentOsModule,
+    // RELAY's service-management control plane. The MVP endpoint is an explicitly labelled
+    // operating-model snapshot; live telemetry and ITSM transports remain Integration work.
+    ManagedServicesModule,
     // GET /me — the bootstrap every front end calls before it draws anything.
     IdentityModule,
   ],

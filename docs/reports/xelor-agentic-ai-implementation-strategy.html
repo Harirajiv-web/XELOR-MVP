@@ -48,12 +48,12 @@
     <div class="eyebrow">ONYX · AGENTIC INTELLIGENCE</div>
     <h1>Agentic AI Implementation &amp; Market Strategy</h1>
     <div class="sub">Exactly what is implemented, what is deterministic or simulated, and how XELOR can turn governed manufacturing intelligence into a defensible product advantage.</div>
-    <div class="meta"><span>Prepared from source code, module contracts, database controls and deployment files</span><span>3 August 2026</span></div>
+    <div class="meta"><span>Prepared from source code, module contracts, database controls, the supplied managed-services deck and primary standards</span><span>6 August 2026</span></div>
   </section>
 
   <section>
     <h2>1. The honest answer</h2>
-    <p class="lead">XELOR has implemented meaningful agentic infrastructure—not merely a chat box. The application contains a seven-agent registry, versioned bounded graphs, live tenant-scoped ERP capability calls, parallel execution waves, durable run/node state, checkpoints, evidence, human approval pauses, approval ancestry enforcement, action dispatch records, event-triggered missions, an operator-facing Mission Control and a globally discoverable Human Approvals inbox. A cross-industry Decision &amp; Risk Commander now joins current sales, supply, planning, quality and maintenance facts, explains recovery choices, persists evidence relationships and separates estimated exposure from verified outcomes.</p>
+    <p class="lead">XELOR has implemented meaningful agentic infrastructure—not merely a chat box. The application contains an eight-agent registry, versioned bounded graphs, live tenant-scoped ERP capability calls, parallel execution waves, durable run/node state, checkpoints, evidence, human approval pauses, approval ancestry enforcement, action dispatch records and an operator-facing Mission Control. RELAY now adds a managed-service operating layer for design, transition, incident/change coordination, customer communication and improvement without taking technical ownership from the specialist agents.</p>
     <div class="callout good"><b>What is real now:</b> orchestration, authorization, ERP reads, persistence, checkpoints, tenant-scoped pending approvals, global pending count, consequence review, mandatory decision notes, Approve/Reject, audit trails, governance switches, deterministic evaluation, Copilot queries and governed internal action dispatch.</div>
     <div class="callout warning"><b>What is not active in the current demo configuration:</b> no hosted LLM is configured; Agent OS language reasoning is deterministic; there are zero live external connectors; a dispatched action creates an internal governed work item and does not autonomously post inventory, money or supplier messages. Railway packaging exists, but a live hosted URL is not proven by the repository.</div>
     <div class="grid2">
@@ -89,25 +89,26 @@
   </section>
 
   <section class="page">
-    <h2>3. The seven-agent operating model</h2>
+    <h2>3. The eight-agent operating model</h2>
     <div class="agent-grid">
       <div class="agent"><b>ONYX</b>Supervisor; frames missions, delegates, joins evidence and publishes outcomes.</div>
       <div class="agent"><b>HEXA</b>Governance; verifies boundaries, evidence, permissions and side-effect ancestry.</div>
-      <div class="agent"><b>MICA</b>Commercial; reads sales commitments and proposes commercial recovery work.</div>
+      <div class="agent"><b>MICA</b>Sales &amp; Product Care; reads customer commitments, explains manufactured-product after-sales cases and proposes governed follow-up work.</div>
       <div class="agent"><b>SPAR</b>Supply; reads stock and proposes supply-chain actions.</div>
       <div class="agent"><b>AXLE</b>Planning; reads planned orders and proposes planning actions.</div>
       <div class="agent"><b>KILN</b>Operations &amp; Quality; reads production/inspection evidence and prepares QMS, audit and controlled plant work.</div>
       <div class="agent"><b>RASP</b>Finance &amp; Working Capital; reads finance evidence, simulates cash scenarios and prepares controlled work.</div>
+      <div class="agent"><b>RELAY</b>Managed Services; owns the service clock, hand-offs, customer updates, change calendar and improvement while specialists retain diagnosis and repair.</div>
     </div>
     <h3>Controlled mission sequence</h3>
     <div class="flow">
-      <div>ONYX<br>bounds goal</div><div class="arrow">→</div><div>6 live ERP reads<br>parallel wave</div><div class="arrow">→</div><div>6 specialist<br>assessments</div>
+      <div>ONYX<br>bounds goal</div><div class="arrow">→</div><div>7 registered reads<br>parallel wave</div><div class="arrow">→</div><div>7 specialist<br>assessments</div>
     </div>
     <div class="flow">
       <div>ONYX<br>joins plan</div><div class="arrow">→</div><div>HEXA<br>preflight</div><div class="arrow">→</div><div>Human approval<br>durable pause</div>
     </div>
     <div class="flow">
-      <div>6 approved<br>work items</div><div class="arrow">→</div><div>HEXA verifies<br>approval ancestry</div><div class="arrow">→</div><div>ONYX publishes<br>outcome</div>
+      <div>7 approved<br>work items</div><div class="arrow">→</div><div>HEXA verifies<br>approval ancestry</div><div class="arrow">→</div><div>ONYX publishes<br>outcome</div>
     </div>
     <h3>Human-in-the-loop control as implemented</h3>
     <div class="flow">
@@ -149,11 +150,12 @@
       <tbody>
         <tr><td><b>ONYX</b></td><td>ONYX Copilot; Agent OS; AI Operations.</td><td>Company context only through <code>general.companies.read</code>; all other evidence arrives from specialists.</td><td>Scope, source links, parallel results, HEXA verdict, approval state and unresolved limits. ONYX cannot dispatch an action.</td></tr>
         <tr><td><b>HEXA</b></td><td>Organisation; Administration; Integration.</td><td>Company masters through <code>general.companies.read</code>; graph/user/tool/audit state through the run context.</td><td>Verified tenant and actor, permission intersection, policy checks, approval ancestry and auditability. Simulated connector health cannot be labelled externally verified.</td></tr>
-        <tr><td><b>MICA</b></td><td>Sales; Service.</td><td>Tenant-scoped sales commitments through <code>sales.orders.read</code>.</td><td>Customer/order/date/credit evidence and the difference between promised, dispatched and still open. Service context cannot be invented when it was not retrieved.</td></tr>
+        <tr><td><b>MICA</b></td><td>Sales; Customer Care &amp; Warranty.</td><td>Tenant-scoped sales commitments through <code>sales.orders.read</code>.</td><td>Customer/order/date/credit evidence and the difference between promised, dispatched and still open. Product-case, warranty, spares or feedback context cannot be invented when it was not retrieved. Operational problems with XELOR itself belong to RELAY.</td></tr>
         <tr><td><b>SPAR</b></td><td>Purchase; Inventory.</td><td>Non-zero on-hand balances through <code>inventory.on-hand.read</code>.</td><td>Item, warehouse, batch and available quantity as observed. A purchase expectation is not on-hand stock, and an approved PO is not a receipt.</td></tr>
         <tr><td><b>AXLE</b></td><td>Engineering; Planning.</td><td>Latest planned orders and status/source filters through <code>planning.planned-orders.read</code>.</td><td>Proposal, quantity, due/release dates, source and plan limitation. It must not present infinite-capacity MRP or a draft schedule as feasible execution.</td></tr>
         <tr><td><b>KILN</b></td><td>Production; QMS &amp; Audit; Maintenance.</td><td>Production orders, inspections, quality evidence views and draft audit/CAPA/pack artifacts.</td><td>Observed operation/reading/verdict evidence, missing proof and draft labels. It cannot decide product release, compliance, root cause or CAPA effectiveness.</td></tr>
         <tr><td><b>RASP</b></td><td>Accounts; Employee Spend; People; Working Capital.</td><td>Vouchers, trial balance, bounded scenario evidence, collection review and draft finance-pack manifest.</td><td>Posted fact versus scenario assumption versus illustrative screen value. It cannot move money, contact a customer, certify a funding pack or post a voucher.</td></tr>
+        <tr><td><b>RELAY</b></td><td>Managed Services.</td><td>Service catalogue, lifecycle, incidents, changes, reviews and the responsibility map through <code>managed-services.service-assurance.read</code>.</td><td>Service coordination only. Technical repair, security determination, AI controls, factory assets, product warranty and contracts stay with their existing owners.</td></tr>
       </tbody>
     </table>
     <div class="callout good"><b>Why this separation matters:</b> deep module knowledge helps a specialist explain consequences, but runtime data access remains intentionally narrow. Adding a module to an agent's description never grants a database read; a registered capability and the requesting person's permission are both still required.</div>
@@ -161,7 +163,7 @@
 
   <section class="page">
     <h2>3B. Exact capability surface and modes</h2>
-    <p class="lead">The registry contains 16 unique capabilities. Fifteen are read, analyse, simulate or draft. The only effectful capability is shared by six specialists and remains structurally downstream of human approval.</p>
+    <p class="lead">The registry contains 17 unique capabilities. Sixteen are read, analyse, simulate or draft. The only effectful capability is shared by seven specialists and remains structurally downstream of human approval.</p>
     <table class="small">
       <thead><tr><th>Agent</th><th>Callable capabilities</th><th>Mode and evidence</th><th>Approval/effect boundary</th></tr></thead>
       <tbody>
@@ -172,6 +174,7 @@
         <tr><td><b>AXLE</b></td><td><code>planning.planned-orders.read</code><br><code>agent.action.dispatch</code></td><td>Read current plan; append planning work item.</td><td>No firming, conversion, MRP rerun or schedule publication.</td></tr>
         <tr><td><b>KILN</b></td><td><code>production.orders.read</code>; <code>quality.inspections.read</code>; <code>quality.evidence.collect</code>; <code>quality.audit-plan.draft</code>; <code>quality.capa-plan.draft</code>; <code>quality.audit-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read, analyse and prepare explicitly labelled drafts; append approved plant work.</td><td>No inspection verdict, disposition, document release, audit conclusion, CAPA closure or production posting.</td></tr>
         <tr><td><b>RASP</b></td><td><code>accounts.vouchers.read</code>; <code>finance.cash-position.read</code>; <code>finance.forecast.simulate</code>; <code>finance.collections.prioritise</code>; <code>finance.funding-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read posted evidence; return bounded scenario/review/draft; append approved finance work.</td><td>No payment, bank instruction, posting, customer message or certification.</td></tr>
+        <tr><td><b>RELAY</b></td><td><code>managed-services.service-assurance.read</code>; <code>agent.action.dispatch</code></td><td>Read service evidence; append one approved coordination item.</td><td>No technical repair, security/compliance decision, AI-control change, contract or service credit.</td></tr>
       </tbody>
     </table>
     <h3>What the single effect actually writes</h3>
@@ -181,7 +184,7 @@
       <li>An idempotent, append-only <code>governed_work_item</code> is written with run, node, agent, approval and payload references.</li>
       <li>The mission later verifies that the work items exist. It does not claim the underlying departmental work is complete.</li>
     </ol>
-    <div class="callout warning"><b>Common demo misunderstanding:</b> “six actions dispatched” means six accountable assignments were created after approval. It does not mean XELOR paid a supplier, changed stock, contacted a customer or altered a plan.</div>
+    <div class="callout warning"><b>Common demo misunderstanding:</b> “seven actions dispatched” means six domain assignments plus one RELAY service-coordination assignment were created after approval. It does not mean XELOR paid a supplier, changed stock, contacted a customer, altered a plan or operated a live service desk.</div>
   </section>
 
   <section class="page">
@@ -201,6 +204,27 @@
     <div class="flow"><div>Next.js web<br>public</div><div class="arrow">→</div><div>NestJS API<br>private</div><div class="arrow">→</div><div>PostgreSQL + worker<br>private durable state</div></div>
     <p>Railway service files start Web, API, Worker, PostgreSQL and Valkey; API boot waits for the database, applies migrations, seeds/checkpoints the demo version once and then reports readiness. The agent architecture is unchanged by hosting: the deterministic stub remains the provider, and no external connector is made real merely because the URL is public.</p>
     <div class="callout bad"><b>Do not infer deployment from files:</b> the repository proves repeatable packaging and local parity. It does not prove an active Railway project, a public domain, TLS, monitoring or availability.</div>
+  </section>
+
+  <section class="page">
+    <h2>3D. RELAY managed-service operating model</h2>
+    <p class="lead">RELAY is the human-service coordination layer around XELOR. It follows the service pattern visible in the supplied Cisco CoSol deck—design, transition, operate and improve—adapted to XELOR rather than copied as a network-service claim.</p>
+    <div class="flow"><div>Design<br>catalogue + SLO</div><div class="arrow">→</div><div>Transition<br>discover + accept</div><div class="arrow">→</div><div>Operate<br>incident + change</div><div class="arrow">→</div><div>Improve<br>review + actions</div></div>
+    <table>
+      <thead><tr><th>Task</th><th>Accountable owner</th><th>RELAY hand-off and hard boundary</th></tr></thead>
+      <tbody>
+        <tr><td>Service catalogue, onboarding, incident clock, customer change calendar, SLO evidence and service review</td><td><b>RELAY</b></td><td>Owns coordination and customer communication; cannot claim a technical fix without specialist evidence.</td></tr>
+        <tr><td>Connector failure, retry, DLQ, mapping, security determination and audit</td><td><b>HEXA</b></td><td>RELAY links customer impact; HEXA alone diagnoses the connector and decides security/reportability.</td></tr>
+        <tr><td>Provider, prompt, evaluation, guardrail, autonomy and kill switch</td><td><b>ONYX AI Operations</b></td><td>RELAY may coordinate service impact; it cannot change any AI control.</td></tr>
+        <tr><td>Manufactured-product tickets, warranty, AMC and complaints</td><td><b>MICA</b></td><td>No duplicate Managed Services ticket unless the XELOR technology service itself is affected.</td></tr>
+        <tr><td>Factory machine, PM, downtime and maintenance work order</td><td><b>KILN</b></td><td>Physical restoration remains KILN; a machine breakdown is not automatically a XELOR service incident.</td></tr>
+        <tr><td>SLA credit, contract, scope and material customer promise</td><td><b>Authorised human</b></td><td>RELAY assembles evidence; no agent signs or grants credit.</td></tr>
+      </tbody>
+    </table>
+    <h3>Dedicated assurance graph</h3>
+    <div class="flow"><div>ONYX<br>frames outcome</div><div class="arrow">→</div><div>RELAY<br>reads + assesses</div><div class="arrow">→</div><div>HEXA<br>verifies boundary</div><div class="arrow">→</div><div>Human gate<br>RELAY brief</div></div>
+    <div class="callout warning"><b>Honest demo boundary:</b> incidents, changes, reviews and service measures are seeded illustrative operating-model data. The repository does not prove a staffed 24×7 desk, live ITSM/telemetry, customer paging or a contractual SLA.</div>
+    <p class="small"><b>Design basis:</b> ISO/IEC 20000-1; ITIL incident/problem/request/change/service-level practices; NIST SP 800-61 Rev. 3; Google SRE SLO/error-budget guidance; OpenTelemetry.</p>
   </section>
 
   <section class="page">
@@ -260,7 +284,7 @@
         <tr><td>Controlled actions</td><td>Append-only approved internal work-item dispatches</td><td>No external supplier/API/financial posting</td><td>“Approval created accountable domain work; external execution is the next integration phase.”</td></tr>
       </tbody>
     </table>
-    <div class="callout bad"><b>Never claim:</b> that seven independent LLMs are currently running; that Agent OS autonomously changed ERP ledgers; that external systems were contacted; or that every AI feature uses a production model.</div>
+    <div class="callout bad"><b>Never claim:</b> that eight independent LLMs are currently running; that Agent OS autonomously changed ERP ledgers; that RELAY is a staffed 24×7 service; that external systems were contacted; or that every AI feature uses a production model.</div>
   </section>
 
   <section class="page">
@@ -427,7 +451,7 @@
       <li><code>packages/db/src/schema/agent-os.ts</code> and Agent OS migrations</li>
       <li><code>apps/web/src/spine/shell/copilot-rail.tsx</code>, global Human Approvals link, ONYX gateway, approval inbox and Mission Control screens</li>
       <li>Working Capital and QMS &amp; Audit module manifests, RASP/KILN capability registrations and bounded graph definitions</li>
-      <li>All 19 web module manifests and their owning domain controllers/services</li>
+      <li>All 21 web module manifests and their owning domain controllers/services, including RELAY's shared operating model, API, workspace and mission graph</li>
       <li><code>infra/railway</code> public-demo identity, startup, health and five-service deployment files</li>
       <li>Agent OS Phase 1–3 documentation and authenticated browser tests, including start → discover → note → approve → resume</li>
     </ul>
@@ -439,10 +463,13 @@
       <li>Amazon Bedrock Guardrails: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html">docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html</a></li>
       <li>Amazon Bedrock evaluations: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html">docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html</a></li>
       <li>OpenTelemetry JavaScript: <a href="https://opentelemetry.io/docs/languages/js/">opentelemetry.io/docs/languages/js/</a></li>
+      <li>ISO/IEC 20000-1 service management: <a href="https://www.iso.org/standard/70636.html">iso.org/standard/70636.html</a></li>
+      <li>NIST incident response: <a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">NIST SP 800-61 Rev. 3</a></li>
+      <li>Google SRE service-level objectives: <a href="https://sre.google/sre-book/service-level-objectives/">sre.google/sre-book/service-level-objectives/</a></li>
     </ul>
     <h3>Final strategic recommendation</h3>
     <p class="lead">XELOR should become the manufacturing system that can explain every recommendation, prove every source, and safely turn approved decisions into work. Keep deterministic engines responsible for money, stock, tax, scheduling constraints and control verdicts. Use models for language, extraction, classification, evidence synthesis and hypothesis generation—and let the existing Agent OS make their use bounded, observable and accountable.</p>
-    <p class="footer-note">This report describes the working repository inspected on 3 August 2026. It deliberately distinguishes live orchestration from deterministic reasoning, isolated demo data, gross value connected to risk and human-verified outcomes. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
+    <p class="footer-note">This report describes the working repository inspected on 6 August 2026. It deliberately distinguishes live orchestration from deterministic reasoning and RELAY's illustrative operating model from a staffed managed service. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
   </section>
 </body>
 </html>

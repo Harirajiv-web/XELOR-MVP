@@ -20,6 +20,7 @@ import { administrationManifest } from "./administration/manifest";
 import { integrationManifest } from "./integration/manifest";
 import { agentosManifest } from "./agentos/manifest";
 import { aiControlManifest } from "./aicontrol/manifest";
+import { managedServicesManifest } from "./managed-services/manifest";
 
 /**
  * THE INSTALLED MODULES. This list is the whole of "which modules does this build contain".
@@ -40,7 +41,7 @@ import { aiControlManifest } from "./aicontrol/manifest";
  * person may open it. Three independent gates, three different people who can change them.
  *
  * Sixteen modules, one per system of record, each owned by a department from `NAME.md`:
- * HEXA (Organisation, Administration, Integration) · MICA (Sales, Service) · SPAR
+ * HEXA (Organisation, Administration, Integration) · MICA (Sales, Customer Care & Warranty) · SPAR
  * (Purchase, Inventory) · AXLE (Engineering, Planning) · KILN (Production, Quality,
  * Maintenance) · RASP (People, Accounts) · ONYX (Copilot, AI Operations).
  *
@@ -69,13 +70,16 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   agentosManifest,
   aiopsManifest,
   aiControlManifest,
+  managedServicesManifest,
   administrationManifest,
   integrationManifest,
 ];
 
 /** Sidebar order, then alphabetical — so adding a module never shuffles the others. */
 export function orderedModules(): readonly ModuleManifest[] {
-  return [...INSTALLED_MODULES].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+  return [...INSTALLED_MODULES].sort(
+    (a, b) => a.order - b.order || a.name.localeCompare(b.name),
+  );
 }
 
 export function findModule(key: string): ModuleManifest | undefined {

@@ -11,8 +11,9 @@
  * ───────────────────────────────────────────────────────────────────────────────
  * THE MAPPING IS REAL, AND IT IS NOT ONE-TO-ONE
  * ───────────────────────────────────────────────────────────────────────────────
- * `NAME.md` defines seven departments — HEXA, MICA, SPAR, AXLE, KILN, RASP, ONYX — cut by
- * SYSTEM-OF-RECORD OWNERSHIP, not by physical geography. The plan has six physical areas.
+ * The live registry defines seven departments — HEXA, MICA, SPAR, AXLE, KILN, RASP and
+ * RELAY — plus the horizontal ONYX component, cut by SYSTEM-OF-RECORD OWNERSHIP rather
+ * than physical geography. The plan has six physical areas.
  * The two sets do not correspond, and pretending they do would mean inventing departments
  * for a picture:
  *
@@ -21,10 +22,10 @@
  *   · SPAR owns two, because Supply Chain owns both goods inward and the stores that feed
  *     the line.
  *   · MICA owns despatch, because Commercial owns dispatch and invoicing.
- *   · HEXA, AXLE, RASP and ONYX own NO floor area, and that is correct — platform and
- *     governance, engineering and planning, people and money, and AI operations are not
- *     places on a shop floor. Putting them on the map would be drawing an org chart and
- *     calling it a factory.
+ *   · HEXA, AXLE, RASP, RELAY and ONYX own NO floor area, and that is correct — platform
+ *     governance, engineering and planning, people and money, managed-service operations,
+ *     and AI operations are not places on a shop floor. Putting them on the map would be
+ *     drawing an org chart and calling it a factory.
  *
  * So every division carries two labels: the area's own name, and the department that owns
  * it. That satisfies "name every division" without fabricating a correspondence.

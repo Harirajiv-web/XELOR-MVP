@@ -37,18 +37,18 @@ export default function DashboardScreen(_props: ScreenProps): React.JSX.Element 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Service dashboard"
-        subtitle="How the desk is doing right now: what is open, what is past its promise, what keeps breaking, and how often the assistant's suggestions get corrected."
+        title="Product care dashboard"
+        subtitle="How after-sales product care is doing: what is open, which response promises are at risk, what keeps failing and where customers need follow-up."
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile
-          label="Open tickets"
+          label="Open product cases"
           value={num(tickets.open)}
           note={`of ${num(tickets.total)} ever raised`}
         />
         <Tile
-          label="SLA compliance"
+          label="Response target met"
           value={sla.compliancePct == null ? "—" : `${num(sla.compliancePct, 1)}%`}
           note={
             sla.compliancePct == null
@@ -73,7 +73,7 @@ export default function DashboardScreen(_props: ScreenProps): React.JSX.Element 
       <p className="max-w-prose text-[12px] leading-5 text-[var(--text-muted)]">{sla.note}</p>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Panel title="How long open tickets have been waiting">
+        <Panel title="How long open product cases have been waiting">
           <Distribution counts={backlogAge} total={tickets.open} labelOf={(k) => humanise(k)} />
         </Panel>
 
@@ -90,7 +90,7 @@ export default function DashboardScreen(_props: ScreenProps): React.JSX.Element 
           </ul>
         </Panel>
 
-        <Panel title="Tickets by status">
+        <Panel title="Product cases by status">
           <ul className="flex flex-col gap-2">
             {Object.entries(tickets.byStatus).map(([status, count]) => (
               <li key={status} className="flex items-center justify-between gap-3">

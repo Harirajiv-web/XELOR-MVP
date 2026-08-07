@@ -111,7 +111,7 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
     },
     {
       key: "sla",
-      header: "SLA",
+      header: "Response target",
       width: "w-64",
       render: (t) => {
         const note = slaClockNote(t.sla);
@@ -147,8 +147,8 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Tickets"
-        subtitle="Every service request the desk is holding, with the clock the customer was promised. The clock starts when they called, not when somebody typed it in."
+        title="Product cases"
+        subtitle="After-sales issues with products the factory sold—linked to the customer, machine serial, warranty cover and promised response time. XELOR technology incidents belong to RELAY."
         meta={
           all.length > 0
             ? [
@@ -169,8 +169,8 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
             type="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Filter by ticket, subject or machine serial…"
-            aria-label="Filter tickets"
+            placeholder="Filter by case, subject or machine serial…"
+            aria-label="Filter product cases"
             className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </div>
@@ -187,7 +187,7 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
         />
 
         <Select
-          label="SLA"
+          label="Response target"
           value={slaFilter}
           onChange={setSlaFilter}
           options={[
@@ -209,12 +209,12 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
         onReload={reload}
         onRowClick={(t) => router.push(`/csp/ticket/${t.ticketNo}`)}
         rowKey={(t) => t.ticketNo}
-        caption="Service tickets with SLA state, priority and status"
+        caption="After-sales product cases with response target, priority and status"
         empty={
           text ? (
             <Empty
               title="Nothing matches that filter"
-              body={`No ticket, subject or serial matched “${text}”.`}
+              body={`No product case, subject or serial matched “${text}”.`}
             />
           ) : (
             <Empty

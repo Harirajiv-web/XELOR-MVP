@@ -1775,7 +1775,7 @@ async function onyx(call) {
     const res = await call("POST", "/api/v1/aiops/prompts", {
       featureKey: "csp.ticket_triage",
       template:
-        "You are triaging an inbound service ticket for an Indian pump manufacturer.\n" +
+        "You are triaging an inbound manufactured-product support case for an Indian pump manufacturer.\n" +
         "Read the subject and body and return the category and priority ONLY from the lists given.\n" +
         "Categories: {{categories}}\nPriorities: low, medium, high, urgent\n" +
         "Subject: {{subject}}\nBody: {{body}}\n" +

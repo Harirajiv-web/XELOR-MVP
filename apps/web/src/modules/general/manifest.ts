@@ -37,7 +37,8 @@ function registrationsOf(row: unknown): readonly { stateCode: string }[] {
 export const generalManifest: ModuleManifest = {
   key: "general",
   name: "Organisation",
-  summary: "The legal entities this company trades as, and the identity every document is issued under.",
+  summary:
+    "The legal entities this company trades as, and the identity every document is issued under.",
   department: "HEXA",
   icon: "Building2",
   licenceKey: "general",
@@ -60,7 +61,7 @@ export const generalManifest: ModuleManifest = {
       permission: "general.company.read",
       icon: "Users",
       description:
-        "The six departments and one component that build and own this system, and the written contract at every seam between two of them. The module list under each card is read from the live registry of this build, so a module that was specified and then left out says so rather than being quietly listed. Nothing on this page is about your factory's own data.",
+        "The seven departments and one component that build and own this system, and the written contract at every seam between two of them. The module list under each card is read from the live registry of this build, so a module that was specified and then left out says so rather than being quietly listed. Nothing on this page is about your factory's own data.",
     },
   ],
   screens: {
@@ -115,7 +116,9 @@ export const generalManifest: ModuleManifest = {
         if (!items) return null;
         // An entity with no GSTIN cannot legally raise a tax invoice. That is a finding, not
         // a blank — so it is what the hint says whenever it is true.
-        const withoutGstin = items.filter((row) => registrationsOf(row).length === 0).length;
+        const withoutGstin = items.filter(
+          (row) => registrationsOf(row).length === 0,
+        ).length;
         return {
           value: String(items.length),
           hint:
@@ -124,7 +127,8 @@ export const generalManifest: ModuleManifest = {
               : withoutGstin > 0
                 ? `${withoutGstin} with no GSTIN — cannot raise a tax invoice`
                 : "All can raise a tax invoice",
-          tone: items.length === 0 ? "warn" : withoutGstin > 0 ? "bad" : "neutral",
+          tone:
+            items.length === 0 ? "warn" : withoutGstin > 0 ? "bad" : "neutral",
         };
       },
     },

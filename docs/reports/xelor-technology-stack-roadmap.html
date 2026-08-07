@@ -64,7 +64,7 @@
     <div class="eyebrow">XELOR · TECHNICAL STRATEGY</div>
     <h1>Technology Stack &amp; Production Roadmap</h1>
     <div class="sub">What the demo actually runs, what production still needs, the extension points already reserved, and a pragmatic target stack for a dependable manufacturing product.</div>
-    <div class="meta"><span>Prepared from the repository, module/API audit and deployment package</span><span>3 August 2026</span></div>
+    <div class="meta"><span>Prepared from the repository, module/API audit, deployment package, managed-service reference deck and primary standards</span><span>6 August 2026</span></div>
   </section>
 
   <section>
@@ -105,7 +105,7 @@
         <tr><td>Audit &amp; workflow</td><td>Hash chains; append-only tables; W1 approval engine; Agent OS human gates</td><td><span class="tag live">LIVE</span></td><td>Tenant-scoped pending inbox, permission-checked Approve/Reject, mandatory decision note, identity/time attribution, durable pause/resume and tamper evidence.</td></tr>
         <tr><td>AI</td><td>Thin provider router; deterministic stub; optional Ollama; custom eval harness; Agent OS; Decision Commander</td><td><span class="tag partial">PARTIAL</span></td><td>Cross-module analysis, missions and approvals are live; language reasoning remains deterministic and no hosted provider is active.</td></tr>
         <tr><td>Decision data</td><td>PostgreSQL evidence-link graph and outcome metrics with RLS, audit and explicit verification state</td><td><span class="tag live">LIVE</span></td><td>Estimated exposure and verified value are stored and reported separately; verification requires observed data, method and named reviewer.</td></tr>
-        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>722 unit/service tests pass (698 platform, 3 database, 21 API); the live investor matrix passes 97/97 and Playwright currently lists 20 browser scenarios.</td></tr>
+        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>727 unit/service tests pass (702 platform, 3 database, 22 API); the live investor matrix passes 99/99 and Playwright lists the browser scenarios separately.</td></tr>
         <tr><td>Deployment packaging</td><td>Docker Compose plus Railway Dockerfiles, service JSON, health/readiness and boot scripts</td><td><span class="tag live">LIVE</span></td><td>Local seven-service development and a five-service hosted-demo topology are reproducible. A currently operating cloud environment or production topology is not claimed.</td></tr>
       </tbody>
     </table>
@@ -168,7 +168,7 @@
 
   <section class="page">
     <h2>3A. Module maturity map</h2>
-    <p class="lead">All 19 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
+    <p class="lead">All 21 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
     <table class="small">
       <thead><tr><th>Owner</th><th>Module</th><th>Working centre</th><th>Most important boundary</th></tr></thead>
       <tbody>
@@ -176,10 +176,11 @@
         <tr><td>ONYX</td><td>Agent OS <span class="tag live">LIVE</span></td><td>5 graphs, 16 capabilities, parallel waves, checkpoints, approvals and recovery.</td><td>Language reasoning is deterministic; dispatch creates a work item, not ERP completion.</td></tr>
         <tr><td>ONYX</td><td>AI Operations <span class="tag partial">PARTIAL</span></td><td>Registry, provider policy, kill/budget, cost, evaluations and action logging.</td><td>No live hosted provider; implementation/golden-set coverage is incomplete.</td></tr>
         <tr><td>HEXA</td><td>Organisation <span class="tag live">LIVE</span></td><td>Companies, registrations, departments and transaction-safe numbering.</td><td>No consolidation or corporate-secretarial lifecycle.</td></tr>
-        <tr><td>HEXA</td><td>Administration <span class="tag partial">PARTIAL</span></td><td>Roles, 138 permissions, SoD, incident/privacy clocks and audit verification.</td><td>Row/field policy is mainly preview; grant revocation/escalation needs depth.</td></tr>
+        <tr><td>HEXA</td><td>Administration <span class="tag partial">PARTIAL</span></td><td>Roles, 139 permissions, SoD, incident/privacy clocks and audit verification.</td><td>Row/field policy is mainly preview; grant revocation/escalation needs depth.</td></tr>
+        <tr><td>RELAY</td><td>Managed Services <span class="tag partial">PARTIAL</span></td><td>Four-stage lifecycle, responsibility map, service catalogue, incident/change/review workspace and governed assurance graph.</td><td>Illustrative data only; live ITSM, telemetry, service tables, staffing and contractual SLOs remain production work.</td></tr>
         <tr><td>HEXA</td><td>Integration <span class="tag partial">PARTIAL</span></td><td>Retry/DLQ/circuit/signature/statutory state logic and operator screens.</td><td>External network transports remain simulated.</td></tr>
         <tr><td>MICA</td><td>Sales <span class="tag partial">PARTIAL</span></td><td>Customer, GST order, credit gate, dispatch, invoice and receivable.</td><td>No lead/opportunity/quotation or complete cancellation/reservation workflow.</td></tr>
-        <tr><td>MICA</td><td>Service <span class="tag partial">PARTIAL</span></td><td>Tickets, account isolation, SLA, entitlement, complaint, spares and CSAT.</td><td>No integrated outbound transport; warranty rows are not created by normal flow.</td></tr>
+        <tr><td>MICA</td><td>Customer Care &amp; Warranty <span class="tag partial">PARTIAL</span></td><td>Manufactured-product cases, account isolation, response targets, entitlement, complaints, spares and customer feedback.</td><td>No integrated outbound transport; warranty rows are not created by normal flow. XELOR application, integration and AI service incidents are owned separately by RELAY.</td></tr>
         <tr><td>SPAR</td><td>Purchase <span class="tag partial">PARTIAL</span></td><td>Vendor, two-step approval, PO and atomic goods receipt.</td><td>Cycle ends at GRN; no supplier invoice, match, AP or payment.</td></tr>
         <tr><td>SPAR</td><td>Inventory <span class="tag partial">PARTIAL</span></td><td>Single append-only stock path, locks, FIFO batches and on-hand.</td><td>No bin/reservation/count/serial genealogy or complete valuation.</td></tr>
         <tr><td>AXLE</td><td>Engineering <span class="tag partial">PARTIAL</span></td><td>Item and BOM foundations consumed by Sales, Planning and Production.</td><td>No ECR/ECO change intent, impact, approval or effectivity.</td></tr>
@@ -234,6 +235,25 @@
   </section>
 
   <section class="page">
+    <h2>3D. RELAY managed-service stack and implementation path</h2>
+    <p class="lead">The new module deliberately begins as one shared operating-model definition, one read API, five presentation screens and one bounded graph. This proves ownership and workflow before the team adds a second operational database or promises service coverage.</p>
+    <div class="flow"><div>Customer outcome<br>catalogue + entitlement</div><div class="arrow">→</div><div>Signals + contact<br>OTel / ITSM adapters</div><div class="arrow">→</div><div>RELAY<br>incident + change</div><div class="arrow">→</div><div>Specialist<br>technical action</div><div class="arrow">→</div><div>Review<br>SLO + improve</div></div>
+    <table>
+      <thead><tr><th>Layer</th><th>MVP now</th><th>Production implementation</th><th>Control</th></tr></thead>
+      <tbody>
+        <tr><td>Service model</td><td>Typed shared lifecycle/responsibility/demo snapshot.</td><td>Tenant-scoped service, entitlement, SLO, incident, event, request, problem, change, communication, review and improvement tables.</td><td>RLS, immutable event history, retention and one accountable owner.</td></tr>
+        <tr><td>Observability</td><td>Explicitly seeded examples.</td><td>OpenTelemetry Collector and provider-neutral trace/metric/log ingestion; component-to-service mapping.</td><td>Redaction, sampling policy, provenance, freshness and cost limits.</td></tr>
+        <tr><td>Service management</td><td>XELOR-only five-screen workspace.</td><td>ITSM, paging and customer-channel adapters implemented through HEXA Integration with external IDs and idempotency.</td><td>RELAY coordinates; HEXA owns connectors and security; specialists own fixes.</td></tr>
+        <tr><td>Automation</td><td>Read capability plus approval-bound coordination work item.</td><td>Start read/recommend/draft; later add reversible low-risk capabilities with postconditions.</td><td>Permission intersection, approval ancestry, retries, audit and kill switch.</td></tr>
+        <tr><td>People</td><td>Role model documented.</td><td>Named service owner, manager, transition lead, desk/operations lead, technical owners, on-call and customer approvers.</td><td>Never sell 24×7 until shifts, backups and escalation drills are evidenced.</td></tr>
+      </tbody>
+    </table>
+    <h3>Recommended rollout</h3>
+    <ol><li>One pilot customer, business-hours coverage and 3–5 customer outcomes.</li><li>Agree catalogue, responsibility matrix, severity and calculation rules before coding integration.</li><li>Add tenant data model and RLS, then ITSM/OTel adapters in shadow mode.</li><li>Rehearse incident, change, restore and exit; measure SLOs without contractual credits.</li><li>Expand coverage and automation only after staffing and evidence support the promise.</li></ol>
+    <div class="callout warning"><b>Current label must remain:</b> illustrative managed-service operating model. It is not evidence of live telemetry, a staffed desk, external communications or contractual availability.</div>
+  </section>
+
+  <section class="page">
     <h2>4. Stack needed immediately after the demo</h2>
     <table>
       <thead><tr><th>Capability</th><th>Recommended stack</th><th>Why it is required</th><th>Exit criterion</th></tr></thead>
@@ -278,7 +298,7 @@
       <thead><tr><th>Priority</th><th>Gap</th><th>Production impact</th><th>Recommended treatment</th></tr></thead>
       <tbody>
         <tr><td>Resolved</td><td>Batch/lot consumption</td><td>FIFO allocation now consumes batch-tracked receipts through the single stock write path and records explicit splits.</td><td>Keep the allocation and insufficiency regression tests in the release gate; extend genealogy reporting for production.</td></tr>
-        <tr><td>Resolved</td><td>Idempotency/validation consistency</td><td>Database conflicts map to safe 409 responses; the identified maintenance and expenditure paths validate and deduplicate requests.</td><td>Retain conformance probes in the 97-check investor acceptance matrix.</td></tr>
+        <tr><td>Resolved</td><td>Idempotency/validation consistency</td><td>Database conflicts map to safe 409 responses; the identified maintenance and expenditure paths validate and deduplicate requests.</td><td>Retain conformance probes in the 99-check investor acceptance matrix.</td></tr>
         <tr><td>P1</td><td>Quotation and opportunity</td><td>The commercial process starts at a committed sales order.</td><td>Add lead/opportunity, quote revisions, validity, approvals and quote-to-order conversion.</td></tr>
         <tr><td>Resolved</td><td>Production operations</td><td>Northstar production reports four predecessor-gated operations with operator, time, quantities and evidence.</td><td>Deepen labour/machine booking and WIP analytics for production deployments.</td></tr>
         <tr><td>Resolved</td><td>Persisted NCR/CAPA</td><td>The rejected inspection has a persisted NCR, containment, root cause and CAPA whose effectiveness review remains human-owned.</td><td>Extend toward full 8D, attachment lifecycle and customer-specific approval routes.</td></tr>
@@ -352,13 +372,16 @@
       <li><code>apps/api</code> domain modules, common guards, worker/outbox, workflow, AI and Agent OS</li>
       <li><code>apps/web</code> module manifests, shell, Copilot rail and Playwright workflows</li>
       <li><code>docs/02-investor-demo/02-capability-gaps.md</code></li>
-      <li>Module/API/deployment re-audit and 722-test run on 3 August 2026</li>
+      <li><code>docs/01-agent-os/04-managed-services.md</code>, shared RELAY operating model, API, UI and graph</li>
+      <li>Module/API/deployment re-audit and verification run on 6 August 2026</li>
     </ul>
     <h3>Official external references used for future recommendations</h3>
     <ul class="small">
       <li>Amazon ECS architecture and Fargate: <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/application_architecture.html">docs.aws.amazon.com/AmazonECS/latest/developerguide/application_architecture.html</a></li>
       <li>Amazon RDS for PostgreSQL and Multi-AZ: <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html">docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html</a></li>
       <li>OpenTelemetry JavaScript/Node.js: <a href="https://opentelemetry.io/docs/languages/js/getting-started/nodejs/">opentelemetry.io/docs/languages/js/getting-started/nodejs/</a></li>
+      <li>ISO/IEC 20000-1: <a href="https://www.iso.org/standard/70636.html">iso.org/standard/70636.html</a>; NIST SP 800-61 Rev. 3: <a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">csrc.nist.gov/pubs/sp/800/61/r3/final</a></li>
+      <li>Google SRE service-level objectives: <a href="https://sre.google/sre-book/service-level-objectives/">sre.google/sre-book/service-level-objectives/</a></li>
       <li>Temporal durable execution (future trigger, not immediate recommendation): <a href="https://docs.temporal.io/temporal">docs.temporal.io/temporal</a></li>
       <li>Three.js post-processing and WebGPU renderer guidance: <a href="https://threejs.org/manual/en/post-processing.html">threejs.org/manual/en/post-processing.html</a> and <a href="https://threejs.org/manual/en/webgpurenderer">threejs.org/manual/en/webgpurenderer</a></li>
       <li>React Three Fiber performance scaling: <a href="https://r3f.docs.pmnd.rs/advanced/scaling-performance">r3f.docs.pmnd.rs/advanced/scaling-performance</a></li>
@@ -366,7 +389,7 @@
     </ul>
     <h3>Final recommendation</h3>
     <p class="lead">Keep the core stack. Invest next in managed operations, observability, recovery, security and the missing manufacturing workflows. Use the ports already present to introduce hosted AI, durable workflow or higher-scale event infrastructure only when a tested product need calls for them.</p>
-    <p class="footer-note">This report describes the working repository inspected on 3 August 2026. “Live” means implemented and exercised in the prototype; it does not imply an active hosted URL, production certification, contractual availability or regulatory approval.</p>
+    <p class="footer-note">This report describes the working repository inspected on 6 August 2026. “Live” means implemented and exercised in the prototype; RELAY's service data remains illustrative and does not imply staffed coverage, a contractual SLA, an active hosted URL, production certification or regulatory approval.</p>
   </section>
 </body>
 </html>

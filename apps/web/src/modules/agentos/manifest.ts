@@ -37,7 +37,7 @@ export const agentosManifest: ModuleManifest = {
       permission: "agentos.run.read",
       icon: "Network",
       description:
-        "The live operating surface for ONYX and its six specialist agents. Start a bounded cross-functional review, watch registered ERP capabilities execute, inspect evidence and checkpoints, and approve or reject the final synthesis. The graph and data reads are live; language reasoning is explicitly deterministic until a model provider is connected.",
+        "The live operating surface for ONYX and its seven specialist agents. Start a bounded cross-functional review, watch registered capabilities execute, inspect evidence and checkpoints, and approve or reject the final synthesis. The graph and data reads are live; language reasoning is explicitly deterministic until a model provider is connected.",
     },
   ],
   screens: {
@@ -56,10 +56,11 @@ export const agentosManifest: ModuleManifest = {
         const runtime = raw.data.runtime;
         if (!Array.isArray(agents) || !isRecord(runtime)) return null;
         return {
-          value: `${agents.length} of 7`,
+          value: `${agents.length} of 8`,
           hint: `${String(runtime.providerMode ?? "unknown")} provider · live graph runtime`,
-          tone: agents.length === 7 && runtime.status === "live" ? "ok" : "warn",
-          fraction: agents.length / 7,
+          tone:
+            agents.length === 8 && runtime.status === "live" ? "ok" : "warn",
+          fraction: agents.length / 8,
         };
       },
     },

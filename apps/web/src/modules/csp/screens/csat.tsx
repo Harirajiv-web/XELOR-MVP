@@ -33,8 +33,8 @@ export default function CsatScreen(_props: ScreenProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Customer satisfaction"
-        subtitle="What customers said after their ticket was closed, how many of them bothered to say it, and how many low scores are still waiting on somebody."
+        title="Customer feedback"
+        subtitle="What customers said after an after-sales product case was closed, how many replied and which low scores still need follow-up."
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -70,7 +70,7 @@ export default function CsatScreen(_props: ScreenProps): React.JSX.Element {
         </h2>
         {scored === 0 ? (
           <p className="text-[13px] text-[var(--text-secondary)]">
-            No survey has been answered yet. Scores appear here once a closed ticket's survey
+            No survey has been answered yet. Scores appear here once a closed product case's survey
             comes back.
           </p>
         ) : (

@@ -12,6 +12,7 @@ export const AGENT_KEYS = [
   "AXLE",
   "KILN",
   "RASP",
+  "RELAY",
 ] as const;
 export type AgentKey = (typeof AGENT_KEYS)[number];
 
@@ -35,7 +36,7 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
     purpose:
       "Accept goals, coordinate specialists and synthesize evidence-backed outcomes.",
     allowedCapabilityPrefixes: ["agent.", "workflow.", "general."],
-    delegatesTo: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP"],
+    delegatesTo: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP", "RELAY"],
   },
   {
     key: "HEXA",
@@ -53,9 +54,10 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
   },
   {
     key: "MICA",
-    name: "MICA Commercial",
-    department: "Sales and Customer Commitments",
-    purpose: "Analyse customers, quotations, orders and delivery commitments.",
+    name: "MICA Sales & Product Care",
+    department: "Sales and Manufactured-Product Care",
+    purpose:
+      "Analyse customers, quotations, orders, delivery commitments, product complaints, warranty and after-sales care. XELOR technology incidents belong to RELAY.",
     allowedCapabilityPrefixes: ["sales.", "customer.", "agent."],
     delegatesTo: [],
   },
@@ -107,6 +109,15 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
       "hrm.",
       "agent.",
     ],
+    delegatesTo: [],
+  },
+  {
+    key: "RELAY",
+    name: "RELAY Managed Services",
+    department: "Managed Service Operations",
+    purpose:
+      "Own the service lifecycle, event triage, incident coordination, change calendar, service levels, customer updates and continual improvement around XELOR.",
+    allowedCapabilityPrefixes: ["managed-services.", "agent."],
     delegatesTo: [],
   },
 ] as const;

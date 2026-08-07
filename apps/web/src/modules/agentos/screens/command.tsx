@@ -9,7 +9,7 @@
  *
  *   A  MISSION COMMAND BAR      what is running, for how long, how far through, on what
  *   B  ONYX STRATEGY RAIL       the supervisor: phase, decision, decomposition, guardrail
- *   C  ORCHESTRATION RUNWAY     six specialist lanes, in the brief's stable order
+ *   C  ORCHESTRATION RUNWAY     seven specialist lanes, in the brief's stable order
  *   D  SHARED EVIDENCE RAIL     what was retrieved, by whom, verified, used in the result
  *   E  SYNTHESIS & REVIEW DOCK  convergence, the human gate, the published outcome
  *
@@ -63,15 +63,15 @@
  * the record count and the execution mode; they never print the rows.
  *
  * ───────────────────────────────────────────────────────────────────────────────
- * SEVEN AGENTS, SIX LANES
+ * EIGHT AGENTS, SEVEN LANES
  * ───────────────────────────────────────────────────────────────────────────────
- * `AGENT_KEYS` is ONYX plus HEXA, MICA, SPAR, AXLE, KILN and RASP. ONYX is the supervisor
- * and has its own region; the runway therefore has six lanes and the network is seven agents.
- * Both numbers are true and they are not interchangeable — "7/7 connected" counts the
- * registry, "six specialists" counts the delegates.
+ * `AGENT_KEYS` is ONYX plus HEXA, MICA, SPAR, AXLE, KILN, RASP and RELAY. ONYX is the
+ * supervisor and has its own region; the runway therefore has seven lanes and the network
+ * is eight agents. Both numbers are true and they are not interchangeable — "8/8 connected"
+ * counts the registry, "seven specialists" counts the delegates.
  *
  * Colours come from `--dept-*` by way of the department registry, the same source the deck's
- * agent map and the gateway read. The previous version hard-coded seven hexes here, which
+ * agent map and the gateway read. The previous version hard-coded agent hexes here, which
  * made this the one screen where HEXA was indigo instead of the deck's blue — and, being
  * literal hexes in a component, it had no dark mode at all.
  */
@@ -104,7 +104,7 @@ import {
 const BRAIN: AgentKey = "ONYX";
 
 /**
- * The six delegates, in the order the brief fixes them: HEXA, MICA, SPAR, AXLE, KILN, RASP.
+ * The seven delegates, in their stable operating order.
  *
  * Written down rather than derived from `catalogue.agents`, and that is the point: the runway
  * is a place people learn by position within a week, so a lane must not move because the API
@@ -119,6 +119,7 @@ const SPECIALISTS: readonly AgentKey[] = [
   "AXLE",
   "KILN",
   "RASP",
+  "RELAY",
 ];
 
 /** Accent and monogram, from the one registry the deck and the gateway also read. */
@@ -131,7 +132,7 @@ function mark(key: AgentKey): { accent: string; letter: string } {
 }
 
 const PRESETS = [
-  "Protect the Northstar delivery commitment with a governed six-domain recovery plan.",
+  "Protect the Northstar delivery commitment with a governed business-and-service recovery plan.",
   "Prepare an investor-ready operating brief using current tenant evidence.",
   "Identify the most material cross-functional operating risks and show their evidence.",
 ] as const;
@@ -213,19 +214,51 @@ type Phase =
 const PHASE: Readonly<
   Record<Phase, { label: string; icon: Icons.LucideIcon; tone: string }>
 > = {
-  standing_by: { label: "Standing by", icon: Icons.Moon, tone: "agent-status-idle" },
-  understanding: { label: "Understanding", icon: Icons.Ear, tone: "agent-status-live" },
-  planning: { label: "Planning", icon: Icons.PenLine, tone: "agent-status-live" },
-  delegating: { label: "Delegating", icon: Icons.Share2, tone: "agent-status-live" },
-  monitoring: { label: "Monitoring", icon: Icons.Activity, tone: "agent-status-live" },
-  reviewing: { label: "Reviewing", icon: Icons.ScanEye, tone: "agent-status-wait" },
+  standing_by: {
+    label: "Standing by",
+    icon: Icons.Moon,
+    tone: "agent-status-idle",
+  },
+  understanding: {
+    label: "Understanding",
+    icon: Icons.Ear,
+    tone: "agent-status-live",
+  },
+  planning: {
+    label: "Planning",
+    icon: Icons.PenLine,
+    tone: "agent-status-live",
+  },
+  delegating: {
+    label: "Delegating",
+    icon: Icons.Share2,
+    tone: "agent-status-live",
+  },
+  monitoring: {
+    label: "Monitoring",
+    icon: Icons.Activity,
+    tone: "agent-status-live",
+  },
+  reviewing: {
+    label: "Reviewing",
+    icon: Icons.ScanEye,
+    tone: "agent-status-wait",
+  },
   awaiting_authority: {
     label: "Awaiting authority",
     icon: Icons.UserRoundCheck,
     tone: "agent-status-wait",
   },
-  synthesising: { label: "Synthesising", icon: Icons.Sparkles, tone: "agent-status-live" },
-  published: { label: "Published", icon: Icons.BadgeCheck, tone: "agent-status-ok" },
+  synthesising: {
+    label: "Synthesising",
+    icon: Icons.Sparkles,
+    tone: "agent-status-live",
+  },
+  published: {
+    label: "Published",
+    icon: Icons.BadgeCheck,
+    tone: "agent-status-ok",
+  },
   halted: { label: "Halted", icon: Icons.OctagonX, tone: "agent-status-bad" },
 };
 
@@ -285,7 +318,8 @@ function formatElapsed(ms: number): string {
 }
 
 function statusTone(status: string): string {
-  if (status === "completed" || status === "succeeded") return "agent-status-ok";
+  if (status === "completed" || status === "succeeded")
+    return "agent-status-ok";
   if (status === "running") return "agent-status-live";
   if (status === "waiting_approval") return "agent-status-wait";
   if (status === "failed" || status === "cancelled") return "agent-status-bad";
@@ -454,7 +488,8 @@ function buildRunView(
    */
   const verified = new Set<string>();
   for (const node of run?.nodes ?? []) {
-    if (node.nodeKind !== "verification" || node.status !== "succeeded") continue;
+    if (node.nodeKind !== "verification" || node.status !== "succeeded")
+      continue;
     if (outputOf(node).passed === false) continue;
     for (const id of index.ancestorsOf(node.nodeId)) verified.add(id);
   }
@@ -507,7 +542,9 @@ function deriveLane(
   const failed = nodes.find((node) => node.status === "failed");
   const awaiting = nodes.find((node) => node.status === "waiting_approval");
   const pending = nodes.filter((node) => node.status === "pending");
-  const retried = nodes.find((node) => node.attempt > 1 && node.status !== "failed");
+  const retried = nodes.find(
+    (node) => node.attempt > 1 && node.status !== "failed",
+  );
 
   /** Which upstream nodes a pending node of this lane is still short of. */
   const blockedBy: string[] = [];
@@ -629,7 +666,8 @@ function deriveLane(
 function derivePhase(view: RunView): Phase {
   const run = view.run;
   if (!run) return "standing_by";
-  if (run.run.status === "failed" || run.run.status === "cancelled") return "halted";
+  if (run.run.status === "failed" || run.run.status === "cancelled")
+    return "halted";
   if (run.run.status === "completed") return "published";
   if (run.nodes.some((node) => node.status === "waiting_approval"))
     return "awaiting_authority";
@@ -640,7 +678,9 @@ function derivePhase(view: RunView): Phase {
   if (runningBrain) {
     // ONYX's FIRST node is intake and its LAST is the publication. Same agent, two very
     // different phases, and the difference is legible from position in the graph.
-    return runningBrain.nodeId === intake?.nodeId ? "understanding" : "synthesising";
+    return runningBrain.nodeId === intake?.nodeId
+      ? "understanding"
+      : "synthesising";
   }
   if (
     run.nodes.some(
@@ -651,7 +691,9 @@ function derivePhase(view: RunView): Phase {
   if (
     run.nodes.some(
       (node) =>
-        node.status === "running" && node.agentKey !== null && node.agentKey !== BRAIN,
+        node.status === "running" &&
+        node.agentKey !== null &&
+        node.agentKey !== BRAIN,
     )
   )
     return "monitoring";
@@ -663,7 +705,8 @@ function derivePhase(view: RunView): Phase {
    THE SHARED EVIDENCE RAIL
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-type EvidenceKind = "source" | "finding" | "check" | "memory" | "decision" | "artifact";
+type EvidenceKind =
+  "source" | "finding" | "check" | "memory" | "decision" | "artifact";
 
 const EVIDENCE_KIND: Readonly<
   Record<EvidenceKind, { label: string; icon: Icons.LucideIcon }>
@@ -710,7 +753,9 @@ function deriveEvidence(
         kind: "source",
         title: node.capabilityKey,
         detail:
-          (count === null ? "structured result" : `${count} tenant-scoped record(s)`) +
+          (count === null
+            ? "structured result"
+            : `${count} tenant-scoped record(s)`) +
           (typeof mode === "string" ? ` · ${humanise(mode)}` : ""),
         agents,
         verified,
@@ -743,7 +788,9 @@ function deriveEvidence(
       const contributors = Array.isArray(sources)
         ? sources
             .map((id) =>
-              typeof id === "string" ? view.index.byId.get(id)?.agentKey : undefined,
+              typeof id === "string"
+                ? view.index.byId.get(id)?.agentKey
+                : undefined,
             )
             .filter((key): key is AgentKey => Boolean(key))
         : [];
@@ -873,7 +920,11 @@ export default function AgentCommandScreen(): React.JSX.Element {
 
   useEffect(() => {
     let cancelled = false;
-    void Promise.all([agentOsApi.catalogue(), agentOsApi.runs(), agentOsApi.actions()])
+    void Promise.all([
+      agentOsApi.catalogue(),
+      agentOsApi.runs(),
+      agentOsApi.actions(),
+    ])
       .then(async ([nextCatalogue, nextRuns, nextActions]) => {
         if (cancelled) return;
         setCatalogue(nextCatalogue);
@@ -934,8 +985,9 @@ export default function AgentCommandScreen(): React.JSX.Element {
     setError(null);
     try {
       const graph =
-        catalogue.graphs.find((candidate) => candidate.key === selectedGraphKey) ??
-        catalogue.graphs[0];
+        catalogue.graphs.find(
+          (candidate) => candidate.key === selectedGraphKey,
+        ) ?? catalogue.graphs[0];
       if (!graph) throw new Error("No active Agent OS graph is registered.");
       const detail = await agentOsApi.start(goal.trim(), graph.key);
       setActive(detail);
@@ -986,16 +1038,23 @@ export default function AgentCommandScreen(): React.JSX.Element {
     ? catalogue?.graphs.find((graph) => graph.key === active.run.graphKey)
     : selectedGraph;
 
-  const view = useMemo(() => buildRunView(active, activeGraph), [active, activeGraph]);
+  const view = useMemo(
+    () => buildRunView(active, activeGraph),
+    [active, activeGraph],
+  );
   const phase = useMemo(() => derivePhase(view), [view]);
   const lanes = useMemo(
     () => SPECIALISTS.map((key) => deriveLane(key, view, catalogue, actions)),
     [view, catalogue, actions],
   );
-  const evidence = useMemo(() => deriveEvidence(view, actions), [view, actions]);
+  const evidence = useMemo(
+    () => deriveEvidence(view, actions),
+    [view, actions],
+  );
 
   /** Follow-active-work: the open lane tracks whichever specialist is live. */
-  const liveLane = lanes.find((lane) => LANE_STATE[lane.state].live)?.key ?? null;
+  const liveLane =
+    lanes.find((lane) => LANE_STATE[lane.state].live)?.key ?? null;
   useEffect(() => {
     if (follow && liveLane) setOpenLane(liveLane);
   }, [follow, liveLane]);
@@ -1011,14 +1070,17 @@ export default function AgentCommandScreen(): React.JSX.Element {
   const nodeTotal = active?.nodes.length ?? 0;
   const nodeDone =
     active?.nodes.filter((node) => NODE_DONE.has(node.status)).length ?? 0;
-  const activeAgents = lanes.filter((lane) => LANE_STATE[lane.state].live).length;
+  const activeAgents = lanes.filter(
+    (lane) => LANE_STATE[lane.state].live,
+  ).length;
   const elapsedMs = active
     ? (active.run.completedAt ? Date.parse(active.run.completedAt) : now) -
       Date.parse(active.run.createdAt)
     : null;
 
   const filteredEvidence = evidence.filter((item) => {
-    if (evidenceAgent !== "all" && !item.agents.includes(evidenceAgent)) return false;
+    if (evidenceAgent !== "all" && !item.agents.includes(evidenceAgent))
+      return false;
     if (evidenceKind !== "all" && item.kind !== evidenceKind) return false;
     if (verifiedOnly && !item.verified) return false;
     if (usedOnly && !item.usedInResult) return false;
@@ -1053,20 +1115,21 @@ export default function AgentCommandScreen(): React.JSX.Element {
             claim an investor is entitled to check first.
           */}
           <Disclosure title="System details" className="mt-3">
-          <ul className="agent-boundary" aria-label="Connection boundary">
-            <li className="agent-status agent-status-ok">
-              <Icons.CircleCheck className="h-3 w-3" aria-hidden />
-              XELOR data and approvals connected
-            </li>
-            <li className="agent-status agent-status-idle">
-              <Icons.Cpu className="h-3 w-3" aria-hidden />
-              Built-in reasoning active
-            </li>
-            <li className="agent-status agent-status-idle">
-              <Icons.Unplug className="h-3 w-3" aria-hidden />
-              {catalogue?.runtime.externalConnections ?? 0} external connections
-            </li>
-          </ul>
+            <ul className="agent-boundary" aria-label="Connection boundary">
+              <li className="agent-status agent-status-ok">
+                <Icons.CircleCheck className="h-3 w-3" aria-hidden />
+                XELOR data and approvals connected
+              </li>
+              <li className="agent-status agent-status-idle">
+                <Icons.Cpu className="h-3 w-3" aria-hidden />
+                Built-in reasoning active
+              </li>
+              <li className="agent-status agent-status-idle">
+                <Icons.Unplug className="h-3 w-3" aria-hidden />
+                {catalogue?.runtime.externalConnections ?? 0} external
+                connections
+              </li>
+            </ul>
           </Disclosure>
         </div>
 
@@ -1138,7 +1201,8 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 {pendingApproval.title}
               </p>
               <p className="mt-0.5 text-[10.5px] text-[var(--text-secondary)]">
-                This mission is paused. No agent can approve this step for itself.
+                This mission is paused. No agent can approve this step for
+                itself.
               </p>
             </div>
           </div>
@@ -1157,7 +1221,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
           is a picture only sighted users are invited to. */}
       <p className="sr-only" role="status" aria-live="polite">
         {active
-          ? `${PHASE[phase].label}. ${activeAgents} of six specialists working. ` +
+          ? `${PHASE[phase].label}. ${activeAgents} of seven specialists working. ` +
             `${nodeDone} of ${nodeTotal} tasks complete.` +
             (pendingApproval ? " A human decision is waiting." : "")
           : "No mission is running."}
@@ -1177,12 +1241,17 @@ export default function AgentCommandScreen(): React.JSX.Element {
             onTogglePlan={() => setShowPlan((open) => !open)}
           />
 
-          {/* ═══════════════ C · SIX-SPECIALIST RUNWAY (§9.C) ═══════════════ */}
-          <section className="agent-panel" aria-labelledby="agent-runway-heading">
+          {/* ═══════════════ C · SEVEN-SPECIALIST RUNWAY (§9.C) ═══════════════ */}
+          <section
+            className="agent-panel"
+            aria-labelledby="agent-runway-heading"
+          >
             <div className="agent-panel-head">
               <div>
                 <p className="agent-panel-kicker">Department activity</p>
-                <h2 id="agent-runway-heading">Work across six departments.</h2>
+                <h2 id="agent-runway-heading">
+                  Work across seven departments.
+                </h2>
               </div>
               <label className="agent-follow">
                 <input
@@ -1202,7 +1271,9 @@ export default function AgentCommandScreen(): React.JSX.Element {
                   open={openLane === lane.key}
                   onToggle={() => {
                     setFollow(false);
-                    setOpenLane((current) => (current === lane.key ? null : lane.key));
+                    setOpenLane((current) =>
+                      current === lane.key ? null : lane.key,
+                    );
                   }}
                   events={
                     active?.events.filter((event) =>
@@ -1221,94 +1292,102 @@ export default function AgentCommandScreen(): React.JSX.Element {
             title="Evidence and activity details"
             hint={`${evidence.length} items`}
           >
-          <section className="agent-panel" aria-labelledby="agent-evidence-heading">
-            <div className="agent-panel-head">
-              <div>
-                <p className="agent-panel-kicker">Supporting information</p>
-                <h2 id="agent-evidence-heading">
-                  {evidence.length} item{evidence.length === 1 ? "" : "s"} in shared memory
-                </h2>
+            <section
+              className="agent-panel"
+              aria-labelledby="agent-evidence-heading"
+            >
+              <div className="agent-panel-head">
+                <div>
+                  <p className="agent-panel-kicker">Supporting information</p>
+                  <h2 id="agent-evidence-heading">
+                    {evidence.length} item{evidence.length === 1 ? "" : "s"} in
+                    shared memory
+                  </h2>
+                </div>
+                <span className="agent-runtime-chip">
+                  {evidence.filter((item) => item.verified).length} verified
+                </span>
               </div>
-              <span className="agent-runtime-chip">
-                {evidence.filter((item) => item.verified).length} verified
-              </span>
-            </div>
 
-            <div className="agent-filters">
-              <label>
-                <span>Agent</span>
-                <select
-                  value={evidenceAgent}
-                  onChange={(event) =>
-                    setEvidenceAgent(event.target.value as AgentKey | "all")
-                  }
-                >
-                  <option value="all">Every agent</option>
-                  <option value={BRAIN}>{BRAIN}</option>
-                  {SPECIALISTS.map((key) => (
-                    <option key={key} value={key}>
-                      {key}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Type</span>
-                <select
-                  value={evidenceKind}
-                  onChange={(event) =>
-                    setEvidenceKind(event.target.value as EvidenceKind | "all")
-                  }
-                >
-                  <option value="all">Every type</option>
-                  {(Object.keys(EVIDENCE_KIND) as EvidenceKind[]).map((kind) => (
-                    <option key={kind} value={kind}>
-                      {EVIDENCE_KIND[kind].label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="agent-filter-check">
-                <input
-                  type="checkbox"
-                  checked={verifiedOnly}
-                  onChange={(event) => setVerifiedOnly(event.target.checked)}
-                />
-                Verified only
-              </label>
-              <label className="agent-filter-check">
-                <input
-                  type="checkbox"
-                  checked={usedOnly}
-                  onChange={(event) => setUsedOnly(event.target.checked)}
-                />
-                Used in result
-              </label>
-            </div>
+              <div className="agent-filters">
+                <label>
+                  <span>Agent</span>
+                  <select
+                    value={evidenceAgent}
+                    onChange={(event) =>
+                      setEvidenceAgent(event.target.value as AgentKey | "all")
+                    }
+                  >
+                    <option value="all">Every agent</option>
+                    <option value={BRAIN}>{BRAIN}</option>
+                    {SPECIALISTS.map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Type</span>
+                  <select
+                    value={evidenceKind}
+                    onChange={(event) =>
+                      setEvidenceKind(
+                        event.target.value as EvidenceKind | "all",
+                      )
+                    }
+                  >
+                    <option value="all">Every type</option>
+                    {(Object.keys(EVIDENCE_KIND) as EvidenceKind[]).map(
+                      (kind) => (
+                        <option key={kind} value={kind}>
+                          {EVIDENCE_KIND[kind].label}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+                <label className="agent-filter-check">
+                  <input
+                    type="checkbox"
+                    checked={verifiedOnly}
+                    onChange={(event) => setVerifiedOnly(event.target.checked)}
+                  />
+                  Verified only
+                </label>
+                <label className="agent-filter-check">
+                  <input
+                    type="checkbox"
+                    checked={usedOnly}
+                    onChange={(event) => setUsedOnly(event.target.checked)}
+                  />
+                  Used in result
+                </label>
+              </div>
 
-            {filteredEvidence.length > 0 ? (
-              <ul className="agent-evidence">
-                {filteredEvidence.map((item) => (
-                  <EvidenceTile key={item.id} item={item} />
-                ))}
-              </ul>
-            ) : (
-              <EmptyState
-                icon={Icons.FolderSearch}
-                title={
-                  evidence.length === 0
-                    ? "No evidence yet"
-                    : "No evidence matches this filter"
-                }
-                body={
-                  evidence.length === 0
-                    ? "Every retrieval, finding, verification check and dispatched action a mission produces lands here, attributed to the specialist that made it."
-                    : "Clear a filter to see the rest of the shared memory for this mission."
-                }
-                compact
-              />
-            )}
-          </section>
+              {filteredEvidence.length > 0 ? (
+                <ul className="agent-evidence">
+                  {filteredEvidence.map((item) => (
+                    <EvidenceTile key={item.id} item={item} />
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  icon={Icons.FolderSearch}
+                  title={
+                    evidence.length === 0
+                      ? "No evidence yet"
+                      : "No evidence matches this filter"
+                  }
+                  body={
+                    evidence.length === 0
+                      ? "Every retrieval, finding, verification check and dispatched action a mission produces lands here, attributed to the specialist that made it."
+                      : "Clear a filter to see the rest of the shared memory for this mission."
+                  }
+                  compact
+                />
+              )}
+            </section>
           </Disclosure>
         </div>
 
@@ -1324,7 +1403,10 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 <p className="agent-panel-kicker">New mission</p>
                 <h2>Ask ONYX to coordinate.</h2>
               </div>
-              <Icons.Sparkles className="h-5 w-5 text-[var(--ai-text)]" aria-hidden />
+              <Icons.Sparkles
+                className="h-5 w-5 text-[var(--ai-text)]"
+                aria-hidden
+              />
             </div>
             <label className="agent-goal-label" htmlFor="agent-graph">
               Review type
@@ -1354,7 +1436,11 @@ export default function AgentCommandScreen(): React.JSX.Element {
             />
             <div className="agent-presets">
               {PRESETS.map((preset, index) => (
-                <button key={preset} type="button" onClick={() => setGoal(preset)}>
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setGoal(preset)}
+                >
                   <span>0{index + 1}</span>
                   {preset}
                 </button>
@@ -1367,7 +1453,10 @@ export default function AgentCommandScreen(): React.JSX.Element {
               onClick={() => void startMission()}
             >
               {busy === "starting" ? (
-                <Icons.LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />
+                <Icons.LoaderCircle
+                  className="h-4 w-4 animate-spin"
+                  aria-hidden
+                />
               ) : (
                 <Icons.Play className="h-4 w-4" aria-hidden />
               )}
@@ -1375,7 +1464,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 ? "Coordinating…"
                 : selectedGraphKey === "operations.controlled-action-mission"
                   ? "Run controlled-action mission"
-                  : "Run seven-agent review"}
+                  : "Run eight-agent review"}
             </button>
             <button
               type="button"
@@ -1384,7 +1473,10 @@ export default function AgentCommandScreen(): React.JSX.Element {
               onClick={() => void ingestSignal()}
             >
               {busy === "signalling" ? (
-                <Icons.LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />
+                <Icons.LoaderCircle
+                  className="h-4 w-4 animate-spin"
+                  aria-hidden
+                />
               ) : (
                 <Icons.RadioTower className="h-4 w-4" aria-hidden />
               )}
@@ -1414,7 +1506,12 @@ export default function AgentCommandScreen(): React.JSX.Element {
           </section>
 
           {/* ═══════════════ E · SYNTHESIS AND REVIEW DOCK (§9.E) ═══════════════ */}
-          <SynthesisDock view={view} lanes={lanes} phase={phase} evidence={evidence} />
+          <SynthesisDock
+            view={view}
+            lanes={lanes}
+            phase={phase}
+            evidence={evidence}
+          />
 
           <section className="agent-panel" aria-labelledby="agent-gate-heading">
             <div className="agent-panel-head">
@@ -1422,7 +1519,10 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 <p className="agent-panel-kicker">Human authority</p>
                 <h2 id="agent-gate-heading">Approval gate</h2>
               </div>
-              <Icons.ShieldCheck className="h-5 w-5 text-[var(--ok)]" aria-hidden />
+              <Icons.ShieldCheck
+                className="h-5 w-5 text-[var(--ok)]"
+                aria-hidden
+              />
             </div>
             {pendingApproval ? (
               <div className="agent-approval">
@@ -1454,82 +1554,98 @@ export default function AgentCommandScreen(): React.JSX.Element {
             )}
           </section>
 
-          <Disclosure title="Completed actions" hint={`${actions.length} actions`}>
-          <section className="agent-panel">
-            <div className="agent-panel-head">
-              <div>
-                <p className="agent-panel-kicker">Approved work</p>
-                <h2>Completed actions</h2>
+          <Disclosure
+            title="Completed actions"
+            hint={`${actions.length} actions`}
+          >
+            <section className="agent-panel">
+              <div className="agent-panel-head">
+                <div>
+                  <p className="agent-panel-kicker">Approved work</p>
+                  <h2>Completed actions</h2>
+                </div>
+                <span className="agent-runtime-chip">
+                  {actions.length} live
+                </span>
               </div>
-              <span className="agent-runtime-chip">{actions.length} live</span>
-            </div>
-            <ActionLedger
-              actions={
-                active
-                  ? actions.filter((action) => action.runId === active.run.id)
-                  : actions
-              }
-            />
-          </section>
+              <ActionLedger
+                actions={
+                  active
+                    ? actions.filter((action) => action.runId === active.run.id)
+                    : actions
+                }
+              />
+            </section>
           </Disclosure>
 
           <Disclosure title="Recent tasks" hint={`${runs.length} saved`}>
-          <section className="agent-panel">
-            <div className="agent-panel-head">
-              <div>
-                <p className="agent-panel-kicker">History</p>
-                <h2>Recent tasks</h2>
+            <section className="agent-panel">
+              <div className="agent-panel-head">
+                <div>
+                  <p className="agent-panel-kicker">History</p>
+                  <h2>Recent tasks</h2>
+                </div>
+                <button
+                  type="button"
+                  className="agent-icon-action"
+                  title="Refresh mission history"
+                  aria-label="Refresh mission history"
+                  onClick={() => void refreshRuns(active?.run.id)}
+                >
+                  <Icons.RefreshCw className="h-4 w-4" aria-hidden />
+                </button>
               </div>
-              <button
-                type="button"
-                className="agent-icon-action"
-                title="Refresh mission history"
-                aria-label="Refresh mission history"
-                onClick={() => void refreshRuns(active?.run.id)}
-              >
-                <Icons.RefreshCw className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
-            <div className="agent-history">
-              {runs.length > 0 ? (
-                runs.slice(0, 6).map((run) => (
-                  <button
-                    key={run.id}
-                    type="button"
-                    className={cn(
-                      "agent-history-row",
-                      active?.run.id === run.id && "agent-history-row-active",
-                    )}
-                    aria-current={active?.run.id === run.id ? "true" : undefined}
-                    onClick={() => {
-                      void Promise.all([
-                        agentOsApi.run(run.id),
-                        agentOsApi.actions(50, run.id),
-                      ])
-                        .then(([detail, nextActions]) => {
-                          setActive(detail);
-                          setActions(nextActions);
-                        })
-                        .catch((cause) => setError(errorMessage(cause)));
-                    }}
-                  >
-                    <span className={cn("agent-history-mark", statusTone(run.status))} />
-                    <span className="min-w-0 flex-1">
-                      <b>{run.goal}</b>
-                      <small>
-                        {formatWhen(run.createdAt)} · {run.consumedSteps} steps
-                      </small>
-                    </span>
-                    <Icons.ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
-                  </button>
-                ))
-              ) : (
-                <p className="py-5 text-center text-[12px] text-[var(--text-muted)]">
-                  No missions have been run yet.
-                </p>
-              )}
-            </div>
-          </section>
+              <div className="agent-history">
+                {runs.length > 0 ? (
+                  runs.slice(0, 6).map((run) => (
+                    <button
+                      key={run.id}
+                      type="button"
+                      className={cn(
+                        "agent-history-row",
+                        active?.run.id === run.id && "agent-history-row-active",
+                      )}
+                      aria-current={
+                        active?.run.id === run.id ? "true" : undefined
+                      }
+                      onClick={() => {
+                        void Promise.all([
+                          agentOsApi.run(run.id),
+                          agentOsApi.actions(50, run.id),
+                        ])
+                          .then(([detail, nextActions]) => {
+                            setActive(detail);
+                            setActions(nextActions);
+                          })
+                          .catch((cause) => setError(errorMessage(cause)));
+                      }}
+                    >
+                      <span
+                        className={cn(
+                          "agent-history-mark",
+                          statusTone(run.status),
+                        )}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <b>{run.goal}</b>
+                        <small>
+                          {formatWhen(run.createdAt)} · {run.consumedSteps}{" "}
+                          steps
+                        </small>
+                      </span>
+                      <Icons.ChevronRight
+                        className="h-4 w-4 shrink-0"
+                        aria-hidden
+                      />
+                    </button>
+                  ))
+                ) : (
+                  <p className="py-5 text-center text-[12px] text-[var(--text-muted)]">
+                    No missions have been run yet.
+                  </p>
+                )}
+              </div>
+            </section>
           </Disclosure>
 
           {/* The trace stays inspectable after the mission ends — the whole argument for an
@@ -1603,11 +1719,14 @@ function StrategyRail({
   const brain = mark(BRAIN);
   const run = view.run;
   const brainNodes = run?.nodes.filter((node) => node.agentKey === BRAIN) ?? [];
-  const latestBrain = [...brainNodes].reverse().find((node) => summaryOf(node) !== null);
+  const latestBrain = [...brainNodes]
+    .reverse()
+    .find((node) => summaryOf(node) !== null);
 
   const PhaseIcon = PHASE[phase].icon;
   const graphNodes = graph?.nodes.length ?? run?.nodes.length ?? 0;
-  const terminal = run?.nodes.filter((node) => NODE_DONE.has(node.status)).length ?? 0;
+  const terminal =
+    run?.nodes.filter((node) => NODE_DONE.has(node.status)).length ?? 0;
   const openPackets = graphNodes - terminal;
 
   /**
@@ -1617,9 +1736,14 @@ function StrategyRail({
    * percentage would put a fabricated certainty on the one screen whose entire claim is that
    * nothing here is fabricated. What CAN be stated is what HEXA actually checked.
    */
-  const verifications = run?.nodes.filter((node) => node.nodeKind === "verification") ?? [];
-  const failedVerification = verifications.find((node) => node.status === "failed");
-  const passedVerification = verifications.filter((node) => node.status === "succeeded");
+  const verifications =
+    run?.nodes.filter((node) => node.nodeKind === "verification") ?? [];
+  const failedVerification = verifications.find(
+    (node) => node.status === "failed",
+  );
+  const passedVerification = verifications.filter(
+    (node) => node.status === "succeeded",
+  );
   const declaredChecks = passedVerification.reduce(
     (sum, node) => sum + checksOf(node).declared.length,
     0,
@@ -1628,7 +1752,10 @@ function StrategyRail({
   const quality = failedVerification
     ? { label: "Rejected by HEXA", tone: "agent-status-bad" }
     : passedVerification.length > 0
-      ? { label: `Verified · ${declaredChecks} checks`, tone: "agent-status-ok" }
+      ? {
+          label: `Verified · ${declaredChecks} checks`,
+          tone: "agent-status-ok",
+        }
       : run
         ? { label: "Not yet verified", tone: "agent-status-idle" }
         : { label: "No mission", tone: "agent-status-idle" };
@@ -1641,7 +1768,10 @@ function StrategyRail({
   );
 
   return (
-    <section className="agent-panel agent-rail" aria-labelledby="agent-rail-heading">
+    <section
+      className="agent-panel agent-rail"
+      aria-labelledby="agent-rail-heading"
+    >
       <div className="agent-rail-head">
         <span
           className="agent-rail-glyph"
@@ -1654,8 +1784,9 @@ function StrategyRail({
           <p className="agent-panel-kicker">Supervisor · mission coordinator</p>
           <h2 id="agent-rail-heading">ONYX Supervisor</h2>
           <p className="agent-rail-role">
-            Accepts the goal, bounds and decomposes it into task packets, delegates to six
-            specialists, verifies the evidence and publishes one accountable result.
+            Accepts the goal, bounds and decomposes it into task packets,
+            delegates to seven specialists, verifies the evidence and publishes
+            one accountable result.
           </p>
         </div>
         <span className={cn("agent-phase", PHASE[phase].tone)}>
@@ -1704,15 +1835,21 @@ function StrategyRail({
           </b>
           <Meter
             fraction={graphNodes > 0 ? terminal / graphNodes : 0}
-            tone={phase === "halted" ? "bad" : phase === "published" ? "ok" : "neutral"}
+            tone={
+              phase === "halted"
+                ? "bad"
+                : phase === "published"
+                  ? "ok"
+                  : "neutral"
+            }
           />
         </div>
         <div>
           <small>Open task packets</small>
           <b data-numeric="">{Math.max(0, openPackets)}</b>
           <span className="agent-rail-fact-note">
-            {lanes.filter((lane) => lane.state === "waiting_dependency").length} blocked on
-            a dependency
+            {lanes.filter((lane) => lane.state === "waiting_dependency").length}{" "}
+            blocked on a dependency
           </span>
         </div>
         <div>
@@ -1730,7 +1867,9 @@ function StrategyRail({
               sideEffectSafe ? "agent-status-ok" : "agent-status-idle",
             )}
           >
-            {sideEffectSafe ? "No write before approval" : (autonomyMode ?? "checking")}
+            {sideEffectSafe
+              ? "No write before approval"
+              : (autonomyMode ?? "checking")}
           </b>
           <span className="agent-rail-fact-note">
             {run
@@ -1761,7 +1900,9 @@ function StrategyRail({
                   {letter}
                 </span>
                 <b>{lane.key}</b>
-                <span className={cn("agent-packet-state", toneClass(meta.tone))}>
+                <span
+                  className={cn("agent-packet-state", toneClass(meta.tone))}
+                >
                   <StateIcon className="h-3 w-3" aria-hidden />
                   {meta.label}
                 </span>
@@ -1829,11 +1970,16 @@ function PlanInspector({ view }: { view: RunView }): React.JSX.Element {
         return (
           <li key={node.id}>
             <div className="agent-node-rail">
-              <span className={cn("agent-step-number", statusTone(node.status))}>
+              <span
+                className={cn("agent-step-number", statusTone(node.status))}
+              >
                 {node.status === "succeeded" ? (
                   <Icons.Check className="h-3.5 w-3.5" aria-hidden />
                 ) : node.status === "running" ? (
-                  <Icons.LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                  <Icons.LoaderCircle
+                    className="h-3.5 w-3.5 animate-spin"
+                    aria-hidden
+                  />
                 ) : node.status === "waiting_approval" ? (
                   <Icons.UserRoundCheck className="h-3.5 w-3.5" aria-hidden />
                 ) : (
@@ -1923,7 +2069,10 @@ function LaneRow({
         </span>
         <span className={cn("agent-lane-state", toneClass(meta.tone))}>
           <StateIcon
-            className={cn("h-3.5 w-3.5", lane.state === "working" && "agent-spin")}
+            className={cn(
+              "h-3.5 w-3.5",
+              lane.state === "working" && "agent-spin",
+            )}
             aria-hidden
           />
           {meta.label}
@@ -1968,7 +2117,10 @@ function LaneRow({
           </small>
         </span>
         <Icons.ChevronDown
-          className={cn("agent-lane-chevron h-4 w-4", open && "agent-lane-chevron-open")}
+          className={cn(
+            "agent-lane-chevron h-4 w-4",
+            open && "agent-lane-chevron-open",
+          )}
           aria-hidden
         />
       </button>
@@ -2063,7 +2215,10 @@ function RunwayLegend(): React.JSX.Element {
         const Icon = meta.icon;
         return (
           <li key={state}>
-            <span className={cn("agent-legend-mark", toneClass(meta.tone))} aria-hidden />
+            <span
+              className={cn("agent-legend-mark", toneClass(meta.tone))}
+              aria-hidden
+            />
             <Icon className="h-3 w-3" aria-hidden />
             {meta.label}
           </li>
@@ -2144,7 +2299,9 @@ function SynthesisDock({
 }): React.JSX.Element {
   const run = view.run;
   const received = lanes.filter((lane) =>
-    lane.nodes.some((node) => node.nodeKind === "agent" && node.status === "succeeded"),
+    lane.nodes.some(
+      (node) => node.nodeKind === "agent" && node.status === "succeeded",
+    ),
   );
   const waiting = lanes.filter((lane) => !received.includes(lane));
 
@@ -2162,7 +2319,9 @@ function SynthesisDock({
 
   const verification = [...(run?.nodes ?? [])]
     .reverse()
-    .find((node) => node.nodeKind === "verification" && node.status !== "pending");
+    .find(
+      (node) => node.nodeKind === "verification" && node.status !== "pending",
+    );
   const verificationChecks = checksOf(verification);
 
   /**
@@ -2182,19 +2341,25 @@ function SynthesisDock({
     envelope.result && typeof envelope.result === "object"
       ? (envelope.result as Record<string, unknown>)
       : {};
-  const resultSummary = typeof published.summary === "string" ? published.summary : null;
+  const resultSummary =
+    typeof published.summary === "string" ? published.summary : null;
   const resultFindings = stringsIn(published.findings);
 
   const ready = waiting.length === 0 && Boolean(verification);
 
   return (
-    <section className="agent-panel agent-dock" aria-labelledby="agent-dock-heading">
+    <section
+      className="agent-panel agent-dock"
+      aria-labelledby="agent-dock-heading"
+    >
       <div className="agent-panel-head">
         <div>
           <p className="agent-panel-kicker">Synthesis and review</p>
           <h2 id="agent-dock-heading">Convergence</h2>
         </div>
-        <span className={cn("agent-status", PHASE[phase].tone)}>{PHASE[phase].label}</span>
+        <span className={cn("agent-status", PHASE[phase].tone)}>
+          {PHASE[phase].label}
+        </span>
       </div>
 
       {/* THE SYNTHESIS STACK. Six output capsules landing in a layered pile, not six lines
@@ -2207,7 +2372,11 @@ function SynthesisDock({
             <li
               key={lane.key}
               className={cn("agent-stack-row", arrived && "agent-stack-row-in")}
-              style={{ "--agent-color": mark(lane.key).accent } as React.CSSProperties}
+              style={
+                {
+                  "--agent-color": mark(lane.key).accent,
+                } as React.CSSProperties
+              }
               data-arrived={arrived ? "" : undefined}
             >
               <span className="agent-stack-mark" aria-hidden>
@@ -2254,7 +2423,8 @@ function SynthesisDock({
         <div>
           <dt>Evidence used</dt>
           <dd data-numeric="">
-            {evidence.filter((item) => item.usedInResult).length}/{evidence.length}
+            {evidence.filter((item) => item.usedInResult).length}/
+            {evidence.length}
           </dd>
         </div>
       </dl>
@@ -2307,8 +2477,11 @@ function SynthesisDock({
         ) : null}
         {verificationChecks.computed.length > 0 ? (
           <p className="agent-review-computed">
-            {verificationChecks.computed.filter(([, value]) => value === true).length}/
-            {verificationChecks.computed.length} computed checks passed ·{" "}
+            {
+              verificationChecks.computed.filter(([, value]) => value === true)
+                .length
+            }
+            /{verificationChecks.computed.length} computed checks passed ·{" "}
             {verificationChecks.computed
               .filter(([, value]) => value !== true)
               .map(([name]) => unCamel(name))
@@ -2351,7 +2524,11 @@ function SynthesisDock({
               .map((lane) => (
                 <li
                   key={lane.key}
-                  style={{ "--agent-color": mark(lane.key).accent } as React.CSSProperties}
+                  style={
+                    {
+                      "--agent-color": mark(lane.key).accent,
+                    } as React.CSSProperties
+                  }
                 >
                   <span aria-hidden>{mark(lane.key).letter}</span>
                   <div>
@@ -2364,9 +2541,10 @@ function SynthesisDock({
 
           <p className="agent-result-quality">
             <Icons.BadgeInfo className="h-3.5 w-3.5" aria-hidden />
-            Quality is stated as a verification outcome, not a score: HEXA&apos;s declared
-            checks above are what this result rests on. Language reasoning is{" "}
-            {run?.run.providerMode ?? "unknown"}; no external model produced this text.
+            Quality is stated as a verification outcome, not a score:
+            HEXA&apos;s declared checks above are what this result rests on.
+            Language reasoning is {run?.run.providerMode ?? "unknown"}; no
+            external model produced this text.
           </p>
         </article>
       ) : (
@@ -2418,15 +2596,17 @@ function TraceTimeline({ view }: { view: RunView }): React.JSX.Element {
               </time>
               <b>{humanise(event.eventType)}</b>
               {event.nodeId ? (
-                <small>{view.index.byId.get(event.nodeId)?.name ?? event.nodeId}</small>
+                <small>
+                  {view.index.byId.get(event.nodeId)?.name ?? event.nodeId}
+                </small>
               ) : null}
             </li>
           ))}
         </ol>
       ) : (
         <p className="agent-trace-note">
-          Every node start, success, retry, approval and checkpoint is recorded in sequence
-          and stays readable after the mission ends.
+          Every node start, success, retry, approval and checkpoint is recorded
+          in sequence and stays readable after the mission ends.
         </p>
       )}
     </section>
@@ -2447,7 +2627,7 @@ function ActionLedger({
       <EmptyState
         icon={Icons.Send}
         title="No actions dispatched"
-        body="Actions remain proposals until a named person approves the complete six-domain plan."
+        body="Actions remain proposals until a named person approves the complete business-and-service plan."
         compact
       />
     );
@@ -2458,7 +2638,11 @@ function ActionLedger({
         <li key={action.id}>
           <span
             className="agent-action-mark"
-            style={{ "--agent-color": mark(action.agentKey).accent } as React.CSSProperties}
+            style={
+              {
+                "--agent-color": mark(action.agentKey).accent,
+              } as React.CSSProperties
+            }
             aria-hidden
           >
             {mark(action.agentKey).letter}

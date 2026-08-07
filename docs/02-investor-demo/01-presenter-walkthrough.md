@@ -1,4 +1,4 @@
-# Investor demo — One decision, seven agents, complete evidence
+# Investor demo — One decision, eight agents, complete evidence
 
 Everything below is live data in the running system. No slides, no mock screens. Every
 document was created by a real request through the real guards, so anything on screen can be
@@ -57,7 +57,7 @@ Scroll to **One visible decision-intelligence loop**:
 The Knowledge Graph must show persisted relationships across at least two business areas.
 Organizational Memory must show one completed, verified non-financial example and one current
 Northstar decision waiting for a person. The verified example claims **₹0 financial value**:
-it proves six governed work items completed their control boundary, not that XELOR invented
+it proves seven governed work items completed their control boundary, not that XELOR invented
 savings.
 
 ### 4 · Prove the seven MVP upgrades
@@ -66,16 +66,28 @@ At **MVP platform readiness**, show API and integration health, document-intelli
 measurement, operational health, and the seven proof cards. The cards say `Live MVP` or
 `MVP operations`; none says production-ready. Simulated connectors are labelled simulated.
 
-### 5 · Follow the live evidence
+### 5 · Choose the right guided demo
 
-Press **Start Demo**, choose **Protect the Northstar delivery**, and follow the guided steps.
-The guide navigates only; it never changes an ERP record. Use the Sales, Planning, Quality,
-Maintenance and Accounts screens to challenge each statement against its owner record.
+Press **Start Demo**. There are exactly two choices:
+
+- **From customer order to delivery** is the primary 11-step story for a non-technical
+  audience. It begins in Sales, follows planning, buying, stock, production, quality,
+  approval and finance, and finishes by separating MICA product care from RELAY's XELOR
+  technology service.
+- **Meet the agents** is the optional 8-step overview. It opens each agent map and gives one
+  high-level explanation of the role and one simple hand-off line—nothing technical.
+
+At the first Sales step, click **New order**, create and save a real sales order, show the
+saved detail page, and then click **Next**. Repeat that pattern at the Purchase step for a
+real purchase order. The guide itself never saves a document, and a successful save only
+unlocks **Next**; it never moves away before the presenter is ready.
+The floating guide temporarily hides while either order dialog is open so the form and its
+Save button stay fully usable, then returns with the saved document number.
 
 ### 6 · Make the human boundary visible
 
 When the guide reaches **Approvals**, one seeded Northstar recovery is waiting. Read the
-proposed action: it creates six attributable internal work items and does not claim to send
+proposed action: it creates seven attributable internal work items and does not claim to send
 a supplier message, customer promise or payment. Approve it only if you want to demonstrate
 the live transition; doing so is attributable and changes the demo state until the next
 rebuild.
@@ -201,9 +213,10 @@ Sign in as **`hari`** (AXLE has no dedicated persona).
 
 ---
 
-### 5 · MICA again — the customer notices before we ship
+### 5 · MICA again — product care notices before we ship
 
-Back as **`mica.commercial`**. CSP → Tickets → **TKT-2627-00015**.
+Back as **`mica.commercial`**. Customer Care & Warranty → Product cases →
+**TKT-2627-00015**.
 
 > *PX-400 pre-shipment sample — seal weep at 1.5× hydro. Serial PX400-2627-0007.*
 
@@ -216,6 +229,11 @@ Back as **`mica.commercial`**. CSP → Tickets → **TKT-2627-00015**.
 
 **The line worth saying:** the customer's complaint and our own inspection are the same
 finding arriving from two directions, and the system already connected them.
+
+This is MICA's boundary: the manufactured product, its warranty, spares, complaint and
+customer feedback. If the problem is instead an outage, connector failure or AI-operation
+issue in XELOR itself, RELAY opens and coordinates the managed-service incident. The two
+records are linked only when the product and the XELOR service are both affected.
 
 ---
 
@@ -277,7 +295,7 @@ AI Operations → Feature registry, Evals, Cost:
 
 The strongest thirty seconds in the demo, and it needs two browser windows.
 
-1. As **`mica.commercial`**, go back to ONYX. Five of the six departments are **visibly shut**
+1. As **`mica.commercial`**, go back to ONYX. The other six accountable departments are **visibly shut**
    — shown, dimmed, not hidden. You can see the factory has a supply chain; you cannot open it.
 2. Type `/department/SPAR` into the address bar. **Access restricted**, with a way back.
 3. The point: this is not a hidden menu. The **server** refuses. The same persona's browser

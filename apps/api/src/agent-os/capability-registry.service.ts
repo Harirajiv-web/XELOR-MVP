@@ -5,6 +5,7 @@ import {
   type AgentKey,
   type CapabilityMode,
   type PermissionKey,
+  managedServiceDemoSnapshot,
 } from "@ind-core/platform";
 import { GeneralService } from "../modules/general/general.service.js";
 import { InventoryService } from "../modules/inventory/inventory.service.js";
@@ -195,7 +196,10 @@ export class CapabilityRegistryService {
         parse: (input: unknown) =>
           z
             .object({
-              asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default("2026-07-20"),
+              asOf: z
+                .string()
+                .regex(/^\d{4}-\d{2}-\d{2}$/)
+                .default("2026-07-20"),
             })
             .parse(input),
         execute: async (input: Record<string, unknown>) =>
@@ -239,7 +243,9 @@ export class CapabilityRegistryService {
         sideEffecting: false,
         approvalRequired: false,
         parse: (input: unknown) =>
-          z.object({ limit: z.number().int().min(1).max(100).default(50) }).parse(input),
+          z
+            .object({ limit: z.number().int().min(1).max(100).default(50) })
+            .parse(input),
         execute: async (input: Record<string, unknown>) => ({
           evidence: await this.accounts.listVouchers(input.limit as number),
           boundary: "Review queue only. Customer contact needs human approval.",
@@ -257,7 +263,14 @@ export class CapabilityRegistryService {
         sideEffecting: false,
         approvalRequired: false,
         parse: (input: unknown) =>
-          z.object({ asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default("2026-07-20") }).parse(input),
+          z
+            .object({
+              asOf: z
+                .string()
+                .regex(/^\d{4}-\d{2}-\d{2}$/)
+                .default("2026-07-20"),
+            })
+            .parse(input),
         execute: async (input: Record<string, unknown>) => ({
           asOf: input.asOf,
           trialBalance: await this.accounts.trialBalance(input.asOf as string),
@@ -277,7 +290,9 @@ export class CapabilityRegistryService {
         sideEffecting: false,
         approvalRequired: false,
         parse: (input: unknown) =>
-          z.object({ limit: z.number().int().min(1).max(100).default(50) }).parse(input),
+          z
+            .object({ limit: z.number().int().min(1).max(100).default(50) })
+            .parse(input),
         execute: async (input: Record<string, unknown>) =>
           this.quality.listInspections(input.limit as number),
       },
@@ -295,7 +310,11 @@ export class CapabilityRegistryService {
         parse: (input: unknown) =>
           z
             .object({
-              scope: z.string().min(2).max(160).default("current QMS readiness"),
+              scope: z
+                .string()
+                .min(2)
+                .max(160)
+                .default("current QMS readiness"),
               limit: z.number().int().min(1).max(100).default(100),
             })
             .parse(input),
@@ -365,13 +384,35 @@ export class CapabilityRegistryService {
         }),
       },
       {
+        key: "managed-services.service-assurance.read",
+        name: "Read the managed-service assurance view",
+        description:
+          "Returns RELAY's service catalogue, lifecycle, incidents, changes, service review and non-overlapping responsibility map.",
+        mode: "read",
+        requiredPermission: "managed_services.overview.read",
+        allowedAgents: ["RELAY"],
+        executionBoundary: "domain_service",
+        sideEffecting: false,
+        approvalRequired: false,
+        parse: (input: unknown) => z.object({}).parse(input),
+        execute: async () => managedServiceDemoSnapshot(),
+      },
+      {
         key: "agent.action.dispatch",
         name: "Dispatch an approved governed action",
         description:
           "Creates an immutable, attributable domain work item after a human approval gate. It does not call an external connector or grant a model direct database access.",
         mode: "execute",
         requiredPermission: "agentos.run.operate",
-        allowedAgents: ["HEXA", "MICA", "SPAR", "AXLE", "KILN", "RASP"],
+        allowedAgents: [
+          "HEXA",
+          "MICA",
+          "SPAR",
+          "AXLE",
+          "KILN",
+          "RASP",
+          "RELAY",
+        ],
         executionBoundary: "domain_service",
         sideEffecting: true,
         approvalRequired: true,
@@ -472,6 +513,9 @@ export class CapabilityRegistryService {
     }
     await this.authorization.require(capability.requiredPermission);
     const input = capability.parse(rawInput);
-    return capability.execute(input, context ? { ...context, agentKey } : undefined);
+    return capability.execute(
+      input,
+      context ? { ...context, agentKey } : undefined,
+    );
   }
 }

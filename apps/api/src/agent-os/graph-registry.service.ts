@@ -111,10 +111,10 @@ const FOUNDATION_MISSION: AgentGraphDefinition = {
 const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
   key: "operations.full-command-review",
   version: 1,
-  name: "Seven-agent operating review",
+  name: "Eight-agent operating review",
   description:
-    "Connects ONYX to every specialist agent for one bounded, evidence-backed operating review.",
-  maxSteps: 24,
+    "Connects ONYX to every specialist agent, including RELAY service assurance, for one bounded, evidence-backed operating review.",
+  maxSteps: 28,
   timeoutSeconds: 300,
   nodes: [
     {
@@ -187,6 +187,16 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       dependsOn: ["onyx-intake"],
     },
     {
+      id: "relay-services",
+      name: "RELAY reads managed-service assurance",
+      kind: "capability",
+      agentKey: "RELAY",
+      capabilityKey: "managed-services.service-assurance.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
       id: "hexa-assessment",
       name: "HEXA control assessment",
       kind: "agent",
@@ -241,6 +251,15 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       dependsOn: ["rasp-finance"],
     },
     {
+      id: "relay-assessment",
+      name: "RELAY service assurance assessment",
+      kind: "agent",
+      agentKey: "RELAY",
+      instruction:
+        "Assess service health, active incidents, change risk and customer communication. Keep technical resolution with the accountable specialist.",
+      dependsOn: ["relay-services"],
+    },
+    {
       id: "evidence-join",
       name: "ONYX joins specialist evidence",
       kind: "transform",
@@ -252,6 +271,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
         "axle-assessment",
         "kiln-assessment",
         "rasp-assessment",
+        "relay-assessment",
       ],
     },
     {
@@ -262,7 +282,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       checks: [
         "every specialist used only registered capabilities",
         "every domain read stayed tenant-scoped",
-        "all six specialist assessments are present",
+        "all seven specialist assessments are present",
         "no business record was changed",
       ],
       dependsOn: ["evidence-join"],
@@ -271,7 +291,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       id: "human-approval",
       name: "Human authorizes the command brief",
       kind: "approval",
-      title: "Approve the seven-agent operating brief",
+      title: "Approve the eight-agent operating brief",
       risk: "low",
       proposedAction:
         "Allow ONYX to publish the verified cross-functional brief. No ERP write will occur.",
@@ -283,7 +303,7 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Synthesize the six verified specialist assessments into a concise operating brief.",
+        "Synthesize the seven verified specialist assessments into a concise operating brief, separating business actions from managed-service coordination.",
       dependsOn: ["human-approval"],
       condition: {
         nodeId: "human-approval",
@@ -298,17 +318,17 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
  * Phase 3's controlled-autonomy contract:
  * read live evidence -> propose -> verify -> human gate -> dispatch -> verify outcome.
  *
- * The six execution nodes create attributable domain work items. They do not give a model
+ * The seven execution nodes create attributable domain or service-coordination work items. They do not give a model
  * SQL access and they do not claim an external connector ran. Each node is structurally
  * downstream of the approval, and the engine independently enforces that ancestry.
  */
 const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
   key: "operations.controlled-action-mission",
   version: 1,
-  name: "Seven-agent controlled action mission",
+  name: "Eight-agent controlled action mission",
   description:
-    "Coordinates every specialist, pauses on a high-visibility human gate, then dispatches six approval-bound domain actions and verifies the outcome.",
-  maxSteps: 32,
+    "Coordinates every specialist, pauses on a high-visibility human gate, then dispatches six domain actions plus one RELAY service-coordination action and verifies the outcome.",
+  maxSteps: 36,
   timeoutSeconds: 600,
   nodes: [
     {
@@ -380,6 +400,16 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       maxAttempts: 2,
       dependsOn: ["onyx-intake"],
     },
+    {
+      id: "relay-services",
+      name: "RELAY reads service exposure",
+      kind: "capability",
+      agentKey: "RELAY",
+      capabilityKey: "managed-services.service-assurance.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
     ...(
       [
         ["hexa", "HEXA", "control"],
@@ -388,6 +418,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         ["axle", "AXLE", "planning"],
         ["kiln", "KILN", "operations"],
         ["rasp", "RASP", "finance and people"],
+        ["relay", "RELAY", "managed service"],
       ] as const
     ).map(([prefix, agentKey, domain]) => ({
       id: `${prefix}-assessment`,
@@ -407,12 +438,14 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
                 ? "axle-plan"
                 : prefix === "kiln"
                   ? "kiln-production"
-                  : "rasp-finance",
+                  : prefix === "rasp"
+                    ? "rasp-finance"
+                    : "relay-services",
       ],
     })),
     {
       id: "recommendation-join",
-      name: "ONYX joins six action recommendations",
+      name: "ONYX joins seven specialist recommendations",
       kind: "transform",
       operation: "collect",
       dependsOn: [
@@ -422,6 +455,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         "axle-assessment",
         "kiln-assessment",
         "rasp-assessment",
+        "relay-assessment",
       ],
     },
     {
@@ -430,7 +464,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Produce one coordinated six-domain plan. Separate evidence, recommendation and proposed execution.",
+        "Produce one coordinated plan across six business domains and managed-service assurance. Separate evidence, recommendation, technical ownership and proposed execution.",
       dependsOn: ["recommendation-join"],
     },
     {
@@ -440,7 +474,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       agentKey: "HEXA",
       checks: [
         "all evidence calls are registered and tenant-scoped",
-        "all six specialist recommendations are present",
+        "all seven specialist recommendations are present",
         "no action has executed before approval",
         "each future action is a governed work item",
       ],
@@ -448,12 +482,12 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
     },
     {
       id: "human-action-approval",
-      name: "Human authorizes six governed actions",
+      name: "Human authorizes seven governed actions",
       kind: "approval",
       title: "Authorize the Phase 3 controlled action plan",
       risk: "medium",
       proposedAction:
-        "Dispatch six attributable domain work items—one per specialist. No external API or unrestricted database action will run.",
+        "Dispatch six attributable domain work items plus one RELAY service-coordination item. No external API or unrestricted database action will run.",
       dependsOn: ["hexa-preflight"],
     },
     {
@@ -547,8 +581,23 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
       dependsOn: ["human-action-approval"],
     },
     {
+      id: "relay-dispatch",
+      name: "RELAY dispatches the service assurance action",
+      kind: "capability",
+      agentKey: "RELAY",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "managed_services",
+        actionType: "service_assurance_coordination",
+        title: "Coordinate SLA, customer update and verified service outcome",
+        risk: "medium",
+        payload: { owner: "RELAY", outcome: "service_assurance_record" },
+      },
+      dependsOn: ["human-action-approval"],
+    },
+    {
       id: "action-outcome-join",
-      name: "ONYX collects six dispatch outcomes",
+      name: "ONYX collects seven dispatch outcomes",
       kind: "transform",
       operation: "collect",
       dependsOn: [
@@ -558,6 +607,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         "axle-dispatch",
         "kiln-dispatch",
         "rasp-dispatch",
+        "relay-dispatch",
       ],
     },
     {
@@ -569,7 +619,7 @@ const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
         "every dispatched action has an approved ancestor",
         "every action is attributable to one registered specialist",
         "all execution stayed inside the governed work-item boundary",
-        "all six outcomes are present",
+        "all seven outcomes are present",
       ],
       dependsOn: ["action-outcome-join"],
     },
@@ -789,6 +839,90 @@ const QMS_AUDIT_READINESS: AgentGraphDefinition = {
   ],
 };
 
+/**
+ * A service-assurance mission is intentionally separate from technical remediation.
+ * RELAY owns the clock, handoffs and customer-facing outcome; HEXA verifies that the
+ * evidence and responsibility boundaries were preserved; an authorised person decides
+ * whether the service brief may be published. No node claims to repair a connector,
+ * release the AI kill switch, close a security incident or change a customer contract.
+ */
+const MANAGED_SERVICE_ASSURANCE: AgentGraphDefinition = {
+  key: "managed-services.assurance-review",
+  version: 1,
+  name: "Managed Service Assurance Review",
+  description:
+    "RELAY evaluates service health, incident clocks, change exposure and customer updates without duplicating specialist technical ownership.",
+  maxSteps: 12,
+  timeoutSeconds: 180,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX frames the service question",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "State the customer outcome to protect, the review period and the decisions that remain with authorised people.",
+      dependsOn: [],
+    },
+    {
+      id: "relay-service-view",
+      name: "RELAY reads the service-assurance view",
+      kind: "capability",
+      agentKey: "RELAY",
+      capabilityKey: "managed-services.service-assurance.read",
+      input: {},
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "relay-assessment",
+      name: "RELAY assesses the managed service",
+      kind: "agent",
+      agentKey: "RELAY",
+      instruction:
+        "Separate measured service outcomes, active coordination, specialist technical ownership, next customer updates and improvements. Do not claim a technical fix or contractual entitlement.",
+      dependsOn: ["relay-service-view"],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies evidence and control boundaries",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "every service statement preserves its evidence mode and source",
+        "each technical issue has exactly one accountable specialist owner",
+        "RELAY owns coordination rather than specialist remediation",
+        "no security determination, AI control change or contractual credit was made",
+      ],
+      dependsOn: ["relay-assessment"],
+    },
+    {
+      id: "human-review",
+      name: "Service owner approves the customer brief",
+      kind: "approval",
+      title: "Approve the managed-service assurance brief",
+      risk: "low",
+      proposedAction:
+        "Allow RELAY to publish the verified service brief. This does not approve a technical change, SLA credit or contract amendment.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "relay-brief",
+      name: "RELAY publishes the service assurance brief",
+      kind: "agent",
+      agentKey: "RELAY",
+      instruction:
+        "Publish a concise service brief with outcomes, incidents, accountable technical owners, update times, planned changes, risks and owned improvements.",
+      dependsOn: ["human-review"],
+      condition: {
+        nodeId: "human-review",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+  ],
+};
+
 @Injectable()
 export class GraphRegistryService {
   private readonly graphs = new Map<string, AgentGraphDefinition>();
@@ -797,6 +931,7 @@ export class GraphRegistryService {
     for (const graph of [
       WORKING_CAPITAL_REVIEW,
       QMS_AUDIT_READINESS,
+      MANAGED_SERVICE_ASSURANCE,
       CONTROLLED_ACTION_MISSION,
       FULL_COMMAND_REVIEW,
       FOUNDATION_MISSION,

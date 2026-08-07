@@ -3,13 +3,7 @@
 import { api } from "@spine/api/client";
 
 export type AgentKey =
-  | "ONYX"
-  | "HEXA"
-  | "MICA"
-  | "SPAR"
-  | "AXLE"
-  | "KILN"
-  | "RASP";
+  "ONYX" | "HEXA" | "MICA" | "SPAR" | "AXLE" | "KILN" | "RASP" | "RELAY";
 
 export interface AgentDefinition {
   key: AgentKey;
@@ -167,7 +161,8 @@ export interface AgentAction {
   dispatchedAt: string;
 }
 
-export type CommanderRiskKind = "delivery" | "supply" | "planning" | "quality" | "maintenance";
+export type CommanderRiskKind =
+  "delivery" | "supply" | "planning" | "quality" | "maintenance";
 export type CommanderSeverity = "critical" | "high" | "medium" | "low";
 
 export interface CommanderEvidence {
@@ -283,13 +278,32 @@ export interface MvpReadiness {
   operations: {
     checkedAt: string;
     database: { status: string; queryMs: number };
-    decisionRuntime24h: { total: number; active: number; completed: number; failed: number };
+    decisionRuntime24h: {
+      total: number;
+      active: number;
+      completed: number;
+      failed: number;
+    };
     governance: { pendingApprovals: number; governedActions24h: number };
-    eventDelivery: { status: string; unpublished: number; retrying: number; oldestAgeSeconds: number };
-    intelligence: { evidenceLinks: number; outcomes: number; verifiedOutcomes: number };
+    eventDelivery: {
+      status: string;
+      unpublished: number;
+      retrying: number;
+      oldestAgeSeconds: number;
+    };
+    intelligence: {
+      evidenceLinks: number;
+      outcomes: number;
+      verifiedOutcomes: number;
+    };
     disclosure: string;
   };
-  upgrades: readonly { key: string; label: string; status: string; proof: string }[];
+  upgrades: readonly {
+    key: string;
+    label: string;
+    status: string;
+    proof: string;
+  }[];
 }
 
 export interface DecisionCommander {
@@ -323,9 +337,25 @@ export interface DecisionCommander {
   };
   risks: readonly CommanderRisk[];
   graph: {
-    nodes: readonly { id: string; kind: string; label: string; domain: string }[];
-    edges: readonly { id: string; source: string; target: string; relation: string; observedAt?: string }[];
-    summary: { currentDecisions: number; rememberedDecisions: number; relationships: number; businessAreas: number };
+    nodes: readonly {
+      id: string;
+      kind: string;
+      label: string;
+      domain: string;
+    }[];
+    edges: readonly {
+      id: string;
+      source: string;
+      target: string;
+      relation: string;
+      observedAt?: string;
+    }[];
+    summary: {
+      currentDecisions: number;
+      rememberedDecisions: number;
+      relationships: number;
+      businessAreas: number;
+    };
     disclosure: string;
   };
   memory: OrganizationalMemory;
@@ -340,11 +370,18 @@ export const agentOsApi = {
   catalogue: async (): Promise<AgentCatalogue> =>
     (await api.get<DataEnvelope<AgentCatalogue>>("/agent-os/catalogue")).data,
   commander: async (): Promise<DecisionCommander> =>
-    (await api.get<DataEnvelope<DecisionCommander>>("/agent-os/commander")).data,
+    (await api.get<DataEnvelope<DecisionCommander>>("/agent-os/commander"))
+      .data,
   memory: async (limit = 20): Promise<OrganizationalMemory> =>
-    (await api.get<DataEnvelope<OrganizationalMemory>>("/agent-os/commander/memory", { query: { limit } })).data,
+    (
+      await api.get<DataEnvelope<OrganizationalMemory>>(
+        "/agent-os/commander/memory",
+        { query: { limit } },
+      )
+    ).data,
   readiness: async (): Promise<MvpReadiness> =>
-    (await api.get<DataEnvelope<MvpReadiness>>("/agent-os/commander/readiness")).data,
+    (await api.get<DataEnvelope<MvpReadiness>>("/agent-os/commander/readiness"))
+      .data,
   startCommanderRisk: async (riskKey: string): Promise<AgentRunDetail> =>
     (
       await api.post<DataEnvelope<AgentRunDetail>>(

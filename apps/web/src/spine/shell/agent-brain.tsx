@@ -20,13 +20,13 @@ import { Disclosure } from "../ui/disclosure";
  * ───────────────────────────────────────────────────────────────────────────────
  * WHY IT IS ONE COMPONENT AND NOT TWO
  * ───────────────────────────────────────────────────────────────────────────────
- * The deck draws this picture once, for ONYX, with the six departments around it. The same
+ * The deck draws this picture once, for ONYX, with the specialist departments around it. The same
  * picture is the right answer one level down: HEXA with Organisation, Administration and
  * Integration around it says exactly what HEXA is, in the shape a reader has already
  * learned upstairs.
  *
  * So the map takes a CORE and a set of SATELLITES and knows nothing about what they are.
- * `/department/ONYX` hands it the brain and the six agents; `/department/KILN` hands it
+ * `/department/ONYX` hands it the brain and the seven specialist agents; `/department/KILN` hands it
  * KILN and its three modules. One component, one visual grammar, two levels — and a person
  * who learns to read the top one can already read the others.
  *
@@ -88,7 +88,10 @@ export function AgentBrain({
   const selected = all.find((n) => n.id === selectedId) ?? core;
 
   return (
-    <div className="grid gap-4 [grid-template-columns:minmax(430px,1fr)_minmax(400px,0.95fr)] max-[1250px]:[grid-template-columns:minmax(0,1fr)]">
+    <div
+      className="grid gap-4 [grid-template-columns:minmax(430px,1fr)_minmax(400px,0.95fr)] max-[1250px]:[grid-template-columns:minmax(0,1fr)]"
+      data-demo-target="workspace"
+    >
       <div className="flex flex-col gap-3">
         <section className="card overflow-hidden">
           <div className="panel-h">
@@ -200,8 +203,12 @@ function BrainMap({
    */
   const PAD = 14;
   const LABEL_HALF = 62; // half the width of the widest label under a node
-  const xs = nodes.flatMap(({ x }) => [x - LABEL_HALF, x + LABEL_HALF]).concat([CX - 82, CX + 82]);
-  const ys = nodes.flatMap(({ y }) => [y - 44, y + 70]).concat([CY - 82, CY + 82]);
+  const xs = nodes
+    .flatMap(({ x }) => [x - LABEL_HALF, x + LABEL_HALF])
+    .concat([CX - 82, CX + 82]);
+  const ys = nodes
+    .flatMap(({ y }) => [y - 44, y + 70])
+    .concat([CY - 82, CY + 82]);
   let minX = Math.min(...xs) - PAD;
   let minY = Math.min(...ys) - PAD;
   let boxW = Math.max(...xs) - minX + PAD;
@@ -302,7 +309,11 @@ function BrainMap({
       {nodes.map(({ s }, i) => (
         <g key={`packet-${s.id}`}>
           <circle r={3.4} fill={s.accent}>
-            <animateMotion dur={`${(2.6 + i * 0.42).toFixed(2)}s`} repeatCount="indefinite" rotate="auto">
+            <animateMotion
+              dur={`${(2.6 + i * 0.42).toFixed(2)}s`}
+              repeatCount="indefinite"
+              rotate="auto"
+            >
               <mpath href={`#brain-spoke-${i}`} />
             </animateMotion>
           </circle>
@@ -353,7 +364,11 @@ function BrainMap({
             >
               {s.name}
             </text>
-            <text y={64} textAnchor="middle" className="fill-[var(--text-muted)] text-[10px]">
+            <text
+              y={64}
+              textAnchor="middle"
+              className="fill-[var(--text-muted)] text-[10px]"
+            >
               {s.sub}
             </text>
           </g>
@@ -368,13 +383,47 @@ function BrainMap({
       >
         {/* Two rings breathing out of phase. This is the only looping animation on the page
             and it sits on the one thing that is genuinely always running. */}
-        <circle r={74} fill="none" stroke={core.accent} strokeWidth={1} opacity={0.35}>
-          <animate attributeName="r" values="60;80" dur="3.2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.4;0" dur="3.2s" repeatCount="indefinite" />
+        <circle
+          r={74}
+          fill="none"
+          stroke={core.accent}
+          strokeWidth={1}
+          opacity={0.35}
+        >
+          <animate
+            attributeName="r"
+            values="60;80"
+            dur="3.2s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="opacity"
+            values="0.4;0"
+            dur="3.2s"
+            repeatCount="indefinite"
+          />
         </circle>
-        <circle r={74} fill="none" stroke={core.accent} strokeWidth={1} opacity={0.35}>
-          <animate attributeName="r" values="60;80" dur="3.2s" begin="-1.6s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.4;0" dur="3.2s" begin="-1.6s" repeatCount="indefinite" />
+        <circle
+          r={74}
+          fill="none"
+          stroke={core.accent}
+          strokeWidth={1}
+          opacity={0.35}
+        >
+          <animate
+            attributeName="r"
+            values="60;80"
+            dur="3.2s"
+            begin="-1.6s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="opacity"
+            values="0.4;0"
+            dur="3.2s"
+            begin="-1.6s"
+            repeatCount="indefinite"
+          />
         </circle>
         <circle
           r={56}
@@ -382,7 +431,11 @@ function BrainMap({
           stroke={core.accent}
           strokeWidth={selectedId === core.id ? 2.5 : 1.5}
         />
-        <text y={-4} textAnchor="middle" className="fill-white text-[22px] font-extrabold">
+        <text
+          y={-4}
+          textAnchor="middle"
+          className="fill-white text-[22px] font-extrabold"
+        >
           {core.letter}
         </text>
         <text
@@ -404,13 +457,17 @@ function BrainMap({
 /* ══════════════════════════ the detail card ══════════════════════════ */
 
 function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
-  const Icon = (Icons as unknown as Record<string, Icons.LucideIcon>)[node.icon] ?? Icons.Circle;
+  const Icon =
+    (Icons as unknown as Record<string, Icons.LucideIcon>)[node.icon] ??
+    Icons.Circle;
 
   return (
     <Reveal key={node.id}>
       <article
         className="card flex h-full flex-col overflow-hidden"
-        style={{ borderColor: `color-mix(in srgb, ${node.accent} 35%, var(--border-subtle))` }}
+        style={{
+          borderColor: `color-mix(in srgb, ${node.accent} 35%, var(--border-subtle))`,
+        }}
       >
         <header
           className="flex items-center gap-3 px-4 py-3.5"
@@ -456,7 +513,9 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
               <ul className="flex flex-col gap-2">
                 {node.capabilities.map((c) => {
                   const CapIcon =
-                    (Icons as unknown as Record<string, Icons.LucideIcon>)[c.icon] ?? Icons.Circle;
+                    (Icons as unknown as Record<string, Icons.LucideIcon>)[
+                      c.icon
+                    ] ?? Icons.Circle;
                   return (
                     <li
                       key={c.title}
@@ -464,9 +523,15 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
                     >
                       <span
                         className="mt-[1px] grid h-6 w-6 shrink-0 place-items-center rounded-[7px]"
-                        style={{ background: `color-mix(in srgb, ${node.accent} 14%, transparent)` }}
+                        style={{
+                          background: `color-mix(in srgb, ${node.accent} 14%, transparent)`,
+                        }}
                       >
-                        <CapIcon className="h-3.5 w-3.5" style={{ color: node.accent }} aria-hidden />
+                        <CapIcon
+                          className="h-3.5 w-3.5"
+                          style={{ color: node.accent }}
+                          aria-hidden
+                        />
                       </span>
                       <span className="min-w-0">
                         <b className="block text-[12px] font-bold text-[var(--text-primary)]">
@@ -509,13 +574,15 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
           {node.links.length > 0 ? (
             <>
               <SectionLabel>
-                Pages <span className="chip chip-grey">{node.links.length}</span>
+                Pages{" "}
+                <span className="chip chip-grey">{node.links.length}</span>
               </SectionLabel>
               <ul className="grid grid-cols-2 gap-1.5 max-[560px]:grid-cols-1">
                 {node.links.map((l) => {
                   const LinkIcon =
-                    (Icons as unknown as Record<string, Icons.LucideIcon>)[l.icon ?? ""] ??
-                    Icons.ArrowRight;
+                    (Icons as unknown as Record<string, Icons.LucideIcon>)[
+                      l.icon ?? ""
+                    ] ?? Icons.ArrowRight;
                   return (
                     <li key={l.href}>
                       <Link
@@ -523,9 +590,18 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
                         className="flex items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface)] px-2.5 py-2 text-[11.5px] font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                         style={{ borderColor: undefined }}
                       >
-                        <LinkIcon className="h-3.5 w-3.5 shrink-0" style={{ color: node.accent }} aria-hidden />
-                        <span className="min-w-0 flex-1 truncate">{l.label}</span>
-                        <Icons.ArrowRight className="h-3 w-3 shrink-0 opacity-50" aria-hidden />
+                        <LinkIcon
+                          className="h-3.5 w-3.5 shrink-0"
+                          style={{ color: node.accent }}
+                          aria-hidden
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {l.label}
+                        </span>
+                        <Icons.ArrowRight
+                          className="h-3 w-3 shrink-0 opacity-50"
+                          aria-hidden
+                        />
                       </Link>
                     </li>
                   );
@@ -573,7 +649,11 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.Element {
+function SectionLabel({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
   return (
     <p className="flex items-center gap-2 border-t border-[var(--border-subtle)] pt-3 text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-[var(--text-muted)]">
       {children}
