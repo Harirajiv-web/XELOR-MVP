@@ -4,6 +4,12 @@ This directory contains the final, presentation-ready documents. Source material
 implementation notes live elsewhere under `docs/`; these files are the versions intended
 to be shared with investors, product teams, architects and delivery partners.
 
+## Markdown briefs
+
+- [ACHILES complete agent brief](ACHILES_COMPLETE_AGENT_BRIEF.md) — a plain-language but
+  complete explanation of ACHILES: its checks, status logic, scheduling, permissions,
+  evidence, Agent OS role, RELAY hand-off and current production boundaries.
+
 ## Project reports
 
 - [Complete platform guide in simple words](project-reports/XELOR_COMPLETE_PLATFORM_SIMPLE_GUIDE.pdf) — a beginner-friendly explanation of every agent, module, main screen, workflow, control, integration and robotics boundary.

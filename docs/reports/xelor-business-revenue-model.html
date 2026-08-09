@@ -89,7 +89,7 @@
     }
   </style>
 </head>
-<body data-model-version="2026-08-08-v3">
+<body data-model-version="2026-08-09-v3.1">
   <section class="cover">
     <div class="mark">XE</div>
     <div class="eyebrow">XELOR · TWO-SEGMENT COMMERCIAL MODEL</div>
@@ -100,7 +100,7 @@
       <div><b>₹54L</b>Multi-Plant ARR</div>
       <div><b>9</b>agents in both offers</div>
     </div>
-    <div class="meta"><span>Research date: 8 August 2026 · Currency: INR · GST excluded</span><span>Decision model v3.0</span></div>
+    <div class="meta"><span>Research date: 9 August 2026 · Currency: INR · GST excluded</span><span>Decision model v3.1</span></div>
   </section>
 
   <section class="page">
@@ -262,7 +262,8 @@
     </div>
 
     <h3>Price anchors—not direct substitutes</h3>
-    <p>Microsoft lists Business Central Premium in India at ₹9,150 per user/month, or ₹1.098Cr per year for 100 users, before GST and implementation.<sup>2</sup> Frappe Cloud lists premium managed hosting from ₹40,000/month; that is hosting/support infrastructure rather than a complete enterprise implementation or governed agent layer.<sup>3</sup> XELOR therefore needs a plant/value price between cheap hosting and a full replacement-ERP programme.</p>
+    <p>Microsoft lists Business Central in India at ₹6,655 per user/month Essentials and ₹9,150 Premium, paid yearly, GST extra.<sup>2</sup> At a plant averaging 123.5 persons engaged, a plausible <b>20&ndash;30 named users</b> costs ₹15.97&ndash;23.96L a year on Essentials and ₹21.96&ndash;32.94L on Premium&mdash;licence only, before any partner implementation. Frappe Cloud, at the other end, publishes managed hosting <b>from ₹410/month for Sites and ₹3,600/month for Servers</b>.<sup>3</sup> XELOR therefore needs a plant/value price between near-free hosting and a full replacement-ERP programme.</p>
+    <div class="callout warning"><b>Anchor correction (v3.1).</b> Version 3.0 quoted Business Central at &ldquo;₹1.098Cr per year for 100 users&rdquo; and Frappe Cloud at &ldquo;from ₹40,000/month&rdquo;. Both were checked against the publishers on 9 Aug 2026 and replaced. One hundred premium ERP seats in a 123.5-person factory inflates the anchor; and Frappe&rsquo;s <i>entry</i> price is ₹410/month, roughly a hundredth of the figure previously printed, which made the &ldquo;between cheap hosting and a full ERP&rdquo; framing collapse the moment a reader opened the cited link. A price argument that only works while the source goes unread is not a price argument.</div>
 
     <div class="callout good"><b>Bundle principle:</b> all nine agents together must cost less than buying them one by one because their shared evidence, permissions and coordination create the product. The final page gives a transparent per-agent rate card and the bundle saving.</div>
     <div class="callout risk"><b>Current product boundary:</b> the repository remains an investor MVP. These are launch prices to validate, not evidence of accepted customer pricing, completed production connectors, achieved margins or existing ARR.</div>
@@ -320,7 +321,7 @@
       <thead><tr><th>Market layer</th><th>Population and price logic</th><th>ARR opportunity</th><th>Meaning</th></tr></thead>
       <tbody>
         <tr><td><b>TAM</b></td><td>19,623 × ₹18L + 28,139 × ₹54L</td><td><b>₹18,727Cr</b></td><td>Broad two-segment India ceiling using employee-size proxies.</td></tr>
-        <tr><td><b>SAM</b></td><td>27,135 sites with ≥₹100Cr output × ₹25.2L blended ACV</td><td><b>₹6,838Cr</b></td><td>Affordability-screened universe; mix remains a management assumption.</td></tr>
+        <tr><td><b>SAM</b></td><td>27,135 sites &times; ₹25.2L blended ACV <span class="tag assume">DENOMINATOR UNSOURCED</span></td><td><b>₹6,838Cr</b></td><td>Affordability-screened universe; both the filter and the mix are management assumptions.</td></tr>
         <tr><td><b>TOM</b></td><td>5,000 named priority accounts × ₹25.2L blended ACV</td><td><b>₹1,260Cr</b></td><td>First vertical/geography/data-ready target list.</td></tr>
         <tr><td><b>SOM</b></td><td>80 MSME + 20 Multi-Plant customers</td><td><b>₹25.2Cr</b></td><td>Five-year capture case: 100 customers / 2% of TOM logos.</td></tr>
       </tbody>
@@ -332,12 +333,13 @@
     <div class="bar"><b>5-year SOM</b><div class="track"><div class="fill" style="width:.21%;min-width:4px"></div></div><span class="right">100</span></div>
 
     <div class="grid2">
-      <div class="card"><h3>What is externally sourced</h3><p>Factory counts, employment bands and output bands come from ASI Statements 13A and 16A.</p></div>
+      <div class="card"><h3>What is externally sourced</h3><p>Factory counts and <b>employment</b> bands come from ASI Summary Results 2023&ndash;24. TAM, TOM, SOM and the blended ACV reproduce exactly from those counts.</p></div>
       <div class="card"><h3>What XELOR assumes</h3><p>Prices, the 80/20 mix, 5,000-account TOM, customer fit, conversion and five-year capture.</p></div>
     </div>
 
     <div class="callout warning"><b>Market-size limitation:</b> ASI counts factory sites, whereas contracts may consolidate several plants under one legal customer. Account-level mapping must replace site counts before this becomes an investor diligence data room number.</div>
-    <div class="source-note">Source [1]: MoSPI, <i>ASI Summary Results 2023–24</i>, Statements 13A and 16A. Opportunity values are model-derived; they are not reported software expenditure.</div>
+    <div class="callout risk"><b>SAM is the one layer that does not reproduce from the cited source (correction, v3.1).</b> Version 3.0 derived SAM from &ldquo;27,135 sites with ≥₹100Cr output&rdquo;, cited to ASI Summary Results 2023&ndash;24. That publication distributes factories by <b>employment</b>, state and NIC&mdash;it contains <b>no statement distributing factories by size class of output</b>, so the ≥₹100Cr filter cannot be traced to it. The figure is retained here because it drives no other number in this model, but it is now marked as an assumption and must be either re-sourced from ASI Volume I or restated on the published employment bands before diligence. <b>TAM (₹18,727.2Cr), TOM (₹1,260Cr), SOM (₹25.2Cr) and the ₹25.2L blended ACV all reproduce exactly and are unaffected.</b></div>
+    <div class="source-note">Source [1]: MoSPI, <i>ASI Summary Results 2023–24</i>, employment-band statements. Opportunity values are model-derived; they are not reported software expenditure.</div>
   </section>
 
   <section class="page">
@@ -459,7 +461,7 @@
     <ol class="small">
       <li><b>MoSPI, ASI Summary Results 2023–24.</b> Statements 13A and 16A. <a href="https://mospi.gov.in/uploads/publications_reports/publications_reports1759229789833_2b8ed8ad-314e-46b7-b123-b08cb17f1233_ASI_Summary_Results_2023-24C.pdf">Official PDF</a>.</li>
       <li><b>Microsoft Business Central India pricing.</b> Essentials ₹6,655 and Premium ₹9,150 per user/month, paid yearly; GST extra. <a href="https://www.microsoft.com/en-in/dynamics-365/products/business-central/pricing">Official pricing</a>.</li>
-      <li><b>Frappe Cloud pricing.</b> Dedicated from ₹20,000/month and Premium from ₹40,000/month. <a href="https://frappecloud.com/pricing">Official pricing</a>.</li>
+      <li><b>Frappe Cloud pricing.</b> Sites from ₹410/month; Servers from ₹3,600/month. Verified 9 Aug 2026; <code>frappecloud.com/pricing</code> now redirects. <a href="https://frappe.io/cloud/pricing">Official pricing</a>.</li>
       <li><b>SaaS Capital, 2025 private B2B retention benchmarks.</b> Metric definitions and ACV/retention direction only. <a href="https://www.saas-capital.com/blog-posts/what-is-a-good-retention-rate-for-a-private-saas-company/">Research note</a>.</li>
       <li><b>Bessemer Venture Partners, Scaling to $100 Million.</b> Historic cloud gross-margin context. <a href="https://www.bvp.com/atlas/scaling-to-100-million">Benchmark framework</a>.</li>
       <li><b>Ministry of MSME.</b> Revised legal classification effective 1 April 2025. <a href="https://www.msme.gov.in/ministry/about-us/details/Title%3DWhat%27s-MSME-IzMzITMtQWa">Official classification</a>.</li>
@@ -514,6 +516,342 @@
 
     <div class="callout good"><b>Final recommendation:</b> show individual prices when a customer needs a smaller entry point, but lead every commercial discussion with the all-nine bundle. The bundle is simpler to understand, cheaper than the individual total and preserves XELOR’s central promise: coordinated intelligence across the whole factory.</div>
     <div class="callout warning"><b>RELAY clarification:</b> ₹1.2L/₹3.6L is the software agent allocation only. An actual human managed-services team is charged separately at ₹6L for MSME Lite or ₹18–36L for Multi-Plant coverage.</div>
+  </section>
+  <section class="page">
+    <h2>12. Is this price right for a price-sensitive India?</h2>
+    <p class="lead"><b>Yes&mdash;the number holds. The label, the qualification floor and the cash shape do not.</b> This section tests ₹18L and ₹54L against what Indian manufacturers actually pay, and concludes that the price should not be cut. What must change is who XELOR sells to, what the offer is called, and when the money moves.</p>
+
+    <div class="grid4">
+      <div class="metric"><b>0.24%</b><span>₹18L as a share of the average 100&ndash;199 employee factory&rsquo;s turnover<sup>1</sup></span></div>
+      <div class="metric"><b>56.3%</b><span>of Microsoft&rsquo;s own India list, at 40 seats<sup>2</sup></span></div>
+      <div class="metric"><b>&minus;75%</b><span>achievable cut in the peak cheque, at zero cost to ARR</span></div>
+      <div class="metric"><b>100+</b><span>employees: the qualification floor the evidence demands</span></div>
+    </div>
+
+    <h3>12.1 Four reasons the price holds</h3>
+
+    <h4>1. Microsoft already charges Indian factories more than XELOR does</h4>
+    <p><span class="tag fact">EXTERNAL FACT</span> Microsoft India lists Dynamics&nbsp;365 Business Central at <b>₹6,655/user/month</b> (Essentials) and <b>₹9,150</b> (Premium), paid yearly, GST extra.<sup>2</sup> ₹18,00,000 buys <b>22.5 Essentials seats</b> or <b>16.4 Premium seats</b> for a year. At 30 seats Business Central alone costs <b>₹23.96L</b> (Essentials) or <b>₹32.94L</b> (Premium)&mdash;licence only, before a partner implementation. Microsoft applies <b>no India discount at this tier</b>: the implied rate is ₹83.1&ndash;83.2/USD against US list across all three SKUs, consistent to 0.1%. The widely-held belief that &ldquo;India SaaS sits 30&ndash;70% below global list&rdquo; is true at the self-serve tier and <b>false at the tier XELOR competes in</b>.</p>
+
+    <table class="tiny">
+      <thead><tr><th>Named users</th><th>20</th><th>30</th><th>40</th><th>50</th></tr></thead>
+      <tbody>
+        <tr><td>₹18L expressed per user/month</td><td>₹7,500</td><td><b>₹5,000</b></td><td><b>₹3,750</b></td><td>₹3,000</td></tr>
+        <tr><td>As % of BC Essentials India list (₹6,655)</td><td>112.7%</td><td>75.1%</td><td><b>56.3%</b></td><td>45.1%</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>This is a CFO comparison device, never an invoice metric.</b> &sect;4 is deliberate that XELOR does not charge per user&mdash;a manufacturing decision crosses departments, and charging every operator separately discourages the adoption the whole product depends on. The per-seat figure exists to answer &ldquo;how does this compare to what we already pay Microsoft?&rdquo;, and for nothing else.</div>
+
+    <h4>2. Against the firm&rsquo;s own P&amp;L the price is small</h4>
+    <p><span class="tag fact">EXTERNAL FACT</span> ASI 2023&ndash;24: the 100&ndash;199 employee band holds <b>19,623 operating factories</b> averaging <b>₹74.14Cr output</b> and 123.5 persons engaged.<sup>1</sup> ₹18L is <b>0.24%</b> of that turnover and ₹23L is <b>0.31%</b>.</p>
+    <div class="callout warning"><b>Do not call this &ldquo;4% of ASI profit&rdquo;.</b> A pre-tax profit proxy of ₹4.52Cr can be derived as net value added less emoluments, rent and interest&mdash;against which ₹18L is 4.0% and ₹23L is 5.1%. That is an <b>analyst construct, not a published line</b>: ASI reports no profit figure, and the proxy ignores non-operating income and tax while charging managerial pay against value added. Useful for internal sizing; it will be attacked in diligence if presented as a source figure.</div>
+
+    <h4>3. This buyer is legally a <i>Small</i> enterprise, not a micro one</h4>
+    <p><span class="tag fact">EXTERNAL FACT</span> Under the classification effective 1&nbsp;April&nbsp;2025, Small means investment ≤₹25Cr <b>and</b> turnover ≤₹100Cr.<sup>6</sup> A ₹74Cr-turnover factory sits squarely in Small; the 200&ndash;499 band (₹162.99Cr average) is Medium. The familiar &ldquo;Indian MSMEs will not pay for software&rdquo; evidence is drawn from the Udyam register, which is <b>overwhelmingly micro</b>. It is not evidence about this buyer.</p>
+
+    <h4>4. A comparable SAP project lists higher</h4>
+    <p><span class="tag fact">EXTERNAL FACT</span> An SAP Gold Partner in India publishes SAP Business One Professional User at <b>₹1,59,905</b> perpetual with implementation at <b>₹5&ndash;12L</b> for 10&ndash;30 users.<sup>21</sup> Fifteen professional users is <b>₹28.99&ndash;35.99L in year one</b>, ex-GST and pre-discount, plus annual maintenance. XELOR at ₹23L is <b>21&ndash;36% below that</b>.</p>
+    <div class="callout warning"><b>Cite one partner or none.</b> Three Indian SAP partners publish irreconcilable totals for the same product&mdash;₹28.99&ndash;35.99L, ₹55L&ndash;1.5Cr and ₹10L (5 users) to ₹50L (100 users). Quoting a range built from all three invites a diligence question that has no good answer.</div>
+  </section>
+
+  <section class="page">
+    <h2>12. Is this price right for a price-sensitive India? <span class="small">(continued)</span></h2>
+
+    <h3>12.2 Where the price genuinely does not hold</h3>
+    <p>The same prices run against the <b>50&ndash;99 employee</b> band (26,505 factories, ₹36.32Cr average output) stop working. This is the single most important table in the section.</p>
+    <table>
+      <thead><tr><th>Against the derived pre-tax profit proxy</th><th>100&ndash;199 employees</th><th>50&ndash;99 employees</th></tr></thead>
+      <tbody>
+        <tr><td>₹18L subscription</td><td>4.0%</td><td><b>11.1%</b></td></tr>
+        <tr><td>₹23L year one</td><td>5.1%</td><td><b>14.2%</b></td></tr>
+        <tr><td>₹78L Multi-Plant year one</td><td>&mdash;</td><td><b>48.1%</b></td></tr>
+      </tbody>
+    </table>
+    <div class="callout risk"><b>The price breaks exactly one band down.</b> That argues for a hard qualification screen&mdash;<b>~100+ employees and ~₹50Cr+ turnover</b>&mdash;not for a lower price. Selling the same package one band down is how a defensible price becomes an indefensible one.</div>
+
+    <h3>12.3 The word &ldquo;MSME&rdquo; is the actual defect</h3>
+    <p>The modal 100&ndash;199 employee manufacturer&rsquo;s mental anchor is <b>TallyPrime Gold: ₹67,500 one-time plus ₹13,500/year</b> maintenance.<sup>18</sup> ₹18L is 26.7&times; that perpetual licence and <b>133&times; the renewal</b>&mdash;but that ratio compares an AI-native manufacturing platform against a single-product accounting maintenance fee, which is not a like-for-like at all.</p>
+    <div class="callout"><b>Recommendation:</b> rename Offer A away from &ldquo;MSME&rdquo;. The label invites exactly the comparison that makes the price look absurd, and it describes a legal category this buyer largely is not. <b>Never print the 133&times;</b> in an investor document; it invites the reader to conclude the market has been misread.</div>
+
+    <h3>12.4 What the cost objection actually is</h3>
+    <p><span class="tag fact">EXTERNAL FACT</span> Zoho&rsquo;s survey of 5,100+ Indian MSMEs puts <b>&ldquo;cost of software is high&rdquo; at 93%</b>, the top stated hurdle, with budgetary constraints at 92%&mdash;but attaches <b>no absolute rupee figure</b>.<sup>20</sup> Roughly <b>46% of Indian MSMEs are not digitalised at all</b>. A large share of the addressable market therefore has <b>no software budget line to move</b>. That is a budget-creation and sales-cycle problem, not a price-level problem, and it is solved by the paid pilot in &sect;2&mdash;not by a discount.</p>
+
+    <h3>12.5 Four claims that must be retired</h3>
+    <table class="tiny">
+      <thead><tr><th>Claim in circulation</th><th>Why it must not be used</th></tr></thead>
+      <tbody>
+        <tr><td>&ldquo;₹23L consumes 31&ndash;62% of the firm&rsquo;s IT budget.&rdquo;</td><td>Requires IT spend at 0.5&ndash;1.0% of turnover, a ratio in no cited source. The nearest verifiable benchmark puts industrial-products IT spend at <b>4.1% of revenue</b>&mdash;on which ₹23L is <b>7.6%</b>. The evidence refutes the alarm.</td></tr>
+        <tr><td>&ldquo;Zoho One India ₹1,500/employee/month.&rdquo;</td><td>Zoho publishes <b>no INR price</b> for Zoho One. Reseller figures span ₹1,250&ndash;1,800, a 44% spread. The affordability argument survives entirely through Microsoft.</td></tr>
+        <tr><td>&ldquo;Only ~12% of Indian MSMEs use ERP.&rdquo;</td><td>Unsourceable, and contradicted by the same survey it is usually attributed to.</td></tr>
+        <tr><td>&ldquo;Manufacturing IT spend is ~2% of revenue.&rdquo;</td><td>Low-authority aggregator, and an all-IT figure including hardware and headcount&mdash;so it overstates the software budget it is used to constrain.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Standing rule:</b> a number that cannot be traced to a named publisher does not enter this document, even when it supports the conclusion. Four of the five &ldquo;India is too price-sensitive&rdquo; statistics in general circulation failed verification; the affordability case is stronger without them.</div>
+  </section>
+
+  <section class="page">
+    <h2>12. Is this price right for a price-sensitive India? <span class="small">(continued)</span></h2>
+
+    <h3>12.6 The real problem is not ₹23L. It is a ₹19L cheque in one month.</h3>
+    <p>Under &sect;2 as written&mdash;implementation billed 40/40/20 with the pilot fully credited on conversion&mdash;the MSME cash sequence is ₹3.00L pilot, ₹0 at kickoff (the credit absorbs it), ₹1.00L at accepted integration, then <b>₹19.00L at go-live</b> (₹1.00L implementation balance plus the ₹18.00L annual subscription).</p>
+    <p>That single ₹19.00L outflow is <b>50.4% of one month</b> of the band&rsquo;s derived monthly profit proxy, landing on a manufacturer in a market where <b>63% of credit-based B2B sales carry overdue invoices and bad debts average 7%</b>.<sup>17</sup> The P&amp;L can carry ₹18L at 0.24% of turnover. <b>The cash cycle cannot carry ₹19L in one month.</b></p>
+
+    <h4>Prove-then-Ramp &mdash; the fix, with exact numbers</h4>
+    <p class="small">Pilot unchanged at ₹3.00L, fully credited. Net implementation (₹5.00L &minus; ₹3.00L credit = ₹2.00L) amortised over 12 months at RBI&rsquo;s published weighted-average lending rate on fresh rupee loans, <b>8.53%</b><sup>16</sup> &rarr; ₹17,400/month. Quarterly subscription becomes the list convention at ₹4.50L &times; 4, <b>at par</b>.</p>
+    <table>
+      <thead><tr><th>MSME Complete</th><th>Today</th><th>Prove-then-Ramp</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td>Peak single outflow</td><td>₹19.00L</td><td><b>₹4.674L</b></td><td><b>&minus;75.4%</b></td></tr>
+        <tr><td>Peak as % of one month&rsquo;s profit proxy</td><td>50.4%</td><td><b>12.4%</b></td><td>&mdash;</td></tr>
+        <tr><td>24-month total collected</td><td>₹41.00L</td><td><b>₹41.088L</b></td><td>+₹8,800</td></tr>
+        <tr><td>ARR · gross margin · CAC payback</td><td>₹18L · 75% · 7.1 mo</td><td><b>unchanged</b></td><td><b>0</b></td></tr>
+      </tbody>
+    </table>
+    <p class="small">Multi-Plant Command behaves identically: peak outflow falls from <b>₹58.80L to ₹14.717L (&minus;75.0%)</b>, and 24-month collections rise ₹60,400.</p>
+    <div class="callout good"><b>Why this one and not a discount:</b> it is revenue-neutral-to-positive over 24 months and changes <b>no</b> input to &sect;6, &sect;7 or &sect;8&mdash;not ARR, not gross margin, not CAC payback, not break-even. Alternative designs tested against the same arithmetic turned out to be <b>discounts wearing a premium&rsquo;s label</b>: one &ldquo;16.7% premium&rdquo; variant collected ₹2.75L <i>less</i> over 24 months, because discounted onboarding months quietly consumed the headline uplift.</div>
+    <div class="callout warning"><b>What it costs XELOR, stated honestly:</b> deferring ₹13.50L of subscription creates ₹6.75L of rupee-years; at 8.53% that float is worth <b>₹57,578 per MSME customer per year</b>, or <b>3.2% of ₹18L</b> (₹1,72,733 and the same 3.2% on Multi-Plant). It costs <b>zero runway</b>&mdash;&sect;9&rsquo;s control rule already excludes customer receipts from the ₹10Cr plan.</div>
+
+    <h3>12.7 Kill the 6% quarterly premium</h3>
+    <p>&sect;2 charges 6% for quarterly billing. On ₹13.50L deferred at a weighted-average half-year, that ₹1,08,000 is an implied <b>~16% per annum</b>&mdash;against an RBI weighted-average lending rate of <b>8.53%</b>.<sup>16</sup> A banked manufacturer&rsquo;s CFO negotiates a 16% charge away in one meeting. The defensible ceiling for float is <b>3.2%</b>.</p>
+    <div class="callout good"><b>Then invert the framing.</b> Zoho&rsquo;s India list publishes roughly <b>16.7% off annual versus monthly</b> across every tier.<sup>20</sup> The Indian buyer&rsquo;s anchor is a <i>discount for prepaying</i>, not a <i>penalty for not</i>. Present annual-in-advance as the concession. Economically near-identical; psychologically opposite.</div>
+
+    <h3>12.8 What must be true &mdash; and what would disprove it</h3>
+    <table class="tiny">
+      <thead><tr><th>#</th><th>Must be true</th><th>Evidence that would disprove it</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>The buyer is 100+ employees / ₹50Cr+ turnover.</td><td><b>More than 40% of signed pilots</b> come from firms below either threshold&mdash;the pipeline being worked is not the pipeline being priced.</td></tr>
+        <tr><td>2</td><td>The buyer licenses the equivalent of 23+ ERP seats of decision surface.</td><td>Discovery shows ≤15 people would touch the system. <b>At 15 seats ₹18L is ₹10,000/user/month&mdash;150% of Microsoft&rsquo;s list</b>, and the comparison inverts into an argument against XELOR.</td></tr>
+        <tr><td>3</td><td>Pilots convert at ≥50% near list price.</td><td>Conversions cluster 20&ndash;30% below list. That is the market pricing the product, and &sect;7&rsquo;s plan must be rebuilt around it.</td></tr>
+        <tr><td>4</td><td>Cutting price would not simply move the problem.</td><td>Nothing&mdash;this one is already settled by arithmetic. <b>₹100Cr of ARR needs 397 customers at ₹25.2L, 1,111 at ₹9L, or 1,667 at ₹6L.</b> At the plan&rsquo;s own ₹8L CAC, those 1,667 customers cost <b>₹133Cr in acquisition alone</b>. Cutting the price is not a pricing decision; it is a different company.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout risk"><b>The one number that does not exist.</b> No published source states what an Indian manufacturer of this size actually spends on software each year. It is the single most useful figure for this model and it has to be created, not found: <b>itemised current software spend must be a required output of the 20 discovery interviews per segment</b> already mandated by Gate&nbsp;1 in &sect;10.</div>
+  </section>
+
+  <section class="page compact">
+    <h2>13. The investor&rsquo;s point of view</h2>
+    <p class="lead"><b>This section answers four questions in order: what an investor puts in, exactly where it goes, what comes back, and what the founder personally earns and owns.</b> Every figure below is either arithmetic on this document&rsquo;s own numbers or a cited external fact. Nothing here claims a customer, an ARR, an accepted price or a company valuation.</p>
+
+    <h3>13.1 The ask</h3>
+    <div class="grid4">
+      <div class="metric"><b>₹10.00Cr</b><span>primary equity · 100% into the use-of-funds table</span></div>
+      <div class="metric"><b>18.0</b><span>months of runway at ₹55.6L/month</span></div>
+      <div class="metric"><b>US$1.05M</b><span>at ₹95.35/USD on 8 Aug 2026<sup>15</sup></span></div>
+      <div class="metric"><b>0%</b><span>secondary · no founder cash-out at seed</span></div>
+    </div>
+
+    <p><span class="tag fact">EXTERNAL FACT</span> ₹10.00Cr converts to US$1.05M, which sits on the Indian seed median. Inc42 records 215 seed deals in H1 2025 at a median ticket of US$1M — but from a pool that <b>shrank 31% year on year</b> (US$406Mn+) on 6% fewer deals.<sup>11</sup> Bain and IVCA report an approximate US$3M average across 803 seed deals in 2025, with the explicit footnote that the average <i>excludes undisclosed-value transactions</i> and is therefore biased upward.<sup>10</sup> The honest reading: ₹10Cr is a median-sized cheque into a contracting seed market, not a modest ask into an easy one.</p>
+
+    <h4>Instrument</h4>
+    <table>
+      <thead><tr><th>Option</th><th>Mechanics</th><th>When it is right</th></tr></thead>
+      <tbody>
+        <tr><td><b>Priced round on CCPS</b><br><span class="tag recommend">RECOMMENDED</span></td><td>Compulsorily convertible preference shares; 1&times; non-participating liquidation preference; <b>pari passu</b>, not senior, to later rounds; broad-based weighted-average anti-dilution.</td><td>A single lead taking the full ₹10Cr. Prices the company now, which is what makes §13.4&rsquo;s founder numbers computable.</td></tr>
+        <tr><td><b>iSAFE / convertible note first tranche</b></td><td>₹3&ndash;4Cr on a capped instrument converting at the Series A, balance drawn on a priced round after Gate 1. A convertible note requires the issuer to be a DPIIT-recognised private limited company and each investor to put in not less than ₹25 lakh in a single tranche.<sup>13</sup></td><td>If the lead will not price a pre-revenue company. Reference point: 100X.VC currently publishes ₹1.25Cr for 15% of future equity on an iSAFE — an implied ₹8.33Cr post-money cap.<sup>12</sup></td></tr>
+      </tbody>
+    </table>
+    <div class="callout warning"><b>Instrument caveat:</b> the choice between CCPS, an iSAFE and a convertible note has Companies Act, FEMA and tax consequences that this document does not model. Confirm with counsel before a term sheet, including the current status of the angel-tax provision (s.56(2)(viib)); no part of this plan relies on it.</div>
+
+    <h4>Valuation and dilution &mdash; a sensitivity, not a claim</h4>
+    <p><span class="tag assume">ASSUMPTION &mdash; NO DATASET EXISTS</span> No primary Indian seed pre-money valuation dataset is published. Bain/IVCA and Inc42 publish deal counts and ticket sizes; neither publishes valuations. <b>XELOR must therefore present pre-money as a free variable and negotiate it, not assert a market band.</b></p>
+    <div class="formula">Investor equity % = ₹10Cr ÷ (pre-money + ₹10Cr)</div>
+    <table>
+      <thead><tr><th>Pre-money</th><th>₹15Cr</th><th>₹20Cr</th><th>₹25Cr</th><th>₹30Cr</th><th>₹40Cr</th><th>₹56.7Cr</th></tr></thead>
+      <tbody>
+        <tr><td><b>Post-money</b></td><td>₹25Cr</td><td>₹30Cr</td><td>₹35Cr</td><td>₹40Cr</td><td>₹50Cr</td><td>₹66.7Cr</td></tr>
+        <tr><td><b>Investor equity</b></td><td>40.0%</td><td>33.3%</td><td>28.6%</td><td><b>25.0%</b></td><td>20.0%</td><td>15.0%</td></tr>
+        <tr><td><b>Founder after a 10% pool</b></td><td>50.0%</td><td>56.7%</td><td>61.4%</td><td><b>65.0%</b></td><td>70.0%</td><td>75.0%</td></tr>
+      </tbody>
+    </table>
+
+    <h4>ESOP pool treatment &mdash; worth ₹1.0Cr to the founder</h4>
+    <p><span class="tag recommend">RECOMMENDATION</span> Create a <b>10% pool</b> on a fully diluted basis. The plan hires 15 people by month 18 and cannot compete for the roles in §9 on the ₹25&ndash;27L cash bands without equity. <b>Where the pool is carved is a negotiation, not a convention.</b></p>
+    <div class="grid2">
+      <div class="card"><h3>Pool from pre-money (investor-standard)</h3><p>Founder 65.0% · Investor 25.0% · ESOP 10.0%.</p><p class="small">The founder bears the entire pool. A &ldquo;₹30Cr pre-money&rdquo; is really <b>₹26Cr</b> to the founder: ₹40Cr post &minus; ₹10Cr new money &minus; ₹4Cr of pool.</p></div>
+      <div class="card"><h3>Pool from post-money (shared)</h3><p>Founder 67.5% · Investor 22.5% · ESOP 10.0%.</p><p class="small">Both parties dilute. At a ₹40Cr post-money the difference is <b>2.5 percentage points = ₹1.0Cr</b> of founder value. Ask for it; expect to trade something for it.</p></div>
+    </div>
+
+    <h3>13.2 Where the money goes</h3>
+    <p>The ₹10.00Cr reconciles exactly to §9: <b>₹5.45Cr employee cash cost + ₹4.55Cr non-payroll</b>, across seven workstreams, with ₹5.20Cr (52%) going to product leadership, engineering, AI and security. The column below adds the only thing §9 does not say: what the investor owns if the company stops at that line.</p>
+    <table class="tiny">
+      <thead><tr><th>Workstream</th><th>FTE</th><th>Payroll</th><th>Non-payroll</th><th>Total · share</th><th>What the investor is buying</th></tr></thead>
+      <tbody>
+        <tr><td>Leadership &amp; product</td><td>3</td><td>₹1.20Cr</td><td>₹0.20Cr</td><td><b>₹1.40Cr · 14%</b></td><td>Founder and CTO time at ₹26.7L per head per year &mdash; the cheapest line in the table relative to what it decides.</td></tr>
+        <tr><td>Engineering, AI &amp; security</td><td>7</td><td>₹2.65Cr</td><td>₹1.15Cr</td><td><b>₹3.80Cr · 38%</b></td><td>The durable asset. ₹25.2L per engineer-year. If the company stops, this is substantially what remains.</td></tr>
+        <tr><td>Implementation &amp; customer success</td><td>3</td><td>₹0.95Cr</td><td>₹0.85Cr</td><td><b>₹1.80Cr · 18%</b></td><td>Delivery cost, not acquisition. This line is what converts a 75%-margin <i>target</i> into an observed margin.</td></tr>
+        <tr><td>Sales &amp; partnerships</td><td>2</td><td>₹0.65Cr</td><td>₹0.55Cr</td><td><b>₹1.20Cr · 12%</b></td><td>The willingness-to-pay experiment. This is the line that produces the one number nobody has.</td></tr>
+        <tr><td>Cloud, AI &amp; observability</td><td>&mdash;</td><td>&mdash;</td><td>₹0.70Cr</td><td><b>₹0.70Cr · 7%</b></td><td>COGS, not opex. Sits inside the 75%/78% gross-margin target and must be measured per customer from pilot one.</td></tr>
+        <tr><td>Legal, compliance &amp; administration</td><td>Outsourced</td><td>&mdash;</td><td>₹0.50Cr</td><td><b>₹0.50Cr · 5%</b></td><td>Contract, privacy and audit readiness &mdash; the diligence pack for the Series A.</td></tr>
+        <tr><td>Contingency</td><td>&mdash;</td><td>&mdash;</td><td>₹0.60Cr</td><td><b>₹0.60Cr · 6%</b></td><td>Board-released reserve. 6% is thin; treat it as a milestone reserve, not a buffer.</td></tr>
+        <tr><td><b>Total</b></td><td><b>15</b></td><td><b>₹5.45Cr</b></td><td><b>₹4.55Cr</b></td><td><b>₹10.00Cr · 100%</b></td><td><b>₹5.20Cr to product, engineering, AI and security.</b></td></tr>
+      </tbody>
+    </table>
+
+    <h4>What the investor is buying at each gate</h4>
+    <table>
+      <thead><tr><th>Gate</th><th>Released · cumulative</th><th>Evidence the money must produce</th><th>What the investor owns if it stops here</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b><br>Months 1&ndash;6</td><td>₹3.0Cr · ₹3.0Cr<br>8 people</td><td>Production baseline, two repeatable connectors, 3&ndash;4 paid pilots with signed success criteria.</td><td>The single most valuable output of this raise: <b>observed willingness to pay</b>. ₹75L&ndash;1.0Cr of capital per pilot-evidence unit, plus the platform.</td></tr>
+        <tr><td><b>2</b><br>Months 7&ndash;12</td><td>₹3.5Cr · ₹6.5Cr<br>12 people</td><td>Both offers repeatable, security baseline complete, ≥8 recurring customers.</td><td>An observed pilot-to-annual conversion rate and the first real recurring gross margin. ₹81L of capital per recurring customer at this point &mdash; most of it product build, which is a one-time asset.</td></tr>
+        <tr><td><b>3</b><br>Months 13&ndash;18</td><td>₹3.5Cr · ₹10.0Cr<br>15 people</td><td>16&ndash;20 recurring customers, ₹4&ndash;5Cr exit ARR, ≥3 reusable connector families.</td><td>A Series-A-ready recurring base with observed CAC and payback. <b>Capital-to-ARR of 2.0&ndash;2.5&times;</b> (₹10Cr ÷ ₹4&ndash;5Cr). ₹4&ndash;5Cr exit ARR is US$0.42&ndash;0.52M.<sup>15</sup></td></tr>
+      </tbody>
+    </table>
+    <div class="callout risk"><b>The runway has no buffer.</b> ₹10.00Cr ÷ ₹55.6L per month = <b>17.99 months</b>. The plan is exactly 18 months with zero slack. Its only real buffer is customer receipts, which §9&rsquo;s control rule deliberately keeps out of the spend table: ₹3.0Cr of receipts adds ~5.4 months of envelope, ₹6.0Cr adds ~10.8 months. <b>Board trigger: if cumulative receipts at month 12 are below half plan, cut the month-13 hiring release rather than spend into the gap.</b></div>
+    <div class="callout warning"><b>No published ARR bar exists for an Indian Series A.</b> Bain and IVCA report 315 Series A deals in 2025 at an approximate US$8M average <i>cheque size</i> — that is a deal value, not an ARR threshold.<sup>10</sup> Any &ldquo;you need US$1&ndash;3M ARR to raise a Series A&rdquo; statement is a US convention with no Indian evidentiary basis and must not be quoted as a benchmark in this document.</div>
+  </section>
+
+  <section class="page compact">
+    <h2>13. The investor&rsquo;s point of view <span class="small">(continued)</span></h2>
+    <h3>13.3 What the investor gets back</h3>
+
+    <div class="callout risk"><b>Correct this before the document is circulated.</b> §7 shows Year 3 at 75 customers and <b>₹18.90Cr</b> exit ARR, while §5 labels 100 customers and <b>₹25.20Cr</b> as the <i>five-year</i> blended SOM case. That implies 67 customers added in three years and only 25 more across years four and five. Both cannot be right, and an investor will find it on a first read. <b>Everything below uses §7&rsquo;s Year-3 figure as the spine and states years 4&ndash;5 as an explicit assumption.</b></div>
+
+    <h4>Reference dilution path <span class="tag assume">MANAGEMENT ASSUMPTION</span></h4>
+    <p>Chosen for modelling only. The stage percentages below are not market data; no Indian dataset publishes them.</p>
+    <table>
+      <thead><tr><th>Stage</th><th>Event</th><th>Founder</th><th>Seed</th><th>Series A</th><th>ESOP</th><th>Cumulative preferred</th></tr></thead>
+      <tbody>
+        <tr><td>Today</td><td>&mdash;</td><td>100.0%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+        <tr><td>Seed</td><td>₹10Cr @ ₹30Cr pre / ₹40Cr post; 10% pool from pre-money</td><td><b>65.0%</b></td><td><b>25.0%</b></td><td>&mdash;</td><td>10.0%</td><td>₹10Cr</td></tr>
+        <tr><td>Series A<br>(Year 2)</td><td>₹40Cr @ ₹160Cr pre / ₹200Cr post; pool restored to 10%</td><td><b>50.6%</b></td><td><b>19.4%</b></td><td>20.0%</td><td>10.0%</td><td>₹50Cr</td></tr>
+        <tr><td class="small">Series B<br>(comparison only)</td><td class="small">₹90Cr @ ₹410Cr pre / ₹500Cr post; pool restored</td><td class="small">40.4%</td><td class="small">15.6%</td><td class="small">16.0% + B 18.0%</td><td class="small">10.0%</td><td class="small">₹140Cr</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Exit multiple &mdash; one verifiable comparable, and it is not a close one</h4>
+    <p><span class="tag fact">EXTERNAL FACT</span> Freshworks traded at an <b>EV/Revenue of 2.75&times;</b> as of 31 July 2026 (enterprise value US$2.40B on TTM revenue US$903.87M).<sup>14</sup> <span class="tag assume">CAVEAT</span> Freshworks is a US$904M-revenue, ~16%-growth, US-listed <i>horizontal</i> SaaS business. It is not a like-for-like comparable for a ₹20&ndash;40Cr-ARR Indian <i>vertical</i> manufacturing ERP, and no dataset of Indian private B2B SaaS exit multiples could be located. <b>2.75&times; is used below as the base column because it is the only multiple that can be cited; 4&times; and 6&times; are shown as explicitly unverified sensitivities.</b></p>
+    <p><span class="tag fact">EXTERNAL FACT</span> Indian exit context for 2025: public-market exits accounted for more than 65% of exit value; software/SaaS exit value rose roughly 5&times;, but the two named SaaS liquidity events were <i>partial secondaries by existing VCs</i> in large globally-selling companies (MoEngage ~US$180M ≈ ₹1,716Cr; Freshworks ~US$50M ≈ ₹477Cr). Secondary sales overall fell to ~0.8&times; of 2024, with four deals above US$100M against seven the year before. Strategic sales rose ~15&times; in value, and the average sub-US$100M strategic exit rose to <b>~US$27M ≈ ₹257Cr</b> from ~US$7M.<sup>10,15</sup> That ₹257Cr average is the single most relevant exit anchor in this section.</p>
+
+    <h4>Three cases &mdash; the maths, after liquidation preference</h4>
+    <p>Year-5 exit ARR is the driver. Case C = the §7 Year-3 plan achieved two years late. Case B = §7 continued at a decelerating rate. Case U = upside. Proceeds are computed on a 1&times; non-participating, pari passu preference stack of ₹50Cr, a six-year hold from close, and <b>IRR = MOIC<sup>1/6</sup> &minus; 1</b>.</p>
+    <table>
+      <thead><tr><th>Case</th><th>Year-5 exit ARR</th><th>Multiple</th><th>Enterprise value</th><th>Seed proceeds</th><th>Seed MOIC</th><th>Seed IRR</th><th>Founder proceeds</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3"><b>C</b><br>Conservative<br><span class="small">75 customers</span></td><td rowspan="3">₹18.90Cr</td><td><b>2.75&times;</b> <span class="tag fact">VERIFIED</span></td><td>₹51.97Cr</td><td>₹10.00Cr</td><td><b>1.00&times;</b></td><td>0.0%</td><td>₹1.65Cr</td></tr>
+        <tr><td>4.0&times; <span class="tag assume">ASSUMED</span></td><td>₹75.60Cr</td><td>₹10.00Cr</td><td>1.00&times;</td><td>0.0%</td><td>₹21.37Cr</td></tr>
+        <tr><td>6.0&times; <span class="tag assume">ASSUMED</span></td><td>₹113.40Cr</td><td>₹17.84Cr</td><td>1.78&times;</td><td>10.1%</td><td>₹46.38Cr</td></tr>
+        <tr><td rowspan="3"><b>B</b><br>Base<br><span class="small">~159 customers</span></td><td rowspan="3">₹40.00Cr</td><td><b>2.75&times;</b> <span class="tag fact">VERIFIED</span></td><td>₹110.00Cr</td><td>₹17.01Cr</td><td><b>1.70&times;</b></td><td><b>9.3%</b></td><td>₹44.24Cr</td></tr>
+        <tr><td>4.0&times; <span class="tag assume">ASSUMED</span></td><td>₹160.00Cr</td><td>₹29.16Cr</td><td>2.92&times;</td><td>19.5%</td><td>₹75.84Cr</td></tr>
+        <tr><td>6.0&times; <span class="tag assume">ASSUMED</span></td><td>₹240.00Cr</td><td>₹46.66Cr</td><td>4.67&times;</td><td>29.3%</td><td>₹121.34Cr</td></tr>
+        <tr><td rowspan="3"><b>U</b><br>Upside<br><span class="small">~298 customers</span></td><td rowspan="3">₹75.00Cr</td><td><b>2.75&times;</b> <span class="tag fact">VERIFIED</span></td><td>₹206.25Cr</td><td>₹40.10Cr</td><td><b>4.01&times;</b></td><td><b>26.0%</b></td><td>₹104.28Cr</td></tr>
+        <tr><td>4.0&times; <span class="tag assume">ASSUMED</span></td><td>₹300.00Cr</td><td>₹58.32Cr</td><td>5.83&times;</td><td>34.2%</td><td>₹151.68Cr</td></tr>
+        <tr><td>6.0&times; <span class="tag assume">ASSUMED</span></td><td>₹450.00Cr</td><td>₹87.48Cr</td><td>8.75&times;</td><td>43.5%</td><td>₹227.52Cr</td></tr>
+      </tbody>
+    </table>
+    <p class="tiny">Case B of ~159 blended customers is 3.2% of the 5,000-account TOM and 0.33% of the 47,762-site TAM in §6. Case U of ~298 is 6.0% of TOM and 0.62% of TAM. Both are inside the market §6 already sizes; neither is proof the market will buy.</p>
+
+    <h4>Failure probability &mdash; stated, not hidden</h4>
+    <p><span class="tag assume">MANAGEMENT ASSUMPTION &mdash; NOT A STATISTIC</span> No Indian seed-to-exit survival dataset could be sourced. The weights below are a management judgement and should be argued with, not cited. Probability-weighted seed MOIC = 45% total loss, 25% Case C, 22% Case B, 8% Case U.</p>
+    <table>
+      <thead><tr><th>Exit multiple assumed</th><th>Case C</th><th>Case B</th><th>Case U</th><th>Probability-weighted MOIC</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>2.75&times;</b> (verified)</td><td>1.00&times;</td><td>1.70&times;</td><td>4.01&times;</td><td><b>0.94&times;</b></td><td>Below money-back. Not venture-grade on the only citable multiple.</td></tr>
+        <tr><td>4.0&times; (assumed)</td><td>1.00&times;</td><td>2.92&times;</td><td>5.83&times;</td><td><b>1.36&times;</b></td><td>Positive but weak for the risk taken.</td></tr>
+        <tr><td>6.0&times; (assumed)</td><td>1.78&times;</td><td>4.67&times;</td><td>8.75&times;</td><td><b>2.17&times;</b></td><td>Venture-plausible &mdash; but the multiple is unevidenced.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout risk"><b>Say this out loud in the room.</b> At the only exit multiple that can be cited, this round is an <b>upside-only bet</b>: in Cases C and B the seed&rsquo;s return is effectively capped by its own ₹10Cr liquidation preference, and every rupee of expected return comes from Case U. Lowering the entry price barely changes that (₹15Cr pre-money moves the weighted MOIC from 0.94&times; to only ~1.05&times;) because the binding constraint is the size of the outcome, not the price of entry. <b>To return 3&times; at the verified 2.75&times; multiple, XELOR must reach roughly ₹70Cr ARR by year five &mdash; about 278 blended customers, 5.6% of the TOM.</b> That, and not the ₹10Cr, is the number this raise has to be argued on.</div>
+    <div class="callout warning"><b>The capital plan matters more than the entry price.</b> Same ₹110Cr exit, two structures: with ₹50Cr of preferred raised, the seed takes ₹17.01Cr (1.70&times;) and the founder ₹44.24Cr. With ₹140Cr of preferred raised (a ₹90Cr Series B), the preference stack exceeds the exit &mdash; the seed takes ₹7.86Cr (<b>0.79&times;</b>) and the founder takes <b>₹0</b>. A large Series B is only rational if it buys a materially larger exit; otherwise it destroys both sides at once.</div>
+  </section>
+
+  <section class="page compact">
+    <h2>13. The investor&rsquo;s point of view <span class="small">(continued)</span></h2>
+    <h3>13.4 The founder&rsquo;s revenue and profit</h3>
+    <p class="lead"><b>Revenue is not profit, and profit is not the founder&rsquo;s money.</b> Three different things are separated below, because conflating them is the most common way a founder misreads their own plan.</p>
+
+    <h4>Company revenue versus company profit</h4>
+    <p>Gross profit uses the blended recurring margin this document already computes &mdash; ₹19.224L on a ₹25.2L blended ACV = <b>76.29%</b> &mdash; and an <span class="tag assume">ASSUMPTION</span> of 25% gross margin on implementation and non-converting pilot revenue, which is delivery labour and travel. Operating cost is built from this document&rsquo;s own inputs: sales and marketing = target CAC &times; new customers in the year (₹8L MSME, ₹22L Multi-Plant); the remainder is the engineering, product and administration base.</p>
+    <table>
+      <thead><tr><th>₹Cr</th><th>Year 1</th><th>Year 2</th><th>Year 3</th></tr></thead>
+      <tbody>
+        <tr><td>Recognised subscription revenue</td><td>1.08</td><td>4.86</td><td>13.23</td></tr>
+        <tr><td>Implementation + non-converting pilots</td><td>1.16</td><td>2.62</td><td>5.58</td></tr>
+        <tr><td><b>Total revenue</b> (§7)</td><td><b>2.24</b></td><td><b>7.48</b></td><td><b>18.81</b></td></tr>
+        <tr><td><b>Gross profit</b> (76.29% recurring / 25% services)</td><td><b>1.11</b></td><td><b>4.36</b></td><td><b>11.49</b></td></tr>
+        <tr><td>Blended gross margin</td><td>49.7%</td><td>58.3%</td><td>61.1%</td></tr>
+        <tr><td>Sales &amp; marketing (CAC &times; new customers)</td><td>0.92</td><td>2.32</td><td>4.86</td></tr>
+        <tr><td>Engineering, product and administration base</td><td>5.60</td><td>7.20</td><td>11.00</td></tr>
+        <tr><td><b>Total operating cost</b></td><td><b>6.52</b></td><td><b>9.52</b></td><td><b>15.86</b></td></tr>
+        <tr><td><b>Net position</b></td><td><b>&minus;5.41</b></td><td><b>&minus;5.16</b></td><td><b>&minus;4.37</b></td></tr>
+        <tr><td><b>Cumulative</b></td><td><b>&minus;5.41</b></td><td><b>&minus;10.56</b></td><td><b>&minus;14.94</b></td></tr>
+      </tbody>
+    </table>
+    <p class="tiny">Year 1 operating cost of ₹6.52Cr reconciles to §9&rsquo;s first two release gates (₹3.0Cr + ₹3.5Cr = ₹6.5Cr). Year 2 and Year 3 bases are assumptions consistent with serving 30 and 75 customers; they are not in §9 and must be rebuilt after the first five paid pilots.</p>
+
+    <div class="callout risk"><b>Two corrections the founder must absorb.</b> (1) <b>The ₹10Cr does not fund the company to break-even.</b> The three-year plan consumes ₹14.94Cr of operating loss against ₹10.00Cr raised &mdash; a Series A of roughly ₹25&ndash;40Cr is structurally required during Year 2, and the seed&rsquo;s real job is to make that round raisable. (2) <b>§8&rsquo;s break-even is understated</b> because it holds the cost base at the month-18 fifteen-person envelope of ₹6.67Cr while the customer count grows. Restate §8 with a cost-base column.</div>
+
+    <h4>When XELOR actually turns cash-positive</h4>
+    <div class="grid2">
+      <div class="card"><h3>As written in §8</h3><div class="formula">₹6.67Cr ÷ ₹19.224L = 34.7</div><p><b>35 blended customers · ₹8.74Cr ARR.</b></p><p class="small">True only if the cost base never rises above the 15-person month-18 envelope &mdash; i.e. if the company stops hiring at month 18 and still adds customers.</p></div>
+      <div class="card"><h3>Corrected to the §7 growth plan</h3><div class="formula">₹15.86Cr ÷ ₹19.224L = 82.5</div><p><b>83 blended customers (66 MSME + 17 Multi-Plant) · ₹21.06Cr ARR.</b></p><p class="small">At the Year-3 cost base. Reached in Year 4 on this trajectory. Total equity required to get there is roughly ₹17&ndash;20Cr, not ₹10Cr.</p></div>
+    </div>
+    <p>After break-even, every additional MSME customer adds <b>₹13.50L</b> of annual gross profit and every Multi-Plant customer adds <b>₹42.12L</b>, against a cost base that should grow slower than revenue. That is where profit comes from &mdash; not from the first 80 customers, but from customers 84 onward and from renewals that carry no CAC.</p>
+
+    <h4>The founder&rsquo;s own money</h4>
+    <table>
+      <thead><tr><th>Line</th><th>Amount</th><th>The unflinching version</th></tr></thead>
+      <tbody>
+        <tr><td><b>Salary during the plan</b></td><td>~₹26.7L per year, cost-to-company</td><td>§9 budgets ₹1.20Cr of payroll across 3 leadership FTE over 18 months. That is ₹40L of CTC to the founder over the 18 months, ~₹80L over three years if held flat &mdash; inclusive of employer costs and variable pay, so take-home is materially lower, and it is taxed as salary at the applicable slab. <b>Every ₹25L per year the founder adds to their own package removes one engineer-year from the ₹2.65Cr engineering line.</b></td></tr>
+        <tr><td><b>Equity &mdash; paper value</b></td><td>₹26.0Cr → ₹101.2Cr</td><td>65.0% of a ₹40Cr seed post-money, then 50.6% of a ₹200Cr Series A post-money. <b>These are round prices, not valuations, and not money.</b></td></tr>
+        <tr><td><b>Equity &mdash; realisable value</b></td><td>₹0 → ₹6.61Cr</td><td>At a 2.75&times;-of-ARR exit and after the ₹50Cr preference stack: ₹0 in Years 1 and 2 (the exit value is below the preference), ₹1.65Cr at Year 3, ₹6.61Cr at break-even. The gap between ₹101.2Cr of paper and ₹6.61Cr of cash <i>is</i> the liquidation preference.</td></tr>
+        <tr><td><b>Secondary sale</b></td><td>₹0 at seed</td><td>All ₹10Cr is primary and fully allocated in §9. No founder cash-out at seed. The first realistic window is Series B or later, customarily capped and subject to investor consent &mdash; and the Indian secondary market <i>contracted</i> in 2025 to ~0.8&times; of 2024 with only four deals above US$100M.<sup>10</sup> <b>Plan on zero personal liquidity for four to six years.</b></td></tr>
+        <tr><td><b>Dividends</b></td><td>₹0 for the life of the plan</td><td>Dividends require distributable profits. The plan carries ₹14.94Cr of accumulated loss to absorb before any exist, and investor terms customarily restrict distributions in favour of reinvestment. Any dividend is taxed in the shareholder&rsquo;s hands at applicable rates.</td></tr>
+        <tr><td><b>Tax on the exit</b></td><td>Confirm before signing</td><td>Gains on unlisted shares are taxed as capital gains at the rate and holding period then in force, plus surcharge and cess. <b>This document does not state a rate.</b> Obtain a written opinion from the company&rsquo;s CA before any secondary or exit is negotiated &mdash; not after.</td></tr>
+      </tbody>
+    </table>
+
+    <h4>The plain table</h4>
+    <table>
+      <thead><tr><th>Point in plan</th><th>Revenue</th><th>Gross profit</th><th>Operating cost</th><th>Net position</th><th>Founder ownership</th><th>Founder equity &mdash; paper</th><th>Founder equity &mdash; realisable</th></tr></thead>
+      <tbody>
+        <tr><td><b>Year 1</b><br><span class="small">8 customers · ₹2.16Cr ARR</span></td><td>₹2.24Cr</td><td>₹1.11Cr</td><td>₹6.52Cr</td><td><b>&minus;₹5.41Cr</b></td><td><b>65.0%</b></td><td>₹26.0Cr</td><td><b>₹0</b></td></tr>
+        <tr><td><b>Year 2</b><br><span class="small">30 customers · ₹7.56Cr ARR</span></td><td>₹7.48Cr</td><td>₹4.36Cr</td><td>₹9.52Cr</td><td><b>&minus;₹5.16Cr</b></td><td><b>50.6%</b></td><td>₹101.2Cr</td><td><b>₹0</b></td></tr>
+        <tr><td><b>Year 3</b><br><span class="small">75 customers · ₹18.90Cr ARR</span></td><td>₹18.81Cr</td><td>₹11.49Cr</td><td>₹15.86Cr</td><td><b>&minus;₹4.37Cr</b></td><td><b>50.6%</b></td><td>₹101.2Cr</td><td><b>₹1.65Cr</b></td></tr>
+        <tr><td><b>Break-even</b><br><span class="small">83 customers · ₹21.06Cr ARR</span></td><td>~₹24.8Cr</td><td>₹15.86Cr</td><td>₹15.86Cr</td><td><b>₹0</b></td><td><b>50.6%</b></td><td>₹101.2Cr</td><td><b>₹6.61Cr</b></td></tr>
+      </tbody>
+    </table>
+    <p class="tiny">Ownership follows the §13.3 reference path (seed then a Year-2 Series A; no Series B). Paper value is ownership &times; the last priced round&rsquo;s post-money. Realisable value is proceeds after a 1&times; non-participating preference stack at a 2.75&times;-of-ARR exit &mdash; the only externally verifiable multiple available.<sup>14</sup> Break-even revenue is an estimate; ARR, gross profit and operating cost on that row are computed.</p>
+    <div class="callout good"><b>The honest summary for the founder.</b> On this plan you draw roughly ₹80L of salary over three years, the company never posts a profit inside the three-year horizon, and your equity is worth ₹101.2Cr on paper and between ₹0 and ₹6.61Cr in cash. Your money is made in one place only: an exit above roughly ₹100Cr, which on the verified multiple requires ₹40Cr+ of ARR. <b>Protecting that outcome means two things &mdash; keep the preference stack small, and do not cut the ₹18L price to buy volume.</b></div>
+  </section>
+
+  <section class="page compact">
+    <h2>13. The investor&rsquo;s point of view <span class="small">(continued)</span></h2>
+    <h3>13.5 Risks that cost the investor money</h3>
+    <p class="lead">Ranked by rupees of investor capital at risk. Each risk names the mitigation that already exists in this plan, and what must be added.</p>
+    <table class="tiny">
+      <thead><tr><th>#</th><th>Risk</th><th>Evidence</th><th>Mitigation already in the plan</th><th>What to add</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td><b>Willingness to pay is entirely unobserved.</b> No published dataset states what a 100&ndash;199 employee Indian manufacturer spends annually on software. This is the single load-bearing unknown in the whole document.</td><td>Zoho&rsquo;s survey of 5,100+ Indian MSMEs (Apr&ndash;Jun 2024) found &ldquo;cost of software/solution is high&rdquo; the #1 hurdle at <b>93%</b> and budgetary constraints at 92% &mdash; and contains no rupee figure.<sup>20</sup> ASI, MoSPI and Gartner publish nothing usable at this employment band.</td><td>§10 Gate 2 (≥3 paid pilots per segment near price); §7 reforecast gate (stop scaling below 40% pilot conversion); only ₹3.0Cr released before this is known.</td><td>Make <b>&ldquo;current annual software spend, itemised&rdquo;</b> a required field in §10 Gate 1&rsquo;s 20 interviews per segment, and publish the distribution before the Series A. Desk research cannot close this.</td></tr>
+        <tr><td><b>2</b></td><td><b>The price level is defensible; the word &ldquo;MSME&rdquo; is not.</b> ₹18L/yr is inside the published India band. Attaching it to a segment whose anchor is a ₹67,500 perpetual licence is the real exposure.</td><td>Microsoft India lists D365 Business Central at ₹6,655 (Essentials) and ₹9,150 (Premium) per user/month, GST extra.<sup>2</sup> ₹18L/yr = <b>22.5 Essentials seats</b>; at 40 seats it is ₹3,750/user/month = <b>56.3%</b> of Microsoft&rsquo;s own India list. Against that, TallyPrime Gold is ₹67,500 one-time + ₹13,500/yr TSS<sup>18</sup> and TranZact&rsquo;s top named plan is ₹3.60L/yr for 12 users.<sup>19</sup></td><td>§1 segmentation rule (legal MSME status does not set price); §4 charging unit is plant and complexity, not headcount.</td><td><b>Rename Offer A away from &ldquo;MSME&rdquo;</b> and add a hard qualification screen at ~100+ employees. Against ASI&rsquo;s 50&ndash;99 band (₹36.32Cr average output) ₹23L consumes 14.2% of the derived annual profit proxy, versus 5.1% in the 100&ndash;199 band (₹74.14Cr).<sup>1</sup></td></tr>
+        <tr><td><b>3</b></td><td><b>Cutting price to relieve resistance is a GTM rebuild, not a price change.</b> The instinctive fix destroys the model.</td><td>Arithmetic on this document&rsquo;s own inputs: ₹100Cr of ARR needs <b>397</b> customers at the ₹25.2L blended ACV, <b>1,111</b> at ₹9L, <b>1,667</b> at ₹6L. At the plan&rsquo;s own ₹8L MSME CAC, 1,667 accounts cost <b>₹133Cr</b> in acquisition spend alone &mdash; more than the ARR they produce.</td><td>§4 &ldquo;every discount trades for term, prepayment, reference rights or reduced scope&rdquo;; §11 already provides a smaller entry point (Control Foundation, ₹6L/yr).</td><td>Hold the ₹18L anchor. If a lower entry is needed, ship a deliberately smaller SKU beneath it rather than discounting ₹18L &mdash; and re-derive CAC, implementation fee and headcount together if the ACV ever moves.</td></tr>
+        <tr><td><b>4</b></td><td><b>The seed does not reach break-even.</b> A Series A is structurally required in Year 2, into a market that is contracting.</td><td>Cumulative operating loss ₹14.94Cr over three years against ₹10.00Cr raised. Indian seed funding fell <b>31% year on year</b> in H1 2025 on 6% fewer deals.<sup>11</sup></td><td>§9 month-18 targets (16&ndash;20 recurring customers, ₹4&ndash;5Cr exit ARR) are precisely the Series A story; three-gate release prevents spending ahead of evidence.</td><td>A written fallback at Gate 3: either the Series A closes, or the company cuts to a receipts-funded base at ~8 people. Decide the trigger now, not at month 17.</td></tr>
+        <tr><td><b>5</b></td><td><b>Zero runway buffer.</b> 17.99 months of cash against an 18-month plan.</td><td>₹10.00Cr ÷ ₹55.6L per month = 17.99. Contingency is ₹0.60Cr, or 6%.</td><td>§9 control rule keeps customer receipts out of the spend table, so receipts are genuine buffer: ₹3.0Cr adds ~5.4 months, ₹6.0Cr adds ~10.8.</td><td>Board trigger at month 12: if cumulative receipts are below half plan, hold the month-13 hiring release.</td></tr>
+        <tr><td><b>6</b></td><td><b>Collection, not price, may be what kills the year.</b> An annual-upfront model in a market where most B2B credit runs late.</td><td>Atradius (29 Jul 2025): overdue invoices affect an average <b>63%</b> of India&rsquo;s B2B credit sales; bad debts average <b>7%</b> of B2B invoices; 72% of firms expect rising B2B insolvencies.<sup>17</sup> GST falls due on the invoice date irrespective of collection.</td><td>§2 and §3 bill annually upfront; §10 Gate 8 requires annual prepayment with DSO and burn reviewed monthly by segment.</td><td>Cite CGST Rule 37 in the MSA (a buyer who availed ITC must reverse it if the supplier is unpaid at 180 days). <b>Flip the 6% quarterly premium into a 6% prepay discount</b> &mdash; the premium implies ~16% p.a. simple on the deferred balance against an RBI weighted-average lending rate of 8.53% on fresh rupee loans (Jun 2026).<sup>16</sup> A CFO will negotiate the premium away; a discount they must earn.</td></tr>
+        <tr><td><b>7</b></td><td><b>The exit multiple is unevidenced for Indian private vertical SaaS.</b> The whole return case rests on a number nobody publishes.</td><td>Only Freshworks at EV/Revenue <b>2.75&times;</b> (31 Jul 2026) is verifiable, and it is a US$904M-revenue US-listed horizontal business.<sup>14</sup> India&rsquo;s average sub-US$100M strategic exit in 2025 was ~US$27M ≈ ₹257Cr.<sup>10</sup></td><td>§13.3 presents 2.75&times; as the base column and labels 4&times; and 6&times; as unverified.</td><td>Never quote a private SaaS ARR multiple to an investor without a named source. If a range is needed, quote the ₹257Cr strategic-exit average instead.</td></tr>
+        <tr><td><b>8</b></td><td><b>The preference stack can wipe out common at a mid-case exit.</b> A structural risk that costs the founder everything and the investor most of it.</td><td>₹140Cr of preferred against a ₹110Cr exit: seed 0.79&times;, founder ₹0. The same exit with ₹50Cr of preferred: seed 1.70&times;, founder ₹44.24Cr.</td><td>None &mdash; this is created at the term sheet, which is why it belongs here.</td><td>Negotiate <b>1&times; non-participating, pari passu</b> (not senior) at seed, and treat total preferred raised as a governed metric, not a fundraising score.</td></tr>
+        <tr><td><b>9</b></td><td><b>Two sourcing defects an investor will find in the first read.</b></td><td>(a) §6&rsquo;s SAM rests on &ldquo;27,135 sites with ≥₹100Cr output&rdquo;, but ASI 2023&ndash;24 Summary Results distributes factories by employment, state and NIC &mdash; it publishes no output-size-class statement.<sup>1</sup> TAM, TOM and SOM all reproduce exactly from the employment bands. (b) §4 cites Frappe Cloud &ldquo;premium managed hosting from ₹40,000/month&rdquo;; Frappe&rsquo;s published entry is ₹410/month (Sites) and ₹3,600/month (Servers).<sup>3</sup></td><td>§6 already carries the site-versus-account warning; §10 tags every input as fact, recommendation or assumption.</td><td>Restate SAM on the published employment bands or source the output distribution from ASI Volume I. Correct the Frappe anchor &mdash; against the real floor the &ldquo;between cheap hosting and a full ERP programme&rdquo; framing does not hold, and the URL is in this document&rsquo;s own source list.</td></tr>
+        <tr><td><b>10</b></td><td><b>Concentration.</b> At Year 1 two Multi-Plant customers are 50% of ARR.</td><td>§7: Year 1 exit ARR ₹2.16Cr from 6 MSME (₹1.08Cr) and 2 Multi-Plant (₹1.08Cr). One churn or one delayed go-live moves exit ARR by 25%.</td><td>§5 requires reporting by segment, not blended count; §7&rsquo;s 80/20 mix is designed to limit this.</td><td>Report an ARR concentration ratio monthly and cap any single customer at 15% of ARR before the Series A diligence.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout"><b>What would change the answer.</b> Three pieces of evidence, all obtainable inside Gate 1 for under ₹10L, move this section more than any further modelling: (i) itemised current software spend from 20 qualified manufacturers per segment; (ii) three signed paid pilots per segment at or near list; (iii) one measured recurring gross margin on a live account. Until those exist, every number in §13.3 and §13.4 is arithmetic on assumptions, and should be presented that way.</div>
+
+    <h3>Additional sources for this section</h3>
+    <ol class="small" start="11">
+      <li><b>Inc42 Media, Indian Tech Startup Funding Report H1 2025</b> (Jul 2025), p.19: seed stage US$406Mn+ (&minus;31% YoY), 215 deals (&minus;6% YoY), median ticket US$1Mn; Enterprise Tech the top seed sector by funding amount.</li>
+      <li><b>100X.VC, application page.</b> &ldquo;₹1.25cr in each startup&hellip; through the founder-friendly iSAFE note for 15% of Future Equity&rdquo; — implied ~₹8.33Cr post-money cap. Retrieved 9 Aug 2026.</li>
+      <li><b>Invest India (Government of India), <i>Convertible Note</i>.</b> Investment not less than ₹25 lakh per investor in a single tranche; issuer must be a DPIIT-recognised Private Limited Company. Retrieved 9 Aug 2026.</li>
+      <li><b>Freshworks Inc.</b> Q4/FY2025 and Q2 2026 results (FY2025 revenue US$838.8M, +16%; Q2 2026 US$237.4M, +16%; NDR 104%); EV/Revenue 2.75&times; on enterprise value US$2.40B and TTM revenue US$903.87M as of 31 Jul 2026.</li>
+      <li><b>USD/INR reference rate.</b> ₹95.35 on 8 Aug 2026 (₹95.128 on 7 Aug; 2026 range ₹94.89&ndash;96.88). Used for every USD conversion in this section.</li>
+      <li><b>Reserve Bank of India, <i>Lending and Deposit Rates of Scheduled Commercial Banks</i>.</b> Weighted average lending rate on fresh rupee loans 8.53% (Jun 2026); one-year median MCLR 8.50%.</li>
+      <li><b>Atradius, <i>Payment Practices Barometer &mdash; B2B payment practices trends in India 2025</i></b> (29 Jul 2025). Overdue invoices affect an average 63% of credit-based B2B sales; bad debts average 7% of B2B invoices. An India 2026 edition exists and should be re-read before this is circulated.</li>
+      <li><b>Tally Solutions, official pricing.</b> TallyPrime Silver ₹22,500 and Gold ₹67,500 perpetual, +18% GST; TSS renewal ₹4,500/yr Silver and ₹13,500/yr Gold. Partner pages misquote the two-year rates as annual &mdash; use first-party figures only.</li>
+      <li><b>TranZact (letstranzact.ai), official pricing.</b> Scale ₹12,500/month billed yearly (6 users) = ₹1.50L/yr; Dominate ₹30,000/month billed yearly (12 users) = ₹3.60L/yr; an unpriced Enterprise tier sits above both.</li>
+      <li><b>Zoho, <i>State of Digital and Customer Operations in Indian MSMEs</i></b> (5,100+ MSMEs surveyed Apr&ndash;Jun 2024). High software cost cited by 93% as the top hurdle; budgetary constraints 92%. Contains no absolute rupee spend figure.</li>
+      <li><b>Cogniscient Business Solutions (SAP Gold Partner, India), SAP Business One pricing</b>, page dated 7&nbsp;Jul&nbsp;2026. Professional User ₹1,59,905 perpetual; implementation ₹5&ndash;12L for 10&ndash;30 users. Partner-published, not SAP first-party&mdash;and three Indian SAP partners publish irreconcilable totals for the same product, so this one is cited alone rather than as a range.</li>
+    </ol>
+
+    <p class="tiny"><b>Section boundary:</b> pre-money valuation, dilution path, exit multiples above 2.75&times;, failure probabilities, Year-2 and Year-3 operating cost bases, services gross margin and years 4&ndash;5 growth are <b>assumptions chosen by management for modelling</b>. No valuation, customer, ARR, booking, margin or exit is claimed as fact. IRR is computed as MOIC<sup>1/6</sup>&minus;1 on a six-year hold and ignores the timing of intermediate rounds. Amounts exclude GST. This is a planning document, not tax, accounting, legal, securities or valuation advice; obtain written professional opinions before executing a term sheet, an MSA clause or a secondary sale.</p>
   </section>
 </body>
 </html>

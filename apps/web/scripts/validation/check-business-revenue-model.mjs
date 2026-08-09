@@ -240,7 +240,7 @@ expect(
   "MSME Control Foundation price",
 );
 
-expect(manifest.model_version === "2026-08-08-v3", "manifest model version");
+expect(manifest.model_version === "2026-08-09-v3.1", "manifest model version");
 expect(
   html.includes(`data-model-version="${manifest.model_version}"`),
   "HTML/manifest model version alignment",
@@ -281,8 +281,157 @@ expectNeedles([
   "100%",
 ]);
 
+/* ---------------------------------------------------------------------------
+ * v3.1 — SECTION 12 (India price sensitivity) AND SECTION 13 (investor view)
+ * ---------------------------------------------------------------------------
+ * These two sections exist to be argued with by an investor, so every number in
+ * them is recomputed here from its stated inputs rather than trusted as typed.
+ * The v3.0 assertions above are deliberately untouched: the price decision was
+ * to HOLD ₹18L and ₹54L, so TAM, SAM, TOM, SOM, blended ACV, unit economics and
+ * the ₹10Cr team plan must all still reproduce exactly.
+ */
+const india = manifest.india_price_sensitivity;
+const investor = manifest.investor_view;
+expect(Boolean(india) && Boolean(investor), "v3.1 manifest blocks are missing");
+
+expect(
+  india.verdict === "price_holds_label_and_cash_shape_do_not",
+  "the v3.1 price decision must remain HOLD",
+);
+expect(
+  close(msme.recurring_acv_lakh, 18) && close(multiPlant.recurring_acv_lakh, 54),
+  "v3.1 must not change the headline ACVs it concluded were defensible",
+);
+
+// Per-seat normalisation — a comparison device, never an invoice metric (§12.1).
+const perUserMonth = (seats) => (msme.recurring_acv_lakh * 100000) / seats / 12;
+for (const [seats, expected] of Object.entries(india.xelor_per_user_month_at_seats)) {
+  expect(close(perUserMonth(Number(seats)), expected, 0.5), `₹18L per user/month at ${seats} seats`);
+}
+expect(
+  close((perUserMonth(40) / india.bc_essentials_inr_per_user_month) * 100, india.share_of_bc_essentials_at_40_seats_pct, 0.05),
+  "XELOR as a share of Business Central Essentials at 40 seats",
+);
+// Business Central annual cost at the seat counts actually printed in §4 and §12.
+expect(close((india.bc_essentials_inr_per_user_month * 12 * 30) / 1e5, 23.96, 0.01), "BC Essentials 30 seats");
+expect(close((india.bc_premium_inr_per_user_month * 12 * 30) / 1e5, 32.94, 0.01), "BC Premium 30 seats");
+expect(close((india.bc_essentials_inr_per_user_month * 12 * 20) / 1e5, 15.97, 0.01), "BC Essentials 20 seats");
+expect(close((india.bc_premium_inr_per_user_month * 12 * 20) / 1e5, 21.96, 0.01), "BC Premium 20 seats");
+
+// The floor test — the price breaks exactly one employment band down (§12.2).
+const shareOfProxy = (lakh, proxyCrore) => (lakh * 100000) / (proxyCrore * 1e7) * 100;
+expect(close(shareOfProxy(18, india.band_100_199.profit_proxy_crore), 4.0, 0.05), "₹18L vs 100–199 proxy");
+expect(close(shareOfProxy(23, india.band_100_199.profit_proxy_crore), 5.1, 0.05), "₹23L vs 100–199 proxy");
+expect(close(shareOfProxy(18, india.band_50_99.profit_proxy_crore), 11.1, 0.05), "₹18L vs 50–99 proxy");
+expect(close(shareOfProxy(23, india.band_50_99.profit_proxy_crore), 14.2, 0.05), "₹23L vs 50–99 proxy");
+expect(close(shareOfProxy(78, india.band_50_99.profit_proxy_crore), 48.1, 0.05), "₹78L vs 50–99 proxy");
+expect(
+  india.qualification_floor.min_employees === 100 && india.qualification_floor.min_turnover_crore === 50,
+  "the qualification floor the floor test implies",
+);
+
+// Prove-then-Ramp must stay revenue-neutral. If a future edit turns it into a
+// discount, these two lines are what catches it.
+const ramp = india.prove_then_ramp;
+const peakRampLakh = (ramp.quarterly_subscription_lakh * 100000 + ramp.implementation_monthly_inr) / 1e5;
+expect(close(peakRampLakh, ramp.peak_outflow_ramp_lakh, 0.001), "Prove-then-Ramp peak outflow");
+expect(
+  close(((ramp.peak_outflow_today_lakh - peakRampLakh) / ramp.peak_outflow_today_lakh) * 100, ramp.peak_reduction_pct, 0.05),
+  "peak-outflow reduction",
+);
+const collectedToday = 3 + 2 + msme.recurring_acv_lakh * 2;
+const collectedRamp = 3 + (ramp.implementation_monthly_inr * 12) / 1e5 + msme.recurring_acv_lakh * 2;
+expect(close(collectedToday, ramp.collected_24_months_today_lakh, 0.01), "24-month collections today");
+expect(close(collectedRamp, ramp.collected_24_months_ramp_lakh, 0.001), "24-month collections under the ramp");
+expect(
+  collectedRamp >= collectedToday,
+  "Prove-then-Ramp must never collect LESS than the current terms — that would be a discount wearing a premium's label",
+);
+expect(
+  close(((msme.recurring_acv_lakh * 100000 * 0.75) / 2 * (ramp.rbi_walr_pct / 100)) / (msme.recurring_acv_lakh * 100000) * 100, ramp.float_cost_pct_of_acv, 0.05),
+  "float cost as a share of ACV",
+);
+
+// §13 — runway has no buffer, and the two break-even bases are different numbers.
+expect(
+  close((fundingCrore * 100) / teamPlan.average_monthly_cash_envelope_lakh, investor.runway_months_actual, 0.01),
+  "actual runway is 17.99 months, not a round 18",
+);
+expect(
+  investor.breakeven_month18_cost_base.customers === breakEvenCustomers,
+  "§8's break-even must stay the month-18-cost-base figure the v3.0 model computes",
+);
+// Year-3 cost base in LAKH ÷ blended gross profit per customer in LAKH.
+const y3CostLakh = investor.year3_operating_cost_crore * 100;
+const y3BreakEven = Math.ceil(y3CostLakh / blendedGrossProfitLakh);
+expect(
+  y3BreakEven === investor.breakeven_year3_cost_base.customers,
+  `Year-3-cost-base break-even should be ${y3BreakEven}`,
+);
+const y3Mix = investor.breakeven_year3_cost_base;
+expect(
+  close(y3Mix.msme * 0.18 + y3Mix.multi_plant * 0.54, y3Mix.arr_crore, 0.01),
+  "Year-3 break-even ARR must reconcile to its own customer mix",
+);
+expect(y3Mix.msme + y3Mix.multi_plant === y3Mix.customers, "Year-3 break-even mix must sum to its customer count");
+expect(
+  investor.cumulative_loss_to_breakeven_crore > fundingCrore && investor.series_a_structurally_required === true,
+  "if cumulative loss exceeds the raise, the plan must say a Series A is structurally required",
+);
+
+// Cutting the price is a different company, not a discount (§12.8).
+// Rounded to the nearest customer, matching how §12.8 prints them.
+for (const [acvLakh, customers] of [[25.2, 397], [9, 1111], [6, 1667]]) {
+  expect(Math.round(10000 / acvLakh) === customers, `customers needed for ₹100Cr ARR at ₹${acvLakh}L`);
+}
+expect(close((1667 * msme.cac_target_lakh) / 100, 133.36, 0.5), "acquisition cost of 1,667 customers at the plan's own CAC");
+
+expectNeedles([
+  "12. Is this price right for a price-sensitive India?",
+  "13. The investor&rsquo;s point of view",
+  "₹6,655",
+  "₹3,750",
+  "56.3%",
+  "0.24%",
+  "14.2%",
+  "48.1%",
+  "₹4.674L",
+  "&minus;75.4%",
+  "₹41.088L",
+  "8.53%",
+  "17.99",
+  "100+",
+  "133&times;",
+  "2.75&times;",
+  "₹133Cr in acquisition alone",
+  "DENOMINATOR UNSOURCED",
+  "₹410/month",
+  "Anchor correction (v3.1)",
+]);
+// THE FOUR RETIRED CLAIMS MAY APPEAR ONLY WHERE THEY ARE BEING RETIRED.
+//
+// §12.5 quotes each one verbatim in order to kill it, so a naive "must not appear"
+// check fails on the very table that does the killing. What actually matters is that
+// none of them leaks back into the argument: each may occur exactly once, and that
+// occurrence must sit inside the retirement table.
+const retirementStart = html.indexOf("12.5 Four claims that must be retired");
+const retirementEnd = html.indexOf("Standing rule:", retirementStart);
+expect(retirementStart > 0 && retirementEnd > retirementStart, "§12.5 retirement table is missing");
+const retirementTable = html.slice(retirementStart, retirementEnd);
+for (const claim of ["31&ndash;62%", "₹1,500/employee", "12% of Indian MSMEs", "2% of revenue"]) {
+  const total = html.split(claim).length - 1;
+  const inTable = retirementTable.split(claim).length - 1;
+  expect(total > 0, `retired claim is no longer documented as retired: ${claim}`);
+  expect(
+    total === inTable,
+    `retired claim appears outside §12.5, where it would read as an argument: ${claim}`,
+  );
+}
+
 process.stdout.write(
-  `Business revenue model v3 verified: ₹${msme.recurring_acv_lakh}L MSME ACV, ` +
+  `Business revenue model v${manifest.version} verified: ₹${msme.recurring_acv_lakh}L MSME ACV, ` +
     `₹${multiPlant.recurring_acv_lakh}L Multi-Plant ACV, ₹${tamCrore.toLocaleString("en-IN")}Cr TAM, ` +
-    `${breakEvenCustomers} blended break-even customers, ${teamFte} employees, ${agentPrices.length} agent prices.\n`,
+    `${breakEvenCustomers} break-even customers at the month-18 cost base and ${y3BreakEven} at the Year-3 base, ` +
+    `${teamFte} employees, ${agentPrices.length} agent prices, ${manifest.external_sources.length} sources; ` +
+    `price decision HOLD.\n`,
 );

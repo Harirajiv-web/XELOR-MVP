@@ -64,16 +64,16 @@
   },
   "discipline_note": "Use the PDF as the main output; the HTML, manifest and validation script support editing, audit and regeneration.",
   "artifact": "XELOR Business & Revenue Model",
-  "version": "3.0",
-  "as_of": "2026-08-08",
+  "version": "3.1",
+  "as_of": "2026-08-09",
   "currency": "INR",
   "audience": [
     "founders",
     "investors",
     "finance and commercial leadership"
   ],
-  "purpose": "Define a concise two-segment pricing, revenue, market-size, unit-economics, investor capital, team allocation and per-agent model for XELOR.",
-  "model_version": "2026-08-08-v3",
+  "purpose": "Define a concise two-segment pricing, revenue, market-size, unit-economics, investor capital, team allocation and per-agent model for XELOR, tested against India price sensitivity and closed with an investor and founder returns view.",
+  "model_version": "2026-08-09-v3.1",
   "fact_assumption_policy": {
     "external_facts": "Official or first-party sources cited in the report.",
     "recommendations": "XELOR commercial policies proposed for controlled testing.",
@@ -109,14 +109,28 @@
   },
   "investor_team_plan": {
     "investor_equity_commitment_crore": 10,
-    "internal_budget_release_crore": [3.0, 3.5, 3.5],
-    "headcount_ramp": [8, 12, 15],
+    "internal_budget_release_crore": [
+      3.0,
+      3.5,
+      3.5
+    ],
+    "headcount_ramp": [
+      8,
+      12,
+      15
+    ],
     "employee_cash_cost_crore": 5.45,
     "non_payroll_cash_crore": 4.55,
     "average_monthly_cash_envelope_lakh": 55.6,
     "compensation_basis": "Planning envelope includes compensation, employer costs, variable pay and hiring buffer; actual offers must be refreshed by role, city, experience and equity mix.",
-    "month_18_recurring_customer_target": [16, 20],
-    "month_18_exit_arr_crore": [4, 5],
+    "month_18_recurring_customer_target": [
+      16,
+      20
+    ],
+    "month_18_exit_arr_crore": [
+      4,
+      5
+    ],
     "workstreams": [
       {
         "name": "Leadership and product",
@@ -170,15 +184,42 @@
     ]
   },
   "per_agent_pricing_lakh": {
-    "ONYX": { "msme": 3.0, "multi_plant": 9.0 },
-    "HEXA": { "msme": 2.0, "multi_plant": 6.0 },
-    "MICA": { "msme": 2.4, "multi_plant": 7.2 },
-    "SPAR": { "msme": 2.4, "multi_plant": 7.2 },
-    "AXLE": { "msme": 2.4, "multi_plant": 7.2 },
-    "KILN": { "msme": 3.6, "multi_plant": 10.8 },
-    "RASP": { "msme": 3.0, "multi_plant": 9.0 },
-    "RELAY": { "msme": 1.2, "multi_plant": 3.6 },
-    "ACHILES": { "msme": 1.0, "multi_plant": 3.0 }
+    "ONYX": {
+      "msme": 3.0,
+      "multi_plant": 9.0
+    },
+    "HEXA": {
+      "msme": 2.0,
+      "multi_plant": 6.0
+    },
+    "MICA": {
+      "msme": 2.4,
+      "multi_plant": 7.2
+    },
+    "SPAR": {
+      "msme": 2.4,
+      "multi_plant": 7.2
+    },
+    "AXLE": {
+      "msme": 2.4,
+      "multi_plant": 7.2
+    },
+    "KILN": {
+      "msme": 3.6,
+      "multi_plant": 10.8
+    },
+    "RASP": {
+      "msme": 3.0,
+      "multi_plant": 9.0
+    },
+    "RELAY": {
+      "msme": 1.2,
+      "multi_plant": 3.6
+    },
+    "ACHILES": {
+      "msme": 1.0,
+      "multi_plant": 3.0
+    }
   },
   "external_sources": [
     {
@@ -240,6 +281,72 @@
       "title": "India Venture Capital Report 2026",
       "url": "https://static.levocdn.com/WGLBUT82/bainreportindiaventurecapitalreport20261-7457340414102605824.pdf",
       "use": "2025 seed deal count, approximate average disclosed deal value and software/SaaS funding context."
+    },
+    {
+      "publisher": "Inc42 Media",
+      "title": "Indian Tech Startup Funding Report H1 2025",
+      "url": "https://inc42.com/",
+      "use": "Seed stage US$406Mn+ (-31% YoY), 215 deals, median ticket US$1Mn."
+    },
+    {
+      "publisher": "100X.VC",
+      "title": "Application page / iSAFE terms",
+      "url": "https://100x.vc/",
+      "use": "Rs 1.25Cr for 15% of future equity on an iSAFE; implied ~Rs 8.33Cr post-money cap."
+    },
+    {
+      "publisher": "Invest India (Government of India)",
+      "title": "Convertible Note",
+      "url": "https://www.investindia.gov.in/",
+      "use": "Not less than Rs 25 lakh per investor per tranche; DPIIT-recognised private limited issuer."
+    },
+    {
+      "publisher": "Freshworks Inc.",
+      "title": "Q4/FY2025 and Q2 2026 results",
+      "url": "https://ir.freshworks.com/",
+      "use": "Only verifiable listed comparable: EV/Revenue 2.75x at 31 Jul 2026; NDR 104%."
+    },
+    {
+      "publisher": "Reference rate",
+      "title": "USD/INR on 8 August 2026",
+      "url": "",
+      "use": "Rs 95.35/USD; basis for every USD conversion in sections 12 and 13."
+    },
+    {
+      "publisher": "Reserve Bank of India",
+      "title": "Lending and Deposit Rates of Scheduled Commercial Banks",
+      "url": "https://www.rbi.org.in/",
+      "use": "Weighted-average lending rate on fresh rupee loans 8.53% (Jun 2026); the benchmark for the float and the quarterly premium."
+    },
+    {
+      "publisher": "Atradius",
+      "title": "Payment Practices Barometer - India 2025",
+      "url": "https://atradius.com/",
+      "use": "63% of credit-based B2B sales carry overdue invoices; bad debts average 7%."
+    },
+    {
+      "publisher": "Tally Solutions",
+      "title": "TallyPrime Total Cost of Ownership in India",
+      "url": "https://tallysolutions.com/",
+      "use": "Incumbent anchor: Gold Rs 67,500 perpetual + Rs 13,500/yr TSS. Partner pages misquote two-year rates as annual."
+    },
+    {
+      "publisher": "TranZact",
+      "title": "Official pricing",
+      "url": "https://letstranzact.ai/pricing",
+      "use": "Closest India-native manufacturing-SME ERP: Rs 1.50L/yr (6 users) to Rs 3.60L/yr (12 users)."
+    },
+    {
+      "publisher": "Zoho",
+      "title": "State of Digital and Customer Operations in Indian MSMEs",
+      "url": "https://www.zoho.com/",
+      "use": "5,100+ MSMEs: 93% cite high software cost as the top hurdle; no absolute rupee figure."
+    },
+    {
+      "publisher": "Cogniscient Business Solutions (SAP Gold Partner, India)",
+      "title": "SAP Business One pricing",
+      "url": "",
+      "use": "Professional User Rs 1,59,905 perpetual; implementation Rs 5-12L for 10-30 users. Partner-published; cited alone because Indian SAP partners disagree."
     }
   ],
   "not_claimed": [
@@ -248,6 +355,106 @@
     "accepted market pricing",
     "observed CAC, churn, retention or gross margin",
     "production readiness",
-    "company valuation"
-  ]
+    "company valuation",
+    "investor returns",
+    "exit multiple above the one verified comparable",
+    "founder equity value",
+    "company valuation at any round"
+  ],
+  "v31_changes": {
+    "price_decision": "HOLD Rs 18L and Rs 54L. Verified against Microsoft India list price; the level is inside the published India band.",
+    "corrections": [
+      "S4 anchor: Business Central restated from '100 users / Rs 1.098Cr' to 20-30 seats (Rs 15.97-32.94L), a credible seat count for a 123.5-person factory.",
+      "S4 anchor + source [3]: Frappe Cloud restated from 'from Rs 40,000/month' to its published entry of Rs 410/month (Sites) and Rs 3,600/month (Servers); URL updated to frappe.io/cloud/pricing.",
+      "S6: the SAM denominator ('27,135 sites with >=Rs 100Cr output') is marked as an assumption. ASI Summary Results 2023-24 distributes factories by employment, state and NIC, and contains no output-size-class statement. TAM, TOM, SOM and blended ACV reproduce exactly and are unchanged."
+    ],
+    "additions": [
+      "S12 India price sensitivity",
+      "S13 The investor's point of view"
+    ]
+  },
+  "india_price_sensitivity": {
+    "verdict": "price_holds_label_and_cash_shape_do_not",
+    "bc_essentials_inr_per_user_month": 6655,
+    "bc_premium_inr_per_user_month": 9150,
+    "xelor_per_user_month_at_seats": {
+      "20": 7500,
+      "30": 5000,
+      "40": 3750,
+      "50": 3000
+    },
+    "share_of_bc_essentials_at_40_seats_pct": 56.3,
+    "band_100_199": {
+      "factories": 19623,
+      "avg_output_crore": 74.14,
+      "persons_engaged": 123.5,
+      "profit_proxy_crore": 4.52
+    },
+    "band_50_99": {
+      "factories": 26505,
+      "avg_output_crore": 36.32,
+      "profit_proxy_crore": 1.62
+    },
+    "qualification_floor": {
+      "min_employees": 100,
+      "min_turnover_crore": 50
+    },
+    "prove_then_ramp": {
+      "implementation_monthly_inr": 17400,
+      "quarterly_subscription_lakh": 4.5,
+      "peak_outflow_today_lakh": 19.0,
+      "peak_outflow_ramp_lakh": 4.674,
+      "peak_reduction_pct": 75.4,
+      "collected_24_months_today_lakh": 41.0,
+      "collected_24_months_ramp_lakh": 41.088,
+      "float_cost_pct_of_acv": 3.2,
+      "rbi_walr_pct": 8.53
+    },
+    "retired_claims": [
+      "Rs 23L consumes 31-62% of the firm's IT budget",
+      "Zoho One India Rs 1,500/employee/month",
+      "Only ~12% of Indian MSMEs use ERP",
+      "Manufacturing IT spend is ~2% of revenue"
+    ],
+    "unavailable_input": "No published source states annual software spend for an Indian manufacturer of this size. It must be created from the 20 discovery interviews per segment required by Gate 1."
+  },
+  "investor_view": {
+    "ask_crore": 10.0,
+    "usd_equivalent_million": 1.05,
+    "usd_inr_rate": 95.35,
+    "instrument_recommendation": "priced CCPS, 1x non-participating, pari passu, broad-based weighted-average",
+    "valuation_treatment": "sensitivity_not_claim",
+    "dilution_sensitivity_pre_money_crore": [
+      15,
+      20,
+      25,
+      30,
+      40,
+      56.7
+    ],
+    "esop_pool_pct": 10,
+    "runway_months_actual": 17.99,
+    "runway_buffer": "zero",
+    "breakeven_month18_cost_base": {
+      "customers": 35,
+      "arr_crore": 8.74,
+      "basis": "cost frozen at the month-18 envelope of Rs 6.67Cr"
+    },
+    "breakeven_year3_cost_base": {
+      "customers": 83,
+      "msme": 66,
+      "multi_plant": 17,
+      "arr_crore": 21.06,
+      "basis": "cost at the Year-3 operating base of Rs 15.86Cr, not the frozen month-18 envelope"
+    },
+    "cumulative_loss_to_breakeven_crore": 14.94,
+    "series_a_structurally_required": true,
+    "verified_exit_multiple": {
+      "comparable": "Freshworks",
+      "ev_revenue": 2.75,
+      "as_of": "2026-07-31"
+    },
+    "founder_note": "Salary ~Rs 26.7L CTC; zero secondary at seed; zero dividends while accumulated losses stand; realisable value gated by the liquidation preference stack.",
+    "year3_operating_cost_crore": 15.86
+  }
 }
