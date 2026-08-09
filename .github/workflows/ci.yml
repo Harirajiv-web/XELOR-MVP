@@ -4,14 +4,15 @@
 # 'later'". The proofs all existed and all passed; nothing ran them automatically, so
 # "green" meant "somebody remembered", which is not a control.
 #
-# Two jobs, deliberately:
+# Three jobs, deliberately:
 #
 #   verify        — static + schema proofs. Fast, and gates every push.
+#   container-builds — clean-context builds for each deployable image shape.
 #   investor-demo — rebuilds the §7 demo world from an EMPTY database and runs the
 #                   acceptance matrix against it.
 #
 # The second job is not redundant. A defect that fails the mission graph for one persona
-# survived every static check and the whole 703-test unit suite, because the seeded
+# survived every static check and the whole unit suite, because the seeded
 # database already held the rows the matrix asserts on. Only a rebuild from nothing
 # distinguishes "the code produces this state" from "this state happens to be present".
 
@@ -85,11 +86,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # The database test suite includes a live two-tenant leak probe. It must run against
+      # the schema under test, not against an empty service database (or a developer's warm
+      # local volume, which used to hide this ordering error).
+      - name: Migrate
+        run: pnpm db:migrate
+
       - name: Unit tests
         run: pnpm test
 
-      - name: Migrate
-        run: pnpm db:migrate
+      - name: AI evaluation and grounding gates
+        run: pnpm ai:eval
 
       # Every tenant-scoped table carries FORCE RLS and a policy keying on the tenant GUC.
       - name: RLS proof
@@ -106,6 +113,69 @@ jobs:
       # A visible nav entry with no description, or a cross-module import, fails here.
       - name: Module manifest proof
         run: pnpm --filter @ind-core/web module-check
+
+      - name: Report arithmetic and implementation-fact proof
+        run: pnpm report-data-check
+
+      - name: Deployment descriptor syntax
+        env:
+          POSTGRES_PASSWORD: ci-owner-password
+          APP_DATABASE_PASSWORD: ci-app-password
+        run: |
+          docker compose -f infra/docker-compose.yml config --quiet
+          docker compose -f infra/railway/docker-compose.demo.yml config --quiet
+          node --check infra/railway/wait-for-url.mjs
+          for file in infra/railway/*.railway.json; do node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$file"; done
+          for file in infra/railway/*.sh; do sh -n "$file"; done
+
+  container-builds:
+    name: Clean image · ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: standard-api-worker
+            dockerfile: apps/api/Dockerfile
+            target: worker
+            buildArgs: ""
+          - name: standard-api-migrator
+            dockerfile: apps/api/Dockerfile
+            target: migrator
+            buildArgs: ""
+          - name: standard-web
+            dockerfile: apps/web/Dockerfile
+            target: runtime
+            buildArgs: >-
+              --build-arg NEXT_PUBLIC_PUBLIC_DEMO=true
+              --build-arg NEXT_PUBLIC_API_ORIGIN=http://localhost:3000
+          - name: railway-api
+            dockerfile: infra/railway/Dockerfile.api
+            target: runtime
+            buildArgs: ""
+          - name: railway-web
+            dockerfile: infra/railway/Dockerfile.web
+            target: runtime
+            buildArgs: >-
+              --build-arg NEXT_PUBLIC_PUBLIC_DEMO=true
+              --build-arg NEXT_PUBLIC_API_ORIGIN=http://xelor-api.railway.internal:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # A workspace build can pass while a Dockerfile still omits a shared package from its
+      # clean context. Build every deployable image from an empty runner cache so that class
+      # of release-only failure is a required check, not a manual rehearsal.
+      - name: Build image from clean context
+        run: >-
+          docker build
+          -f ${{ matrix.dockerfile }}
+          --target ${{ matrix.target }}
+          ${{ matrix.buildArgs }}
+          -t xelor-ci-${{ matrix.name }}:${{ github.sha }}
+          .
 
   investor-demo:
     name: Demo rebuild and acceptance matrix
@@ -134,11 +204,14 @@ jobs:
     env:
       VALKEY_URL: redis://localhost:6379
       API_BASE: http://localhost:3000
+      XELOR_E2E_BASE_URL: http://localhost:3001
       # The seeders drive the real API over HTTP. This isolated demo mode is what lets them
       # do that without a Keycloak realm in CI; it is the same mode the hosted investor
       # stack runs, and it reaches only the two §7 demo tenants.
       API_PUBLIC_DEMO: "true"
       DEMO_PUBLIC_MODE: "true"
+      NEXT_PUBLIC_PUBLIC_DEMO: "true"
+      NEXT_PUBLIC_API_ORIGIN: http://localhost:3000
       AI_PROVIDER: stub
 
     steps:
@@ -186,9 +259,208 @@ jobs:
           pnpm demo:seed
           pnpm demo:northstar
 
+      - name: Start the web application
+        run: |
+          node apps/web/scripts/run-next.mjs start > /tmp/xelor-web.log 2>&1 &
+          echo "$!" > /tmp/xelor-web.pid
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001 || true)
+            if [ "$code" = "200" ]; then
+              echo "Web ready (HTTP $code)"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Web never became ready"; cat /tmp/xelor-web.log; exit 1
+
       - name: Acceptance matrix
         run: pnpm demo:verify
 
+      - name: Install the browser used by the UI smoke test
+        run: pnpm --filter @ind-core/web exec playwright install --with-deps chromium
+
+      # The first journey discovers the registered module/nav surface at runtime and opens
+      # every visible screen. The second proves the complete simulator-only Factory Flow:
+      # exact intent -> human approval -> completed mission -> one idempotent policy
+      # evaluation -> explicit no-physical-execution ledger evidence. Keycloak-only sign-in
+      # tests remain in the local complete-stack suite.
+      - name: Browser route and critical workflow smoke
+        run: >-
+          pnpm --filter @ind-core/web exec playwright test
+          e2e/demo/full-workflow.spec.ts
+          e2e/factory-connect/factory-connect.spec.ts
+
       - name: API log on failure
         if: failure()
-        run: cat /tmp/xelor-api.log || true
+        run: |
+          cat /tmp/xelor-api.log || true
+          cat /tmp/xelor-web.log || true
+
+  rbac-wall:
+    name: Permission wall (Keycloak sign-in)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verify
+
+    # WHY THIS JOB EXISTS SEPARATELY FROM investor-demo.
+    #
+    # `personas.spec.ts` is the suite's proof that the permission wall holds: five different
+    # people, five different permission sets, each seeing only their own departments and
+    # refused by the API on the same boundary. It needs FIVE DISTINCT REAL IDENTITIES, so it
+    # needs Keycloak — and the public demo deliberately has exactly one identity, which is
+    # why it self-skips there.
+    #
+    # The consequence was that the single most security-relevant test in the repository ran
+    # only when somebody remembered to run it by hand, in a configuration nobody uses by
+    # default. `sign-in-responsive.spec.ts` had the same problem for the same reason.
+    #
+    # NEXT_PUBLIC_PUBLIC_DEMO is inlined by Next at BUILD time, so this job must build the
+    # web application itself with the flag off; it cannot reuse the other job's output.
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: indcore
+          POSTGRES_USER: indcore_owner
+          POSTGRES_PASSWORD: owner_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U indcore_owner -d indcore"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+
+    env:
+      VALKEY_URL: redis://localhost:6379
+      API_BASE: http://localhost:3000
+      XELOR_E2E_BASE_URL: http://localhost:3001
+      KEYCLOAK_URL: http://localhost:8080
+      KEYCLOAK_REALM: indcore
+      # The whole point of this job: the demo bypass is OFF at both ends, so every request
+      # carries a signature-verified token and the seeders exchange real credentials.
+      API_PUBLIC_DEMO: "false"
+      NEXT_PUBLIC_PUBLIC_DEMO: "false"
+      NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:8080
+      NEXT_PUBLIC_API_ORIGIN: http://localhost:3000
+      AI_PROVIDER: stub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Keycloak is started with `docker run` rather than as a service container because it
+      # must MOUNT the realm export, and a service container starts before checkout — so the
+      # file it would need does not exist yet.
+      - name: Start Keycloak with the indcore realm
+        run: |
+          docker run -d --name keycloak \
+            -p 8080:8080 \
+            -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+            -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+            -e KC_HEALTH_ENABLED=true \
+            -v "$PWD/infra/keycloak:/opt/keycloak/data/import:ro" \
+            -v "$PWD/infra/keycloak-themes/indcore:/opt/keycloak/themes/indcore:ro" \
+            quay.io/keycloak/keycloak:26.0 \
+            start-dev --import-realm --features=organization --http-port=8080
+          # Realm import takes appreciably longer than the port opening. Wait for the realm's
+          # discovery document, not for the socket: a premature check reads as a firewall.
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              http://localhost:8080/realms/indcore/.well-known/openid-configuration || true)
+            if [ "$code" = "200" ]; then echo "Keycloak realm ready"; exit 0; fi
+            sleep 2
+          done
+          echo "Keycloak realm never became ready"; docker logs keycloak; exit 1
+
+      - name: Bootstrap the two-role database model
+        run: psql "$DATABASE_OWNER_URL" -v ON_ERROR_STOP=1 -f infra/postgres/init/00-init.sql
+
+      - name: Build workspace (web inlines NEXT_PUBLIC_PUBLIC_DEMO=false here)
+        run: pnpm build
+
+      - name: Migrate
+        run: pnpm db:migrate
+
+      - name: Start the API
+        run: |
+          node apps/api/dist/src/main.js > /tmp/xelor-api.log 2>&1 &
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/v1/general/companies || true)
+            if [ "$code" = "401" ] || [ "$code" = "200" ]; then echo "API ready (HTTP $code)"; exit 0; fi
+            sleep 2
+          done
+          echo "API never became ready"; cat /tmp/xelor-api.log; exit 1
+
+      # No DEMO_PUBLIC_MODE here: the seeders exchange real Keycloak tokens, which also
+      # proves the password grant and the group->tenant mapping still work.
+      - name: Seed the demo world through real tokens
+        run: |
+          pnpm demo:seed
+          pnpm demo:northstar
+
+      - name: Start the web application
+        run: |
+          node apps/web/scripts/run-next.mjs start > /tmp/xelor-web.log 2>&1 &
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001 || true)
+            if [ "$code" = "200" ]; then echo "Web ready (HTTP $code)"; exit 0; fi
+            sleep 2
+          done
+          echo "Web never became ready"; cat /tmp/xelor-web.log; exit 1
+
+      - name: Install the browser
+        run: pnpm --filter @ind-core/web exec playwright install --with-deps chromium
+
+      # These two self-skip under the public demo. If this job is configured wrongly they
+      # will skip rather than fail, which would be a silently green security check — so the
+      # run is asserted to have actually executed them.
+      - name: Permission wall and sign-in journeys
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: /tmp/rbac-report.json
+        run: >-
+          pnpm --filter @ind-core/web exec playwright test
+          e2e/demo/personas.spec.ts
+          e2e/demo/sign-in-responsive.spec.ts
+          --reporter=list,json
+
+      # A SKIPPED SECURITY TEST MUST NOT REPORT GREEN.
+      #
+      # Both specs call `test.skip()` when the public demo is on. If this job is ever
+      # misconfigured — the flag set, the web app rebuilt from the wrong cache — they would
+      # skip, Playwright would exit 0, and the permission wall would appear checked while
+      # nothing had been checked at all. Read the report and insist they actually ran.
+      - name: Fail if the permission wall skipped instead of running
+        run: |
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync("/tmp/rbac-report.json", "utf8"));
+            const walk = (s) => [...(s.specs ?? []), ...((s.suites ?? []).flatMap(walk))];
+            const specs = (r.suites ?? []).flatMap(walk);
+            const passed = specs.filter((s) =>
+              s.tests?.some((t) => t.results?.some((x) => x.status === "passed")));
+            if (passed.length === 0) {
+              console.error("No permission-wall test executed — they skipped. Refusing to report green.");
+              process.exit(1);
+            }
+            console.log(`permission wall executed: ${passed.length} spec(s) genuinely ran`);
+          '
+
+      - name: Logs on failure
+        if: failure()
+        run: |
+          cat /tmp/xelor-api.log || true
+          cat /tmp/xelor-web.log || true
+          docker logs keycloak || true

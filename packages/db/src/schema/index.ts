@@ -21,4 +21,5 @@ export * from "./aiops.js";
 export * from "./copilot.js";
 export * from "./agent-os.js";
 export * from "./platform-health.js";
+export * from "./factory-connect.js";
 export { tenantScopedColumns } from "./columns.js";

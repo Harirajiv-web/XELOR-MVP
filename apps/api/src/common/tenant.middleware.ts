@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { db, schema } from "@ind-core/db";
-import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@ind-core/platform";
+import { runWithTenant, isUuidV7, AppError, type TenantContext } from "@ind-core/platform";
+import { tenantIdFromVerifiedGroups } from "./tenant-groups.js";
+import { tokenTargetsClient } from "./token-audience.js";
 
 /**
  * Resolves the tenant from a VERIFIED Keycloak OIDC access token and runs the rest
@@ -20,6 +22,7 @@ import { runWithTenant, isUuidV7, AppError, Errors, type TenantContext } from "@
 
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8080";
 const REALM = process.env.KEYCLOAK_REALM ?? "indcore";
+const KEYCLOAK_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID ?? "indcore-api";
 const ISSUER = `${KEYCLOAK_URL}/realms/${REALM}`;
 const PUBLIC_DEMO_ENABLED = process.env.API_PUBLIC_DEMO === "true";
 const PUBLIC_DEMO_HEADER = "investor-presentation";
@@ -72,13 +75,6 @@ const PUBLIC_DEMO_PERSONAS: Readonly<Record<string, TenantContext>> = {
     actorId: "d0000000-0000-4000-8000-00000000000e",
     principal: "staff",
   },
-};
-
-// Group name → tenant id (the canonical demo universe, §7). Stands in for the
-// Keycloak-org → tenant registry; the guard logic is identical either way.
-const GROUP_TENANT: Readonly<Record<string, string>> = {
-  trishul: "0192a8c0-0000-7000-8000-000000000001",
-  kaveri: "0192a8c0-0000-7000-8000-000000000002",
 };
 
 /* -------------------------------------------------------------------------
@@ -208,20 +204,21 @@ async function resolveTenant(req: Request): Promise<TenantContext> {
   } catch {
     throw new AppError("UNAUTHENTICATED", 401, "Token verification failed.");
   }
+  if (!tokenTargetsClient(claims, KEYCLOAK_CLIENT_ID)) {
+    throw new AppError(
+      "UNAUTHENTICATED",
+      401,
+      "Token was not issued to this API client.",
+    );
+  }
 
   const sub = typeof claims.sub === "string" ? claims.sub : "";
   if (!sub) throw new AppError("UNAUTHENTICATED", 401, "Token has no subject.");
 
   // Map the verified group claim to a tenant. A user must belong to exactly one
   // known tenant group; anything else fails closed.
-  const groups = Array.isArray(claims.groups) ? (claims.groups as string[]) : [];
-  const tenantIds = groups
-    .map((g) => GROUP_TENANT[g.replace(/^\//, "")])
-    .filter((v): v is string => Boolean(v));
-  const tenantId = tenantIds[0];
-  if (!tenantId || !isUuidV7(tenantId)) {
-    throw Errors.tenantMissing(); // authenticated but not mapped to a tenant
-  }
+  const groups = Array.isArray(claims.groups) ? claims.groups : [];
+  const tenantId = tenantIdFromVerifiedGroups(groups);
 
   // ---- THE SECOND SCOPING DIMENSION (CSP §9.3) --------------------------------
   //

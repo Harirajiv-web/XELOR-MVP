@@ -129,13 +129,17 @@ await verify(
 );
 await verify(
   PUBLIC_DEMO
-    ? "administrator receives a scoped demo identity marker"
-    : "administrator receives a real Keycloak access token",
+    ? "XELOR administrator receives a scoped demo identity marker"
+    : "XELOR administrator receives a real Keycloak access token",
   async () => {
-    adminToken = await token("venkat");
+    // The matrix spans every business domain plus platform-health evidence. Hari's
+    // demo_admin role is the intentionally cross-functional XELOR administrator; Venkat
+    // remains the tenant business administrator/requester and is not silently granted
+    // XELOR-internal ACHILES evidence merely to make this check pass.
+    adminToken = await token("hari", "1234");
     assert(
       PUBLIC_DEMO
-        ? adminToken === "public-demo:venkat"
+        ? adminToken === "public-demo:hari"
         : adminToken.split(".").length === 3,
       PUBLIC_DEMO
         ? "administrator demo marker is invalid"
@@ -809,6 +813,33 @@ await verify("Decision Commander labels exposure as non-loss", async () => {
     "exposure boundary is missing",
   );
 });
+/**
+ * A CONSUMED GATE IS NOT A CODE DEFECT — SAY WHICH ONE IT IS.
+ *
+ * The Northstar recovery is seeded and deliberately LEFT at its human approval gate: the
+ * demo's whole point is a decision waiting on a named person. Approving it once — in a
+ * rehearsal, from the UI, or by an e2e run — is a normal thing to do, and it permanently
+ * consumes that state. Two checks then fail with bare counts ("found 0", "contains 0
+ * items"), which look exactly like the mission-graph bug that used to produce the same
+ * numbers, and send whoever is presenting in an hour into the engine instead of into
+ * `demo:rebuild`.
+ *
+ * Returns the explanation when the evidence says USED, and null when it does not — so a
+ * genuinely broken demo (nothing remembered at all) still reports the raw count.
+ */
+function demoUsedHint() {
+  const items = commanderMemory?.items ?? [];
+  const decided = items.filter(
+    (item) => item.humanDecision === "approved" || item.humanDecision === "rejected",
+  );
+  if (decided.length === 0) return null;
+  return (
+    `this demo has been USED, not broken — its human approval gate was already decided ` +
+    `(${decided.length} of ${items.length} remembered decision(s) carry a recorded ` +
+    `verdict). Run \`pnpm demo:rebuild\` before presenting.`
+  );
+}
+
 await verify(
   "organizational memory contains a completed example and the current human gate",
   async () => {
@@ -820,9 +851,21 @@ await verify(
       commanderMemory.summary.withVerifiedOutcome >= 1,
       "no verified learning example is present",
     );
+    // A CONSUMED GATE IS NOT A CODE DEFECT — SAY SO.
+    //
+    // The Northstar recovery is seeded and deliberately LEFT at its human approval gate:
+    // the demo's whole point is a decision waiting on a named person. Approving it once —
+    // in a rehearsal, from the UI, or by an e2e run — is a normal thing to do and it
+    // permanently consumes that state. The bare assertion then read "expected one current
+    // approval, found 0", which looks exactly like the mission-graph bug that used to
+    // produce the same number, and sends whoever is presenting in an hour into the engine.
+    //
+    // So distinguish the two. Decisions remembered but every one already decided is a USED
+    // demo; no decisions remembered at all is a genuinely broken one.
     assert(
       commanderMemory.summary.awaitingHumanDecision === 1,
-      `expected one current approval, found ${commanderMemory.summary.awaitingHumanDecision}`,
+      demoUsedHint() ??
+        `expected one current approval, found ${commanderMemory.summary.awaitingHumanDecision}`,
     );
   },
 );
@@ -848,7 +891,8 @@ await verify(
   async () => {
     assert(
       agentApprovals.length === 1,
-      `approval inbox contains ${agentApprovals.length} items`,
+      (agentApprovals.length === 0 ? demoUsedHint() : null) ??
+        `approval inbox contains ${agentApprovals.length} items`,
     );
     assert(
       JSON.stringify(agentApprovals[0]?.proposed ?? {}).includes("Northstar"),

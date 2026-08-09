@@ -17,11 +17,13 @@
  *     screen reconcile with the numbers on another. A seeded stock balance that no ledger
  *     entry explains is exactly the incoherence that ends a demo early.
  *
- * Idempotent by construction: every mutating call carries a deterministic Idempotency-Key,
- * so re-running adds nothing. `--reset` clears the demo documents first (never the masters,
- * never another tenant) for a clean rebuild.
+ * The stable document-creating calls carry deterministic Idempotency-Keys, while naturally
+ * unique setup records are read or treat an explicit 409 conflict as already present.
+ * That does not make every operation in this growing scenario replay-safe: use the
+ * separately guarded `pnpm demo:rebuild` for a deterministic presentation dataset. This
+ * script never deletes data and never treats an arbitrary server error as a duplicate.
  *
- *   node scripts/demo/01-seed-base-world.mjs [--reset] [--verbose]
+ *   node scripts/demo/01-seed-base-world.mjs [--verbose]
  */
 
 import {

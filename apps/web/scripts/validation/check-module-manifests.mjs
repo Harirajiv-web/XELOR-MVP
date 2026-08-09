@@ -49,9 +49,9 @@ const folders = readdirSync(MODULES_DIR)
   .sort();
 
 const registrySrc = readFileSync(REGISTRY, "utf8");
-const registered = [...registrySrc.matchAll(/from\s+"\.\/([a-z0-9-]+)\/manifest"/g)].map(
-  (m) => m[1],
-);
+const registered = [
+  ...registrySrc.matchAll(/from\s+"\.\/([a-z0-9-]+)\/manifest"/g),
+].map((m) => m[1]);
 
 for (const f of folders) {
   if (!registered.includes(f)) {
@@ -61,12 +61,16 @@ for (const f of folders) {
     );
   }
   if (!existsSync(join(MODULES_DIR, f, "manifest.ts"))) {
-    problems.push(`src/modules/${f}/ has no manifest.ts — every module must declare itself.`);
+    problems.push(
+      `src/modules/${f}/ has no manifest.ts — every module must declare itself.`,
+    );
   }
 }
 for (const r of registered) {
   if (!folders.includes(r)) {
-    problems.push(`registry.ts imports "${r}" but src/modules/${r}/ does not exist.`);
+    problems.push(
+      `registry.ts imports "${r}" but src/modules/${r}/ does not exist.`,
+    );
   }
 }
 
@@ -109,10 +113,12 @@ let platformPermissions = null;
 if (existsSync(PERMISSION_REGISTRY)) {
   const src = readFileSync(PERMISSION_REGISTRY, "utf8");
   platformPermissions = new Set(
-    [...src.matchAll(/permission:\s*"([a-z0-9_.]+)"/g)].map((m) => m[1]),
+    [...src.matchAll(/permission:\s*"([a-z0-9_.-]+)"/g)].map((m) => m[1]),
   );
 } else {
-  notes.push("platform permission registry not found — permission names were NOT verified.");
+  notes.push(
+    "platform permission registry not found — permission names were NOT verified.",
+  );
 }
 
 /**
@@ -154,7 +160,9 @@ for (const moduleKey of folders) {
   const manifestPath = join(MODULES_DIR, moduleKey, "manifest.ts");
   if (!existsSync(manifestPath)) continue;
   const src = readFileSync(manifestPath, "utf8");
-  const perms = [...src.matchAll(/permission:\s*"([a-z0-9_.]+)"/g)].map((m) => m[1]);
+  const perms = [...src.matchAll(/permission:\s*"([a-z0-9_.-]+)"/g)].map(
+    (m) => m[1],
+  );
   manifestPerms.set(moduleKey, perms);
   if (!platformPermissions) continue;
   for (const p of perms) {
@@ -167,16 +175,20 @@ for (const moduleKey of folders) {
   }
 
   /* ---- 4. nav entries and screens line up -------------------------------- */
-  const navPaths = [...src.matchAll(/path:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
+  const navPaths = [...src.matchAll(/path:\s*"([a-z0-9-]+)"/g)].map(
+    (m) => m[1],
+  );
   // The quotes are optional because a nav path may contain a hyphen — `planned-orders` — and
   // a hyphen is not legal in an unquoted JavaScript object key. Without this the check reads
   // a perfectly good manifest as having no screen for its own nav entry.
-  const screenKeys = [...src.matchAll(/^\s{4}"?([a-z0-9-]+)"?:\s*\(\)\s*=>\s*import\(/gm)].map(
-    (m) => m[1],
-  );
+  const screenKeys = [
+    ...src.matchAll(/^\s{4}"?([a-z0-9-]+)"?:\s*\(\)\s*=>\s*import\(/gm),
+  ].map((m) => m[1]);
   for (const n of navPaths) {
     if (!screenKeys.includes(n)) {
-      problems.push(`src/modules/${moduleKey}: nav path "${n}" has no screen registered.`);
+      problems.push(
+        `src/modules/${moduleKey}: nav path "${n}" has no screen registered.`,
+      );
     }
   }
   for (const s of screenKeys) {

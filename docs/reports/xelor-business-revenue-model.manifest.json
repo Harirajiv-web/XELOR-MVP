@@ -1,0 +1,253 @@
+{
+  "manifest_version": "1.0",
+  "skill": "investment-banking-router",
+  "artifact_mode": "generated_package",
+  "output_dir": "docs/05-deliverables/project-reports",
+  "first_read": {
+    "path": "docs/05-deliverables/project-reports/XELOR_BUSINESS_REVENUE_MODEL.pdf",
+    "role": "primary human deliverable",
+    "why": "Open this first because it is the concise investor-facing two-segment pricing, revenue and funding model."
+  },
+  "primary_human_deliverable": "docs/05-deliverables/project-reports/XELOR_BUSINESS_REVENUE_MODEL.pdf",
+  "human_deliverables": [
+    {
+      "path": "docs/05-deliverables/project-reports/XELOR_BUSINESS_REVENUE_MODEL.pdf",
+      "role": "human_deliverable",
+      "artifact_type": "pdf",
+      "description": "Investor-facing two-segment XELOR business and revenue model.",
+      "user_visible_default": true,
+      "contains_new_analysis": true
+    }
+  ],
+  "companion_deliverables": [
+    {
+      "path": "docs/reports/xelor-business-revenue-model.html",
+      "role": "companion_deliverable",
+      "artifact_type": "html",
+      "description": "Editable and reproducible source for the PDF.",
+      "user_visible_default": false,
+      "contains_new_analysis": false
+    }
+  ],
+  "support_artifacts": [
+    {
+      "path": "docs/reports/xelor-business-revenue-model.manifest.json",
+      "role": "support_artifact",
+      "artifact_type": "json",
+      "description": "Assumptions, evidence posture and artifact hierarchy.",
+      "user_visible_default": false,
+      "contains_new_analysis": false,
+      "support_reason": "Audit and regeneration control.",
+      "user_requested_machine_readable": false
+    },
+    {
+      "path": "apps/web/scripts/validation/check-business-revenue-model.mjs",
+      "role": "support_artifact",
+      "artifact_type": "javascript",
+      "description": "Automatic arithmetic and content-consistency verification.",
+      "user_visible_default": false,
+      "contains_new_analysis": false,
+      "support_reason": "Model quality control.",
+      "user_requested_machine_readable": false
+    }
+  ],
+  "agent_artifacts": [],
+  "support_artifacts_user_visible_default": false,
+  "blocked_or_partial_status": {
+    "status": "complete",
+    "reason": "The requested two-segment PDF and per-agent pricing are complete; commercial inputs remain hypotheses until paid customers validate them.",
+    "missing_inputs": []
+  },
+  "final_response_guidance": {
+    "lead_with": "primary_human_deliverable",
+    "mention_support_artifacts": "only_briefly_unless_requested"
+  },
+  "discipline_note": "Use the PDF as the main output; the HTML, manifest and validation script support editing, audit and regeneration.",
+  "artifact": "XELOR Business & Revenue Model",
+  "version": "3.0",
+  "as_of": "2026-08-08",
+  "currency": "INR",
+  "audience": [
+    "founders",
+    "investors",
+    "finance and commercial leadership"
+  ],
+  "purpose": "Define a concise two-segment pricing, revenue, market-size, unit-economics, investor capital, team allocation and per-agent model for XELOR.",
+  "model_version": "2026-08-08-v3",
+  "fact_assumption_policy": {
+    "external_facts": "Official or first-party sources cited in the report.",
+    "recommendations": "XELOR commercial policies proposed for controlled testing.",
+    "assumptions": "Unobserved model inputs that must be replaced by paid-customer evidence."
+  },
+  "key_assumptions": {
+    "msme": {
+      "pilot_fee_lakh": 3,
+      "implementation_fee_lakh": 5,
+      "recurring_acv_lakh": 18,
+      "recurring_gross_margin_target_pct": 75,
+      "cac_target_lakh": 8,
+      "plants_included": 1,
+      "standard_connectors_included": 2
+    },
+    "multi_plant": {
+      "pilot_fee_lakh": 10,
+      "implementation_fee_lakh": 24,
+      "recurring_acv_lakh": 54,
+      "recurring_gross_margin_target_pct": 78,
+      "cac_target_lakh": 22,
+      "plants_included": 2,
+      "standard_connectors_included": 5
+    },
+    "planning_mix": {
+      "msme_pct": 80,
+      "multi_plant_pct": 20
+    },
+    "funding_ask_crore": 10,
+    "runway_months": 18,
+    "tom_site_assumption": 5000,
+    "five_year_som_site_equivalents": 100
+  },
+  "investor_team_plan": {
+    "investor_equity_commitment_crore": 10,
+    "internal_budget_release_crore": [3.0, 3.5, 3.5],
+    "headcount_ramp": [8, 12, 15],
+    "employee_cash_cost_crore": 5.45,
+    "non_payroll_cash_crore": 4.55,
+    "average_monthly_cash_envelope_lakh": 55.6,
+    "compensation_basis": "Planning envelope includes compensation, employer costs, variable pay and hiring buffer; actual offers must be refreshed by role, city, experience and equity mix.",
+    "month_18_recurring_customer_target": [16, 20],
+    "month_18_exit_arr_crore": [4, 5],
+    "workstreams": [
+      {
+        "name": "Leadership and product",
+        "fte_at_month_18": 3,
+        "payroll_crore": 1.2,
+        "other_cash_crore": 0.2,
+        "total_crore": 1.4
+      },
+      {
+        "name": "Engineering, AI and security",
+        "fte_at_month_18": 7,
+        "payroll_crore": 2.65,
+        "other_cash_crore": 1.15,
+        "total_crore": 3.8
+      },
+      {
+        "name": "Implementation and customer success",
+        "fte_at_month_18": 3,
+        "payroll_crore": 0.95,
+        "other_cash_crore": 0.85,
+        "total_crore": 1.8
+      },
+      {
+        "name": "Sales and partnerships",
+        "fte_at_month_18": 2,
+        "payroll_crore": 0.65,
+        "other_cash_crore": 0.55,
+        "total_crore": 1.2
+      },
+      {
+        "name": "Cloud, AI and observability",
+        "fte_at_month_18": 0,
+        "payroll_crore": 0,
+        "other_cash_crore": 0.7,
+        "total_crore": 0.7
+      },
+      {
+        "name": "Legal, compliance and administration",
+        "fte_at_month_18": 0,
+        "payroll_crore": 0,
+        "other_cash_crore": 0.5,
+        "total_crore": 0.5
+      },
+      {
+        "name": "Contingency",
+        "fte_at_month_18": 0,
+        "payroll_crore": 0,
+        "other_cash_crore": 0.6,
+        "total_crore": 0.6
+      }
+    ]
+  },
+  "per_agent_pricing_lakh": {
+    "ONYX": { "msme": 3.0, "multi_plant": 9.0 },
+    "HEXA": { "msme": 2.0, "multi_plant": 6.0 },
+    "MICA": { "msme": 2.4, "multi_plant": 7.2 },
+    "SPAR": { "msme": 2.4, "multi_plant": 7.2 },
+    "AXLE": { "msme": 2.4, "multi_plant": 7.2 },
+    "KILN": { "msme": 3.6, "multi_plant": 10.8 },
+    "RASP": { "msme": 3.0, "multi_plant": 9.0 },
+    "RELAY": { "msme": 1.2, "multi_plant": 3.6 },
+    "ACHILES": { "msme": 1.0, "multi_plant": 3.0 }
+  },
+  "external_sources": [
+    {
+      "publisher": "Ministry of Statistics and Programme Implementation",
+      "title": "ASI Summary Results 2023-24",
+      "url": "https://mospi.gov.in/uploads/publications_reports/publications_reports1759229789833_2b8ed8ad-314e-46b7-b123-b08cb17f1233_ASI_Summary_Results_2023-24C.pdf",
+      "use": "Operating factory counts by employment and output band."
+    },
+    {
+      "publisher": "Microsoft",
+      "title": "Dynamics 365 Business Central pricing — India",
+      "url": "https://www.microsoft.com/en-in/dynamics-365/products/business-central/pricing",
+      "use": "Current public ERP per-user price anchor."
+    },
+    {
+      "publisher": "Frappe Cloud",
+      "title": "Frappe Cloud pricing",
+      "url": "https://frappecloud.com/pricing",
+      "use": "Current hosting and managed-support price anchor."
+    },
+    {
+      "publisher": "SaaS Capital",
+      "title": "2025 private B2B SaaS retention benchmarks",
+      "url": "https://www.saas-capital.com/blog-posts/what-is-a-good-retention-rate-for-a-private-saas-company/",
+      "use": "Retention definitions and directional benchmark context."
+    },
+    {
+      "publisher": "Bessemer Venture Partners",
+      "title": "Scaling to $100 Million",
+      "url": "https://www.bvp.com/atlas/scaling-to-100-million",
+      "use": "Historic SaaS gross-margin benchmark context."
+    },
+    {
+      "publisher": "Ministry of Micro, Small & Medium Enterprises",
+      "title": "Revised MSME classification effective 1 April 2025",
+      "url": "https://www.msme.gov.in/ministry/about-us/details/Title%3DWhat%27s-MSME-IzMzITMtQWa",
+      "use": "Current India enterprise-size context."
+    },
+    {
+      "publisher": "OpenView",
+      "title": "SaaS Benchmarks Calculator Results",
+      "url": "https://openviewpartners.com/2022-saas-benchmarks-calculator-results/",
+      "use": "Segment sensitivity of CAC payback."
+    },
+    {
+      "publisher": "Randstad India",
+      "title": "Annual Salary Trends Report 2025-2026",
+      "url": "https://info.randstad.in/download-salary-trends-report-2025-2026",
+      "use": "Current India compensation and workforce benchmark context."
+    },
+    {
+      "publisher": "Foundit",
+      "title": "Insights Tracker, October 2025",
+      "url": "https://www.foundit.in/career-advice/wp-content/uploads/2025/11/foundit-Insights-Tracker-Oct25-Trends.pdf",
+      "use": "India experience-level salary ranges for computer software, AI and computer/network security."
+    },
+    {
+      "publisher": "IVCA and Bain & Company",
+      "title": "India Venture Capital Report 2026",
+      "url": "https://static.levocdn.com/WGLBUT82/bainreportindiaventurecapitalreport20261-7457340414102605824.pdf",
+      "use": "2025 seed deal count, approximate average disclosed deal value and software/SaaS funding context."
+    }
+  ],
+  "not_claimed": [
+    "actual customers",
+    "actual ARR or MRR",
+    "accepted market pricing",
+    "observed CAC, churn, retention or gross margin",
+    "production readiness",
+    "company valuation"
+  ]
+}

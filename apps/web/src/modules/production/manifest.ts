@@ -30,6 +30,14 @@ export const productionManifest: ModuleManifest = {
         "Every order the plant has been told to make, with how much of it has actually come off the line. Recording output here does NOT move stock — Inventory owns the only path stock can move through, and a supervisor who believes otherwise will count the same parts twice. Quantities change when components are issued or finished goods are received, never by typing a number on this screen.",
     },
     {
+      label: "Machines & robot cells",
+      path: "robot-cells",
+      permission: "production.factory-connect.read",
+      icon: "Bot",
+      description:
+        "Configured robot-cell, AMR and machine bindings shown against their latest reported production work, material, controller state and operating evidence. Each binding says whether it is simulator or edge; neither a configured binding nor a heartbeat proves physical controller execution. The map is operational context rather than a safety-presence system, and the local controller and safety PLC always retain final authority.",
+    },
+    {
       label: "Work order",
       path: "order",
       permission: "production.order.read",
@@ -38,6 +46,7 @@ export const productionManifest: ModuleManifest = {
     },
   ],
   screens: {
+    "robot-cells": () => import("./screens/robot-cells"),
     orders: () => import("./screens/orders"),
     order: () => import("./screens/order"),
   },

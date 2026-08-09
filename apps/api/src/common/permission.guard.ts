@@ -5,7 +5,7 @@ import {
   SetMetadata,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { withTenant, schema } from "@ind-core/db";
 import { currentTenant, Errors, type PermissionKey } from "@ind-core/platform";
 
@@ -24,7 +24,7 @@ export const PERMISSION_KEY = "required_permission";
 export const RequirePermission = (permission: PermissionKey): MethodDecorator =>
   SetMetadata(PERMISSION_KEY, permission);
 
-const { userRole, rolePermission } = schema;
+const { role, userRole, rolePermission } = schema;
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -45,9 +45,16 @@ export class PermissionGuard implements CanActivate {
       const rows = await tx
         .select({ permission: rolePermission.permission })
         .from(userRole)
-        // RLS fences both tables to the current tenant, so joining on role_id is safe.
         .innerJoin(rolePermission, eq(rolePermission.roleId, userRole.roleId))
-        .where(eq(userRole.subject, actorId));
+        .innerJoin(role, eq(role.id, userRole.roleId))
+        .where(
+          and(
+            eq(userRole.subject, actorId),
+            eq(userRole.isActive, true),
+            eq(rolePermission.isActive, true),
+            eq(role.isActive, true),
+          ),
+        );
       return new Set(rows.map((r) => r.permission));
     });
 

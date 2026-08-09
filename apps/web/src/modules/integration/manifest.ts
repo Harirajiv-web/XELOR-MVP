@@ -136,8 +136,17 @@ export const integrationManifest: ModuleManifest = {
       description:
         "Outside systems that have asked to be told when something happens here, with the events each is sent, how many deliveries it has had, and whether it has been auto-paused after a run of failures. There is no column for the signing secret and no field on this endpoint that could carry one — a secret is shown once, at subscription or rotation, and never again.",
     },
+    {
+      label: "Factory Connect",
+      path: "factory-connect",
+      permission: "integration.factory-connect.read",
+      icon: "RadioTower",
+      description:
+        "The governed edge between XELOR and robots, AMRs, PLCs and factory sensors. It shows configured gateway and asset bindings, their latest reported heartbeat and evidence, each asset's explicit capability allowlist, and whether the binding is a simulator or an edge deployment. A configured binding or heartbeat is not proof of a physical controller connection; safety-rated control remains inside the controller and safety PLC.",
+    },
   ],
   screens: {
+    "factory-connect": () => import("./screens/factory-connect"),
     connections: () => import("./screens/connections"),
     flows: () => import("./screens/flows"),
     "dead-letters": () => import("./screens/dead-letters"),

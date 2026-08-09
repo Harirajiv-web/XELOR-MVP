@@ -39,13 +39,23 @@ export default function ModuleScreenRoute({
   const { can, isLicensed } = useAccess();
 
   const manifest = findModule(moduleKey);
-  const screenKey = path[0] ?? manifest?.nav[0]?.path ?? "";
+  const screenKey = path[0] ?? "";
   const rest = useMemo(() => path.slice(1), [path]);
+
+  const entry = manifest?.nav.find((candidate) => candidate.path === screenKey);
+  const firstPermittedEntry = manifest?.nav.find(
+    (candidate) => !candidate.hidden && can(candidate.permission),
+  );
 
   const [Screen, setScreen] = useState<ComponentType<ScreenProps> | null>(null);
   const [loadError, setLoadError] = useState(false);
 
-  const loader = manifest?.screens[screenKey];
+  const loader = entry ? manifest?.screens[screenKey] : undefined;
+
+  useEffect(() => {
+    if (!manifest || entry || !firstPermittedEntry) return;
+    router.replace(`/${manifest.key}/${firstPermittedEntry.path}`);
+  }, [entry, firstPermittedEntry, manifest, router]);
 
   useEffect(() => {
     if (!loader) return;
@@ -72,15 +82,11 @@ export default function ModuleScreenRoute({
     return <NotLicensed moduleName={manifest.name} summary={manifest.summary} />;
   }
 
-  const entry = manifest.nav.find((n) => n.path === screenKey);
   if (!entry) {
-    // Landing on a module root, or on a screen that no longer exists. Send them to the
-    // first thing they can actually open rather than showing an empty frame.
-    const first = manifest.nav.find((n) => can(n.permission));
-    if (first) {
-      router.replace(`/${manifest.key}/${first.path}`);
-      return <Loading />;
-    }
+    // Module roots and stale screen URLs resolve to the first visible screen this person
+    // can actually open. The redirect runs in an effect so navigation never mutates React
+    // state during render.
+    if (firstPermittedEntry) return <Loading />;
     return <Forbidden what={manifest.name} needs={manifest.nav.map((n) => n.permission)} />;
   }
 

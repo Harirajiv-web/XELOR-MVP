@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./factory-connect/contracts": {
+      "types": "./dist/factory-connect/contracts.d.ts",
+      "default": "./dist/factory-connect/contracts.js"
     }
   },
   "scripts": {

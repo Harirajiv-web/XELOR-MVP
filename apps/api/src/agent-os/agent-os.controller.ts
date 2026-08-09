@@ -10,6 +10,7 @@ import {
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../common/permission.guard.js";
+import { assertMatchingIdempotencyKey } from "../common/idempotency-key.js";
 import { AgentOsService } from "./agent-os.service.js";
 
 const startSchema = z.object({
@@ -213,8 +214,12 @@ export class AgentOsController {
 
   @Post("signals")
   @RequirePermission("agentos.run.operate")
-  async signal(@Body() body: unknown) {
+  async signal(
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Body() body: unknown,
+  ) {
     const input = parse(signalSchema, body);
+    assertMatchingIdempotencyKey(idempotencyKey, input.eventId, "body.eventId");
     return { data: await this.agentOs.ingestSignal(input) };
   }
 

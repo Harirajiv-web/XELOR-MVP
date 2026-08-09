@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR — The Whole Platform in Simple Words</title>
+  <style>
+    @page { size:A4; margin:15mm 14mm 17mm; }
+    * { box-sizing:border-box; }
+    :root {
+      --ink:#14213a; --muted:#58677c; --navy:#07162f; --blue:#1d4ed8;
+      --cyan:#0891b2; --green:#087a55; --amber:#a85d00; --red:#b42318;
+      --violet:#6d28d9; --line:#d7e0ec; --wash:#f4f7fb; --soft:#eef4ff;
+    }
+    html { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    body { margin:0; color:var(--ink); font:10.1pt/1.43 Arial, Helvetica, sans-serif; }
+    h1,h2,h3 { margin:0 0 8px; line-height:1.14; page-break-after:avoid; }
+    h1 { font-size:35pt; letter-spacing:-1.1px; }
+    h2 { padding-bottom:6px; border-bottom:2px solid var(--blue); color:var(--navy); font-size:20pt; }
+    h3 { margin-top:10px; color:var(--blue); font-size:12.5pt; }
+    p { margin:5px 0 9px; }
+    ul,ol { margin:5px 0 10px 19px; padding:0; }
+    li { margin:3px 0; }
+    b { color:var(--navy); }
+    table { width:100%; margin:8px 0 12px; border-collapse:collapse; font-size:8.8pt; }
+    tr { page-break-inside:avoid; }
+    th { padding:6px 7px; background:var(--navy); color:white; text-align:left; }
+    td { padding:6px 7px; border:1px solid var(--line); vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    .cover { height:263mm; margin:-15mm -14mm -17mm; padding:28mm 22mm; color:white; background:radial-gradient(circle at 82% 18%,#1889aa 0,transparent 29%),linear-gradient(145deg,#050f25 0%,#12357b 60%,#6d28d9 125%); position:relative; page-break-after:always; }
+    .mark { display:grid; width:58px; height:58px; place-items:center; border:1px solid #81e7ff; border-radius:14px; font-size:18pt; font-weight:800; }
+    .eyebrow { margin-top:30mm; color:#92e9ff; font-size:10pt; font-weight:700; letter-spacing:2.1px; }
+    .cover h1 { max-width:160mm; margin-top:10px; font-size:41pt; }
+    .cover .sub { max-width:155mm; margin-top:15px; color:#e0efff; font-size:15pt; line-height:1.42; }
+    .cover .promise { max-width:158mm; margin-top:18px; padding:11px 13px; border:1px solid #6ea6dc; border-radius:9px; background:#ffffff10; color:#e2effd; font-size:10.5pt; }
+    .cover .meta { position:absolute; right:22mm; bottom:22mm; left:22mm; display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #6b9bcc; color:#c9ddf4; font-size:9pt; }
+    .page { min-height:254mm; page-break-before:always; }
+    .lead { color:#35465e; font-size:12pt; }
+    .small { color:var(--muted); font-size:8.3pt; }
+    .callout { margin:9px 0 12px; padding:9px 11px; border-left:4px solid var(--blue); background:#edf4ff; page-break-inside:avoid; }
+    .good { border-left-color:var(--green); background:#eaf8f2; }
+    .warn { border-left-color:var(--amber); background:#fff6e6; }
+    .bad { border-left-color:var(--red); background:#fff0ef; }
+    .violet { border-left-color:var(--violet); background:#f4f0ff; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:8px 0 12px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:8px 0 12px; }
+    .card { padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:white; page-break-inside:avoid; }
+    .card h3 { margin:0 0 5px; }
+    .tag { display:inline-block; margin:0 4px 4px 0; padding:2px 6px; border-radius:999px; background:#e8f0ff; color:#1648a6; font-size:8pt; font-weight:700; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin:10px 0 13px; align-items:stretch; }
+    .flow > div { display:grid; min-height:55px; place-items:center; padding:7px; border:1px solid #bed0e9; border-radius:8px; background:#f3f7fd; text-align:center; font-size:8.6pt; font-weight:700; }
+    .flow .arrow { min-height:0; border:0; background:transparent; color:var(--blue); font-size:15pt; }
+    .loop { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 13px; }
+    .loop span { flex:1 1 28mm; padding:7px 8px; border:1px solid #cbd7e8; border-radius:7px; background:#f8fafd; text-align:center; font-size:8.5pt; font-weight:700; }
+    .agent { border-top:5px solid var(--blue); }
+    .agent.hexa { border-top-color:#4f46e5; }
+    .agent.mica { border-top-color:#db2777; }
+    .agent.spar { border-top-color:#b7791f; }
+    .agent.axle { border-top-color:#0f8a80; }
+    .agent.kiln { border-top-color:#c2410c; }
+    .agent.rasp { border-top-color:#7c3aed; }
+    .agent.relay { border-top-color:#0284c7; }
+    .agent.achiles { border-top-color:#374151; }
+    .screen-list { columns:2; column-gap:12px; margin:7px 0 11px; }
+    .screen-list li { break-inside:avoid; margin:0 0 5px; }
+    .check { list-style:none; margin-left:0; }
+    .check li { padding-left:17px; position:relative; }
+    .check li::before { content:"✓"; position:absolute; left:0; color:var(--green); font-weight:800; }
+    .plain { color:var(--muted); font-size:9pt; }
+    .keep { page-break-inside:avoid; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="mark">XE</div>
+    <div class="eyebrow">THE COMPLETE BEGINNER'S GUIDE</div>
+    <h1>XELOR<br>The Whole Platform in Simple Words</h1>
+    <p class="sub">What every part does, how the parts work together, where people approve, and what the system can—and cannot—do today.</p>
+    <div class="promise"><b style="color:white">Written for a first-time reader.</b> Short sentences. No assumed technical knowledge. Every department, module, main screen, agent and safety boundary is included.</div>
+    <div class="meta"><span>AIKYANTRA · XELOR MVP</span><span>09 August 2026</span></div>
+  </section>
+
+  <section class="page">
+    <h2>1. XELOR in one minute</h2>
+    <p class="lead"><b>XELOR is one system for running a manufacturing company.</b> It keeps the business records, connects work across departments, shows important problems, and lets AI agents help without giving them unlimited power.</p>
+
+    <div class="grid3">
+      <div class="card"><h3>1 · Run the business</h3><p>Sales, buying, stock, planning, production, quality, maintenance, people and money use shared records.</p></div>
+      <div class="card"><h3>2 · Understand the business</h3><p>ONYX and its specialist agents read allowed facts, join them, and explain what needs attention.</p></div>
+      <div class="card"><h3>3 · Control the system</h3><p>Permissions, licences, approvals, audit history, a kill switch and tenant walls keep actions bounded.</p></div>
+    </div>
+
+    <h3>The simplest way to picture it</h3>
+    <div class="flow">
+      <div>People enter<br>real business work</div><div class="arrow">→</div><div>XELOR stores<br>one shared truth</div><div class="arrow">→</div><div>Rules and agents<br>find what matters</div>
+    </div>
+    <div class="flow">
+      <div>A person reviews<br>important decisions</div><div class="arrow">→</div><div>Approved work stays<br>with its owner</div><div class="arrow">→</div><div>Evidence and results<br>stay in the audit trail</div>
+    </div>
+
+    <div class="callout good"><b>If you remember only one thing:</b> XELOR does not replace the departments. It gives them one connected place to work and gives leaders one evidence-backed view across them.</div>
+
+    <h3>What is inside</h3>
+    <p><b>9 governed agents</b> organise <b>22 installed modules</b>. The platform also includes mobile-friendly screens, alerts, guided demos, outside-system connections, platform health checks and a factory/robot simulator.</p>
+  </section>
+
+  <section class="page">
+    <h2>2. What you see when you open XELOR</h2>
+    <p class="lead">The same shell surrounds the business modules, so the important controls stay in the same place.</p>
+
+    <table>
+      <thead><tr><th>Part of the screen</th><th>What it means in simple words</th></tr></thead>
+      <tbody>
+        <tr><td><b>Home / Brain</b></td><td>The entrance reveals the map of ONYX and its eight specialist agents. Choose an agent or continue into the ordinary ERP screens.</td></tr>
+        <tr><td><b>Left menu and top tabs</b></td><td>The menu groups modules by agent. Tabs switch screens inside one module. You see only what your company bought and your role allows.</td></tr>
+        <tr><td><b>Department page</b></td><td>A quick picture of one department, using permitted headline signals when available and links to its screens.</td></tr>
+        <tr><td><b>Alerts</b></td><td>Problems that rules found in real records, with evidence and a link to the place where someone can act.</td></tr>
+        <tr><td><b>Approvals</b></td><td>Agent missions waiting for a human yes or no. The proposed action is shown before the decision.</td></tr>
+        <tr><td><b>Start Demo</b></td><td>Two guided choices: an 11-step order story and a nine-step agent tour. The guide does not secretly save records for you.</td></tr>
+        <tr><td><b>Copilot</b></td><td>A read-only question panel. It answers only known questions, cites its data and cannot change a record.</td></tr>
+        <tr><td><b>Appearance and profile</b></td><td>Light/dark theme, your organisation, public-demo badge when relevant, user, roles and sign-out. The platform also adapts to phones.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Why two people may see different menus</h3>
+    <div class="grid3">
+      <div class="card"><h3>Installed?</h3><p>Is that module present in this build?</p></div>
+      <div class="card"><h3>Licensed?</h3><p>Did this company buy that module?</p></div>
+      <div class="card"><h3>Permitted?</h3><p>May this person open that screen?</p></div>
+    </div>
+    <div class="callout"><b>Important:</b> hiding a button is only for clarity. The API checks permission again before it reads or writes data.</div>
+  </section>
+
+  <section class="page">
+    <h2>3. One order shows how the whole platform connects</h2>
+    <p class="lead">A customer order can travel through the full company without being copied into separate spreadsheets.</p>
+
+    <div class="loop">
+      <span>1. MICA records the customer and sales order</span>
+      <span>2. Credit and tax rules check it</span>
+      <span>3. AXLE plans parts, dates and capacity</span>
+      <span>4. SPAR buys shortages and receives goods</span>
+      <span>5. Inventory records every stock movement</span>
+      <span>6. KILN makes the product</span>
+      <span>7. Quality records measurements and holds failures</span>
+      <span>8. Maintenance records machine trouble and lost time</span>
+      <span>9. MICA dispatches only what passed</span>
+      <span>10. RASP posts the money and watches cash</span>
+      <span>11. Product Care handles later customer issues</span>
+      <span>12. ONYX joins risks across every owner</span>
+    </div>
+
+    <div class="callout violet"><b>The Northstar demo follows exactly this loop:</b> 120 pumps ordered, 40 made, 12 held after a failed quality reading, 28 dispatched, a furnace repaired, and the remaining promise left as a human decision.</div>
+
+    <h3>What stays separate on purpose</h3>
+    <ul>
+      <li>A <b>production work order</b> says what to make. A <b>maintenance work order</b> says what to fix.</li>
+      <li>MICA owns the manufactured product and customer relationship. RELAY owns service around the XELOR platform.</li>
+      <li>KILN owns machine records and factory-operation responsibility. Local factory teams and controllers keep physical authority. ACHILES only checks whether XELOR's software is responding.</li>
+      <li>RASP explains money and risk. It does not move money on its own.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>4. ONYX — questions, decisions and controlled AI</h2>
+    <p class="lead">ONYX is the coordinator. It can bring evidence together, but it does not become the owner of every department.</p>
+
+    <div class="grid2">
+      <div class="card agent"><h3>ONYX Copilot</h3><p>Ask one of the fixed read-only question types (currently 21), such as stock on hand, stock movement or open orders. The answer shows its source rows. Unknown questions are refused instead of guessed.</p></div>
+      <div class="card agent"><h3>Agent OS</h3><p>Runs bounded multi-agent missions. It records each step, evidence, checks, human approvals, action records and outcomes.</p></div>
+      <div class="card agent"><h3>AI Operations</h3><p>Shows AI connections, allowed features, providers, evaluations, cost, human-review drafts and AI incidents.</p></div>
+      <div class="card agent"><h3>AI Control Center</h3><p>Shows what agents are doing, chooses between <b>Guarded autopilot</b> and <b>Approve every step</b>, and provides a global kill switch plus an explicit resume.</p></div>
+    </div>
+
+    <p class="plain"><b>Registry status:</b> specialist AI #1–#8 are the canonical set. Copilot is the additional AI #9 and is still marked <b>in evaluation</b>. Integration has a non-routable null declaration, not another thinking agent.</p>
+
+    <h3>Decision Commander</h3>
+    <p>Decision Commander reads current customer, supply, plan, factory and money facts. It groups repeated issues, puts the most important decision first, shows evidence, and explains what a human must decide next.</p>
+    <ul class="check">
+      <li>Financial exposure is labelled as exposure—not claimed as a proved loss.</li>
+      <li>Organisational memory keeps only governed examples and verified outcomes.</li>
+      <li>The knowledge graph links related records across departments.</li>
+      <li>MVP readiness shows what is real, simulated or still incomplete.</li>
+    </ul>
+
+    <div class="callout warn"><b>Boundary:</b> ONYX has no arbitrary SQL and no universal write tool. It reads registered capabilities, re-checks the caller's permission and stops at human gates where required.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. HEXA — company setup, control and connections</h2>
+    <p class="lead">HEXA keeps the platform organised, authorised, auditable and connected to the outside world.</p>
+
+    <div class="grid3">
+      <div class="card agent hexa"><h3>Organisation</h3><p>Legal companies, plants, GST identities, departments and the agent/module map.</p></div>
+      <div class="card agent hexa"><h3>Administration</h3><p>Roles, permissions, conflicting duties, security posture, incidents, privacy requests, audit checks, licence and settings.</p></div>
+      <div class="card agent hexa"><h3>Integration</h3><p>Connections, flows, failed messages, statutory filings, webhooks and Factory Connect.</p></div>
+    </div>
+
+    <h3>Examples of controls HEXA owns</h3>
+    <ul>
+      <li>A person gets access through a role, never because the screen assumes they are senior.</li>
+      <li>Rules can flag or prevent conflicting jobs, such as raising and approving the same purchase order.</li>
+      <li>Security incidents keep both the CERT-In and personal-data clocks.</li>
+      <li>Privacy requests keep their 90-day clock and the legal reason for holding data.</li>
+      <li>Audit-chain checks record whether any protected history was edited, replaced or deleted.</li>
+      <li>Outside-system failures are kept as dead letters; they are not silently lost.</li>
+    </ul>
+
+    <div class="callout"><b>Simple ownership rule:</b> HEXA decides whether a connection and its controls are trustworthy. RELAY coordinates customer impact when a connection problem becomes a service incident.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. MICA — sell the product and care for the customer</h2>
+    <p class="lead">MICA owns the commercial promise and the manufactured product after it reaches the customer.</p>
+
+    <div class="grid2">
+      <div class="card agent mica">
+        <h3>Sales</h3>
+        <ul>
+          <li>Customer master, GST details and credit limit.</li>
+          <li>Sales order lines, dates, tax and value.</li>
+          <li>Credit snapshot and written override reason.</li>
+          <li>Dispatch, invoice and receivable evidence.</li>
+        </ul>
+      </div>
+      <div class="card agent mica">
+        <h3>Customer Care &amp; Warranty</h3>
+        <ul>
+          <li>Product cases and response clocks.</li>
+          <li>Warranty and AMC entitlement.</li>
+          <li>Spare-part requests and customer feedback.</li>
+          <li>Complaints linked back to Quality.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>How a sales order works</h3>
+    <div class="flow">
+      <div>Create customer<br>and order</div><div class="arrow">→</div><div>Server checks tax<br>and credit</div><div class="arrow">→</div><div>Confirm or hold<br>with evidence</div>
+    </div>
+    <div class="flow">
+      <div>Dispatch only<br>available passed stock</div><div class="arrow">→</div><div>Create invoice<br>and stock-out</div><div class="arrow">→</div><div>Accounts records<br>the receivable</div>
+    </div>
+
+    <div class="callout warn"><b>Boundaries:</b> customer-care AI creates a suggestion, not a sent message; a person reviews it. XELOR software incidents do not belong in Product Care—they go to RELAY.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. SPAR — buy material and keep stock honest</h2>
+    <p class="lead">SPAR owns suppliers, purchasing and the single stock ledger.</p>
+
+    <div class="grid2">
+      <div class="card agent spar"><h3>Purchase</h3><p>Vendor checks, purchase orders, named approvals and goods receipts. Only approved outstanding quantity can be received.</p></div>
+      <div class="card agent spar"><h3>Inventory</h3><p>Warehouses, batches, quarantine, every movement and the balance created by those movements.</p></div>
+    </div>
+
+    <h3>Buying flow</h3>
+    <div class="flow">
+      <div>Check or create<br>vendor</div><div class="arrow">→</div><div>Raise and submit<br>purchase order</div><div class="arrow">→</div><div>Named people<br>approve</div>
+    </div>
+    <div class="flow">
+      <div>Record what<br>arrived</div><div class="arrow">→</div><div>Post the stock<br>movement once</div><div class="arrow">→</div><div>Show balance<br>and receipt evidence</div>
+    </div>
+
+    <h3>Why the stock number is trustworthy</h3>
+    <ul class="check">
+      <li>You cannot type a stock balance directly.</li>
+      <li>Every balance is the sum of posted movements.</li>
+      <li>Competing issues are locked so stock cannot go below zero.</li>
+      <li>Eligible batches are consumed in a fixed, traceable order.</li>
+      <li>The stock ledger cannot be edited or deleted.</li>
+    </ul>
+
+    <div class="callout"><b>Important:</b> receiving goods and placing a purchase order are different records. A supplier promise does not become stock until the receipt is posted.</div>
+  </section>
+
+  <section class="page">
+    <h2>8. AXLE — define the product and make a workable plan</h2>
+    <p class="lead">AXLE turns demand into a dated, explainable plan.</p>
+
+    <div class="grid2">
+      <div class="card agent axle"><h3>Engineering</h3><p>Item codes, units, costs, bills of material and the product structure used by every later calculation.</p></div>
+      <div class="card agent axle"><h3>Planning</h3><p>Demand, master schedule, MRP, planned orders, exceptions, item policies, capacity, finite schedule and factory dwell consequences.</p></div>
+    </div>
+
+    <h3>How MRP works in plain words</h3>
+    <div class="flow">
+      <div>Start with confirmed<br>demand and forecast</div><div class="arrow">→</div><div>Subtract stock and<br>expected supply</div><div class="arrow">→</div><div>Open every bill<br>of material</div>
+    </div>
+    <div class="flow">
+      <div>Use lead time,<br>lot rules and safety stock</div><div class="arrow">→</div><div>Suggest what to<br>make or buy</div><div class="arrow">→</div><div>Write exceptions<br>for human action</div>
+    </div>
+
+    <ul>
+      <li>A planned order is a <b>suggestion</b>. It has not contacted a supplier or released a job.</li>
+      <li>The MRP receipt keeps its exact inputs and date, so users know how old the plan is.</li>
+      <li>Factory Flow connects dwell time to the production work and schedule it may delay.</li>
+    </ul>
+
+    <div class="callout warn"><b>Boundary:</b> AXLE recommends and explains. SPAR buys, KILN executes and a person accepts the planning decision.</div>
+  </section>
+
+  <section class="page">
+    <h2>9. KILN — make, inspect and maintain</h2>
+    <p class="lead">KILN owns the physical factory record: what was made, whether it passed, and what happened to the machines.</p>
+
+    <div class="grid3">
+      <div class="card agent kiln"><h3>Production</h3><p>Production orders, operation sequence, component issue, output and the latest machine/robot-cell context.</p></div>
+      <div class="card agent kiln"><h3>QMS &amp; Audit</h3><p>Inspections, readings, documents, audits, findings, corrective action, training and evidence packs.</p></div>
+      <div class="card agent kiln"><h3>Maintenance</h3><p>Assets, operator requests, repair jobs, downtime, preventive work and reliability measures.</p></div>
+    </div>
+
+    <h3>Factory work in one line</h3>
+    <div class="loop">
+      <span>Issue real components</span><span>Complete named operations</span><span>Receive output</span><span>Measure quality</span><span>Hold failures</span><span>Fix machine causes</span>
+    </div>
+
+    <h3>Quality does not hide the bad result</h3>
+    <p>Measured readings sit behind every pass or rejection. A failed lot can be held, reworked, returned, scrapped or accepted only through a recorded decision. Findings can lead to a non-conformance and a corrective action whose effectiveness still needs a person.</p>
+    <p class="plain"><b>Current screen status:</b> Inspections, Findings and Corrective Actions read stored platform data. QMS Overview, Documents, Audits, Training and Evidence Packs are currently illustrative presentation pages.</p>
+
+    <h3>Maintenance uses its own evidence</h3>
+    <p>An operator request starts its clock immediately. A maintenance work order records tasks, cause, labour and parts. Downtime intervals feed availability, MTBF and MTTR, so KPI figures can be traced back to real rows.</p>
+
+    <div class="callout"><b>Never confuse the two work orders:</b> Production says “make this product.” Maintenance says “repair or service this asset.”</div>
+  </section>
+
+  <section class="page">
+    <h2>10. RASP — people, spend, accounts and cash</h2>
+    <p class="lead">RASP shows who did the work, what it cost, how it was posted and what it means for cash.</p>
+
+    <div class="grid2">
+      <div class="card agent rasp"><h3>People</h3><p>Employees, attendance muster, leave movements and dated statutory rates. Sensitive identity and bank fields do not appear in lists.</p></div>
+      <div class="card agent rasp"><h3>Employee Spend</h3><p>Expense claims, receipt lines, budget checks, policy flags, GST-credit treatment, advances and reimbursement evidence.</p></div>
+      <div class="card agent rasp"><h3>Accounts</h3><p>Posted vouchers and the trial balance made from their journal lines. Posted history is corrected with a new entry, not edited.</p></div>
+      <div class="card agent rasp"><h3>Working Capital</h3><p>Cash, money in, money out, stock cash, margins, a 13-week forecast, safe scenarios and a finance pack.</p></div>
+    </div>
+
+    <h3>How payroll moves safely</h3>
+    <p>Punches and rosters become attendance and regularisation. Attendance is locked before payroll is calculated. A different human approves it; only then can it be marked paid, posted to Accounts, and used for payslips and statutory exports.</p>
+
+    <h3>What Working Capital adds</h3>
+    <ul>
+      <li>Shows late customer collections and upcoming supplier commitments.</li>
+      <li>Shows stock holding the most cash and margins that need attention.</li>
+      <li>Lets leaders compare a “what if” without changing real records.</li>
+      <li>Prepares evidence for a lender, but does not submit or sign anything.</li>
+    </ul>
+
+    <p class="plain"><b>Current screen status:</b> the eight Working Capital pages are illustrative presentation views. The separate Agent OS Working Capital Review can read stored ledger evidence.</p>
+
+    <div class="callout warn"><b>Boundary:</b> RASP can calculate, explain and propose. It cannot autonomously send a payment, sign a commercial term or claim that exposure is a proved loss.</div>
+  </section>
+
+  <section class="page">
+    <h2>11. RELAY and ACHILES — keep XELOR working as a service</h2>
+    <p class="lead">These agents look after the XELOR service itself. They do not replace the teams that own sales, machines, security or AI.</p>
+
+    <div class="grid2">
+      <div class="card agent relay">
+        <h3>RELAY · Managed Services</h3>
+        <p>RELAY coordinates service around XELOR:</p>
+        <ul>
+          <li>Service command centre</li>
+          <li>Incidents and escalation</li>
+          <li>Changes and releases</li>
+          <li>Service reviews</li>
+          <li>Responsibility map</li>
+        </ul>
+      </div>
+      <div class="card agent achiles">
+        <h3>ACHILES · Platform Health</h3>
+        <p>ACHILES privately asks one narrow question: <b>“Is XELOR responding?”</b></p>
+        <p>It checks the web app, API, database and supporting runtime, records response time and keeps a tenant-safe history.</p>
+      </div>
+    </div>
+
+    <h3>Who does what when something breaks?</h3>
+    <div class="flow">
+      <div>ACHILES detects<br>and records</div><div class="arrow">→</div><div>RELAY coordinates<br>impact and updates</div><div class="arrow">→</div><div>The technical owner<br>diagnoses and repairs</div>
+    </div>
+
+    <table>
+      <thead><tr><th>Example</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>A customer pump has a warranty problem</td><td>MICA Product Care</td></tr>
+        <tr><td>A factory machine has stopped</td><td>KILN Maintenance</td></tr>
+        <tr><td>A security event needs investigation</td><td>HEXA Administration</td></tr>
+        <tr><td>An AI feature gave a wrong answer</td><td>ONYX AI Operations</td></tr>
+        <tr><td>The XELOR API is unavailable to users</td><td>RELAY coordinates; the API owner repairs</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn"><b>Boundaries:</b> ACHILES never restarts, repairs, changes ERP data or sends a customer message. RELAY's service levels are illustrative until a customer contract makes them binding.</div>
+  </section>
+
+  <section class="page">
+    <h2>12. How an Agent OS mission works</h2>
+    <p class="lead">A mission is a fixed route for agents to read evidence, join it, wait for a person and record the result.</p>
+
+    <ol>
+      <li><b>A person starts with a goal.</b> Example: recover a delayed customer promise.</li>
+      <li><b>ONYX chooses a registered mission graph.</b> The graph says which agents may run and in what order.</li>
+      <li><b>Specialists read in parallel.</b> Each one checks the caller's permission again and reads only its own domain.</li>
+      <li><b>ONYX joins the findings.</b> The combined brief keeps links to the source evidence.</li>
+      <li><b>HEXA checks the boundary.</b> It verifies registered capabilities, evidence coverage and approval ancestry.</li>
+      <li><b>A human gate opens.</b> An authorised person sees the proposal and approves or rejects it with a note.</li>
+      <li><b>Approved work stays with its owner.</b> Each action record names its department and the human approver.</li>
+      <li><b>The outcome is recorded.</b> Organisational memory can keep the governed decision while it is pending. A mission-linked verified outcome requires the mission to finish.</li>
+    </ol>
+
+    <h3>The seven registered mission types</h3>
+    <ul class="screen-list plain">
+      <li>Cross-functional readiness review</li>
+      <li>Factory flow recovery</li>
+      <li>Nine-agent operating review</li>
+      <li>Nine-agent controlled-action mission</li>
+      <li>Working Capital Review</li>
+      <li>QMS &amp; Audit Readiness</li>
+      <li>Managed Service Assurance Review</li>
+    </ul>
+
+    <h3>Safety and reliability built into the route</h3>
+    <div class="grid2">
+      <div class="card"><b>One logical request</b><p>Retries reuse an idempotency key, so a lost response does not create a second mission.</p></div>
+      <div class="card"><b>Time and step limits</b><p>A mission cannot run forever or silently exceed its declared work budget.</p></div>
+      <div class="card"><b>Leases and recovery</b><p>Database tokens prevent two replicas from finishing the same step at once.</p></div>
+      <div class="card"><b>Kill switch</b><p>Global automation can stop. Releasing the switch does not restart halted missions; an authorised person must explicitly resume them.</p></div>
+    </div>
+
+    <div class="callout good"><b>The core rule:</b> records stay with their owning module; rules calculate; ONYX joins and explains; a person approves important work; the owning service writes; audit evidence proves the result.</div>
+    <p class="small">There are 19 registered capabilities. Only the governed action-dispatch capability is side-effecting, and it creates an internal work item. It does not prove that money moved, a supplier was contacted, a repair happened or an outside system completed work.</p>
+  </section>
+
+  <section class="page">
+    <h2>13. Factory Connect and robots</h2>
+    <p class="lead">Factory Connect adds machine, robot, AMR and sensor context without giving cloud software direct safety authority.</p>
+
+    <h3>Where it appears</h3>
+    <table>
+      <thead><tr><th>Screen</th><th>What it shows</th></tr></thead>
+      <tbody>
+        <tr><td><b>Integration · Factory Connect</b></td><td>Configured gateways, asset bindings, latest heartbeat/state evidence, capability allowlists and the command-result ledger.</td></tr>
+        <tr><td><b>Production · Machines &amp; robot cells</b></td><td>Latest reported work, material, controller state, operating evidence and whether each binding is simulator or edge.</td></tr>
+        <tr><td><b>Planning · Factory flow</b></td><td>Material and mobile-asset dwell time, location confidence and the plan or production work that delay may affect.</td></tr>
+        <tr><td><b>Agent OS · Factory recovery</b></td><td>A cross-department mission that reads consequences, waits for approval and evaluates one exact simulator request.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>The safe simulator route</h3>
+    <div class="flow">
+      <div>Select asset and<br>named capability</div><div class="arrow">→</div><div>Seal parameters,<br>state and expiry</div><div class="arrow">→</div><div>Read factory and<br>business evidence</div>
+    </div>
+    <div class="flow">
+      <div>Human reviews the<br>exact request</div><div class="arrow">→</div><div>API checks policy<br>and current evidence</div><div class="arrow">→</div><div>Record a simulated<br>result—no dispatch</div>
+    </div>
+
+    <p>The simulator can evaluate named requests such as enqueueing an approved job, selecting an approved program revision, pausing after a cycle, dispatching an approved AMR route, quarantining a lot or requesting a maintenance inspection.</p>
+
+    <div class="callout bad"><b>Very important:</b> the current API does not contact or move physical equipment. It records a simulator policy result, and one approval can authorise only one stored evaluation. A heartbeat is not proof of controller execution. The separate edge simulator is not wired to this API path; there is no durable claim, acknowledgement or edge journal. The local controller and safety PLC always keep final authority.</div>
+  </section>
+
+  <section class="page">
+    <h2>14. Connections to outside systems</h2>
+    <p class="lead">Integration keeps each connection, flow, failure and filing visible instead of hiding them inside background code.</p>
+
+    <div class="grid2">
+      <div class="card"><h3>Connections</h3><p>Which outside systems are configured, whether they are real or fake, and whether repeated failures opened the circuit breaker.</p></div>
+      <div class="card"><h3>Flows</h3><p>What starts each route, whether it is statutory, how fields map and why a flow is paused.</p></div>
+      <div class="card"><h3>Dead letters</h3><p>Messages that stopped after failure, the reason, the safe next action and whether replay is allowed.</p></div>
+      <div class="card"><h3>Statutory filings</h3><p>Invoice IRN deadlines and e-way bill validity. Filing actions use the flow, not a hidden button here.</p></div>
+      <div class="card"><h3>Webhooks</h3><p>Subscribers, event types, delivery history and auto-pause. A signing secret is shown once and never returned again.</p></div>
+      <div class="card"><h3>Factory Connect</h3><p>Gateways, assets, telemetry evidence and simulator command records at the IT/OT edge.</p></div>
+    </div>
+
+    <h3>What happens when a call fails</h3>
+    <div class="flow">
+      <div>Try the registered<br>connection</div><div class="arrow">→</div><div>Classify the<br>failure</div><div class="arrow">→</div><div>Retry, pause, recover<br>or dead-letter by rule</div>
+    </div>
+
+    <ul>
+      <li>Statutory recovery avoids creating a duplicate filing.</li>
+      <li>Repeated connection failures open its circuit breaker and block more calls. Webhook subscriptions can auto-pause; a flow is paused only by an explicit operation.</li>
+      <li>Idempotency keeps the same submission from being applied twice.</li>
+      <li>Secrets are rotated and are never exposed in list responses.</li>
+    </ul>
+
+    <div class="callout warn"><b>Not connected today:</b> OPC UA, MQTT, ROS 2, Cisco Spaces and Splunk are catalogue or reserved targets. Real use needs gateway identity, certificates, a durable command route and site safety validation.</div>
+  </section>
+
+  <section class="page">
+    <h2>15. How XELOR protects people and data</h2>
+    <p class="lead">Several separate controls work together. No single menu or login is treated as enough.</p>
+
+    <table>
+      <thead><tr><th>Control</th><th>Simple meaning</th></tr></thead>
+      <tbody>
+        <tr><td><b>Verified sign-in</b></td><td>Keycloak proves the identity and the expected application audience.</td></tr>
+        <tr><td><b>Tenant wall</b></td><td>Every request belongs to exactly one company. Database row-level security (RLS) blocks one company from reading another.</td></tr>
+        <tr><td><b>Permissions</b></td><td>Every protected API route names a registered permission. Inactive roles and grants stop working.</td></tr>
+        <tr><td><b>Licence</b></td><td>The company sees modules included in its plan; licence and permission answer different questions.</td></tr>
+        <tr><td><b>Human approval</b></td><td>Important agent proposals wait for an authorised person and keep the decision note.</td></tr>
+        <tr><td><b>Separate duties</b></td><td>Rules flag or prevent dangerous role combinations and keep requester, approver and executor distinct where required.</td></tr>
+        <tr><td><b>Idempotency</b></td><td>Repeating the same request does not quietly create the same business action twice.</td></tr>
+        <tr><td><b>Immutable evidence</b></td><td>Protected requests, approvals, ledgers and audit links cannot be rewritten after the fact.</td></tr>
+        <tr><td><b>Audit hash chain</b></td><td>Each protected audit row links to the one before it, so edits, replacement or deletion can be detected.</td></tr>
+        <tr><td><b>Kill switches</b></td><td>Automation can stop without stopping the manual ERP.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout good"><b>Fail closed:</b> when identity, tenant, permission, fresh evidence or approval is unclear, the safe answer is “do not perform the action.”</div>
+  </section>
+
+  <section class="page">
+    <h2>16. How the technology works</h2>
+    <p class="lead">You do not need to know the technology names to use XELOR, but this picture explains where work travels.</p>
+
+    <div class="flow">
+      <div>Browser<br>screens</div><div class="arrow">→</div><div>Next.js web app<br>same-origin API calls</div><div class="arrow">→</div><div>NestJS API<br>rules and permissions</div>
+    </div>
+    <div class="flow">
+      <div>Business service<br>owns the write</div><div class="arrow">→</div><div>PostgreSQL<br>records and tenant walls</div><div class="arrow">→</div><div>Audit, events and<br>read-back evidence</div>
+    </div>
+
+    <div class="grid2">
+      <div class="card"><h3>Identity</h3><p>Keycloak signs users in and gives the API a verifiable token.</p></div>
+      <div class="card"><h3>Database</h3><p>PostgreSQL stores business records, workflows, audit evidence and row-level tenant rules.</p></div>
+      <div class="card"><h3>Background work</h3><p>A worker handles scheduled or queued work instead of making the user wait on one screen.</p></div>
+      <div class="card"><h3>Supporting runtime</h3><p>Valkey supports fast temporary coordination; it is not the source of truth.</p></div>
+      <div class="card"><h3>AI providers</h3><p>Only registered features may use a provider. Evaluations, budgets, guardrails and a deterministic fallback are visible.</p></div>
+      <div class="card"><h3>Edge application</h3><p>A standalone simulator demonstrates local policy checks. It has no live cloud command transport to a physical controller.</p></div>
+    </div>
+
+    <h3>How it is packaged</h3>
+    <p>The API writes a business record and its event together. After the database commits, the outbox and worker deliver background work safely. Docker images package the API, worker, migration runner and web app. Local Docker Compose and Railway descriptors describe the supported demo/deployment shapes.</p>
+  </section>
+
+  <section class="page">
+    <h2>17. What is live, what is demo, and what is future</h2>
+    <p class="lead">This page prevents a demonstration from sounding like a production promise.</p>
+
+    <table>
+      <thead><tr><th>Status</th><th>What belongs here</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag">LIVE MVP</span></td><td>Shared business records and workflows; server permissions; tenant RLS; purchase approvals; stock ledger; planning evidence; production, quality and maintenance records; customer care; accounts; Agent OS graphs and approvals; audit checks; integration failure records; ACHILES health history; and live deterministic language mode, which is not an external model.</td></tr>
+        <tr><td><span class="tag" style="background:#fff0d9;color:#8a4d00">SEEDED / ILLUSTRATIVE</span></td><td>The Northstar story, public presenter identity, fake external connectors, Factory snapshot/simulator, all eight Working Capital pages, five QMS presentation areas, and the RELAY operating snapshot.</td></tr>
+        <tr><td><span class="tag" style="background:#f3e8ff;color:#6b21a8">FUTURE CONNECTION</span></td><td>Certified physical robot control, durable cloud-to-edge claim/acknowledgement, device certificates, OPC UA/MQTT/ROS 2 adapters, Cisco Spaces, Splunk, vendor certification and site acceptance.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Normal mode and public demo mode</h3>
+    <div class="grid2">
+      <div class="card"><h3>Normal authenticated mode</h3><p>Real Keycloak sign-in, real user roles and tenant-scoped API access. This is the base for a protected deployment.</p></div>
+      <div class="card"><h3>Public presenter mode</h3><p>Sign-in-free access for an isolated seeded demo database. It is a deliberate presentation exception and must never protect real customer data.</p></div>
+    </div>
+
+    <div class="callout bad"><b>Production readiness is more than “the screen works.”</b> Real customer use still needs customer-specific data migration, backups and restore proof, monitoring, operating ownership, contracts, privacy/security review, connector certification and user acceptance.</div>
+  </section>
+
+  <section class="page">
+    <h2>17A. Important things not complete in the MVP</h2>
+    <p class="lead">XELOR already covers the full manufacturing loop, but some areas are foundations rather than complete enterprise suites.</p>
+
+    <div class="grid2">
+      <div class="card"><h3>Commercial and product lifecycle</h3><p>No full lead/opportunity CRM, quotation document, validity/revision flow, quote-to-order conversion or complete engineering-change request/order workflow yet.</p></div>
+      <div class="card"><h3>Buying and finance depth</h3><p>Direct-material purchasing reaches receipt. Supplier invoice, three-way match, full AP ageing and payment-run depth are incomplete.</p></div>
+      <div class="card"><h3>Portals and adapters</h3><p>Customer portal backend routes exist, but there is no separate customer-facing web app and no universal ERP adapter.</p></div>
+      <div class="card"><h3>Multi-company scale</h3><p>Multi-factory intelligence, fully unified cost-centre masters and consolidated reporting remain roadmap work.</p></div>
+      <div class="card"><h3>AI and managed service</h3><p>No hosted external model is proved active by default. There is no production-grade NOC/ITSM or automatic repair service.</p></div>
+      <div class="card"><h3>Physical factory connection</h3><p>No certified robot/controller connection, safety override, durable edge journal or vendor/site acceptance exists today.</p></div>
+    </div>
+
+    <h3>Production proof still required</h3>
+    <p>A real rollout must prove load, penetration security, accessibility, off-site backup, disaster recovery, observability and operating support in the customer's own environment.</p>
+
+    <div class="callout"><b>Also important:</b> some strong backend workflows do not yet have a button on every relevant web screen. A missing button does not mean the rule or API is absent, but it does mean the user journey is not complete there.</div>
+  </section>
+
+  <section class="page">
+    <h2>18. Complete screen index — ONYX and HEXA</h2>
+    <p class="lead">The full platform has 82 visible screens and 12 linked detail screens. Every one is listed across sections 18–21. Detail pages open from a list and are shown in brackets.</p>
+
+    <table>
+      <thead><tr><th>Module</th><th>Screens</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX Copilot</b></td><td>Ask · Question log</td></tr>
+        <tr><td><b>Agent OS</b></td><td>Decision Commander · Approvals · Mission control</td></tr>
+        <tr><td><b>AI Operations</b></td><td>Connectors · Feature registry · Providers · Evaluations · Cost &amp; budget · Review queue · AI incidents</td></tr>
+        <tr><td><b>AI Control Center</b></td><td>Control room</td></tr>
+        <tr><td><b>Organisation</b></td><td>Companies · Departments &amp; agents</td></tr>
+        <tr><td><b>Administration</b></td><td>Roles &amp; access · Segregation of duties · Security posture · Security incidents · Privacy requests · Audit trail · Licence &amp; settings</td></tr>
+        <tr><td><b>Integration</b></td><td>Connections · Flows · Dead letters · Statutory filings · Webhooks · Factory Connect</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What these screens answer</h3>
+    <ul class="screen-list">
+      <li><b>Ask:</b> What do my allowed records say?</li>
+      <li><b>Question log:</b> What did Copilot answer or refuse?</li>
+      <li><b>Decision Commander:</b> What needs a decision now?</li>
+      <li><b>Approvals:</b> What is waiting for my yes or no?</li>
+      <li><b>Mission control:</b> What is each agent doing?</li>
+      <li><b>AI Operations:</b> Is AI allowed, tested, affordable and reviewed?</li>
+      <li><b>Control room:</b> How much autonomy is allowed right now?</li>
+      <li><b>Companies:</b> Which legal identity issues documents?</li>
+      <li><b>Departments &amp; agents:</b> Who owns each platform area?</li>
+      <li><b>Administration:</b> Who can do what, and is the control working?</li>
+      <li><b>Integration:</b> What is connected, flowing, failing or waiting?</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>19. Complete screen index — MICA, SPAR and AXLE</h2>
+    <p class="lead">These screens cover demand, customers, suppliers, stock, products and plans.</p>
+
+    <table>
+      <thead><tr><th>Module</th><th>Screens</th></tr></thead>
+      <tbody>
+        <tr><td><b>Sales</b></td><td>Sales orders · Customers · [Sales order detail]</td></tr>
+        <tr><td><b>Customer Care &amp; Warranty</b></td><td>Product cases · Spares &amp; warranty · Product care dashboard · Customer feedback · [Product case detail]</td></tr>
+        <tr><td><b>Purchase</b></td><td>Purchase orders · Vendors · [Purchase order detail] · [Goods receipt detail]</td></tr>
+        <tr><td><b>Inventory</b></td><td>Stock on hand · Warehouses</td></tr>
+        <tr><td><b>Engineering</b></td><td>Items · [Bill of material detail]</td></tr>
+        <tr><td><b>Planning</b></td><td>MRP run · Planned orders · Exceptions · Demand · Planning policies · Factory flow · [Why this order detail]</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card"><h3>MICA questions</h3><p>What did the customer order? Did credit and tax pass? What shipped? What product problem or warranty request is open?</p></div>
+      <div class="card"><h3>SPAR questions</h3><p>Who may we buy from? What did we order? What arrived? What stock exists and where?</p></div>
+      <div class="card"><h3>AXLE questions</h3><p>What is the product made of? What material is needed? What should start when? What exception needs a person?</p></div>
+      <div class="card"><h3>Detail pages</h3><p>Details open from a list row. They show one document and its evidence without adding another permanent menu item.</p></div>
+    </div>
+
+    <div class="callout"><b>MRP means Material Requirements Planning:</b> the arithmetic that works out what material is needed, how much, and by what date.</div>
+  </section>
+
+  <section class="page">
+    <h2>20. Complete screen index — KILN and RASP</h2>
+    <p class="lead">These screens cover factory execution, quality, machines, people and money.</p>
+
+    <table>
+      <thead><tr><th>Module</th><th>Screens</th></tr></thead>
+      <tbody>
+        <tr><td><b>Production</b></td><td>Work orders · Machines &amp; robot cells · [Work order detail]</td></tr>
+        <tr><td><b>QMS &amp; Audit</b></td><td>Overview · Inspections · Documents · Audits · Findings · Corrective actions · Training · Evidence packs · [Inspection detail]</td></tr>
+        <tr><td><b>Maintenance</b></td><td>Assets · Work orders · Requests · Downtime · Preventive schedule · Reliability KPIs · [Asset detail]</td></tr>
+        <tr><td><b>People</b></td><td>Employees · Attendance muster · Leave balances · Statutory rates · [Employee detail]</td></tr>
+        <tr><td><b>Employee Spend</b></td><td>Expense claims · [Expense claim detail]</td></tr>
+        <tr><td><b>Accounts</b></td><td>Trial balance · Vouchers · [Voucher detail]</td></tr>
+        <tr><td><b>Working Capital</b></td><td>Overview · Money in · Money out · Stock &amp; cash · Margins · Cash forecast · Scenarios · Finance pack</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card"><h3>KILN questions</h3><p>What is being made? Did it pass? What is held? Which machine stopped? What repair and preventive work is due?</p></div>
+      <div class="card"><h3>RASP questions</h3><p>Who worked? What claim was approved? Do the books balance? Where is cash tied up? What may happen over 13 weeks?</p></div>
+    </div>
+
+    <div class="callout good"><b>Traceability rule:</b> a summary number should lead back to the rows that created it—inspection readings, downtime intervals, attendance days, receipt lines or journal lines.</div>
+  </section>
+
+  <section class="page">
+    <h2>21. Complete screen index — RELAY and ACHILES</h2>
+    <p class="lead">These final screens cover the service wrapped around XELOR and the private health evidence beneath it.</p>
+
+    <table>
+      <thead><tr><th>Module</th><th>Screens</th></tr></thead>
+      <tbody>
+        <tr><td><b>Managed Services</b></td><td>Service command centre · Incidents &amp; escalation · Changes &amp; releases · Service reviews · Responsibility map</td></tr>
+        <tr><td><b>Platform Health</b></td><td>Private status</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Small glossary</h3>
+    <div class="grid2">
+      <table><tbody>
+        <tr><td><b>Agent</b></td><td>Bounded software specialist.</td></tr>
+        <tr><td><b>Capability</b></td><td>One registered read or action.</td></tr>
+        <tr><td><b>Mission graph</b></td><td>Fixed steps, checks and approvals.</td></tr>
+        <tr><td><b>Tenant</b></td><td>One customer company's data space.</td></tr>
+        <tr><td><b>RLS</b></td><td>Database wall between companies.</td></tr>
+        <tr><td><b>SoD</b></td><td>Separation of conflicting duties.</td></tr>
+        <tr><td><b>Idempotency</b></td><td>One result after a safe retry.</td></tr>
+        <tr><td><b>DLQ / dead letter</b></td><td>Failed message kept for review.</td></tr>
+        <tr><td><b>AMR</b></td><td>Mobile robot that moves material.</td></tr>
+        <tr><td><b>MTBF / MTTR</b></td><td>Time between failures / to repair.</td></tr>
+      </tbody></table>
+      <table><tbody>
+        <tr><td><b>BOM</b></td><td>Bill of material: product recipe.</td></tr>
+        <tr><td><b>MRP / MPS</b></td><td>Material plan / master schedule.</td></tr>
+        <tr><td><b>PO / GRN</b></td><td>Purchase order / goods receipt.</td></tr>
+        <tr><td><b>QMS</b></td><td>Quality management system.</td></tr>
+        <tr><td><b>NCR</b></td><td>Non-conformance record.</td></tr>
+        <tr><td><b>CAPA</b></td><td>Corrective and preventive action.</td></tr>
+        <tr><td><b>AMC</b></td><td>Annual maintenance contract.</td></tr>
+        <tr><td><b>GST</b></td><td>Goods and Services Tax.</td></tr>
+        <tr><td><b>IRN</b></td><td>E-invoice reference number.</td></tr>
+        <tr><td><b>E-way bill</b></td><td>Indian goods-movement document.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="callout"><b>Where to begin:</b> start with the customer order in section 3, then read your department page, then use the screen index to find the exact place in the platform.</div>
+    <div class="callout good"><b>The final simple rule:</b> XELOR keeps one connected evidence trail from the customer's promise, through material and machines, to quality, people, money and the human decision.</div>
+  </section>
+</body>
+</html>

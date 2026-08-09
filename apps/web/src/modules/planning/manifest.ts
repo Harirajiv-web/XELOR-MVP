@@ -205,6 +205,14 @@ export const planningManifest: ModuleManifest = {
         "How each item is replenished: its level in the bill of materials, what triggers an order, the lot rule and lot size, the lead time in WORKING days, safety stock, reorder point, ABC class and whether it is master-scheduled. Almost every quantity in a plan that looks wrong is explained by a row on this page. Read-only in this pass — nothing here changes a policy.",
     },
     {
+      label: "Factory flow",
+      path: "factory-flow",
+      permission: "planning.factory-flow.read",
+      icon: "Route",
+      description:
+        "Material, pallet and mobile-asset dwell time between physical operations, linked to the production work it can delay. Location confidence remains visible, and the screen only assesses schedule and routing consequences—it cannot move material, release work or command a robot.",
+    },
+    {
       // The payoff screen, reached by clicking a planned order rather than from the sidebar:
       // it is always about one item in one run, and a sidebar entry would open it with
       // nothing to explain. /planning/explain/<runNo>/<itemCode>.
@@ -220,6 +228,7 @@ export const planningManifest: ModuleManifest = {
     },
   ],
   screens: {
+    "factory-flow": () => import("./screens/factory-flow"),
     mrp: () => import("./screens/mrp"),
     // Quoted because a hyphen is not legal in an unquoted object key. The URL segment is the
     // product decision — "planned-orders" is what a planner reads in the address bar — so the

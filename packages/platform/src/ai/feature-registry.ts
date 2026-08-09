@@ -1,8 +1,9 @@
 import { AppError } from "../errors/error-envelope.js";
 
 /**
- * The CLOSED AI feature registry (DECISIONS-V2 §4.2, AI-OPERATIONS Appendix A.1).
- * The MVP portfolio is fixed at 8 features (the AI research cut ~32 to reach it).
+ * The governed AI feature registry (DECISIONS-V2 §4.2, AI-OPERATIONS Appendix A.1).
+ * AI #1–#8 are the canonical portfolio; AI #9 is an explicit read-only Copilot
+ * divergence held at `in_eval`, and Integrations has a non-routable null declaration.
  * The router keys on `feature_key`; a call for a key not in this table is REJECTED
  * at runtime (FR-AIO-001). Keys are immutable, lowercase, `module.feature` shaped
  * (V-REG-01).
@@ -38,7 +39,7 @@ export interface AiFeature {
   degradedMode: string;
 }
 
-/** The canonical 8 (+ Integrations' explicit null entry). Verbatim from Appendix A.1. */
+/** The canonical 8, explicit in-evaluation Copilot divergence, and Integrations null entry. */
 export const AI_FEATURES: readonly AiFeature[] = [
   {
     key: "expenditure.receipt_extraction",

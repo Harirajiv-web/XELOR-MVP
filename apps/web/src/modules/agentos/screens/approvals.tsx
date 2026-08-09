@@ -21,6 +21,10 @@ import {
   type AgentRunSummary,
   type PendingAgentApproval,
 } from "../api";
+import {
+  FactoryCommandIntentView,
+  readFactoryCommandIntent,
+} from "./factory-command";
 
 interface ApprovalWithRun {
   approval: PendingAgentApproval;
@@ -241,6 +245,9 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
             {items.map((item) => {
               const note = notes[item.approval.id] ?? "";
               const busy = deciding === item.approval.id;
+              const factoryIntent = readFactoryCommandIntent(
+                item.approval.proposed.factoryCommand,
+              );
               return (
                 <article
                   key={item.approval.id}
@@ -265,7 +272,7 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
                       </p>
                     </div>
                     <Link
-                      href="/agentos/command"
+                      href={item.run?.graphKey === "factory.flow-recovery" ? "/agentos/command/factory.flow-recovery" : "/agentos/command"}
                       className="inline-flex shrink-0 items-center gap-1.5 text-[10.5px] font-bold text-[var(--brand)] hover:underline"
                     >
                       Inspect full mission
@@ -281,6 +288,14 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
                       <p className="mt-2 text-[12.5px] leading-5 text-[var(--text-primary)]">
                         {item.approval.proposedAction}
                       </p>
+                      {factoryIntent ? (
+                        <div className="mt-3">
+                          <FactoryCommandIntentView
+                            intent={factoryIntent}
+                            title="Exact simulator command this approval permits"
+                          />
+                        </div>
+                      ) : null}
                       <div className="mt-3 flex gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-sunken)] p-3">
                         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand)]" aria-hidden />
                         <p className="text-[10.5px] leading-4.5 text-[var(--text-secondary)]">

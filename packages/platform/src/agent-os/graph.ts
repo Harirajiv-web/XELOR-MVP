@@ -32,6 +32,19 @@ export function validateAgentGraph(
   if (graph.nodes.length > graph.maxSteps)
     errors.push("graph contains more nodes than maxSteps");
 
+  // Each claimed attempt consumes one run step. The persisted run budget must cover the
+  // graph's declared worst case, otherwise a valid bounded retry can exhaust maxSteps
+  // before the graph reaches a terminal node state.
+  const maximumDeclaredAttempts = graph.nodes.reduce(
+    (total, node) => total + (node.maxAttempts ?? 1),
+    0,
+  );
+  if (graph.maxSteps < maximumDeclaredAttempts) {
+    errors.push(
+      `maxSteps must cover all declared node attempts (${maximumDeclaredAttempts})`,
+    );
+  }
+
   const ids = new Set<string>();
   for (const node of graph.nodes) {
     if (!node.id.trim()) errors.push("node id is required");

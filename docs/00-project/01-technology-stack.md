@@ -77,7 +77,8 @@ Legend — **Live** = wired & verified in the prototype · **Planned** = decided
 |---|---|---|
 | Cloud | AWS ap-south-1 (Mumbai), DR ap-south-2 | Planned |
 | IaC | OpenTofu (native state encryption) | Planned |
-| CI/CD | GitHub Actions (hosted runners) | Planned |
+| CI verification | GitHub Actions (static/schema/report proofs, clean images, public-demo acceptance/browser smoke) | Live |
+| Production delivery | GitHub Actions with cloud OIDC, artifact signing, promotion and rollback | Planned |
 | Local dev infra | Docker Compose (PG17 · Valkey · Keycloak · Gotenberg) | Live |
 | Module-boundary enforcement | `eslint-plugin-boundaries` (fails CI on cross-module deep imports) | Live |
 
@@ -91,6 +92,7 @@ Legend — **Live** = wired & verified in the prototype · **Planned** = decided
 | Regulatory | DPDP Act 2023, CERT-In directions, GST (e-invoice/e-way, 1-Aug-2026 Ship-to-GSTIN), payroll statutory | Binding facts (§3) |
 
 ## Architecture & cross-cutting patterns
+- **Factory Connect edge boundary** — additive tenant-scoped operational evidence for gateways, robot/AMR assets, state/location and material dwell; a simulator-only edge runtime ships in the MVP. Production OPC UA, MQTT, ROS 2, Cisco Spaces and Splunk adapters require mutual authentication and site acceptance. Robot controllers, safety PLCs, interlocks and emergency stops remain locally authoritative.
 - **Boundary-enforced modular monolith** — one deployable, one DB; each ERP domain is one module; cross-module access only via service interfaces or outbox events (no hard FK across a boundary), enforced in CI.
 - **Belt-and-braces tenancy** — app-layer tenant context (AsyncLocalStorage) + `SET LOCAL app.current_tenant` per transaction + FORCE RLS as the fail-closed backstop.
 - **Tamper-evidence** — per-tenant hash chains on the audit log, the approval trail, and the AI log.

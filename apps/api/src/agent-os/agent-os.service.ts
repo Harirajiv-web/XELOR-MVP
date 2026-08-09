@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import { Injectable } from "@nestjs/common";
-import { AppError } from "@ind-core/platform";
+import {
+  AppError,
+  canonicalize,
+  currentTenant,
+  runWithTenant,
+} from "@ind-core/platform";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentRunRepository } from "./agent-run.repository.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
@@ -15,6 +20,33 @@ import {
   AgentControlService,
   type AgentAutonomyMode,
 } from "./agent-control.service.js";
+import {
+  approvalProposalIsVisible,
+  presentAgentRunForPermissions,
+  presentAgentRunSummary,
+} from "./agent-run-presentation.js";
+
+export function agentRunRequestFingerprint(input: {
+  graphKey: string;
+  graphVersion: number;
+  goal: string;
+  input: Record<string, unknown>;
+}): string {
+  return `v2:${createHash("sha256").update(canonicalize(input)).digest("hex")}`;
+}
+
+/** Keep exact-order retries for unversioned rows created before canonical hashing shipped. */
+export function agentRunRequestFingerprintCandidates(input: {
+  graphKey: string;
+  graphVersion: number;
+  goal: string;
+  input: Record<string, unknown>;
+}): readonly [canonical: string, legacy: string] {
+  return [
+    agentRunRequestFingerprint(input),
+    createHash("sha256").update(JSON.stringify(input)).digest("hex"),
+  ];
+}
 
 @Injectable()
 export class AgentOsService {
@@ -72,16 +104,13 @@ export class AgentOsService {
       );
     }
     const graph = this.graphs.get(input.graphKey, input.graphVersion);
-    const requestFingerprint = createHash("sha256")
-      .update(
-        JSON.stringify({
-          graphKey: graph.key,
-          graphVersion: graph.version,
-          goal: input.goal,
-          input: input.idempotencyIdentity ?? input.missionInput,
-        }),
-      )
-      .digest("hex");
+    const [requestFingerprint, legacyRequestFingerprint] =
+      agentRunRequestFingerprintCandidates({
+        graphKey: graph.key,
+        graphVersion: graph.version,
+        goal: input.goal,
+        input: input.idempotencyIdentity ?? input.missionInput,
+      });
     const created = await this.repository.create({
       graph,
       graphHash: this.graphs.contentHash(graph),
@@ -89,10 +118,11 @@ export class AgentOsService {
       missionInput: input.missionInput,
       idempotencyKey: input.idempotencyKey,
       requestFingerprint,
+      requestFingerprintAliases: [legacyRequestFingerprint],
       providerMode: this.reasoner.mode,
     });
     const state = await this.engine.execute(created.runId);
-    return { replayed: created.replayed, ...presentRun(state) };
+    return { replayed: created.replayed, ...(await this.presentRun(state)) };
   }
 
   async ingestSignal(input: {
@@ -130,11 +160,11 @@ export class AgentOsService {
   }
 
   async get(runId: string) {
-    return presentRun(await this.repository.get(runId));
+    return this.presentRun(await this.repository.get(runId));
   }
 
   async list(limit: number) {
-    return this.repository.list(limit);
+    return (await this.repository.list(limit)).map(presentAgentRunSummary);
   }
 
   async cancel(runId: string, reason: string) {
@@ -144,7 +174,7 @@ export class AgentOsService {
 
   async resume(runId: string) {
     await this.control.assertRuntimeActive();
-    return presentRun(await this.engine.execute(runId));
+    return this.presentRun(await this.engine.execute(runId));
   }
 
   controlCenter() {
@@ -171,7 +201,7 @@ export class AgentOsService {
   async proceedStep(gateId: string, note: string) {
     await this.control.assertRuntimeActive();
     const runId = await this.repository.approveStepGate(gateId, note);
-    return presentRun(await this.engine.execute(runId));
+    return this.presentRun(await this.engine.execute(runId));
   }
 
   async resumeHalted() {
@@ -186,7 +216,14 @@ export class AgentOsService {
   }
 
   async approvals() {
-    return this.repository.pendingApprovals();
+    const pending = await this.repository.pendingApprovals();
+    const visible = [];
+    for (const approval of pending) {
+      const presented = await this.presentRun(await this.repository.get(approval.runId));
+      const candidate = presented.approvals.find((row) => row.id === approval.id);
+      if (candidate && approvalProposalIsVisible(candidate)) visible.push(candidate);
+    }
+    return visible;
   }
 
   async actions(limit: number, runId?: string) {
@@ -252,7 +289,21 @@ export class AgentOsService {
     return this.decisions.outcomes(limit);
   }
 
-  recordOutcome(input: OutcomeInput) {
+  async recordOutcome(input: OutcomeInput) {
+    // A caller may record a manually verified metric without a mission link. Once it
+    // explicitly cites a mission as proof, however, that mission must have reached its
+    // immutable completed state. This prevents a waiting, failed or cancelled run from
+    // being presented as verified execution evidence.
+    if (input.verificationStatus === "verified" && input.missionRunId) {
+      const mission = await this.repository.get(input.missionRunId);
+      if (mission.run.status !== "completed") {
+        throw new AppError(
+          "OUTCOME_MISSION_INCOMPLETE",
+          409,
+          "A linked mission must be completed before it can support a verified outcome.",
+        );
+      }
+    }
     return this.decisions.recordOutcome(input);
   }
 
@@ -262,29 +313,49 @@ export class AgentOsService {
     note: string,
   ) {
     await this.control.assertRuntimeActive();
+    const pending = (await this.repository.pendingApprovals()).find(
+      (approval) => approval.id === approvalId,
+    );
+    if (pending) {
+      const presented = await this.presentRun(await this.repository.get(pending.runId));
+      const candidate = presented.approvals.find((approval) => approval.id === approvalId);
+      if (!candidate || !approvalProposalIsVisible(candidate)) {
+        throw new AppError(
+          "AGENT_APPROVAL_EVIDENCE_FORBIDDEN",
+          403,
+          "The current user cannot review the source evidence required to decide this approval.",
+        );
+      }
+    }
     const result = await this.repository.decideApproval(
       approvalId,
       decision,
       note,
     );
+    const decidedState = await this.repository.get(result.runId);
+    const { tenantId } = currentTenant();
+    // Approval authority and execution authority are deliberately separable. Resume the
+    // approved graph under its creator's CURRENT permissions; the outer approver context is
+    // restored afterwards and still controls the response projection.
     const state = result.approved
-      ? await this.engine.execute(result.runId)
-      : await this.repository.get(result.runId);
-    return presentRun(state);
+      ? await runWithTenant(
+          {
+            tenantId,
+            actorId: decidedState.run.createdBy,
+            principal: "staff",
+          },
+          () => this.engine.execute(result.runId),
+        )
+      : decidedState;
+    return this.presentRun(state);
   }
-}
 
-function presentRun(state: Awaited<ReturnType<AgentRunRepository["get"]>>) {
-  return {
-    run: state.run,
-    nodes: state.nodes,
-    approvals: state.approvals,
-    events: state.events,
-    checkpoints: state.checkpoints.map((checkpoint) => ({
-      id: checkpoint.id,
-      sequence: checkpoint.sequence,
-      reason: checkpoint.reason,
-      createdAt: checkpoint.createdAt,
-    })),
-  };
+  private async presentRun(state: Awaited<ReturnType<AgentRunRepository["get"]>>) {
+    const heldPermissions = await this.capabilities.currentActorPermissions();
+    return presentAgentRunForPermissions(
+      state,
+      this.capabilities.permissionByCapability(),
+      heldPermissions,
+    );
+  }
 }

@@ -24,6 +24,7 @@ import { DecisionIntelligenceRepository } from "./decision-intelligence.reposito
 import { DecisionIntelligenceService } from "./decision-intelligence.service.js";
 import { MvpReadinessService } from "./mvp-readiness.service.js";
 import { AgentControlService } from "./agent-control.service.js";
+import { AgentRecoveryService } from "./agent-recovery.service.js";
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AgentControlService } from "./agent-control.service.js";
     AgentRunRepository,
     AgentControlService,
     AgentGraphEngine,
+    AgentRecoveryService,
     DecisionIntelligenceRepository,
     DecisionIntelligenceService,
     MvpReadinessService,

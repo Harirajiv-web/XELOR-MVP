@@ -147,6 +147,7 @@ export const integrationApi = {
   windowWatchPath: "/integration/einvoice/window-watch",
   ewayBillPath: "/integration/ewaybill",
   webhooksPath: "/integration/webhooks",
+  factoryOverviewPath: "/integration/factory/views/integration",
 } as const;
 
 /**

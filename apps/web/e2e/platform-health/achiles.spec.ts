@@ -3,6 +3,31 @@ import { expect, test, type Page } from "@playwright/test";
 const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
 const apiBaseUrl = process.env.XELOR_E2E_API_URL ?? "http://localhost:3000";
 
+async function signIn(page: Page): Promise<void> {
+  await page.goto(baseUrl);
+  const username = page.getByRole("textbox", { name: "Username or email" });
+  const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
+  await expect(username.or(brain)).toBeVisible({ timeout: 30_000 });
+  if (await username.isVisible()) {
+    await username.fill("hari");
+    await page.getByRole("textbox", { name: "Password" }).fill("1234");
+    await page.getByRole("button", { name: "Enter XELOR" }).click();
+  }
+  await expect(brain).toBeVisible({ timeout: 30_000 });
+}
+
+async function apiHeaders(page: Page): Promise<Record<string, string>> {
+  const token = await page.evaluate(() => {
+    const raw = sessionStorage.getItem("aikyantra.session");
+    return raw
+      ? ((JSON.parse(raw) as { accessToken?: string }).accessToken ?? null)
+      : null;
+  });
+  return token
+    ? { authorization: `Bearer ${token}` }
+    : { "x-xelor-public-demo": "investor-presentation" };
+}
+
 function watchBrowserFailures(page: Page): string[] {
   const failures: string[] = [];
   page.on("console", (message) => {
@@ -20,6 +45,7 @@ function watchBrowserFailures(page: Page): string[] {
 test("ACHILES privately checks the complete demo stack and preserves history", async ({
   page,
 }, testInfo) => {
+  await signIn(page);
   const failures = watchBrowserFailures(page);
   await page.goto(`${baseUrl}/platform-health/status`);
 
@@ -56,8 +82,9 @@ test("ACHILES privately checks the complete demo stack and preserves history", a
 });
 
 test("ACHILES remains understandable on a phone-sized screen", async ({ page }, testInfo) => {
-  const failures = watchBrowserFailures(page);
   await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page);
+  const failures = watchBrowserFailures(page);
   await page.goto(`${baseUrl}/platform-health/status`);
 
   await expect(page.getByTestId("achiles-status-screen")).toBeVisible();
@@ -71,11 +98,10 @@ test("ACHILES remains understandable on a phone-sized screen", async ({ page }, 
   expect(failures).toEqual([]);
 });
 
-test("ACHILES is the final registered agent and has no action capability", async ({
-  request,
-}) => {
-  const response = await request.get(`${apiBaseUrl}/api/v1/agent-os/catalogue`, {
-    headers: { "x-xelor-public-demo": "investor-presentation" },
+test("ACHILES is the final registered agent and has no action capability", async ({ page }) => {
+  await signIn(page);
+  const response = await page.request.get(`${apiBaseUrl}/api/v1/agent-os/catalogue`, {
+    headers: await apiHeaders(page),
   });
   expect(response.status()).toBe(200);
   const envelope = (await response.json()) as {

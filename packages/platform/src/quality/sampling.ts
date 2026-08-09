@@ -9,7 +9,7 @@
  * All pure and DB-free. Sampling tables are CONFIGURATION (a tenant loads a customer-
  * mandated plan without a release), so the ISO 2859-1-style band table is data, not code.
  *
- * Note there is deliberately NO model here. The closed 8-feature AI registry (§4.2) has no
+ * Note there is deliberately NO model here. The governed AI registry has no
  * quality feature, so Inspection ships zero AI in the MVP: an unregistered feature_key is a
  * hard reject at the router. Quality's intelligence is arithmetic, and that is the point —
  * an OEM auditor can re-derive every number by hand.

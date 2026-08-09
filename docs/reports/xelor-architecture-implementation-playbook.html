@@ -76,7 +76,7 @@
     <div class="eyebrow">XELOR · BUILD AND DELIVERY BLUEPRINT</div>
     <h1>Architecture, Delivery Pipeline &amp; Implementation Playbook</h1>
     <div class="sub">The executable “how”: technology choices, repository changes, CI/CD, infrastructure, data, security, observability, testing, recovery, ownership and phased delivery.</div>
-    <div class="meta"><span>Prepared from the live repository and deployment package</span><span>4 August 2026 · v1.0</span></div>
+    <div class="meta"><span>Prepared from the live repository and deployment package</span><span>8 August 2026 · v1.1</span></div>
   </section>
 
   <section>
@@ -85,11 +85,11 @@
     <div class="decision"><b>Recommended production shape:</b> AWS Mumbai primary; CloudFront/WAF and an Application Load Balancer; ECS Fargate Web/API/Worker; ECR; RDS PostgreSQL Multi-AZ; managed Valkey; S3/KMS; Secrets Manager; Keycloak behind the OIDC boundary; OpenTelemetry into CloudWatch/Grafana; GitHub Actions using short-lived AWS identity.</div>
     <div class="grid2">
       <div class="card"><h3>Keep</h3><ul><li>Node.js 22, TypeScript, pnpm workspaces.</li><li>Next.js 15 / React 19 Web.</li><li>NestJS 11 modular API and shared platform rules.</li><li>PostgreSQL 17, SQL migrations and FORCE RLS.</li><li>Valkey/BullMQ and transactional outbox.</li><li>Keycloak OIDC + PKCE for non-demo environments.</li><li>Deterministic AI stub until each AI use case passes evaluation.</li></ul></div>
-      <div class="card"><h3>Add now</h3><ul><li>GitHub pull-request and deployment workflows.</li><li>Immutable, scanned images promoted by digest.</li><li>OpenTofu infrastructure modules and remote state.</li><li>One-shot migration task and expand/contract rules.</li><li>Runtime readiness, graceful shutdown and deployment alarms.</li><li>Traceable structured telemetry and SLO alerting.</li><li>Restore, rollback and incident runbooks exercised on a schedule.</li></ul></div>
+      <div class="card"><h3>Add now</h3><ul><li>Extend the checked-in GitHub verification workflow with production deployment and promotion jobs.</li><li>Immutable, scanned images promoted by digest.</li><li>OpenTofu infrastructure modules and remote state.</li><li>One-shot migration task and expand/contract rules.</li><li>Runtime readiness, graceful shutdown and deployment alarms.</li><li>Traceable structured telemetry and SLO alerting.</li><li>Restore, rollback and incident runbooks exercised on a schedule.</li></ul></div>
     </div>
     <div class="flow"><div>Commit</div><div class="arrow">→</div><div>Verify + build</div><div class="arrow">→</div><div>Stage same digest</div><div class="arrow">→</div><div>Approve + produce</div></div>
     <div class="kpis"><div><b>3</b>runtime application roles</div><div><b>1</b>transactional system of record</div><div><b>0</b>static AWS access keys</div><div><b>1</b>promoted digest per image</div></div>
-    <div class="callout warn"><b>Three prerequisites before the first production deployment:</b> replace the public build-time API origin with runtime/private routing; replace demo-file readiness with dependency/schema readiness; and add the missing checked-in GitHub workflows. These are implementation gaps, not reasons to rewrite the product.</div>
+    <div class="callout warn"><b>Three prerequisites before the first production deployment:</b> replace the public build-time API origin with runtime/private routing; replace demo-file readiness with dependency/schema readiness; and extend the checked-in verification CI into OIDC-backed staging/production promotion. These are implementation gaps, not reasons to rewrite the product.</div>
   </section>
 
   <section class="page">
@@ -98,14 +98,14 @@
     <table>
       <thead><tr><th>Area</th><th>Repository evidence</th><th>Architectural meaning</th></tr></thead>
       <tbody>
-        <tr><td>Workspace</td><td><code>apps/web</code>, <code>apps/api</code>, <code>packages/platform</code>, <code>packages/db</code>; pnpm 9; Node 22; TypeScript 5.7.</td><td>One typed codebase with explicit runtime and domain layers.</td></tr>
+        <tr><td>Workspace</td><td><code>apps/web</code>, <code>apps/api</code>, <code>apps/edge</code>, <code>packages/platform</code>, <code>packages/db</code>; pnpm 9; Node 22; TypeScript 5.7.</td><td>One typed codebase with explicit browser, API, plant-edge and shared domain layers.</td></tr>
         <tr><td>Web</td><td>Next.js 15, React 19, Tailwind 4, Radix UI, Playwright.</td><td>Server-capable UI that should remain a client of the API, never the database.</td></tr>
-        <tr><td>API</td><td>NestJS 11; 28 controller surfaces; Zod validation; permission and tenant guards.</td><td>A modular monolith already exposes a credible enterprise API boundary.</td></tr>
-        <tr><td>Data</td><td>PostgreSQL 17, Drizzle, 64 forward SQL migrations, pgvector/pg_trgm/btree_gist and forced tenant RLS.</td><td>Transactional data integrity and tenant isolation belong in PostgreSQL as well as application code.</td></tr>
+        <tr><td>API</td><td>NestJS 11; 31 controller surfaces; Zod validation; permission and tenant guards.</td><td>A modular monolith already exposes a credible enterprise API boundary.</td></tr>
+        <tr><td>Data</td><td>PostgreSQL 17, Drizzle, 87 forward SQL migrations, pgvector/pg_trgm/btree_gist and forced tenant RLS.</td><td>Transactional data integrity and tenant isolation belong in PostgreSQL as well as application code.</td></tr>
         <tr><td>Async</td><td>Transactional outbox, BullMQ, Valkey and idempotent worker patterns.</td><td>Effects can be retried without pretending the queue is the source of truth.</td></tr>
         <tr><td>Identity</td><td>Keycloak 26, authorization code + PKCE, JWKS verification and in-application permission registry.</td><td>The OIDC boundary is portable; the demo bypass must remain isolated.</td></tr>
-        <tr><td>AI/agents</td><td>7 agents, 16 capabilities, 5 graphs, durable checkpoints, approval gates, evidence and deterministic provider stub.</td><td>AI can be introduced behind governance and evaluation without giving a model direct ERP writes.</td></tr>
-        <tr><td>Quality gates</td><td>Lint, typecheck, module manifest check, 727 service/unit tests, DB RLS/permission checks, 99-item live acceptance matrix and browser scenarios.</td><td>Existing local checks can become enforceable release policy.</td></tr>
+        <tr><td>AI/agents</td><td>9 agents, 19 capabilities, 7 graphs, durable checkpoints, approval gates, evidence and deterministic provider stub.</td><td>AI can be introduced behind governance and evaluation without giving a model direct ERP or robot-controller writes.</td></tr>
+        <tr><td>Quality gates</td><td>Lint, typecheck, module manifest check, 783 service/unit tests, DB RLS/permission checks, 99-item live acceptance matrix and 32 browser scenarios.</td><td>The repository-native CI workflow enforces static/schema proofs, clean container builds and the critical public-demo browser journey.</td></tr>
         <tr><td>Deployment</td><td>Local Compose plus five-service Railway demo packaging and health/start scripts.</td><td>Demo packaging exists; production delivery and IaC do not yet.</td></tr>
       </tbody>
     </table>
@@ -113,7 +113,7 @@
     <table>
       <thead><tr><th>Observed gap</th><th>Required correction</th><th>Proof of completion</th></tr></thead>
       <tbody>
-        <tr><td>No <code>.github/workflows</code> release pipeline was found.</td><td>Add CI, security, staging, production and recovery workflows described here.</td><td>A protected <code>main</code> cannot merge or deploy without named checks.</td></tr>
+        <tr><td>The checked-in GitHub workflow now verifies source, schema, AI evaluations, reports, clean images, a fresh demo rebuild and critical browser journeys; production promotion is not implemented.</td><td>Add security scanning plus OIDC-backed staging, production and recovery workflows described here.</td><td>A protected <code>main</code> cannot merge or deploy without named checks.</td></tr>
         <tr><td><code>NEXT_PUBLIC_API_ORIGIN</code> is read by <code>next.config.ts</code>.</td><td>Route <code>/api/v1</code> at the ALB or use a server-only runtime origin; remove the public build dependency.</td><td>The identical Web image digest runs in staging and production.</td></tr>
         <tr><td>Readiness depends on a demo seed file when configured.</td><td>Add distinct live, ready and startup behavior; readiness checks DB, schema compatibility and required broker connectivity.</td><td>ECS never sends traffic before dependencies are usable; seeding is not a production health condition.</td></tr>
         <tr><td>API startup applies migrations in the Railway demo.</td><td>Run production migrations once as a separately authorized ECS task.</td><td>Scaling API tasks cannot race migrations or require owner credentials.</td></tr>
@@ -290,7 +290,7 @@ apps/api/src/health/
         <tr><td>Unit</td><td><code>pnpm test</code>; upload machine-readable test report and coverage trend.</td><td>Business/service contract regressed.</td></tr>
         <tr><td>Database</td><td>Start PostgreSQL/Valkey/Keycloak parity services; run migrations from empty DB; RLS check; permission reconciliation; migration idempotence/ordering check.</td><td>Schema, isolation or permission contract is unsafe.</td></tr>
         <tr><td>Integration</td><td>Start API/Worker/Web with test identity; run the 99-item live matrix and API contract probes; confirm outbox consumption.</td><td>The assembled system does not behave like its units.</td></tr>
-        <tr><td>Browser</td><td>Playwright critical journeys on Chromium on every PR; broader browser/responsive matrix nightly or before release.</td><td>A user cannot complete a protected critical journey.</td></tr>
+        <tr><td>Browser</td><td>Run the public-demo critical workflow on Chromium on every PR; run the complete public/authenticated, responsive and persona matrix nightly or before release.</td><td>A user cannot complete a protected critical journey.</td></tr>
         <tr><td>Build</td><td>Build production Web/runtime images, boot them, run health probes and scan filesystem.</td><td>Passing source cannot produce a runnable artifact.</td></tr>
         <tr><td>Security</td><td>Dependency, secret and IaC/container scanning; CodeQL or equivalent scheduled/on PR for sensitive changes.</td><td>Known release-blocking exposure or leaked secret.</td></tr>
       </tbody>
@@ -647,6 +647,10 @@ observed_at, valid_from, valid_to
 confidence, verification_status, created_by</pre>
     <h3>Projection operating checks</h3>
     <ul><li>Projection lag and last applied event are visible per tenant/partition.</li><li>Rebuild runs into shadow tables, compares counts/checksums, then swaps after approval.</li><li>Queries distinguish “current observed state,” “planned state” and “model-estimated state.”</li><li>A missing projection never changes ledger truth; user receives a stale/unavailable indication.</li></ul>
+    <h3>Factory Connect and robotics boundary</h3>
+    <div class="callout warn"><b>Target production path — not wired in this MVP.</b> OPC UA, MQTT, ROS 2, Cisco Spaces and Splunk are catalogue/reserved connector targets, not functioning adapters.</div>
+    <div class="flow"><div>Robot / PLC / AMR<br>local safety control</div><div class="arrow">⇢</div><div>Future certified adapter<br>OPC UA / MQTT / ROS 2</div><div class="arrow">⇢</div><div>XELOR Factory Connect<br>stored events + policy</div><div class="arrow">⇠</div><div>Future context<br>Splunk / Cisco Spaces</div></div>
+    <p>The repository contains a closed machine-command catalogue, gateway/asset/state/location/dwell/command schema, a human-gated recovery mission and a standalone <code>apps/edge</code> simulator contract. The simulator is not connected to the API. For a command-bearing mission, the API verifies a completed approved Factory Flow gate, matches the later request to the approved typed intent, checks stored state/policy/expiry and consumes that approval once. It then records a simulated policy result with no edge attempt and no controller acknowledgement. A production adapter would additionally need mutual authentication, signed envelopes, durable replay protection, claim/acknowledgement delivery and local safety revalidation. XELOR must never issue raw motion, upload arbitrary robot programs, bypass interlocks or replace an emergency stop or certified controller.</p>
   </section>
 
   <section class="page">
@@ -996,9 +1000,10 @@ docker compose -f infra/railway/docker-compose.demo.yml up</pre>
       <li><code>package.json</code> and four workspace package manifests.</li>
       <li><code>apps/web/next.config.ts</code>, Web API/session implementation and Playwright suite.</li>
       <li><code>apps/api</code> controllers, identity/tenant guards, health code, Worker and demo verification scripts.</li>
-      <li><code>packages/platform</code> module manifests, services, Agent OS and boundary rules.</li>
+      <li><code>packages/platform</code> shared contracts, deterministic rules, Agent OS graph types and permission registry.</li>
+      <li><code>apps/edge</code> the standalone simulator adapter contract; it describes a future local-controller boundary but is not connected to a controller or the Factory Connect API.</li>
       <li><code>packages/platform/src/managed-services</code>, RELAY API/UI module and managed-service assurance graph.</li>
-      <li><code>packages/db</code> schema, 64 SQL migrations, tenant helper, migration/RLS/permission scripts.</li>
+      <li><code>packages/db</code> schema, 87 SQL migrations through <code>0088</code>, tenant helper, migration/RLS/permission scripts.</li>
       <li><code>infra/docker-compose.yml</code>, <code>infra/railway</code> Dockerfiles/config/start scripts and deployment guide.</li>
     </ul>
     <h3>Primary official references</h3>

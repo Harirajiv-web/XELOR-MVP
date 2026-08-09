@@ -64,7 +64,7 @@
     <div class="eyebrow">XELOR · TECHNICAL STRATEGY</div>
     <h1>Technology Stack &amp; Production Roadmap</h1>
     <div class="sub">What the demo actually runs, what production still needs, the extension points already reserved, and a pragmatic target stack for a dependable manufacturing product.</div>
-    <div class="meta"><span>Prepared from the repository, module/API audit, deployment package, managed-service reference deck and primary standards</span><span>6 August 2026</span></div>
+    <div class="meta"><span>Prepared from the repository, module/API audit, deployment package, managed-service reference deck and primary standards</span><span>8 August 2026</span></div>
   </section>
 
   <section>
@@ -79,10 +79,10 @@
     <h3>Status language used in this report</h3>
     <p><span class="tag live">LIVE</span> wired and exercised in the prototype &nbsp; <span class="tag partial">PARTIAL</span> real foundation but incomplete production behavior &nbsp; <span class="tag reserved">RESERVED</span> a deliberate interface/schema extension point &nbsp; <span class="tag planned">RECOMMENDED</span> proposed after the demo.</p>
     <div class="kpi">
-      <div><b>4</b>workspace packages/apps</div>
-      <div><b>28</b>NestJS controller surfaces</div>
-      <div><b>233</b>migration CREATE TABLE declarations</div>
-      <div><b>7/7</b>Agent OS identities connected</div>
+      <div><b>5</b>workspace packages/apps</div>
+      <div><b>31</b>NestJS controller surfaces</div>
+      <div><b>242</b>migration CREATE TABLE declarations</div>
+      <div><b>9/9</b>Agent OS identities connected</div>
     </div>
     <p class="small">Counts are repository observations, not a claim that every table or endpoint is complete for commercial production.</p>
   </section>
@@ -93,9 +93,9 @@
       <thead><tr><th>Layer</th><th>Technology in repository</th><th>Status</th><th>What it does today</th></tr></thead>
       <tbody>
         <tr><td>Runtime &amp; language</td><td>Node.js 22; TypeScript 5.7; ESM</td><td><span class="tag live">LIVE</span></td><td>One language across browser, API, platform rules, tests and workers.</td></tr>
-        <tr><td>Monorepo</td><td>pnpm 9 workspaces</td><td><span class="tag live">LIVE</span></td><td>Coordinates <code>apps/web</code>, <code>apps/api</code>, <code>packages/platform</code> and <code>packages/db</code>.</td></tr>
+        <tr><td>Monorepo</td><td>pnpm 9 workspaces</td><td><span class="tag live">LIVE</span></td><td>Coordinates five workspace packages: <code>apps/web</code>, <code>apps/api</code>, <code>apps/edge</code>, <code>packages/platform</code> and <code>packages/db</code>.</td></tr>
         <tr><td>Web application</td><td>Next.js 15 App Router; React 19; Tailwind CSS 4; Radix UI; Lucide; Three.js</td><td><span class="tag live">LIVE</span></td><td>Authenticated XELOR shell, horizontal module tabs, global Human Approvals entry with live pending count, dedicated approval inbox, department gateway, ONYX rail, Mission Control and an adaptive 3-D digital-twin sign-in scene.</td></tr>
-        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 28 controller surfaces, including health/readiness.</td></tr>
+        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 31 controller surfaces, including health/readiness.</td></tr>
         <tr><td>Validation</td><td>Zod 3</td><td><span class="tag live">LIVE</span></td><td>Validates most request bodies and agent capability inputs; a few documented endpoints still bypass the pattern.</td></tr>
         <tr><td>Database</td><td>PostgreSQL 17; pgvector; pg_trgm; btree_gist</td><td><span class="tag live">LIVE</span></td><td>Transactional ERP system of record, vector-ready columns, fuzzy master matching and constraint-backed invariants.</td></tr>
         <tr><td>Data access</td><td>Drizzle ORM 0.36; SQL migrations; node-postgres</td><td><span class="tag live">LIVE</span></td><td>Typed schema access plus explicit migrations and operational checks.</td></tr>
@@ -105,7 +105,7 @@
         <tr><td>Audit &amp; workflow</td><td>Hash chains; append-only tables; W1 approval engine; Agent OS human gates</td><td><span class="tag live">LIVE</span></td><td>Tenant-scoped pending inbox, permission-checked Approve/Reject, mandatory decision note, identity/time attribution, durable pause/resume and tamper evidence.</td></tr>
         <tr><td>AI</td><td>Thin provider router; deterministic stub; optional Ollama; custom eval harness; Agent OS; Decision Commander</td><td><span class="tag partial">PARTIAL</span></td><td>Cross-module analysis, missions and approvals are live; language reasoning remains deterministic and no hosted provider is active.</td></tr>
         <tr><td>Decision data</td><td>PostgreSQL evidence-link graph and outcome metrics with RLS, audit and explicit verification state</td><td><span class="tag live">LIVE</span></td><td>Estimated exposure and verified value are stored and reported separately; verification requires observed data, method and named reviewer.</td></tr>
-        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>727 unit/service tests pass (702 platform, 3 database, 22 API); the live investor matrix passes 99/99 and Playwright lists the browser scenarios separately.</td></tr>
+        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>783 unit/service tests pass (712 platform, 4 database, 56 API, 6 edge and 5 web-client); the live investor matrix passes 99/99 and Playwright lists 32 browser scenarios separately.</td></tr>
         <tr><td>Deployment packaging</td><td>Docker Compose plus Railway Dockerfiles, service JSON, health/readiness and boot scripts</td><td><span class="tag live">LIVE</span></td><td>Local seven-service development and a five-service hosted-demo topology are reproducible. A currently operating cloud environment or production topology is not claimed.</td></tr>
       </tbody>
     </table>
@@ -168,24 +168,24 @@
 
   <section class="page">
     <h2>3A. Module maturity map</h2>
-    <p class="lead">All 21 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
+    <p class="lead">All 22 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
     <table class="small">
       <thead><tr><th>Owner</th><th>Module</th><th>Working centre</th><th>Most important boundary</th></tr></thead>
       <tbody>
         <tr><td>ONYX</td><td>Copilot <span class="tag live">LIVE</span></td><td>21 permission-checked read intents, fixed queries, evidence, refusals and history.</td><td>No unrestricted Q&amp;A or write action; hosted narration is off.</td></tr>
-        <tr><td>ONYX</td><td>Agent OS <span class="tag live">LIVE</span></td><td>5 graphs, 16 capabilities, parallel waves, checkpoints, approvals and recovery.</td><td>Language reasoning is deterministic; dispatch creates a work item, not ERP completion.</td></tr>
+        <tr><td>ONYX</td><td>Agent OS <span class="tag live">LIVE</span></td><td>7 graphs, 19 capabilities, parallel waves, checkpoints, approvals and recovery.</td><td>Language reasoning is deterministic; dispatch creates a work item, not ERP completion.</td></tr>
         <tr><td>ONYX</td><td>AI Operations <span class="tag partial">PARTIAL</span></td><td>Registry, provider policy, kill/budget, cost, evaluations and action logging.</td><td>No live hosted provider; implementation/golden-set coverage is incomplete.</td></tr>
         <tr><td>HEXA</td><td>Organisation <span class="tag live">LIVE</span></td><td>Companies, registrations, departments and transaction-safe numbering.</td><td>No consolidation or corporate-secretarial lifecycle.</td></tr>
-        <tr><td>HEXA</td><td>Administration <span class="tag partial">PARTIAL</span></td><td>Roles, 139 permissions, SoD, incident/privacy clocks and audit verification.</td><td>Row/field policy is mainly preview; grant revocation/escalation needs depth.</td></tr>
+        <tr><td>HEXA</td><td>Administration <span class="tag partial">PARTIAL</span></td><td>Roles, typed permissions, SoD, incident/privacy clocks and audit verification.</td><td>Inactive roles/grants fail closed; row/field policy remains mainly preview and escalation/delegation needs depth.</td></tr>
         <tr><td>RELAY</td><td>Managed Services <span class="tag partial">PARTIAL</span></td><td>Four-stage lifecycle, responsibility map, service catalogue, incident/change/review workspace and governed assurance graph.</td><td>Illustrative data only; live ITSM, telemetry, service tables, staffing and contractual SLOs remain production work.</td></tr>
-        <tr><td>HEXA</td><td>Integration <span class="tag partial">PARTIAL</span></td><td>Retry/DLQ/circuit/signature/statutory state logic and operator screens.</td><td>External network transports remain simulated.</td></tr>
+        <tr><td>HEXA</td><td>Integration <span class="tag partial">PARTIAL</span></td><td>Retry/DLQ/circuit/signature/statutory state plus Factory Connect gateways, robot/AMR bindings, submitted state/location/dwell records and governed command evidence.</td><td>The command endpoint performs simulator policy evaluation only: it neither calls <code>apps/edge</code> nor records a controller acknowledgement. OPC UA, MQTT, ROS 2, Cisco Spaces and Splunk are catalogue/reserved targets; certified adapters, gateway identity and physical transport remain deployment work.</td></tr>
         <tr><td>MICA</td><td>Sales <span class="tag partial">PARTIAL</span></td><td>Customer, GST order, credit gate, dispatch, invoice and receivable.</td><td>No lead/opportunity/quotation or complete cancellation/reservation workflow.</td></tr>
         <tr><td>MICA</td><td>Customer Care &amp; Warranty <span class="tag partial">PARTIAL</span></td><td>Manufactured-product cases, account isolation, response targets, entitlement, complaints, spares and customer feedback.</td><td>No integrated outbound transport; warranty rows are not created by normal flow. XELOR application, integration and AI service incidents are owned separately by RELAY.</td></tr>
         <tr><td>SPAR</td><td>Purchase <span class="tag partial">PARTIAL</span></td><td>Vendor, two-step approval, PO and atomic goods receipt.</td><td>Cycle ends at GRN; no supplier invoice, match, AP or payment.</td></tr>
         <tr><td>SPAR</td><td>Inventory <span class="tag partial">PARTIAL</span></td><td>Single append-only stock path, locks, FIFO batches and on-hand.</td><td>No bin/reservation/count/serial genealogy or complete valuation.</td></tr>
         <tr><td>AXLE</td><td>Engineering <span class="tag partial">PARTIAL</span></td><td>Item and BOM foundations consumed by Sales, Planning and Production.</td><td>No ECR/ECO change intent, impact, approval or effectivity.</td></tr>
         <tr><td>AXLE</td><td>Planning <span class="tag partial">PARTIAL</span></td><td>MRP, calendars, lot sizing, pegging, immutable workings and exceptions.</td><td>Capacity is infinite and scheduling is a draft heuristic.</td></tr>
-        <tr><td>KILN</td><td>Production <span class="tag partial">PARTIAL</span></td><td>Pinned components, predecessor-gated operations, issue and receipt.</td><td>Quality auto-gate, scrap, genealogy, WIP and costing need depth.</td></tr>
+        <tr><td>KILN</td><td>Production <span class="tag partial">PARTIAL</span></td><td>Pinned components, predecessor-gated operations, issue/receipt plus additive robot-cell and AMR evidence views.</td><td>No physical controller is connected; safety PLCs, interlocks and emergency stops remain locally authoritative.</td></tr>
         <tr><td>KILN</td><td>QMS &amp; Audit <span class="tag partial">PARTIAL</span></td><td>Inspections, snapshotted limits, disposition, NCR/CAPA and evidence.</td><td>Auto-created inspections, calibration and broader document/audit lifecycle.</td></tr>
         <tr><td>KILN</td><td>Maintenance <span class="tag partial">PARTIAL</span></td><td>Assets, requests, work, downtime, PM and reliability calculations.</td><td>No sensors, complete shift calendars or predictive engine.</td></tr>
         <tr><td>RASP</td><td>Accounts <span class="tag partial">PARTIAL</span></td><td>Balanced append-only GL, reversal, trial balance and receivables.</td><td>No period close, AP, bank reconciliation or full statements.</td></tr>
@@ -224,7 +224,7 @@
       <thead><tr><th>Concern</th><th>Implemented demo behavior</th><th>Still required for production</th></tr></thead>
       <tbody>
         <tr><td>Images/config</td><td>Four Dockerfiles, five Railway service descriptors, watch patterns and health/restart policies under <code>infra/railway</code>.</td><td>Registry signing, SBOM, vulnerability policy, promoted immutable digests and IaC.</td></tr>
-        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 64 forward migrations, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
+        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 87 forward migrations through <code>0088</code>, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
         <tr><td>Identity</td><td>Explicit Web/API public-demo flags provide fixed seeded personas and remove the sign-in page for the disposable demo.</td><td>Keycloak/enterprise IdP, MFA, lifecycle, strict session policy and zero demo bypass.</td></tr>
         <tr><td>Networking</td><td>Only web is public; API, database, worker and Valkey communicate on Railway private DNS.</td><td>WAF/edge protection, network policy, private endpoints, rate limits and threat monitoring.</td></tr>
         <tr><td>Operations</td><td>Liveness/readiness, dependency waits, restart policy and reproducible local five-container parity Compose.</td><td>Metrics/traces/log aggregation, SLOs, alerting, on-call, capacity and incident response.</td></tr>
@@ -264,7 +264,7 @@
         <tr><td>Object/document storage</td><td>S3, KMS, presigned upload/download, antivirus scan queue, lifecycle policies</td><td>Receipts, certificates, drawings, exports and evidence must not live on container disks.</td><td>Every document has tenant ownership, checksum, retention and access audit.</td></tr>
         <tr><td>Secrets</td><td>AWS Secrets Manager + KMS; short-lived workload identity; no static cloud keys</td><td>Database, OIDC and connector credentials need rotation and access evidence.</td><td>Production contains no secret in source, image, task definition or developer shell history.</td></tr>
         <tr><td>Infrastructure as code</td><td>OpenTofu modules; remote encrypted state; environment/account separation</td><td>Reproducible Mumbai primary and Hyderabad recovery environments.</td><td>A clean account can be built from reviewed code.</td></tr>
-        <tr><td>CI/CD</td><td>GitHub Actions with OIDC federation; build, SBOM, signing, tests, migration check, deploy and rollback</td><td>Turns the existing local quality gates into release policy.</td><td>No production deploy bypasses the pipeline; provenance is retained.</td></tr>
+        <tr><td>Production CI/CD</td><td>Extend the live GitHub verification workflow with cloud OIDC federation, SBOM, signing, deployment, promotion and rollback</td><td>Turns the current test/container/demo gate into a complete release policy.</td><td>No production deploy bypasses the pipeline; provenance is retained.</td></tr>
         <tr><td>Observability</td><td>OpenTelemetry Node instrumentation and Collector; CloudWatch/Grafana; Sentry or equivalent error tracking</td><td>Correlates browser, API, database, queue and AI behavior without reading raw production data.</td><td>SLO dashboards and actionable alerts cover the critical workflows.</td></tr>
         <tr><td>Security edge</td><td>WAF, Shield baseline, private subnets, VPC endpoints, GuardDuty, Security Hub, CloudTrail</td><td>Reduces attack surface and supplies security evidence.</td><td>Threat model, penetration test and critical finding remediation completed.</td></tr>
         <tr><td>Notifications</td><td>SES/SNS initially; provider abstraction for WhatsApp/SMS vendors</td><td>Approvals, escalations, customer/service events and operational alerts need reliable delivery.</td><td>Templated, tenant-aware, consent-aware delivery with bounce/retry evidence.</td></tr>
@@ -373,7 +373,7 @@
       <li><code>apps/web</code> module manifests, shell, Copilot rail and Playwright workflows</li>
       <li><code>docs/02-investor-demo/02-capability-gaps.md</code></li>
       <li><code>docs/01-agent-os/04-managed-services.md</code>, shared RELAY operating model, API, UI and graph</li>
-      <li>Module/API/deployment re-audit and verification run on 6 August 2026</li>
+      <li>Module/API/deployment re-audit and Factory Connect verification run on 8 August 2026</li>
     </ul>
     <h3>Official external references used for future recommendations</h3>
     <ul class="small">
@@ -389,7 +389,7 @@
     </ul>
     <h3>Final recommendation</h3>
     <p class="lead">Keep the core stack. Invest next in managed operations, observability, recovery, security and the missing manufacturing workflows. Use the ports already present to introduce hosted AI, durable workflow or higher-scale event infrastructure only when a tested product need calls for them.</p>
-    <p class="footer-note">This report describes the working repository inspected on 6 August 2026. “Live” means implemented and exercised in the prototype; RELAY's service data remains illustrative and does not imply staffed coverage, a contractual SLA, an active hosted URL, production certification or regulatory approval.</p>
+    <p class="footer-note">This report describes the working repository inspected on 8 August 2026. “Live” means implemented and exercised in the prototype; RELAY's service data remains illustrative and does not imply staffed coverage, a contractual SLA, an active hosted URL, production certification or regulatory approval.</p>
   </section>
 </body>
 </html>

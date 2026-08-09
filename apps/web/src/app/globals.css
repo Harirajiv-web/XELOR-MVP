@@ -174,7 +174,10 @@
   --dept-achiles: #86198f;
 
   /* The deck's layout system: sidebar, copilot rail, topbar. */
-  --side: 236px;
+  /* 236px cut five of the eight department labels and the longest module name
+     ("Customer Care & Warranty"), so the plain-English half of every nav row — the half a
+     first-time user actually reads — was the half that disappeared. 260px fits them all. */
+  --side: 260px;
   --cop: 420px;
   --top: 60px;
 

@@ -13,6 +13,44 @@ Gotenberg · pnpm workspace. Provider-agnostic AI router — an offline determin
 default, a **local model (EDGE tier)** with `AI_PROVIDER=ollama`, and a hosted provider
 swappable in by the same config.
 
+## Start here — run it in five commands
+
+This README is long because it doubles as the module-by-module record. If you have just
+cloned the repository, you do not need any of that yet. Full detail, including what each
+command proves, is in [Run it on a new device](#run-it-on-a-new-device).
+
+**Prerequisites:** Node 22 (`>=22 <25`), Docker Desktop with Compose v2, and ports
+3000, 3001, 3002, 5432, 6379, 8080 free.
+
+```bash
+pnpm install --frozen-lockfile
+cp .env.example .env
+pnpm infra:up          # PostgreSQL 17 + Valkey + Keycloak 26 + Gotenberg
+pnpm db:migrate
+pnpm demo:rebuild      # reset -> migrate -> seed the demo world (~1 min)
+```
+
+Then start the two processes and open <http://localhost:3001>:
+
+```bash
+(cd apps/api && node --env-file-if-exists=../../.env dist/src/main.js) &   # :3000
+(cd apps/web && node scripts/run-next.mjs start) &                        # :3001
+```
+
+**`web:200 · api:401 · kc:200` is the healthy state.** The API's 401 is the auth guard
+answering, not a fault — it has no token yet.
+
+| Command | What it does |
+|---|---|
+| `pnpm run ci` | Every gate: build, lint, typecheck, tests, AI eval, RLS/permission/naming/module proofs |
+| `pnpm demo:rebuild` | Rebuilds the demo world from an empty schema |
+| `pnpm demo:verify` | The 99-check investor acceptance matrix |
+| `pnpm e2e` | Browser tests (see the two configurations in `CLAUDE.md`) |
+
+**Rebuild the demo before presenting it.** The story deliberately leaves one decision
+waiting at a human approval gate; approving it in a rehearsal consumes that state
+permanently, and `demo:verify` will tell you so.
+
 ## Documentation
 
 The ordered project documentation starts at [docs/README.md](docs/README.md):
@@ -90,15 +128,15 @@ MVP_PROTOTYPE_1/
 │  │     │                          #   · forecast consumption · MPS + discrete ATP · the netting engine
 │  │     │                          #   · exceptions · capacity load · EDD/SPT/CR dispatch · reorder points
 │  │     ├─ time/                    # shared date arithmetic: ISO weeks · IST offset · working-day walks
-│  │     └─ ai/                     # router types · CLOSED 8-feature registry · eval gate
+│  │     └─ ai/                     # router types · governed feature registry · eval gate
 │  │        ├─ types.ts             #   AiProvider / AiCompletionRequest contracts
-│  │        ├─ feature-registry.ts  #   the closed set of 8 (unknown key → hard reject)
+│  │        ├─ feature-registry.ts  #   canonical 8 + explicit Copilot in-eval entry; unknown keys reject
 │  │        └─ eval.ts              #   pure golden-set scoring + PASS/FAIL gate (§4.1)
 │  └─ db/                           # @ind-core/db — Drizzle schema + RLS + migrations
 │     ├─ src/schema/{platform,general,admin,workflow,engineering,inventory,purchase,production,…,csp}.ts
 │     ├─ src/{client,migrate,rls-check,naming-check}.ts   # naming-check gates the MWO/WO boundary
 │     ├─ src/rls/leak-probe.test.ts # two-tenant leak probe (§1.6)
-│     └─ migrations/0000 … 0035.sql # see "Schema surface" below
+│     └─ migrations/0000 … 0086.sql # see "Schema surface" below
 └─ apps/
    └─ api/                          # @ind-core/api — NestJS modular monolith
       └─ src/
@@ -260,12 +298,11 @@ draft-for-approval, evidence-grounded, human-in-control.
   `ollama` is the **EDGE tier**, a real model running on the plant's own machine (no API
   key, no per-call cost, no data leaving the site). A hosted CLOUD-tier adapter slots in
   the same way. No business module changes either way.
-- **Closed 8-feature registry** (`packages/platform/src/ai/feature-registry.ts`) — the
-  MVP portfolio is fixed at 8 features (the AI research cut ~32 to reach it). A call for
-  a key not in the table, or for a non-routable status, is a hard reject at runtime
-  (FR-AIO-001). Two are wired: `general.master_dedup` (AI #2, `committed`, Tier-2) and
-  `hrm.payslip_explainer` (AI #7, `stretch`, **Tier-3 advisory-only-forever**). INSPECTION
-  ships **zero AI** for the same reason — no key of its own exists in the closed set.
+- **Governed feature registry** (`packages/platform/src/ai/feature-registry.ts`) — the
+  canonical portfolio contains AI #1–#8, plus the read-only Copilot as an explicit AI #9
+  entry still marked `in_eval`; Integrations also has a non-routable null declaration. A
+  key missing from the table, or one with non-routable status, is a hard reject at runtime
+  (FR-AIO-001). INSPECTION ships **zero AI** because no Quality feature is registered.
 - **Governance** (`db.governance.ts`, `migrations/0008`) — checked **before every call**,
   fail-closed and ordered: tenant **DPDP opt-out** → **kill switch** (per-feature or the
   tenant-wide `*`) → **daily token budget**. Each admin action (kill/release, opt-out,
@@ -423,7 +460,7 @@ lets the transaction through exactly as before.
   transfer via `StockPoster` inside the same transaction and records the entry id it gets
   back. `status='executed'` without one is **unrepresentable**: a CHECK constraint refuses
   the row, so a disposition can never claim to have segregated material that never moved.
-- **No AI, deliberately** — the closed 8-feature registry (§4.2) has no quality feature, and
+- **No AI, deliberately** — the governed registry has no Quality feature, and
   an unregistered `feature_key` is a hard reject at the router. Quality's intelligence is
   arithmetic, which is the point: every number can be re-derived by hand.
 
@@ -1372,7 +1409,7 @@ Every connection ships in **`fake` adapter mode**. That is not a shortcut — it
 
 ## Module 16 — AI OPERATIONS (done)
 
-The control plane for the AI itself. The platform already had the *mechanism* — a router, a closed 8-feature registry, a hash-chained action log, per-tenant governance. This is the *operations* plane over it.
+The control plane for the AI itself. The platform already had the *mechanism* — a router, a governed feature registry, a hash-chained action log, per-tenant governance. This is the *operations* plane over it.
 
 One rule underlies all of it: **the AI cannot ship itself.** Every promotion, rollout and rollback is a human action with a name and a reason. There is deliberately **no endpoint to force a promotion**, none to bypass a guardrail, and none that lets this module act on business data — the absence of those routes is how the rule is enforced rather than merely written down.
 
@@ -1465,7 +1502,7 @@ cp .env.example .env
 docker compose version                         # must report Compose v2
 pnpm infra:up
 docker compose -f infra/docker-compose.yml ps  # wait until PostgreSQL is healthy
-pnpm db:migrate                                # applies every migration through 0065
+pnpm db:migrate                                # applies every migration through 0086
 pnpm db:rls-check
 ```
 
@@ -1584,8 +1621,11 @@ curl -s "localhost:3000/api/v1/inventory/stock" -H "authorization: Bearer $TOKEN
 on masters → `403` on a company/item create. No token / bad signature → `401`;
 authenticated-but-unpermitted → `403`.
 
-**CI aggregate:** `pnpm ci` (lint → typecheck → test). Boundary + RLS gates are wired
-from sprint 1, exactly as §1.1/§1.6 require.
+**CI aggregate:** `pnpm verify` builds and typechecks every workspace, migrates before live
+database tests, runs unit tests and AI evaluations, proves RLS/permissions/naming/module
+boundaries, and validates report facts. The checked-in GitHub workflow also rebuilds an
+empty demo database, runs the 99-check acceptance matrix and critical Playwright journeys,
+and builds every standard and Railway image from a clean context.
 
 ## Honest caveats (read before running)
 
@@ -1722,7 +1762,7 @@ from sprint 1, exactly as §1.1/§1.6 require.
 
 1. ~~Platform foundation (RLS, outbox + relay, hash-chained audit, event bus).~~ ✅
 2. ~~Identity/RBAC (Keycloak OIDC + in-app permission engine) & W1 approval engine.~~ ✅
-3. ~~The shared **AI spine** — router, closed 8-feature registry, governance,
+3. ~~The shared **AI spine** — router, governed feature registry, governance,
    hash-chained action log, golden-set eval gate.~~ ✅
 4. ~~**Module 01 GENERAL** — company master + the `master_dedup` brain (gate PASSES).~~ ✅
 5. ~~**Module 02 ENGINEERING** — item master + versioned BOM, reusing the shared dedup

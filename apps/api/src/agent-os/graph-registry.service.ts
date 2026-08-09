@@ -108,13 +108,109 @@ const FOUNDATION_MISSION: AgentGraphDefinition = {
   ],
 };
 
+const FACTORY_FLOW_RECOVERY: AgentGraphDefinition = {
+  key: "factory.flow-recovery",
+  version: 2,
+  name: "Factory flow recovery",
+  description:
+    "Explains a constrained robot cell or excessive material dwell, joins business consequences and pauses before an approval-bound simulator policy evaluation. Physical execution is unavailable.",
+  maxSteps: 24,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake", name: "ONYX bounds the factory recovery", kind: "agent", agentKey: "ONYX",
+      instruction: "State the affected cell, material movement and safety boundary. Never propose bypassing a controller or safety PLC.", dependsOn: [],
+    },
+    {
+      id: "kiln-factory", name: "KILN reads robot and dwell evidence", kind: "capability", agentKey: "KILN",
+      capabilityKey: "production.factory-connect.read", input: {}, maxAttempts: 2, dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "mica-orders", name: "MICA reads customer commitments", kind: "capability", agentKey: "MICA",
+      capabilityKey: "sales.orders.read", input: { limit: 20 }, maxAttempts: 2, dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "spar-stock", name: "SPAR reads material position", kind: "capability", agentKey: "SPAR",
+      capabilityKey: "inventory.on-hand.read", input: {}, maxAttempts: 2, dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "axle-plan", name: "AXLE reads current plan", kind: "capability", agentKey: "AXLE",
+      capabilityKey: "planning.planned-orders.read", input: {}, maxAttempts: 2, dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "rasp-finance", name: "RASP reads financial evidence", kind: "capability", agentKey: "RASP",
+      capabilityKey: "accounts.vouchers.read", input: { limit: 20 }, maxAttempts: 2, dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "kiln-assessment", name: "KILN assesses safe operating recovery", kind: "agent", agentKey: "KILN",
+      instruction: "Explain the robot state, material dwell, maintenance and quality boundary from evidence. Local safety remains authoritative.", dependsOn: ["kiln-factory"],
+    },
+    {
+      id: "mica-assessment", name: "MICA assesses customer impact", kind: "agent", agentKey: "MICA",
+      instruction: "Identify affected commitments without changing a promise.", dependsOn: ["mica-orders"],
+    },
+    {
+      id: "spar-assessment", name: "SPAR assesses material recovery", kind: "agent", agentKey: "SPAR",
+      instruction: "Identify available material and internal-movement evidence without claiming a dispatch.", dependsOn: ["spar-stock"],
+    },
+    {
+      id: "axle-assessment", name: "AXLE assesses schedule recovery", kind: "agent", agentKey: "AXLE",
+      instruction: "Assess capacity, sequence and alternate routing from the current plan.", dependsOn: ["axle-plan"],
+    },
+    {
+      id: "rasp-assessment", name: "RASP assesses financial exposure", kind: "agent", agentKey: "RASP",
+      instruction: "Explain evidenced downtime and working-capital consequences without inventing a cost.", dependsOn: ["rasp-finance"],
+    },
+    {
+      id: "evidence-join", name: "Join factory and business evidence", kind: "transform", operation: "collect",
+      dependsOn: ["kiln-assessment", "mica-assessment", "spar-assessment", "axle-assessment", "rasp-assessment"],
+    },
+    {
+      id: "hexa-verification", name: "HEXA verifies connector and command boundaries", kind: "verification", agentKey: "HEXA",
+      checks: [
+        "the registered Factory evidence capability returned through a tenant-scoped domain-service boundary",
+        "mission input contains no command or one command matching the strict closed parameter schema",
+        "the Factory mission graph contains no side-effecting or physical-dispatch capability",
+        "the approval proposal will bind the canonical command digest or explicitly authorize no command",
+      ],
+      dependsOn: ["evidence-join"],
+    },
+    {
+      id: "human-approval", name: "Production supervisor authorizes bounded recovery", kind: "approval",
+      title: "Approve the factory-flow recovery work item", risk: "high",
+      proposedAction: "Authorize the exact simulator policy evaluation shown in this proposal. No edge request, controller acknowledgement or physical action is available.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "kiln-recovery", name: "KILN records the approved recovery", kind: "agent", agentKey: "KILN",
+      instruction: "Record the approved simulator evaluation and verification evidence. State explicitly that no edge request, controller acknowledgement or physical action occurred.",
+      dependsOn: ["human-approval"], condition: { nodeId: "human-approval", path: "decision.approved", equals: true },
+    },
+    {
+      id: "relay-coordination", name: "RELAY coordinates customer-visible service impact", kind: "agent", agentKey: "RELAY",
+      instruction: "Coordinate an update only if the XELOR service or managed-service commitment is affected; do not own factory maintenance.",
+      dependsOn: ["human-approval"], condition: { nodeId: "human-approval", path: "decision.approved", equals: true },
+    },
+    {
+      id: "achiles-boundary", name: "ACHILES preserves the platform boundary", kind: "agent", agentKey: "ACHILES",
+      instruction: "Report only XELOR platform health evidence. Do not assess or command the robot cell.",
+      dependsOn: ["human-approval"], condition: { nodeId: "human-approval", path: "decision.approved", equals: true },
+    },
+    {
+      id: "onyx-synthesis", name: "ONYX publishes the recovery brief", kind: "agent", agentKey: "ONYX",
+      instruction: "Publish the verified factory analysis, business impact and approval-bound simulator evaluation. State that physical execution is unavailable, not awaiting acknowledgement.",
+      dependsOn: ["kiln-recovery", "relay-coordination", "achiles-boundary"],
+    },
+  ],
+};
+
 const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
   key: "operations.full-command-review",
-  version: 2,
+  version: 3,
   name: "Nine-agent operating review",
   description:
     "Connects ONYX to every specialist agent, including RELAY service assurance and ACHILES private platform health, for one bounded, evidence-backed operating review.",
-  maxSteps: 28,
+  maxSteps: 29,
   timeoutSeconds: 300,
   nodes: [
     {
@@ -344,11 +440,11 @@ const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
  */
 const CONTROLLED_ACTION_MISSION: AgentGraphDefinition = {
   key: "operations.controlled-action-mission",
-  version: 2,
+  version: 3,
   name: "Nine-agent controlled action mission",
   description:
     "Coordinates all eight specialists, including ACHILES platform assurance, pauses on a high-visibility human gate, then dispatches six domain actions plus one RELAY service-coordination action and verifies the outcome. ACHILES remains read-only.",
-  maxSteps: 36,
+  maxSteps: 39,
   timeoutSeconds: 600,
   nodes: [
     {
@@ -963,6 +1059,7 @@ export class GraphRegistryService {
 
   constructor() {
     for (const graph of [
+      FACTORY_FLOW_RECOVERY,
       WORKING_CAPITAL_REVIEW,
       QMS_AUDIT_READINESS,
       MANAGED_SERVICE_ASSURANCE,

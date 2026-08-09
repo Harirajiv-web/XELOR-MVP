@@ -14,6 +14,7 @@ The project documentation is ordered by purpose rather than by creation date.
 3. [Phase 3: Controlled autonomy](01-agent-os/03-controlled-autonomy.md)
 4. [RELAY managed services](01-agent-os/04-managed-services.md)
 5. [ACHILES platform assurance](01-agent-os/05-achiles-platform-assurance.md)
+6. [Factory Connect and robotics](01-agent-os/06-factory-connect.md)
 
 ## 02 — Investor demo
 
@@ -34,6 +35,13 @@ The project documentation is ordered by purpose rather than by creation date.
 ## Architecture and implementation playbook
 
 - [Architecture, delivery pipeline and implementation playbook](reports/xelor-architecture-implementation-playbook.html) — the exact target stack, repository additions, CI/CD, database and event pipelines, security, observability, recovery, developer workflows and phased build sequence.
+
+## Business and revenue model
+
+- [Investor business and revenue model](reports/xelor-business-revenue-model.html) — two
+  commercial offers for single-plant and multi-plant manufacturers, customer-to-ARR
+  mathematics, market sizing, unit economics, funding and all nine per-agent prices, with
+  external facts separated from assumptions.
 
 ## 05 — Shareable deliverables
 

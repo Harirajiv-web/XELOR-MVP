@@ -48,7 +48,7 @@
     <div class="eyebrow">ONYX · AGENTIC INTELLIGENCE</div>
     <h1>Agentic AI Implementation &amp; Market Strategy</h1>
     <div class="sub">Exactly what is implemented, what is deterministic or simulated, and how XELOR can turn governed manufacturing intelligence into a defensible product advantage.</div>
-    <div class="meta"><span>Prepared from source code, module contracts, database controls, the supplied managed-services deck and primary standards</span><span>7 August 2026</span></div>
+    <div class="meta"><span>Prepared from source code, module contracts, database controls, the supplied managed-services deck and primary standards</span><span>8 August 2026</span></div>
   </section>
 
   <section>
@@ -96,7 +96,7 @@
       <div class="agent"><b>MICA</b>Sales &amp; Product Care; reads customer commitments, explains manufactured-product after-sales cases and proposes governed follow-up work.</div>
       <div class="agent"><b>SPAR</b>Supply; reads stock and proposes supply-chain actions.</div>
       <div class="agent"><b>AXLE</b>Planning; reads planned orders and proposes planning actions.</div>
-      <div class="agent"><b>KILN</b>Operations &amp; Quality; reads production/inspection evidence and prepares QMS, audit and controlled plant work.</div>
+      <div class="agent"><b>KILN</b>Operations &amp; Quality; reads production, inspection and stored Factory Connect robot/AMR/dwell records, then prepares QMS, audit and controlled plant work.</div>
       <div class="agent"><b>RASP</b>Finance &amp; Working Capital; reads finance evidence, simulates cash scenarios and prepares controlled work.</div>
       <div class="agent"><b>RELAY</b>Managed Services; owns the service clock, hand-offs, customer updates, change calendar and improvement while specialists retain diagnosis and repair.</div>
       <div class="agent"><b>ACHILES</b>Private Platform Assurance; checks availability and freshness, records evidence and hands failure to RELAY and the technical owner.</div>
@@ -125,12 +125,13 @@
       <li><b>Rejection is real.</b> Rejecting cancels the mission; approval resumes the persisted graph and does not skip verification.</li>
       <li><b>Discovery is product-wide.</b> The top-bar Approvals control is visible from every workspace and updates when a mission reaches or leaves a human gate.</li>
     </ul>
-    <h3>Two new bounded specialist missions</h3>
+    <h3>Three bounded specialist missions</h3>
     <table>
       <thead><tr><th>Mission</th><th>Specialist evidence</th><th>AI contribution</th><th>Human-only decisions</th></tr></thead>
       <tbody>
         <tr><td><b>Working Capital Review</b></td><td>RASP finance position and forecast simulation, MICA customer commitments, SPAR stock position.</td><td>Explain risks, separate facts from assumptions, compare safe options and draft a concise ONYX brief.</td><td>Customer contact, supplier timing, payment, financing submission, bank instruction and ledger posting.</td></tr>
         <tr><td><b>QMS &amp; Audit Readiness</b></td><td>KILN inspection records, traceable evidence collection and draft evidence-pack manifest.</td><td>Find relevant proof, mark gaps, suggest investigation questions and draft readiness language.</td><td>Compliance verdict, document release, audit conclusion, confirmed root cause, product disposition and CAPA closure.</td></tr>
+        <tr><td><b>Factory Flow Recovery</b></td><td>KILN reads stored robot/AMR/dwell records; MICA, SPAR, AXLE and RASP add business consequences.</td><td>Explain the bottleneck and check the declared boundary. When a simulator command is requested, the mission freezes its exact typed intent for human review; a separate API call may later evaluate that same intent against stored state.</td><td>The graph has no dispatch node. The API records only a simulated policy result: no raw motion, program upload, safety decision, edge delivery or controller acknowledgement is claimed.</td></tr>
       </tbody>
     </table>
     <h3>Why this qualifies as agentic</h3>
@@ -154,7 +155,7 @@
         <tr><td><b>MICA</b></td><td>Sales; Customer Care &amp; Warranty.</td><td>Tenant-scoped sales commitments through <code>sales.orders.read</code>.</td><td>Customer/order/date/credit evidence and the difference between promised, dispatched and still open. Product-case, warranty, spares or feedback context cannot be invented when it was not retrieved. Operational problems with XELOR itself belong to RELAY.</td></tr>
         <tr><td><b>SPAR</b></td><td>Purchase; Inventory.</td><td>Non-zero on-hand balances through <code>inventory.on-hand.read</code>.</td><td>Item, warehouse, batch and available quantity as observed. A purchase expectation is not on-hand stock, and an approved PO is not a receipt.</td></tr>
         <tr><td><b>AXLE</b></td><td>Engineering; Planning.</td><td>Latest planned orders and status/source filters through <code>planning.planned-orders.read</code>.</td><td>Proposal, quantity, due/release dates, source and plan limitation. It must not present infinite-capacity MRP or a draft schedule as feasible execution.</td></tr>
-        <tr><td><b>KILN</b></td><td>Production; QMS &amp; Audit; Maintenance.</td><td>Production orders, inspections, quality evidence views and draft audit/CAPA/pack artifacts.</td><td>Observed operation/reading/verdict evidence, missing proof and draft labels. It cannot decide product release, compliance, root cause or CAPA effectiveness.</td></tr>
+        <tr><td><b>KILN</b></td><td>Production; QMS &amp; Audit; Maintenance.</td><td>Production orders, inspections, quality evidence, Factory Connect robot/AMR/dwell views and draft audit/CAPA/pack artifacts.</td><td>Observed evidence and draft labels. It cannot decide product release, compliance, root cause, CAPA effectiveness or local machine safety.</td></tr>
         <tr><td><b>RASP</b></td><td>Accounts; Employee Spend; People; Working Capital.</td><td>Vouchers, trial balance, bounded scenario evidence, collection review and draft finance-pack manifest.</td><td>Posted fact versus scenario assumption versus illustrative screen value. It cannot move money, contact a customer, certify a funding pack or post a voucher.</td></tr>
         <tr><td><b>RELAY</b></td><td>Managed Services.</td><td>Service catalogue, lifecycle, incidents, changes, reviews and the responsibility map through <code>managed-services.service-assurance.read</code>.</td><td>Service coordination only. Technical repair, security determination, AI controls, factory assets, product warranty and contracts stay with their existing owners.</td></tr>
         <tr><td><b>ACHILES</b></td><td>Private Platform Assurance.</td><td>Current platform status, component checks, latency and immutable history through <code>platform-health.status.read</code>.</td><td>Detection only. It cannot diagnose, restart, repair, dispatch work or communicate with customers.</td></tr>
@@ -165,7 +166,7 @@
 
   <section class="page">
     <h2>3B. Exact capability surface and modes</h2>
-    <p class="lead">The registry contains 18 unique capabilities. Seventeen are read, analyse, simulate or draft. The only effectful capability is shared by seven specialists and remains structurally downstream of human approval; ACHILES is excluded from it.</p>
+    <p class="lead">The registry contains 19 unique capabilities. Eighteen are read, analyse, simulate or draft. The only effectful capability is shared by seven specialists and remains structurally downstream of human approval; ACHILES is excluded from it.</p>
     <table class="small">
       <thead><tr><th>Agent</th><th>Callable capabilities</th><th>Mode and evidence</th><th>Approval/effect boundary</th></tr></thead>
       <tbody>
@@ -174,7 +175,7 @@
         <tr><td><b>MICA</b></td><td><code>sales.orders.read</code><br><code>agent.action.dispatch</code></td><td>Read commitments; append commercial work item.</td><td>No customer contact, order override or shipment.</td></tr>
         <tr><td><b>SPAR</b></td><td><code>inventory.on-hand.read</code><br><code>agent.action.dispatch</code></td><td>Read balances; append supply work item.</td><td>No PO, receipt or stock movement.</td></tr>
         <tr><td><b>AXLE</b></td><td><code>planning.planned-orders.read</code><br><code>agent.action.dispatch</code></td><td>Read current plan; append planning work item.</td><td>No firming, conversion, MRP rerun or schedule publication.</td></tr>
-        <tr><td><b>KILN</b></td><td><code>production.orders.read</code>; <code>quality.inspections.read</code>; <code>quality.evidence.collect</code>; <code>quality.audit-plan.draft</code>; <code>quality.capa-plan.draft</code>; <code>quality.audit-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read, analyse and prepare explicitly labelled drafts; append approved plant work.</td><td>No inspection verdict, disposition, document release, audit conclusion, CAPA closure or production posting.</td></tr>
+        <tr><td><b>KILN</b></td><td><code>production.factory-connect.read</code>; <code>production.orders.read</code>; <code>quality.inspections.read</code>; <code>quality.evidence.collect</code>; <code>quality.audit-plan.draft</code>; <code>quality.capa-plan.draft</code>; <code>quality.audit-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read stored robot/AMR/dwell and ERP evidence, analyse and prepare labelled drafts. Its dispatch capability belongs to the separate controlled-action graph; Factory Flow itself dispatches nothing.</td><td>No raw machine command, local-safety verdict, inspection verdict, disposition, document release, audit conclusion, CAPA closure or production posting.</td></tr>
         <tr><td><b>RASP</b></td><td><code>accounts.vouchers.read</code>; <code>finance.cash-position.read</code>; <code>finance.forecast.simulate</code>; <code>finance.collections.prioritise</code>; <code>finance.funding-pack.draft</code>; <code>agent.action.dispatch</code></td><td>Read posted evidence; return bounded scenario/review/draft; append approved finance work.</td><td>No payment, bank instruction, posting, customer message or certification.</td></tr>
         <tr><td><b>RELAY</b></td><td><code>managed-services.service-assurance.read</code>; <code>agent.action.dispatch</code></td><td>Read service evidence; append one approved coordination item.</td><td>No technical repair, security/compliance decision, AI-control change, contract or service credit.</td></tr>
         <tr><td><b>ACHILES</b></td><td><code>platform-health.status.read</code></td><td>Read private status, freshness and result history.</td><td>No dispatch, diagnosis, service restart, ERP write or customer communication.</td></tr>
@@ -279,7 +280,7 @@
     <table>
       <thead><tr><th>Demo surface</th><th>Real</th><th>Simulated/curated</th><th>How to present it</th></tr></thead>
       <tbody>
-        <tr><td>Authenticated gateway</td><td>Keycloak login; catalogue call; 7/7 registry status</td><td>Visual topology/animation</td><td>“The topology is visual; the connection status is read from the runtime catalogue.”</td></tr>
+        <tr><td>Authenticated gateway</td><td>Keycloak login; catalogue call; 9/9 registry status</td><td>Visual topology/animation</td><td>“The topology is visual; the connection status is read from the runtime catalogue.”</td></tr>
         <tr><td>Mission Control</td><td>Graph start, ERP reads, state, evidence, checkpoint, approval, resume and dispatch ledger</td><td>Language summaries are deterministic</td><td>“The operating controls are live; model reasoning is not enabled in this environment.”</td></tr>
         <tr><td>Copilot chat</td><td>Permissions, tenant query, template answer, citation and log</td><td>Optional model routing/narration inactive by default</td><td>“Answers come from governed queries; the model is not allowed to invent SQL.”</td></tr>
         <tr><td>Copilot Alerts/Brief/Actions tabs</td><td>Open the current Decision Commander and live Human Approval inbox</td><td>No permanent scenario cards remain in these tabs</td><td>Fiction is isolated inside an explicitly active guided demo.</td></tr>
@@ -472,7 +473,7 @@
     </ul>
     <h3>Final strategic recommendation</h3>
     <p class="lead">XELOR should become the manufacturing system that can explain every recommendation, prove every source, and safely turn approved decisions into work. Keep deterministic engines responsible for money, stock, tax, scheduling constraints and control verdicts. Use models for language, extraction, classification, evidence synthesis and hypothesis generation—and let the existing Agent OS make their use bounded, observable and accountable.</p>
-    <p class="footer-note">This report describes the working repository inspected on 6 August 2026. It deliberately distinguishes live orchestration from deterministic reasoning and RELAY's illustrative operating model from a staffed managed service. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
+    <p class="footer-note">This report describes the working repository inspected on 8 August 2026. It deliberately distinguishes live orchestration from deterministic reasoning and RELAY's illustrative operating model from a staffed managed service. Future provider/product choices require security, privacy, contractual and jurisdiction-specific review.</p>
   </section>
 </body>
 </html>

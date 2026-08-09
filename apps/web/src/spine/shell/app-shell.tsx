@@ -180,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                       pathname === `/department/${g.department.code}` ? "page" : undefined
                     }
                     className={cn(
-                      "group flex items-center gap-2 rounded-[8px] px-2.5 py-1 pt-4 transition-colors hover:bg-[var(--bg)]",
+                      "group flex items-start gap-2 rounded-[8px] px-2.5 py-1 pt-4 transition-colors hover:bg-[var(--bg)]",
                       pathname === `/department/${g.department.code}` && "bg-[var(--bg)]",
                     )}
                   >
@@ -190,7 +190,12 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                     >
                       {g.department.code}
                     </span>
-                    <span className="truncate text-[9.8px] font-bold uppercase tracking-[0.13em] text-[var(--text-muted)]">
+                    {/* Wraps instead of truncating. This is the plain-English name of the
+                        department — the only part of the row a first-time user can read —
+                        so clipping it to "PRODUCTS & PLANN…" removes the entire point of
+                        having it. Tracking is reduced because 0.13em on uppercase text is
+                        what pushed it over the edge. */}
+                    <span className="min-w-0 text-[9.8px] font-bold uppercase leading-[1.35] tracking-[0.08em] text-[var(--text-muted)]">
                       {plainDepartmentName(g.department.code, g.department.name)}
                     </span>
                     <Icons.ArrowRight
@@ -288,14 +293,16 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           </span>
         </span>
 
-        <p className="hidden min-w-0 truncate text-[13px] text-[var(--text-muted)] lg:block">
-          XELOR
-          {currentDept
-            ? ` / ${plainDepartmentName(currentDept.department.code, currentDept.department.name)}`
-            : ""}
-          {current ? " / " : ""}
+        <p className="hidden min-w-0 items-center text-[13px] text-[var(--text-muted)] lg:flex">
+          <span className="min-w-0 truncate">
+            XELOR
+            {currentDept
+              ? ` / ${plainDepartmentName(currentDept.department.code, currentDept.department.name)}`
+              : ""}
+            {current ? " / " : ""}
+          </span>
           {current ? (
-            <b className="font-semibold text-[var(--text-primary)]">
+            <b className="shrink-0 whitespace-nowrap font-semibold text-[var(--text-primary)]">
               {current.name}
               {currentEntry ? ` · ${currentEntry.label}` : ""}
             </b>
@@ -328,6 +335,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
             type="button"
             onClick={() => setRailOpen((r) => !r)}
             aria-label={railOpen ? "Hide the copilot" : "Show the copilot"}
+            title={railOpen ? "Hide the copilot" : "Show the copilot — ask about your data"}
             aria-pressed={railOpen}
             className={cn(
               "grid h-9 w-9 place-items-center rounded-[9px] transition-colors",

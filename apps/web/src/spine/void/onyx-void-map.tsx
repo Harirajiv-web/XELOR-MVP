@@ -58,6 +58,7 @@
 import { memo, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { DEPARTMENTS, type Department } from "../registry/departments";
+import { plainDepartmentName } from "../ui/plain-language";
 import { BYLINE, HUB, MARK, NAME, NOTE } from "./xelor-type";
 
 export interface VoidDept {
@@ -802,11 +803,22 @@ function OnyxVoidMapInner({
                     maxWidth: cq(186),
                     fontSize: cq(8.5),
                     marginBlock: cq(6),
-                    opacity: on && settled ? 0.9 : 0,
+                    // SHOWN, NOT HIDDEN BEHIND A HOVER.
+                    //
+                    // This caption is the only plain English on the arrival screen. Behind
+                    // `on` it appeared solely for whoever already knew to point at a disc,
+                    // so the first thing a factory owner met was eight initials — SPAR,
+                    // KILN, RASP — that name nothing they recognise. It now fades in with
+                    // the settled scene at reading weight and lifts on hover, which keeps
+                    // the arrival animation intact and still answers "what is this?".
+                    opacity: settled ? (on ? 0.95 : 0.6) : 0,
                     transition: "opacity 300ms ease",
                   }}
                 >
-                  {reachable ? dept.name : "No access"}
+                  {/* The SAME words as the sidebar. `dept.name` is the internal registry
+                      name ("AI Operations"); the nav calls that same department "Assistant
+                      & Automation". One department must not have two public names. */}
+                  {reachable ? plainDepartmentName(dept.code, dept.name) : "No access"}
                 </p>
               );
 

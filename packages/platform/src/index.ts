@@ -1,6 +1,7 @@
 // @ind-core/platform — the bootstrap primitives every module inherits.
 // These make the DECISIONS-V2 §5 conventions executable rather than aspirational.
 export * from "./ids/uuidv7.js";
+export * from "./factory-connect/contracts.js";
 export * from "./time/ist.js";
 export * from "./time/date.js";
 export * from "./errors/error-envelope.js";

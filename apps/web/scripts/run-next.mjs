@@ -48,6 +48,9 @@ if (
 }
 
 const child = spawn(process.execPath, [nextBin, command, ...effectiveArgs], {
+  // Keep Next rooted in its workspace even when this launcher is invoked directly from
+  // the repository root (for example by the production Docker image's CMD).
+  cwd: resolve(here, ".."),
   env: process.env,
   stdio: "inherit",
 });

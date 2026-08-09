@@ -148,7 +148,7 @@ const num = (v: string | null | undefined): number | null => (v == null ? null :
  *  3. **The verdict is arithmetic, not opinion.** Sample size, pass/fail and the lot
  *     decision all come from the pure platform brain, and the derivation is STORED in
  *     words so an OEM auditor can re-check it by hand. There is no AI here at all — the
- *     closed 8-feature registry has no quality feature (§4.2).
+ *     governed registry has no Quality feature (§4.2).
  */
 @Injectable()
 export class QualityService implements InspectionGate {

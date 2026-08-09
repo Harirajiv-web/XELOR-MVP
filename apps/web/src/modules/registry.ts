@@ -41,14 +41,10 @@ import { platformHealthManifest } from "./platform-health/manifest";
  * licence decides whether the company bought it, and permissions decide whether this
  * person may open it. Three independent gates, three different people who can change them.
  *
- * Sixteen modules, one per system of record, each owned by a department from `NAME.md`:
- * HEXA (Organisation, Administration, Integration) · MICA (Sales, Customer Care & Warranty) · SPAR
- * (Purchase, Inventory) · AXLE (Engineering, Planning) · KILN (Production, Quality,
- * Maintenance) · RASP (People, Accounts) · ONYX (Copilot, AI Operations).
- *
- * EXPENDITURE IS ABSENT DELIBERATELY. It is not missing and not broken — the module was
- * excluded from this build by decision, and its absence is what a module being genuinely
- * removable looks like in practice. Nothing else here refers to it.
+ * Twenty-two installed modules span the departmental systems of record plus the shared
+ * intelligence, service-assurance and platform-health surfaces. The array below is the
+ * executable inventory; keep this explanation deliberately free of a second hand-written
+ * module list so adding a module cannot make the architecture comment lie again.
  *
  * Listed in sidebar order for readability only; `orderedModules()` is what actually sorts.
  */

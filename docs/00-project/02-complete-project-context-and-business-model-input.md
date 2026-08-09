@@ -513,11 +513,11 @@ Security layers are:
 
 The latest verification found:
 
-- **227 tenant-scoped tables** protected by FORCE RLS and a tenant policy;
-- **141 route-demanded permissions** matching **141 registry permissions**;
-- **282 permission catalogue rows** across the two demo tenants;
+- **233 tenant-scoped tables** protected by FORCE RLS and a tenant policy;
+- **147 route-demanded permissions** matching **147 registry permissions**;
+- **294 permission catalogue rows** across the two demo tenants;
 - zero uncatalogued grants in the check;
-- **22 module manifests** and **160 navigation permission references** aligned.
+- **22 module manifests** and **163 navigation permission references** aligned.
 
 Critical evidence uses append-only or tamper-evident designs, including audit, stock,
 accounting, AI action, Agent OS event/checkpoint, platform-health, and action-dispatch
@@ -773,11 +773,12 @@ the full current working tree is deployed to a live production URL.
 
 The configured remote is `https://github.com/Harirajiv-web/XELOR-MVP.git`. Railway can
 deploy linked services automatically on a branch push. The single-host deployment is a
-manual `git pull` plus Docker Compose rebuild. There is currently no GitHub Actions
-workflow in the repository, so there is no repository-native CI gate or automatic
-production promotion/rollback pipeline yet.
+manual `git pull` plus Docker Compose rebuild. The repository now has a three-job GitHub
+Actions workflow: static/schema/report proofs, clean-context container builds, and a fresh
+public-demo rebuild with the 99-check matrix plus critical route/Factory browser journeys.
+It does not yet implement automatic production promotion or rollback.
 
-## 18. Verification snapshot: 7 August 2026
+## 18. Verification snapshot: 8 August 2026
 
 The current working tree was checked against isolated services on ports 3100/3101 while
 existing processes on 3000/3001 were left untouched.
@@ -787,17 +788,19 @@ existing processes on 3000/3001 were left untouched.
 | Check | Result |
 | --- | --- |
 | Repository lint | Passed with zero warnings |
-| TypeScript type checking | Passed for web, platform, database, and API |
-| Platform unit tests | 703/703 passed |
-| Live database tests | 3/3 passed |
-| API tests | 22/22 passed |
-| Total of the three reported test groups | 728/728 passed |
-| Web module validation | 22 modules and 160 navigation permissions aligned |
-| RLS check | 227 tenant-scoped tables fenced |
-| Permission check | 141/141 route/registry permissions aligned; 282 tenant catalogue rows |
+| TypeScript type checking | Passed for web, platform, database, edge, and API |
+| Platform unit tests | 712/712 passed |
+| Live database tests | 4/4 passed |
+| API tests | 55/55 passed |
+| Edge simulator tests | 6/6 passed |
+| Web API-client tests | 5/5 passed |
+| Total of the five reported test groups | 782/782 passed |
+| Web module validation | 22 modules and 163 navigation permission references aligned |
+| RLS check | 233 tenant-scoped tables fenced |
+| Permission check | 147/147 route/registry permissions aligned; 294 tenant catalogue rows |
 | Full monorepo build | Passed, including optimized Next.js production build and 182-file API build |
 | Investor/API acceptance matrix | 99/99 passed |
-| Final authenticated browser batch | 14/14 passed |
+| Browser scenarios discovered | 32 across 11 specification files |
 
 ### Runtime and browser evidence
 
@@ -877,7 +880,8 @@ Do not claim the following as complete:
 
 ### Product/production gaps
 
-- No GitHub Actions CI/CD pipeline.
+- CI verifies the repository and public-demo critical path, but automatic production
+  promotion, rollback, signed artifacts and cloud infrastructure delivery remain absent.
 - No evidence of current full-stack production deployment.
 - Single-host Compose has no built-in off-site backups or multi-region disaster recovery.
 - The local Keycloak realm is intentionally insecure for public production use.
@@ -1131,7 +1135,7 @@ evidence of repeatable onboarding and retained customers, not only a larger mark
 | `apps/web` | Next.js product interface, module registry, guided demos, Playwright tests |
 | `apps/api` | NestJS API, business modules, Agent OS, AI router, worker, diagnostics |
 | `packages/platform` | Shared domain rules, errors, permissions, Agent OS contracts, AI registry |
-| `packages/db` | Drizzle schema, 71 forward migrations through `0072`, RLS/permission checks, seed support |
+| `packages/db` | Drizzle schema, 85 forward migrations through `0086`, RLS/permission checks, seed support |
 | `infra/docker-compose.yml` | Local PostgreSQL, Valkey, Keycloak, and Gotenberg |
 | `infra/docker-compose.prod.yml` | Single-host authenticated deployment shape |
 | `infra/railway` | Five-service public-demo Dockerfiles, scripts, and Railway config |

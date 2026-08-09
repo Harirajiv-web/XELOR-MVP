@@ -19,6 +19,17 @@ import {
 import { CapabilityRegistryService } from "./capability-registry.service.js";
 import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
 import { AgentControlService } from "./agent-control.service.js";
+import {
+  factoryCommandApprovalEvidence,
+  isSuccessfulFactoryEvidenceNode,
+} from "../modules/integration/factory-command-approval.js";
+import {
+  AGENT_NODE_HEARTBEAT_INTERVAL_MS,
+  anotherExecutorIsRunning,
+  isNodeClaimConflict,
+  shouldDeferRunTimeout,
+  shouldRestoreApprovalWait,
+} from "./agent-transition-policy.js";
 
 const TERMINAL_RUNS = new Set(["completed", "failed", "cancelled"]);
 
@@ -55,6 +66,13 @@ export class AgentGraphEngine {
       let state = await this.repository.get(runId);
       if (TERMINAL_RUNS.has(state.run.status)) return state;
       if (state.nodes.some((node) => node.status === "waiting_approval")) {
+        const statuses = this.repository.statusRecord(state);
+        if (shouldRestoreApprovalWait(state.run.status, statuses)) {
+          const runtimeGate = await this.control.runtimeGate();
+          if (!runtimeGate.allowed) return state;
+          await this.repository.restoreApprovalWait(runId);
+          return this.repository.get(runId);
+        }
         return state;
       }
       await this.repository.recoverInterruptedNodes(runId);
@@ -94,6 +112,7 @@ export class AgentGraphEngine {
       for (;;) {
         state = await this.repository.get(runId);
         if (TERMINAL_RUNS.has(state.run.status)) return state;
+        const statuses = this.repository.statusRecord(state);
         const runtimeGate = await this.control.runtimeGate();
         if (!runtimeGate.allowed) {
           await this.repository.haltRun(
@@ -103,6 +122,10 @@ export class AgentGraphEngine {
           return this.repository.get(runId);
         }
         if (new Date() >= state.run.timeoutAt) {
+          // A different replica may still be completing a node it validly claimed before
+          // the deadline. Do not publish a terminal run while that live attempt can still
+          // record a result; its owner will re-evaluate the deadline after the node CAS.
+          if (shouldDeferRunTimeout(statuses)) return state;
           await this.repository.failRun(
             runId,
             new AppError(
@@ -125,7 +148,6 @@ export class AgentGraphEngine {
           return this.repository.get(runId);
         }
 
-        const statuses = this.repository.statusRecord(state);
         if (allNodesTerminal(statuses)) {
           const finalNode = [...graph.nodes]
             .reverse()
@@ -143,6 +165,9 @@ export class AgentGraphEngine {
         const readyIds = readyAgentNodes(graph, statuses);
         if (readyIds.length === 0) {
           if (state.nodes.some((node) => node.status === "waiting_approval")) {
+            return state;
+          }
+          if (anotherExecutorIsRunning(statuses)) {
             return state;
           }
           await this.repository.failRun(
@@ -220,7 +245,7 @@ export class AgentGraphEngine {
       state.nodes.find((candidate) => candidate.nodeId === node.id)?.attempt ??
       0;
     if (priorAttempt >= (node.maxAttempts ?? 1)) {
-      await this.repository.failNode(
+      await this.repository.exhaustPendingNode(
         state.run.id,
         node.id,
         new AppError(
@@ -231,12 +256,53 @@ export class AgentGraphEngine {
       );
       return;
     }
-    await this.repository.startNode(state.run.id, node.id, {
-      dependencyNodeIds: node.dependsOn,
-      missionInput: state.run.input as Record<string, unknown>,
+    let executionToken: string;
+    try {
+      executionToken = await this.repository.startNode(state.run.id, node.id, {
+        dependencyNodeIds: node.dependsOn,
+        missionInput: state.run.input as Record<string, unknown>,
+      }, state.run.timeoutAt);
+    } catch (error) {
+      // Another replica won pending→running. It owns the attempt, so this replica must not
+      // retry, fail or otherwise mutate that running node.
+      if (isNodeClaimConflict(error)) return;
+      // startNode updates the node and consumes the run budget in one transaction, so a
+      // budget refusal rolls the claim back to pending. Record that pending node as failed;
+      // the main execution loop will then terminally fail the run after the parallel wave
+      // has settled instead of leaking a perpetually-running mission.
+      if (
+        error instanceof AppError &&
+        error.code === "AGENT_STEP_BUDGET_EXHAUSTED"
+      ) {
+        await this.repository.exhaustPendingNode(
+          state.run.id,
+          node.id,
+          error,
+        );
+        return;
+      }
+      throw error;
+    }
+    const stopHeartbeat = this.beginNodeLeaseHeartbeat(
+      state.run.id,
+      node.id,
+      executionToken,
+      state.run.timeoutAt,
+    );
+    const remainingMs = state.run.timeoutAt.getTime() - Date.now();
+    let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_resolve, reject) => {
+      deadlineTimer = setTimeout(() => {
+        reject(new AppError(
+          "AGENT_NODE_DEADLINE_EXCEEDED",
+          408,
+          `Node '${node.id}' did not finish before the bounded mission deadline.`,
+        ));
+      }, Math.max(0, remainingMs));
     });
     try {
-      switch (node.kind) {
+      await Promise.race([deadline, (async () => {
+        switch (node.kind) {
         case "capability": {
           const descriptor = this.capabilities.get(node.capabilityKey);
           const approvalNodeId = descriptor.sideEffecting
@@ -259,6 +325,7 @@ export class AgentGraphEngine {
                 runId: state.run.id,
                 nodeId: node.id,
                 approvalNodeId,
+                executionToken,
               },
             );
           } catch (error) {
@@ -282,6 +349,7 @@ export class AgentGraphEngine {
                 state.run.id,
                 node.id,
                 "capability_not_permitted",
+                executionToken,
               );
               return;
             }
@@ -292,7 +360,7 @@ export class AgentGraphEngine {
             agentKey: node.agentKey,
             mode: descriptor.sideEffecting ? "approved_execute" : "live_read",
             data: output,
-          });
+          }, executionToken);
           return;
         }
         case "agent": {
@@ -303,7 +371,7 @@ export class AgentGraphEngine {
             missionInput: state.run.input as Record<string, unknown>,
             dependencies,
           });
-          await this.repository.succeedNode(state.run.id, node.id, output);
+          await this.repository.succeedNode(state.run.id, node.id, output, executionToken);
           return;
         }
         case "verification": {
@@ -334,6 +402,17 @@ export class AgentGraphEngine {
           const sideEffectNodes = capabilityNodes.filter((candidate) =>
             this.capabilities.get(candidate.capabilityKey).sideEffecting,
           );
+          const factoryEvidence = graph.key === "factory.flow-recovery"
+            ? factoryCommandApprovalEvidence(state.run.input)
+            : null;
+          const allGraphCapabilityNodes = graph.nodes.filter(
+            (
+              candidate,
+            ): candidate is Extract<
+              AgentGraphNodeDefinition,
+              { kind: "capability" }
+            > => candidate.kind === "capability",
+          );
           const computedChecks = {
             registeredCapabilities:
               descriptors.length === capabilityNodes.length,
@@ -346,6 +425,24 @@ export class AgentGraphEngine {
             evidencePresent: node.dependsOn.every(
               (dependency) => dependencies[dependency] != null,
             ),
+            ...(factoryEvidence
+              ? {
+                  factoryEvidenceCapabilityReturned: isSuccessfulFactoryEvidenceNode(
+                    state.nodes.find((candidate) => candidate.nodeId === "kiln-factory"),
+                  ),
+                  factoryCommandIntentStrictOrAbsent:
+                    factoryEvidence.factoryCommand === null ||
+                    factoryEvidence.factoryCommandDigest !== null,
+                  factoryGraphContainsNoExecutionCapability:
+                    allGraphCapabilityNodes.every(
+                      (candidate) =>
+                        !this.capabilities.get(candidate.capabilityKey).sideEffecting,
+                    ),
+                  factoryApprovalWillBindCanonicalIntent:
+                    (factoryEvidence.factoryCommand === null) ===
+                    (factoryEvidence.factoryCommandDigest === null),
+                }
+              : {}),
           };
           const passed = Object.values(computedChecks).every(Boolean);
           if (!passed) {
@@ -360,7 +457,7 @@ export class AgentGraphEngine {
             passed,
             declaredChecks: node.checks,
             computedChecks,
-          });
+          }, executionToken);
           return;
         }
         case "transform": {
@@ -368,7 +465,7 @@ export class AgentGraphEngine {
             operation: node.operation,
             sources: node.dependsOn,
             data: dependencies,
-          });
+          }, executionToken);
           return;
         }
         case "branch": {
@@ -378,10 +475,14 @@ export class AgentGraphEngine {
           await this.repository.succeedNode(state.run.id, node.id, {
             value,
             selected,
-          });
+          }, executionToken);
           return;
         }
         case "approval": {
+          const factoryEvidence =
+            graph.key === "factory.flow-recovery"
+              ? factoryCommandApprovalEvidence(state.run.input)
+              : {};
           await this.repository.waitForApproval(state.run.id, node.id, {
             title: node.title,
             risk: node.risk,
@@ -390,19 +491,57 @@ export class AgentGraphEngine {
               goal: state.run.goal,
               evidenceNodeIds: node.dependsOn,
               graph: `${graph.key}@${graph.version}`,
+              ...factoryEvidence,
             },
-          });
+          }, executionToken);
           return;
         }
-      }
+        }
+      })()]);
     } catch (error) {
       const attemptJustMade = priorAttempt + 1;
       if (attemptJustMade < (node.maxAttempts ?? 1)) {
-        await this.repository.retryNode(state.run.id, node.id, error);
+        await this.repository.retryNode(state.run.id, node.id, error, executionToken);
       } else {
-        await this.repository.failNode(state.run.id, node.id, error);
+        await this.repository.failNode(state.run.id, node.id, error, executionToken);
       }
+    } finally {
+      if (deadlineTimer) clearTimeout(deadlineTimer);
+      stopHeartbeat();
     }
+  }
+
+  /**
+   * Keep the attempt's database lease alive while a capability/reasoner awaits I/O. A
+   * failed renewal never grants authority: the attempt token on every terminal CAS remains
+   * the source of truth, and another replica may reclaim only after the lease expires.
+   */
+  private beginNodeLeaseHeartbeat(
+    runId: string,
+    nodeId: string,
+    executionToken: string,
+    timeoutAt: Date,
+  ): () => void {
+    let renewing = false;
+    const timer = setInterval(() => {
+      if (renewing) return;
+      if (Date.now() >= timeoutAt.getTime()) {
+        clearInterval(timer);
+        return;
+      }
+      renewing = true;
+      void this.repository
+        .heartbeatNode(runId, nodeId, executionToken, timeoutAt)
+        .catch(() => false)
+        .then((owned) => {
+          if (!owned) clearInterval(timer);
+        })
+        .finally(() => {
+          renewing = false;
+        });
+    }, AGENT_NODE_HEARTBEAT_INTERVAL_MS);
+    timer.unref();
+    return () => clearInterval(timer);
   }
 }
 

@@ -77,8 +77,8 @@ docker compose -f infra/docker-compose.prod.yml --env-file .env.production logs 
 demo artefact and importing it on a public host would be a security incident rather than a
 shortcut:
 
-- `redirectUris: ["*"]` and `webOrigins: ["*"]` — an open redirect, and any origin may read
-  tokens
+- its client redirect URIs and web origin are deliberately limited to the local demo at
+  `http://localhost:3001`; they are not valid production origins
 - eight fixed users with published passwords (`hari` / `1234`, the rest `demo`)
 - fixed user UUIDs that appear in this repository
 

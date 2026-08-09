@@ -1,13 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AGENT_KEYS, AppError, validateAgentGraph } from "@ind-core/platform";
+import {
+  AGENT_KEYS,
+  AppError,
+  currentTenant,
+  runWithTenant,
+  validateAgentGraph,
+} from "@ind-core/platform";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
 import type { AgentRunRepository } from "./agent-run.repository.js";
 import { CapabilityRegistryService } from "./capability-registry.service.js";
 import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
 import { GraphRegistryService } from "./graph-registry.service.js";
-import { AgentOsService } from "./agent-os.service.js";
+import {
+  AgentOsService,
+  agentRunRequestFingerprint,
+  agentRunRequestFingerprintCandidates,
+} from "./agent-os.service.js";
 
 test("registers every named departmental agent", () => {
   const registry = new AgentRegistryService();
@@ -15,6 +25,19 @@ test("registers every named departmental agent", () => {
     registry.list().map((agent) => agent.key),
     AGENT_KEYS,
   );
+});
+
+test("every registered graph funds its declared retry worst case", () => {
+  for (const graph of new GraphRegistryService().list()) {
+    const maximumDeclaredAttempts = graph.nodes.reduce(
+      (total, node) => total + (node.maxAttempts ?? 1),
+      0,
+    );
+    assert.ok(
+      graph.maxSteps >= maximumDeclaredAttempts,
+      `${graph.key}@${graph.version} has maxSteps=${graph.maxSteps}, expected at least ${maximumDeclaredAttempts}`,
+    );
+  }
 });
 
 test("foundation mission is bounded, parallel and human-gated", () => {
@@ -63,6 +86,9 @@ test("finance and quality capabilities stay separate from the approval-bound act
   const platformHealth = {
     overview: async () => ({ latest: null, history: [] }),
   };
+  const factoryConnect = {
+    overview: async () => ({ gateways: [], assets: [], dwell: [], commands: [] }),
+  };
   const actions = { dispatch: async () => ({ status: "dispatched" }) };
   const capabilities = new CapabilityRegistryService(
     authorization as never,
@@ -75,6 +101,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
     accounts as never,
     quality as never,
     platformHealth as never,
+    factoryConnect as never,
     actions as never,
   );
   const listed = capabilities.list();
@@ -88,6 +115,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
   assert.equal(keys.has("quality.audit-pack.draft"), true);
   assert.equal(keys.has("managed-services.service-assurance.read"), true);
   assert.equal(keys.has("platform-health.status.read"), true);
+  assert.equal(keys.has("production.factory-connect.read"), true);
   assert.equal(
     listed.filter((capability) => capability.sideEffecting).length,
     1,
@@ -96,6 +124,25 @@ test("finance and quality capabilities stay separate from the approval-bound act
   assert.equal(action.mode, "execute");
   assert.equal(action.sideEffecting, true);
   assert.equal(action.approvalRequired, true);
+});
+
+test("Factory flow recovery is evidence-backed, cross-functional and stops at a human gate", () => {
+  const graph = new GraphRegistryService().get("factory.flow-recovery");
+  assert.equal(validateAgentGraph(graph).valid, true);
+  assert.equal(
+    graph.nodes.some(
+      (node) => node.kind === "capability" && node.capabilityKey === "production.factory-connect.read",
+    ),
+    true,
+  );
+  assert.equal(graph.nodes.some((node) => node.kind === "verification"), true);
+  assert.equal(graph.nodes.some((node) => node.kind === "approval"), true);
+  assert.equal(
+    graph.nodes.some(
+      (node) => node.kind === "capability" && node.capabilityKey === "agent.action.dispatch",
+    ),
+    false,
+  );
 });
 
 test("Working Capital and QMS missions are bounded, verified and human-gated", () => {
@@ -235,7 +282,22 @@ test("commander retries keep one fingerprint even when observation timestamps mo
     execute: async () => ({
       run: {
         id: "0192a8c0-0059-7000-8000-000000000099",
+        graphKey: graph.key,
+        graphVersion: graph.version,
+        graphSnapshot: graph,
+        goal: "Resolve SO-1 safely",
+        input: {},
         status: "waiting_approval",
+        providerMode: "deterministic",
+        maxSteps: graph.maxSteps,
+        consumedSteps: 1,
+        timeoutAt: new Date(Date.now() + 60_000),
+        output: null,
+        errorCode: null,
+        errorMessage: null,
+        startedAt: new Date(),
+        completedAt: null,
+        createdAt: new Date(),
       },
       nodes: [],
       approvals: [],
@@ -287,7 +349,10 @@ test("commander retries keep one fingerprint even when observation timestamps mo
   const service = new AgentOsService(
     {} as never,
     { get: () => graph, contentHash: () => "graph-hash" } as never,
-    {} as never,
+    {
+      currentActorPermissions: async () => new Set<string>(),
+      permissionByCapability: () => new Map<string, string>(),
+    } as never,
     { mode: "deterministic" } as never,
     repository as never,
     engine as never,
@@ -301,6 +366,202 @@ test("commander retries keep one fingerprint even when observation timestamps mo
   await service.startCommanderRisk("delivery:so-1", "stable-retry-key");
   assert.equal(fingerprints.length, 2);
   assert.equal(fingerprints[0], fingerprints[1]);
+});
+
+test("run fingerprints ignore recursively reordered object properties", () => {
+  const base = {
+    graphKey: "operations.controlled-action-mission",
+    graphVersion: 3,
+    goal: "Resolve the same governed risk",
+  };
+  assert.equal(
+    agentRunRequestFingerprint({
+      ...base,
+      input: { outer: { alpha: 1, beta: { first: true, second: false } } },
+    }),
+    agentRunRequestFingerprint({
+      ...base,
+      input: { outer: { beta: { second: false, first: true }, alpha: 1 } },
+    }),
+  );
+  const [canonical, legacy] = agentRunRequestFingerprintCandidates({
+    ...base,
+    input: { outer: { alpha: 1, beta: 2 } },
+  });
+  assert.match(canonical, /^v2:[a-f0-9]{64}$/);
+  assert.match(legacy, /^[a-f0-9]{64}$/);
+  assert.notEqual(canonical, legacy, "legacy unversioned rows retain a replay alias");
+});
+
+test("a linked mission cannot support a verified outcome until it is completed", async () => {
+  let missionStatus = "waiting_approval";
+  let recorded = 0;
+  const service = new AgentOsService(
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {
+      get: async () => ({ run: { status: missionStatus } }),
+    } as never,
+    {} as never,
+    {} as never,
+    {
+      recordOutcome: async () => {
+        recorded += 1;
+        return { verificationStatus: "verified" };
+      },
+    } as never,
+    {} as never,
+    {} as never,
+  );
+  const input = {
+    decisionKey: "planning:test",
+    missionRunId: "0192a8c0-0059-7000-8000-000000000099",
+    metricKey: "work_items_verified",
+    label: "Work items verified",
+    unit: "work_items",
+    observedValue: 1,
+    verifiedValue: 0,
+    verificationStatus: "verified" as const,
+    attributionStatus: "supported" as const,
+    verificationMethod: "Completed mission ledger inspection.",
+  };
+
+  await assert.rejects(
+    service.recordOutcome(input),
+    (error: unknown) =>
+      error instanceof AppError && error.code === "OUTCOME_MISSION_INCOMPLETE",
+  );
+  assert.equal(recorded, 0);
+
+  missionStatus = "completed";
+  assert.deepEqual(await service.recordOutcome(input), {
+    verificationStatus: "verified",
+  });
+  assert.equal(recorded, 1);
+});
+
+test("an approval-only actor decides while approved execution resumes as the run creator", async () => {
+  const tenantId = "0192a8c0-0000-7000-8000-000000000001";
+  const starterId = "0192a8c0-0000-7000-8000-0000000000a1";
+  const approverId = "0192a8c0-0000-7000-8000-0000000000a2";
+  const graph = {
+    key: "approval.sod-regression",
+    version: 1,
+    name: "Approval SoD regression",
+    description: "Prove approval and execution identities stay distinct.",
+    maxSteps: 1,
+    timeoutSeconds: 60,
+    nodes: [{
+      id: "approval",
+      name: "Human approval",
+      kind: "approval",
+      title: "Approve",
+      risk: "medium",
+      proposedAction: "Resume approved work",
+      dependsOn: [],
+    }],
+  };
+  const approval = {
+    id: "0192a8c0-0059-7000-8000-0000000000a3",
+    runId: "0192a8c0-0059-7000-8000-0000000000a4",
+    nodeId: "approval",
+    title: "Approve",
+    risk: "medium",
+    proposedAction: "Resume approved work",
+    proposed: { bounded: true },
+    status: "pending",
+    decisionNote: null,
+    decidedBy: null,
+    decidedAt: null,
+    createdAt: new Date(),
+  };
+  const state = {
+    run: {
+      id: approval.runId,
+      graphKey: graph.key,
+      graphVersion: graph.version,
+      graphSnapshot: graph,
+      goal: "Resume the separately approved work",
+      input: {},
+      status: "waiting_approval",
+      providerMode: "deterministic",
+      maxSteps: 1,
+      consumedSteps: 1,
+      timeoutAt: new Date(Date.now() + 60_000),
+      output: null,
+      errorCode: null,
+      errorMessage: null,
+      startedAt: new Date(),
+      completedAt: null,
+      createdAt: new Date(),
+      createdBy: starterId,
+    },
+    nodes: [{
+      id: "0192a8c0-0059-7000-8000-0000000000a5",
+      nodeId: "approval",
+      nodeName: "Human approval",
+      nodeKind: "approval",
+      agentKey: null,
+      capabilityKey: null,
+      status: "waiting_approval",
+      attempt: 1,
+      output: null,
+      errorCode: null,
+      errorMessage: null,
+      startedAt: new Date(),
+      completedAt: null,
+      createdAt: new Date(),
+    }],
+    approvals: [approval],
+    events: [],
+    checkpoints: [],
+  };
+  let executionActor: string | null = null;
+  const projectionActors: string[] = [];
+  const repository = {
+    pendingApprovals: async () => [approval],
+    get: async () => state,
+    decideApproval: async () => {
+      approval.status = "approved";
+      approval.decidedBy = approverId;
+      approval.decidedAt = new Date();
+      return { runId: approval.runId, nodeId: approval.nodeId, approved: true };
+    },
+  };
+  const service = new AgentOsService(
+    {} as never,
+    {} as never,
+    {
+      currentActorPermissions: async () => {
+        projectionActors.push(currentTenant().actorId);
+        return new Set<string>();
+      },
+      permissionByCapability: () => new Map<string, string>(),
+    } as never,
+    { mode: "deterministic" } as never,
+    repository as never,
+    {
+      execute: async () => {
+        executionActor = currentTenant().actorId;
+        return state;
+      },
+    } as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    { assertRuntimeActive: async () => undefined } as never,
+  );
+
+  await runWithTenant(
+    { tenantId, actorId: approverId, principal: "staff" },
+    () => service.decideApproval(approval.id, "approved", "Approved separately"),
+  );
+
+  assert.equal(executionActor, starterId);
+  assert.deepEqual(projectionActors, [approverId, approverId]);
+  assert.equal(approval.decidedBy, approverId);
 });
 
 test("engine runs parallel evidence waves, pauses, resumes and completes after approval", async () => {
@@ -330,6 +591,11 @@ test("engine runs parallel evidence waves, pauses, resumes and completes after a
   const repository = {
     get: async () => state,
     recoverInterruptedNodes: async () => 0,
+    restoreApprovalWait: async () => {
+      if (state.run.status !== "halted") return false;
+      state.run.status = "waiting_approval";
+      return true;
+    },
     markRunRunning: async () => {
       state.run.status = "running";
     },
@@ -420,6 +686,13 @@ test("engine runs parallel evidence waves, pauses, resumes and completes after a
     state.nodes.find((node) => node.nodeId === "hexa-verification")?.status,
     "succeeded",
   );
+
+  // A kill switch may halt the run while its approval node remains waiting. Once control
+  // is released, execution restores the run lifecycle so the same attributable decision
+  // can still be made instead of deadlocking in `halted` forever.
+  state.run.status = "halted";
+  const restored = await engine.execute(state.run.id);
+  assert.equal(restored.run.status, "waiting_approval");
 
   const approvalNode = state.nodes.find(
     (node) => node.nodeId === "human-approval",

@@ -13,8 +13,26 @@ const GRANTS: RoleGrant[] = [
 describe("permission strings", () => {
   it("accepts module.entity.action and rejects everything else", () => {
     assert.equal(isValidPermission("purchase.po.submit"), true);
+    assert.equal(isValidPermission("integration.factory-connect.read"), true);
+    assert.equal(parsePermission("integration.factory-connect.read")?.entity, "factory-connect");
     assert.equal(isValidPermission("purchase.po"), false);
     assert.equal(isValidPermission("Purchase.PO.Submit"), false);
+    assert.equal(isValidPermission("integration.factory/connect.read"), false);
+  });
+
+  it("explains a granted hyphenated department permission through the normal access path", () => {
+    const permission = "integration.factory-connect.read";
+    const decision = explainAccess(permission, [
+      {
+        roleId: "r-integration",
+        roleCode: "integration_operator",
+        roleName: "Integration operator",
+        isPrivileged: false,
+        permissions: [permission],
+      },
+    ]);
+    assert.equal(decision.allowed, true);
+    assert.deepEqual(decision.viaRoles, ["integration_operator"]);
   });
 
   it("accepts an OPERATIONAL verb, because 46 of this system's permissions use one", () => {

@@ -56,11 +56,11 @@ export const agentosManifest: ModuleManifest = {
         const runtime = raw.data.runtime;
         if (!Array.isArray(agents) || !isRecord(runtime)) return null;
         return {
-          value: `${agents.length} of 8`,
+          value: `${agents.length} of 9`,
           hint: `${String(runtime.providerMode ?? "unknown")} provider · live graph runtime`,
           tone:
-            agents.length === 8 && runtime.status === "live" ? "ok" : "warn",
-          fraction: agents.length / 8,
+            agents.length === 9 && runtime.status === "live" ? "ok" : "warn",
+          fraction: Math.min(agents.length / 9, 1),
         };
       },
     },

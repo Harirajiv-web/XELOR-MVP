@@ -91,6 +91,19 @@ test("rejects unbounded retry counts", () => {
   assert.match(validateAgentGraph(invalid).errors.join(" "), /maxAttempts/);
 });
 
+test("rejects a step budget smaller than the declared retry worst case", () => {
+  const underfunded: AgentGraphDefinition = {
+    ...graph,
+    maxSteps: 4,
+    nodes: graph.nodes.map((node, index) =>
+      index === 0 ? { ...node, maxAttempts: 2 } : node,
+    ),
+  };
+  const result = validateAgentGraph(underfunded);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /all declared node attempts \(5\)/);
+});
+
 test("returns independent nodes in the same execution wave", () => {
   assert.deepEqual(readyAgentNodes(graph, { intake: "succeeded" }), [
     "sales",

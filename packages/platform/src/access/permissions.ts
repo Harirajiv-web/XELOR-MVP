@@ -46,7 +46,7 @@ export const DOCUMENT_ACTIONS = [
 
 export type DocumentAction = (typeof DOCUMENT_ACTIONS)[number];
 
-/** `module.entity.action` — e.g. `purchase.po.submit`, `hrm.payroll.approve`. */
+/** `module.entity.action` — e.g. `purchase.po.submit`, `integration.factory-connect.read`. */
 export interface ParsedPermission {
   module: string;
   entity: string;
@@ -55,7 +55,9 @@ export interface ParsedPermission {
   isDocumentAction: boolean;
 }
 
-const PERM_RE = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
+// Product route entities may be hyphenated, matching the database catalogue constraint;
+// module and action segments retain the narrower lowercase/underscore grammar.
+const PERM_RE = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_-]*\.[a-z][a-z0-9_]*$/;
 
 export function parsePermission(value: string): ParsedPermission | null {
   if (!PERM_RE.test(value)) return null;
@@ -81,7 +83,7 @@ export function explainInvalidPermission(value: string): string {
   if (parts.length !== 3) {
     return `'${value}' has ${parts.length} part(s); a permission has exactly three: module.entity.action.`;
   }
-  return `'${value}' is malformed. Use lowercase module.entity.action — letters, digits and underscores only.`;
+  return `'${value}' is malformed. Use lowercase module.entity.action; the entity may also contain hyphens.`;
 }
 
 export interface RoleGrant {

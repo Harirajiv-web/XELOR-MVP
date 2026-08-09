@@ -3,7 +3,7 @@
 # THE API IMAGE — and the migrator, which is the same build with its dev dependencies kept.
 #
 # Build from the REPOSITORY ROOT, not from this directory:
-#   docker build -f apps/api/Dockerfile -t xelor-api .
+#   docker build --target runtime -f apps/api/Dockerfile -t xelor-api .
 #
 # Two things about this file are deliberate:
 #
@@ -29,8 +29,7 @@ COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/platform/package.json packages/platform/
 COPY packages/db/package.json packages/db/
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@ind-core/api..."
+RUN pnpm install --frozen-lockfile --filter "@ind-core/api..."
 
 # ---------------------------------------------------------------------- build
 # platform and db are consumed through dist/, so their order here is load-bearing.
@@ -51,8 +50,7 @@ CMD ["pnpm", "--filter", "@ind-core/db", "migrate"]
 
 # -------------------------------------------------------------------- runtime
 FROM build AS pruned
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@ind-core/api..."
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@ind-core/api..."
 
 FROM base AS runtime
 ENV NODE_ENV=production

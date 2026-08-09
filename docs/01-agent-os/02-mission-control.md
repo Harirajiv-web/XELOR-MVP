@@ -7,7 +7,7 @@ human decisions.
 
 ## Nine-agent command graph
 
-`operations.full-command-review@2` connects every registered agent:
+`operations.full-command-review@3` connects every registered agent:
 
 1. ONYX frames and delegates the mission.
 2. HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY and ACHILES execute eight independent

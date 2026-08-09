@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XELOR Business &amp; Revenue Model</title>
+  <style>
+    @page { size: A4; margin: 16mm 15mm 18mm; }
+    * { box-sizing: border-box; }
+    :root {
+      --ink:#12203a; --muted:#5b687c; --navy:#06142f; --blue:#1646d8;
+      --cyan:#19a8c9; --green:#0b8060; --amber:#a76000; --red:#b42318;
+      --line:#d7e0ec; --wash:#f4f7fb; --pale:#edf4ff; --white:#fff;
+    }
+    html { background:#fff; }
+    body { margin:0; color:var(--ink); font:9.6pt/1.4 Arial, Helvetica, sans-serif; }
+    section { page-break-after:always; }
+    section:last-child { page-break-after:auto; }
+    h1,h2,h3,h4 { margin:0 0 7px; line-height:1.14; page-break-after:avoid; }
+    h1 { font-size:38pt; letter-spacing:-1.5px; }
+    h2 { font-size:19pt; color:var(--navy); border-bottom:2px solid var(--blue); padding-bottom:5px; margin-bottom:10px; }
+    h3 { font-size:12.5pt; color:var(--blue); margin-top:11px; }
+    h4 { font-size:10pt; color:var(--navy); margin-top:8px; }
+    p { margin:5px 0 8px; }
+    ul,ol { margin:5px 0 9px 18px; padding:0; }
+    li { margin:2px 0; }
+    table { width:100%; border-collapse:collapse; margin:7px 0 11px; font-size:8.2pt; }
+    tr { page-break-inside:avoid; }
+    th { background:var(--navy); color:#fff; text-align:left; padding:6px; }
+    td { border:1px solid var(--line); padding:5px 6px; vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    a { color:var(--blue); text-decoration:none; }
+    sup { color:var(--blue); font-weight:700; }
+    .cover { height:263mm; color:#fff; background:linear-gradient(145deg,#06132f 0%,#113479 58%,#1689ad 100%); margin:0; padding:28mm 22mm; position:relative; }
+    .cover .mark { display:inline-grid; place-items:center; width:54px; height:54px; border:1px solid #79dcff; border-radius:13px; font-size:18pt; font-weight:800; }
+    .cover .eyebrow { margin-top:29mm; color:#8fe5ff; font-size:10.5pt; letter-spacing:2.6px; font-weight:700; }
+    .cover h1 { max-width:158mm; margin-top:8px; }
+    .cover .sub { max-width:155mm; color:#dceeff; font-size:15pt; line-height:1.38; margin-top:12px; }
+    .cover .hero { margin-top:20mm; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:160mm; }
+    .cover .hero div { padding:11px; border:1px solid rgba(150,221,255,.42); border-radius:9px; background:rgba(6,20,47,.28); }
+    .cover .hero b { display:block; color:#8fe5ff; font-size:18pt; margin-bottom:2px; }
+    .cover .meta { position:absolute; bottom:22mm; left:22mm; right:22mm; border-top:1px solid #72a9dc; padding-top:9px; display:flex; justify-content:space-between; color:#c9def5; font-size:8.5pt; }
+    .page { min-height:257mm; }
+    .lead { font-size:11.4pt; color:#34445d; line-height:1.42; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:8px 0 10px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:8px 0 10px; }
+    .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:8px 0 10px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:9px; background:#fff; page-break-inside:avoid; }
+    .card h3 { margin-top:0; }
+    .card p:last-child, .card ul:last-child { margin-bottom:0; }
+    .callout { border-left:4px solid var(--blue); background:var(--pale); padding:9px 11px; margin:9px 0 11px; page-break-inside:avoid; }
+    .good { border-left-color:var(--green); background:#ecfaf5; }
+    .warning { border-left-color:var(--amber); background:#fff7e7; }
+    .risk { border-left-color:var(--red); background:#fff2f1; }
+    .metric { background:var(--navy); color:#fff; padding:9px; border-radius:8px; min-height:68px; }
+    .metric b { display:block; color:#78dcff; font-size:17pt; line-height:1.05; margin-bottom:4px; }
+    .metric span { color:#d9e8f8; font-size:8pt; }
+    .tag { display:inline-block; border-radius:10px; padding:1px 6px; font-size:7.3pt; font-weight:700; margin-right:3px; white-space:nowrap; }
+    .fact { background:#dff2ff; color:#185b85; }
+    .recommend { background:#daf3e8; color:#0f684c; }
+    .assume { background:#fff0c9; color:#815000; }
+    .formula { font-family:"SFMono-Regular",Consolas,monospace; color:#173b79; background:#f4f7fb; border:1px solid var(--line); border-radius:6px; padding:6px 8px; margin:5px 0; font-size:8.4pt; }
+    .flow { display:grid; grid-template-columns:1fr 22px 1fr 22px 1fr 22px 1fr; gap:4px; align-items:stretch; margin:10px 0; }
+    .flow div { border:1px solid #9bb2d6; background:#f4f7fc; padding:8px 5px; border-radius:6px; text-align:center; font-size:8pt; font-weight:700; display:grid; place-items:center; }
+    .flow .arrow { border:0; background:none; color:var(--blue); font-size:15pt; padding:0; }
+    .funnel { display:grid; grid-template-columns:1fr; gap:5px; margin:9px auto; width:88%; }
+    .funnel div { margin:auto; text-align:center; color:#fff; padding:7px 10px; border-radius:5px; font-weight:700; }
+    .funnel div:nth-child(1) { width:100%; background:#173676; }
+    .funnel div:nth-child(2) { width:82%; background:#1a54a4; }
+    .funnel div:nth-child(3) { width:64%; background:#1781aa; }
+    .funnel div:nth-child(4) { width:46%; background:#0b8060; }
+    .bar { display:grid; grid-template-columns:122px 1fr 74px; gap:7px; align-items:center; margin:6px 0; font-size:8.5pt; }
+    .bar .track { height:15px; background:#e7edf6; border-radius:8px; overflow:hidden; }
+    .bar .fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--cyan)); border-radius:8px; }
+    .right { text-align:right; }
+    .center { text-align:center; }
+    .small { font-size:8pt; color:var(--muted); }
+    .tiny { font-size:7.2pt; color:var(--muted); }
+    .source-note { border-top:1px solid var(--line); margin-top:9px; padding-top:6px; font-size:7.3pt; color:var(--muted); }
+    .no-break { page-break-inside:avoid; }
+    .strong { font-weight:700; color:var(--navy); }
+    .compact { font-size:8.9pt; line-height:1.32; }
+    .compact table { font-size:7.7pt; margin:6px 0 9px; }
+    .compact th, .compact td { padding:4px 5px; }
+    .compact h3 { margin-top:8px; }
+    .compact .callout { padding:7px 9px; margin:7px 0 8px; }
+    @media print {
+      .cover { margin:-16mm -15mm -18mm; }
+    }
+  </style>
+</head>
+<body data-model-version="2026-08-08-v3">
+  <section class="cover">
+    <div class="mark">XE</div>
+    <div class="eyebrow">XELOR · TWO-SEGMENT COMMERCIAL MODEL</div>
+    <h1>Business &amp;<br>Revenue Model</h1>
+    <div class="sub">One complete nine-agent platform, packaged properly for both Indian single-plant MSMEs and larger multi-plant manufacturers—with customer economics, market sizing, investment needs and per-agent prices.</div>
+    <div class="hero">
+      <div><b>₹18L</b>MSME Complete ARR</div>
+      <div><b>₹54L</b>Multi-Plant ARR</div>
+      <div><b>9</b>agents in both offers</div>
+    </div>
+    <div class="meta"><span>Research date: 8 August 2026 · Currency: INR · GST excluded</span><span>Decision model v3.0</span></div>
+  </section>
+
+  <section class="page">
+    <h2>1. One product, two commercial offers</h2>
+    <p class="lead"><b>XELOR should serve both markets without becoming two different products.</b> Every customer can access all nine agents. The price changes because larger customers require more plants, integrations, data, governance, support and implementation—not because basic agent names are withheld.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <span class="tag recommend">OFFER A</span>
+        <h3>XELOR MSME Complete</h3>
+        <p><b>₹18L ARR · ₹1.5L MRR</b></p>
+        <p>For a smaller or growing, primarily single-plant manufacturer that needs a standardized operating-intelligence layer.</p>
+        <ul><li>One plant</li><li>Two standard connectors</li><li>All nine agents</li><li>Standard workflows and support</li></ul>
+      </div>
+      <div class="card">
+        <span class="tag recommend">OFFER B</span>
+        <h3>XELOR Multi-Plant Command</h3>
+        <p><b>₹54L ARR · ₹4.5L MRR</b></p>
+        <p>For an upper-medium, large or multi-plant manufacturer that needs group control, deeper integration and priority governance.</p>
+        <ul><li>Headquarters + two plants</li><li>Five standard connectors</li><li>All nine agents</li><li>Cross-plant command and priority support</li></ul>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Commercial point</th><th>MSME Complete</th><th>Multi-Plant Command</th></tr></thead>
+      <tbody>
+        <tr><td>Paid pilot</td><td>₹3L · 6 weeks</td><td>₹10L · 8–12 weeks</td></tr>
+        <tr><td>One-time implementation</td><td>₹5L</td><td>₹24L</td></tr>
+        <tr><td>First-year total</td><td><b>₹23L + GST</b></td><td><b>₹78L + GST</b></td></tr>
+        <tr><td>Following-year subscription</td><td>₹18L/year</td><td>₹54L/year</td></tr>
+        <tr><td>Internal users</td><td>Bundled under fair use</td><td>Bundled under fair use</td></tr>
+        <tr><td>Human-managed RELAY service</td><td>Optional ₹6L/year</td><td>Optional ₹18–36L/year</td></tr>
+      </tbody>
+    </table>
+
+    <div class="flow">
+      <div>Paid proof<br>of value</div><div class="arrow">→</div><div>One of two<br>annual offers</div><div class="arrow">→</div><div>Sites, connectors<br>and service add-ons</div><div class="arrow">→</div><div>Expansion without<br>changing platform</div>
+    </div>
+
+    <div class="callout good"><b>Recommended charging unit:</b> platform + plant + integration/service complexity. Do not lead with per-user pricing. A manufacturing decision crosses departments, and charging every operator separately discourages adoption.</div>
+    <div class="callout warning"><b>Segmentation rule:</b> legal MSME status alone does not determine price. A company may call itself an MSME but still need Multi-Plant Command if it has two or more plants, group reporting, SSO, complex integrations or priority service requirements.</div>
+
+    <h3>Value-to-price gates</h3>
+    <p><span class="tag assume">VALIDATE IN PILOT</span> MSME Complete should identify at least ₹90L of annual measurable value at a 5× value-to-price ratio. Multi-Plant Command should identify at least ₹2.70Cr. Risk reduction may substitute only when the customer names and accepts the measurement method.</p>
+  </section>
+
+  <section class="page">
+    <h2>2. Offer A · XELOR MSME Complete</h2>
+    <p class="lead">Designed for a primarily single-plant manufacturer that wants the complete agent system but cannot support enterprise-level implementation or licence cost.</p>
+
+    <div class="grid4">
+      <div class="metric"><b>₹18L</b><span>annual subscription</span></div>
+      <div class="metric"><b>₹5L</b><span>one-time implementation</span></div>
+      <div class="metric"><b>₹23L</b><span>first-year total</span></div>
+      <div class="metric"><b>₹6–8L</b><span>target CAC</span></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card"><h3>Included</h3><ul><li>All nine agent interfaces and coordinated workflows.</li><li>One plant and one operating/legal entity.</li><li>Two standard ERP, spreadsheet or database connectors.</li><li>Mission Control, human approvals, evidence, audit and kill switch.</li><li>Standard dashboards, workflow templates and internal users.</li><li>Business-hours product support and a defined usage allowance.</li></ul></div>
+      <div class="card"><h3>Standardized boundaries</h3><ul><li>No custom agent development in the base price.</li><li>No private-cloud deployment or group consolidation.</li><li>No unlimited integrations, AI usage or 24×7 human operations.</li><li>Two or three priority workflows are activated first; the remaining agent surfaces stay available for phased adoption.</li><li>Material custom changes require a separate statement of work.</li></ul></div>
+    </div>
+
+    <h3>Commercial path</h3>
+    <table>
+      <thead><tr><th>Stage</th><th>Price</th><th>Scope and payment</th></tr></thead>
+      <tbody>
+        <tr><td>Paid pilot</td><td>₹3L</td><td>Six weeks; one workflow, one read-only source, baseline, acceptance criteria and value report.</td></tr>
+        <tr><td>Implementation</td><td>₹5L once</td><td>40% kickoff, 40% accepted integration, 20% go-live. Pilot fee is fully credited when converted within 30 days.</td></tr>
+        <tr><td>Subscription</td><td>₹18L/year</td><td>Paid annually upfront. Quarterly billing carries a 6% premium.</td></tr>
+        <tr><td>Renewal</td><td>₹18L/year</td><td>Expansion and overage separate; price review only against agreed scope and indexation.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Optional add-ons</h3>
+    <table>
+      <thead><tr><th>Add-on</th><th>Price</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Additional standard connector</td><td>₹1.5L setup + ₹0.6L/year</td><td>Mapping, monitoring and maintenance for one additional supported source.</td></tr>
+        <tr><td>Factory Connect starter</td><td>From ₹3L setup + ₹1.2L/year</td><td>Planned implementation offer for one read-first plant gateway, approved asset mapping and dwell/state dashboards. The current MVP supplies stored demo/API records and simulator policy evaluation only; gateway transport, hardware, safety certification and third-party licences are excluded.</td></tr>
+        <tr><td>RELAY Lite human service</td><td>₹6L/year</td><td>Business-hours coordination, monthly service review and incident/change tracking.</td></tr>
+        <tr><td>Custom workflow</td><td>₹1–3L once</td><td>Scoped configuration that stays inside the existing platform boundary.</td></tr>
+        <tr><td>Additional training</td><td>₹0.5L per block</td><td>Role-based sessions beyond the included onboarding plan.</td></tr>
+        <tr><td>Usage expansion</td><td>Committed band</td><td>Additional AI, documents, storage or events after actual consumption is measured.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout"><b>Sales motion:</b> founder-led for the first customers, then ERP partners, operational consultants, manufacturing associations, industrial clusters, customer referrals and inside sales. Target a 1–3 month sales cycle after a qualified discovery.</div>
+    <div class="callout risk"><b>Margin protection:</b> if the customer needs a second plant, group reporting, SSO or heavy custom integration, move the account to Multi-Plant Command instead of discounting or over-servicing this package.</div>
+  </section>
+
+  <section class="page">
+    <h2>3. Offer B · XELOR Multi-Plant Command</h2>
+    <p class="lead">Designed for larger and upper-medium manufacturers whose value case depends on coordinating multiple plants, executives, data sources and governance requirements.</p>
+
+    <div class="grid4">
+      <div class="metric"><b>₹54L</b><span>annual subscription</span></div>
+      <div class="metric"><b>₹24L</b><span>one-time implementation</span></div>
+      <div class="metric"><b>₹78L</b><span>first-year total</span></div>
+      <div class="metric"><b>₹18–25L</b><span>target CAC</span></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card"><h3>Included</h3><ul><li>All nine agents with full cross-functional coordination.</li><li>Headquarters plus two factories.</li><li>Five standard ERP, database or operational connectors.</li><li>Cross-plant Unified Command Center and consolidated exception view.</li><li>Group and plant permissions, human-guided/autonomous modes and kill switches.</li><li>SSO-ready controls, higher usage bands, priority support and quarterly executive review.</li></ul></div>
+      <div class="card"><h3>Why it costs more</h3><ul><li>More sites, systems, users, events and AI workload.</li><li>Cross-company master-data reconciliation and decision ownership.</li><li>Longer discovery, integration, acceptance and training.</li><li>Stronger security, audit, identity and recovery expectations.</li><li>Higher presales, solution-engineering and customer-success effort.</li><li>Executive consolidated reporting and priority response.</li></ul></div>
+    </div>
+
+    <h3>Commercial path</h3>
+    <table>
+      <thead><tr><th>Stage</th><th>Price</th><th>Scope and payment</th></tr></thead>
+      <tbody>
+        <tr><td>Paid proof of value</td><td>₹10L</td><td>8–12 weeks; one cross-plant decision, up to two sources, signed baseline and executive outcome review.</td></tr>
+        <tr><td>Implementation</td><td>₹24L once</td><td>40% kickoff, 40% accepted integration, 20% go-live. Pilot fee is fully credited when converted within 30 days.</td></tr>
+        <tr><td>Subscription</td><td>₹54L/year</td><td>Annual upfront; three-year agreements preferred after proof of value.</td></tr>
+        <tr><td>Renewal</td><td>₹54L/year</td><td>Additional plants, custom connectors, service tier and metered expansion billed separately.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Optional add-ons</h3>
+    <table>
+      <thead><tr><th>Add-on</th><th>Price</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Additional factory</td><td>₹12L/year + ₹4L setup</td><td>Plant configuration, local integration, permissions, adoption and consolidated command.</td></tr>
+        <tr><td>Custom connector</td><td>₹4L setup + ₹1.5L/year</td><td>New transport, mapping, acceptance, monitoring and maintenance.</td></tr>
+        <tr><td>Industrial robotics adapter</td><td>Scoped from ₹6L setup + ₹2.4L/year</td><td>Future scoped implementation of one certified OPC UA, MQTT or ROS 2 adapter with site acceptance, command allow-list and monitoring; no such live adapter ships in the MVP. Robot hardware, Cisco Spaces, Splunk and systems-integrator fees remain pass-through or customer supplied.</td></tr>
+        <tr><td>RELAY Business Hours</td><td>₹18L/year</td><td>Named human coordination, monitoring, incident/change workflow and monthly service review.</td></tr>
+        <tr><td>RELAY Extended</td><td>₹36L/year</td><td>Extended coverage and tighter response targets. 24×7 remains a costed custom offer.</td></tr>
+        <tr><td>Private deployment</td><td>From ₹18L/year</td><td>Dedicated operating overhead; cloud infrastructure and third-party licences remain extra.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout"><b>Sales motion:</b> direct founder/enterprise selling, account-based outreach, paid discovery, ERP/system-integrator partners and a 6–12 month buying process involving COO, CFO, CIO and plant leadership.</div>
+    <div class="callout warning"><b>Service distinction:</b> the RELAY software agent is part of the nine-agent platform. The ₹18–36L add-on pays for an actual human managed-services team and cannot be promised without staffed coverage and measurable service levels.</div>
+  </section>
+
+  <section class="page">
+    <h2>4. Side-by-side packaging and charging rules</h2>
+    <table>
+      <thead><tr><th>Dimension</th><th>MSME Complete</th><th>Multi-Plant Command</th></tr></thead>
+      <tbody>
+        <tr><td>Best fit</td><td>Primarily one plant; standardized operating model.</td><td>Two or more plants; group-level coordination and governance.</td></tr>
+        <tr><td>All nine agents</td><td><b>Included</b></td><td><b>Included</b></td></tr>
+        <tr><td>Recurring price</td><td>₹18L ARR / ₹1.5L MRR</td><td>₹54L ARR / ₹4.5L MRR</td></tr>
+        <tr><td>First-year price</td><td>₹23L including implementation</td><td>₹78L including implementation</td></tr>
+        <tr><td>Plants</td><td>1</td><td>Headquarters + 2 factories</td></tr>
+        <tr><td>Standard connectors</td><td>2</td><td>5</td></tr>
+        <tr><td>Configuration</td><td>Industry templates and bounded workflow changes.</td><td>Advanced cross-plant configuration and paid custom work.</td></tr>
+        <tr><td>Users</td><td>Bundled under fair use.</td><td>Bundled under fair use.</td></tr>
+        <tr><td>Security and identity</td><td>Standard tenant/RBAC/audit controls.</td><td>SSO-ready, group/plant roles, advanced assurance and deployment options.</td></tr>
+        <tr><td>Support</td><td>Business-hours product support.</td><td>Priority support and quarterly executive review.</td></tr>
+        <tr><td>Human managed service</td><td>RELAY Lite ₹6L/year.</td><td>RELAY ₹18–36L/year.</td></tr>
+        <tr><td>Target CAC</td><td>₹6–8L; do not normalize above ₹10L.</td><td>₹18–25L; maximum target ₹30L.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Rules that prevent confusion and margin leakage</h3>
+    <div class="grid2">
+      <div class="card"><h3>Charge this way</h3><ul><li>Annual subscription paid upfront.</li><li>Implementation and custom work billed separately.</li><li>Pilot credited only after prompt annual conversion.</li><li>Additional plant and connector fees are explicit.</li><li>Included usage is defined; overage moves to a committed band.</li><li>Every discount trades for term, prepayment, reference rights or reduced scope.</li></ul></div>
+      <div class="card"><h3>Do not charge this way</h3><ul><li>Do not use employee count as the primary invoice metric.</li><li>Do not offer free custom pilots.</li><li>Do not promise unlimited AI, documents or events.</li><li>Do not include human managed service inside software ARR.</li><li>Do not let a multi-plant buyer enter through the one-plant price.</li><li>Do not count pilot or implementation revenue as ARR.</li></ul></div>
+    </div>
+
+    <h3>Price anchors—not direct substitutes</h3>
+    <p>Microsoft lists Business Central Premium in India at ₹9,150 per user/month, or ₹1.098Cr per year for 100 users, before GST and implementation.<sup>2</sup> Frappe Cloud lists premium managed hosting from ₹40,000/month; that is hosting/support infrastructure rather than a complete enterprise implementation or governed agent layer.<sup>3</sup> XELOR therefore needs a plant/value price between cheap hosting and a full replacement-ERP programme.</p>
+
+    <div class="callout good"><b>Bundle principle:</b> all nine agents together must cost less than buying them one by one because their shared evidence, permissions and coordination create the product. The final page gives a transparent per-agent rate card and the bundle saving.</div>
+    <div class="callout risk"><b>Current product boundary:</b> the repository remains an investor MVP. These are launch prices to validate, not evidence of accepted customer pricing, completed production connectors, achieved margins or existing ARR.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. Customer count, MRR and ARR</h2>
+    <p class="lead">Recurring revenue must be reported by segment. Pilots and implementation are valid revenue, but they are not MRR or ARR.</p>
+
+    <table>
+      <thead><tr><th>Customer mix</th><th>Total customers</th><th>MRR</th><th>ARR</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>10 MSME Complete</td><td>10</td><td>₹15L</td><td>₹1.80Cr</td><td>Early standardized single-plant base.</td></tr>
+        <tr><td>10 Multi-Plant Command</td><td>10</td><td>₹45L</td><td>₹5.40Cr</td><td>High-value but more concentrated enterprise base.</td></tr>
+        <tr><td>8 MSME + 2 Multi-Plant</td><td>10</td><td>₹21L</td><td>₹2.52Cr</td><td>Recommended planning mix: 80% / 20%.</td></tr>
+        <tr><td>30 MSME + 10 Multi-Plant</td><td>40</td><td>₹90L</td><td><b>₹10.80Cr</b></td><td>Balanced route through ₹10Cr ARR.</td></tr>
+        <tr><td>40 MSME + 10 Multi-Plant</td><td>50</td><td>₹1.05Cr</td><td>₹12.60Cr</td><td>Broader installed base with controlled concentration.</td></tr>
+        <tr><td>80 MSME + 20 Multi-Plant</td><td>100</td><td>₹2.10Cr</td><td>₹25.20Cr</td><td>Five-year blended SOM case.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid3">
+      <div class="card center"><span class="tag recommend">SMALL SEGMENT</span><h3>₹18L ACV</h3><p>₹1.5L MRR<br>per customer</p></div>
+      <div class="card center"><span class="tag recommend">LARGE SEGMENT</span><h3>₹54L ACV</h3><p>₹4.5L MRR<br>per customer</p></div>
+      <div class="card center"><span class="tag assume">80 / 20 MIX</span><h3>₹25.2L ACV</h3><p>blended planning<br>average</p></div>
+    </div>
+
+    <h3>Terms investors will ask about</h3>
+    <table>
+      <thead><tr><th>Term</th><th>Plain meaning</th><th>XELOR reporting rule</th></tr></thead>
+      <tbody>
+        <tr><td><b>MRR</b></td><td>Recurring subscription normalized to one month.</td><td>₹18L ÷ 12 = ₹1.5L; ₹54L ÷ 12 = ₹4.5L.</td></tr>
+        <tr><td><b>ARR</b></td><td>Live recurring run-rate at a point in time.</td><td>MRR × 12; exclude pilots and implementation.</td></tr>
+        <tr><td><b>ACV</b></td><td>Annualized recurring value of an average contract.</td><td>Report segment ACV and blended ACV separately.</td></tr>
+        <tr><td><b>Bookings</b></td><td>Signed contractual commitments.</td><td>Do not relabel multi-year bookings as current ARR.</td></tr>
+        <tr><td><b>Revenue</b></td><td>Amount recognized during the period.</td><td>Depends on start dates and service delivery; exit ARR is not full-year revenue.</td></tr>
+        <tr><td><b>NRR</b></td><td>Opening recurring revenue retained after expansion, contraction and churn.</td><td>Target 105–115% only after real renewal cohorts exist.<sup>4</sup></td></tr>
+      </tbody>
+    </table>
+
+    <div class="formula">Blended ARR = (MSME customers × ₹18L) + (Multi-Plant customers × ₹54L)</div>
+    <div class="callout risk"><b>Never report this incorrectly:</b> 40 blended customers produce ₹10.8Cr ARR only when 30 are at ₹18L and 10 are at ₹54L. Customer count without segment mix is not enough.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. TAM, SAM, TOM and SOM—revised for two offers</h2>
+    <p class="lead">MoSPI’s latest ASI 2023–24 reports 2,12,990 operating factories. As a commercial complexity proxy, 19,623 employ 100–199 people and 28,139 employ 200 or more.<sup>1</sup> Employee count is not the legal MSME definition; it is used here only to create mutually exclusive planning groups.</p>
+
+    <div class="grid2">
+      <div class="card"><span class="tag fact">FACT + RECOMMENDED PRICE</span><h3>₹3,532Cr</h3><p><b>19,623</b> 100–199 employee sites × ₹18L MSME Complete ARR.</p><p class="small">Single-plant/growing-manufacturer proxy.</p></div>
+      <div class="card"><span class="tag fact">FACT + RECOMMENDED PRICE</span><h3>₹15,195Cr</h3><p><b>28,139</b> 200+ employee sites × ₹54L Multi-Plant ARR.</p><p class="small">Larger/complex-manufacturer proxy; not proof every site is multi-plant.</p></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Market layer</th><th>Population and price logic</th><th>ARR opportunity</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><b>TAM</b></td><td>19,623 × ₹18L + 28,139 × ₹54L</td><td><b>₹18,727Cr</b></td><td>Broad two-segment India ceiling using employee-size proxies.</td></tr>
+        <tr><td><b>SAM</b></td><td>27,135 sites with ≥₹100Cr output × ₹25.2L blended ACV</td><td><b>₹6,838Cr</b></td><td>Affordability-screened universe; mix remains a management assumption.</td></tr>
+        <tr><td><b>TOM</b></td><td>5,000 named priority accounts × ₹25.2L blended ACV</td><td><b>₹1,260Cr</b></td><td>First vertical/geography/data-ready target list.</td></tr>
+        <tr><td><b>SOM</b></td><td>80 MSME + 20 Multi-Plant customers</td><td><b>₹25.2Cr</b></td><td>Five-year capture case: 100 customers / 2% of TOM logos.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="bar"><b>TAM</b><div class="track"><div class="fill" style="width:100%"></div></div><span class="right">47,762 sites</span></div>
+    <div class="bar"><b>SAM</b><div class="track"><div class="fill" style="width:56.8%"></div></div><span class="right">27,135</span></div>
+    <div class="bar"><b>TOM</b><div class="track"><div class="fill" style="width:10.5%"></div></div><span class="right">5,000</span></div>
+    <div class="bar"><b>5-year SOM</b><div class="track"><div class="fill" style="width:.21%;min-width:4px"></div></div><span class="right">100</span></div>
+
+    <div class="grid2">
+      <div class="card"><h3>What is externally sourced</h3><p>Factory counts, employment bands and output bands come from ASI Statements 13A and 16A.</p></div>
+      <div class="card"><h3>What XELOR assumes</h3><p>Prices, the 80/20 mix, 5,000-account TOM, customer fit, conversion and five-year capture.</p></div>
+    </div>
+
+    <div class="callout warning"><b>Market-size limitation:</b> ASI counts factory sites, whereas contracts may consolidate several plants under one legal customer. Account-level mapping must replace site counts before this becomes an investor diligence data room number.</div>
+    <div class="source-note">Source [1]: MoSPI, <i>ASI Summary Results 2023–24</i>, Statements 13A and 16A. Opportunity values are model-derived; they are not reported software expenditure.</div>
+  </section>
+
+  <section class="page">
+    <h2>7. Three-year blended commercial plan</h2>
+    <p class="lead">The base case keeps an 80% MSME / 20% Multi-Plant customer mix. It assumes even subscription starts, no churn until actual renewal evidence exists, and paid pilots credited against implementation when they convert.</p>
+
+    <table>
+      <thead><tr><th>Base-plan driver</th><th>Year 1</th><th>Year 2</th><th>Year 3</th></tr></thead>
+      <tbody>
+        <tr><td>Exit MSME customers</td><td>6</td><td>24</td><td>60</td></tr>
+        <tr><td>Exit Multi-Plant customers</td><td>2</td><td>6</td><td>15</td></tr>
+        <tr><td><b>Total exit customers</b></td><td><b>8</b></td><td><b>30</b></td><td><b>75</b></td></tr>
+        <tr><td>Exit MRR</td><td>₹18L</td><td>₹63L</td><td>₹1.575Cr</td></tr>
+        <tr><td><b>Exit ARR</b></td><td><b>₹2.16Cr</b></td><td><b>₹7.56Cr</b></td><td><b>₹18.90Cr</b></td></tr>
+        <tr><td>Recognized subscription revenue</td><td>₹1.08Cr</td><td>₹4.86Cr</td><td>₹13.23Cr</td></tr>
+        <tr><td>Implementation revenue</td><td>₹0.78Cr</td><td>₹1.86Cr</td><td>₹3.96Cr</td></tr>
+        <tr><td>Non-converting pilot revenue</td><td>₹0.38Cr</td><td>₹0.76Cr</td><td>₹1.62Cr</td></tr>
+        <tr><td><b>Illustrative total revenue</b></td><td><b>₹2.24Cr</b></td><td><b>₹7.48Cr</b></td><td><b>₹18.81Cr</b></td></tr>
+      </tbody>
+    </table>
+
+    <h3>What must exist to achieve it</h3>
+    <div class="grid2">
+      <div class="card"><h3>MSME engine</h3><ul><li>Six-week standardized proof of value.</li><li>Partner-ready configuration and two repeatable connectors.</li><li>1–3 month sales cycle and channel/referral acquisition.</li><li>Conversion target ≥50% and CAC normalized to ₹6–8L.</li></ul></div>
+      <div class="card"><h3>Multi-Plant engine</h3><ul><li>8–12 week executive proof of value.</li><li>Direct solution selling and five repeatable connectors.</li><li>6–12 month sales cycle with multiple stakeholders.</li><li>CAC ₹18–25L and rigorous service-scope control.</li></ul></div>
+    </div>
+
+    <div class="funnel">
+      <div>Named accounts · segmented by plant and integration complexity</div>
+      <div>Qualified discovery · buyer, problem, data, value and budget</div>
+      <div>Paid proof of value · baseline and acceptance criteria</div>
+      <div>Annual conversion · scope-correct package</div>
+    </div>
+
+    <div class="callout risk"><b>Reforecast gates:</b> stop scaling a segment if pilot conversion stays below 40%, implementation exceeds its time box, early recurring gross margin stays below 65%, or customer support repeatedly exceeds the package boundary. Rebuild this table after every five paid pilots.</div>
+    <p class="tiny">Illustrative total revenue includes subscription recognized on average annual customer counts, implementation for new conversions and only pilots that do not convert. It excludes GST, expansion, usage overages, managed-service revenue, churn and collection timing.</p>
+  </section>
+
+  <section class="page">
+    <h2>8. Unit economics and break-even</h2>
+    <p class="lead">The model now uses separate acquisition and margin targets for each segment. These are targets—not observed company performance.</p>
+
+    <table>
+      <thead><tr><th>Metric</th><th>MSME Complete</th><th>Multi-Plant Command</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>ARR / recurring ACV</td><td>₹18L</td><td>₹54L</td><td>Recurring price before GST and add-ons.</td></tr>
+        <tr><td>Gross-margin target</td><td>75%</td><td>78%</td><td>AI, cloud, support and direct service cost must stay inside the remainder.</td></tr>
+        <tr><td>Annual gross profit</td><td>₹13.50L</td><td>₹42.12L</td><td>ARR × gross margin.</td></tr>
+        <tr><td>Target CAC</td><td>₹8L</td><td>₹22L</td><td>Fully loaded sales, marketing, presales, travel and commission.</td></tr>
+        <tr><td>CAC payback</td><td><b>7.1 months</b></td><td><b>6.3 months</b></td><td>CAC ÷ monthly recurring gross profit.</td></tr>
+        <tr><td>Sales-cycle assumption</td><td>1–3 months</td><td>6–12 months</td><td>Pipeline cash timing differs materially.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card"><h3>Blended break-even</h3><div class="formula">80/20 blended ACV = ₹25.2L</div><div class="formula">80/20 gross profit/customer = ₹19.224L</div><div class="formula">₹6.67Cr annual cash cost ÷ ₹19.224L = 34.7</div><p><b>35 blended customers</b> is the mathematical break-even point; use 40 as the practical target. A 28 MSME / 7 Multi-Plant mix produces ₹8.82Cr ARR.</p></div>
+      <div class="card"><h3>CAC guardrails</h3><ul><li>MSME CAC should normalize below ₹8L and never remain above ₹10L.</li><li>Multi-Plant CAC should normalize near ₹22L and stay below ₹30L.</li><li>Founder time and presales engineering belong in CAC.</li><li>Post-sale implementation is cost of delivery, not acquisition.</li><li>Report CAC and payback by segment, not only as one blended number.</li></ul></div>
+    </div>
+
+    <div class="callout good"><b>Funding conclusion:</b> the recommended plan is a ₹10Cr equity raise for 18 months. The next page shows the single authoritative use-of-funds table, team design and milestone-controlled hiring plan.</div>
+    <p class="small">Bessemer’s historic $1–10M ARR cloud-company median gross margin was 72%; XELOR’s 75–78% figures remain execution targets.<sup>5</sup></p>
+  </section>
+
+  <section class="page">
+    <h2>9. Investor capital and 15-person team plan</h2>
+    <p class="lead"><b>Recommended raise: ₹10.00Cr of primary equity for 18 months.</b> The plan finishes with 15 employees, keeps finance/legal/HR outsourced initially, and releases hiring only when the preceding product and customer milestones are met.</p>
+
+    <table class="tiny">
+      <thead><tr><th>Where capital goes</th><th>Team at month 18</th><th>Employee cash cost</th><th>Non-payroll cash</th><th>Total / share</th><th>What the money must deliver</th></tr></thead>
+      <tbody>
+        <tr><td>Leadership &amp; product</td><td><b>3</b><br>CEO/commercial, CTO/architecture, Product Manager</td><td>₹1.20Cr</td><td>₹0.20Cr</td><td><b>₹1.40Cr · 14%</b></td><td>Product ownership, architecture, customer discovery and company leadership.</td></tr>
+        <tr><td>Engineering, AI &amp; security</td><td><b>7</b><br>2 backend/platform, AI, frontend, integration/data, DevSecOps, QA</td><td>₹2.65Cr</td><td>₹1.15Cr</td><td><b>₹3.80Cr · 38%</b></td><td>Production platform, nine-agent runtime, repeatable connectors, testing and security review.</td></tr>
+        <tr><td>Implementation &amp; customer success</td><td><b>3</b><br>Implementation Lead, Solutions Engineer, Customer Success</td><td>₹0.95Cr</td><td>₹0.85Cr</td><td><b>₹1.80Cr · 18%</b></td><td>Pilot delivery, factory travel, data preparation, training, acceptance and measurable customer outcomes.</td></tr>
+        <tr><td>Sales &amp; partnerships</td><td><b>2</b><br>Enterprise Sales, MSME Channel/Partners</td><td>₹0.65Cr</td><td>₹0.55Cr</td><td><b>₹1.20Cr · 12%</b></td><td>Base pay, commission, account data, industrial events, marketing, partner enablement and travel.</td></tr>
+        <tr><td>Cloud, AI &amp; observability</td><td>—</td><td>—</td><td>₹0.70Cr</td><td><b>₹0.70Cr · 7%</b></td><td>Hosting, databases, AI models, document processing, monitoring, backups, storage and test environments.</td></tr>
+        <tr><td>Legal, compliance &amp; administration</td><td>Outsourced initially</td><td>—</td><td>₹0.50Cr</td><td><b>₹0.50Cr · 5%</b></td><td>Contracts, privacy/security readiness, accounting, insurance, audit support and administration.</td></tr>
+        <tr><td>Contingency</td><td>—</td><td>—</td><td>₹0.60Cr</td><td><b>₹0.60Cr · 6%</b></td><td>Board-controlled reserve for a documented product, customer or risk milestone—not routine overspend.</td></tr>
+        <tr><td><b>Total investor use</b></td><td><b>15 employees</b></td><td><b>₹5.45Cr</b></td><td><b>₹4.55Cr</b></td><td><b>₹10.00Cr · 100%</b></td><td><b>₹5.20Cr goes to product leadership, engineering, AI and security.</b></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Release the budget in three controlled phases</h3>
+    <p class="small"><b>Headcount ramp:</b> 8 → 12 → 15, with each increase conditional on the previous phase’s evidence.</p>
+    <div class="grid3">
+      <div class="card"><span class="tag recommend">MONTHS 1–6</span><h3>₹3.0Cr · 8 people</h3><p>Production baseline, two repeatable connectors and 3–4 paid pilots with signed success criteria.</p></div>
+      <div class="card"><span class="tag recommend">MONTHS 7–12</span><h3>₹3.5Cr · 12 people</h3><p>Both offers repeatable, security baseline complete and at least 8 recurring customers.</p></div>
+      <div class="card"><span class="tag recommend">MONTHS 13–18</span><h3>₹3.5Cr · 15 people</h3><p>16–20 recurring customers, ₹4–5Cr exit ARR and at least three reusable connector families.</p></div>
+    </div>
+
+    <div class="callout"><b>Compensation basis:</b> the ₹5.45Cr envelope includes compensation, employer costs, variable pay and hiring buffer. Foundit’s October 2025 India data shows 7–10 year annual ranges of ₹17.04–26.27L for computer software, ₹20.14–30.13L for AI and ₹17.38–25.91L for computer/network security; XELOR therefore budgets scarce technical roles near the upper half of observed ranges.<sup>8–9</sup></div>
+    <div class="callout good"><b>Raise benchmark:</b> Bain and IVCA report 803 Indian seed deals in 2025 with an approximate average disclosed deal value of US$3M. XELOR’s ₹10Cr ask is intentionally lean and must be defended by the milestones above—not treated as an industry entitlement.<sup>10</sup></div>
+    <p class="tiny"><b>Control rule:</b> ₹3.0Cr / ₹3.5Cr / ₹3.5Cr are internal spending gates after the full investor commitment closes; they are not legal funding tranches. Customer receipts extend runway and are not pre-spent in this table. Actual offers must be refreshed by city, experience and equity mix before hiring.</p>
+  </section>
+
+  <section class="page">
+    <h2>10. Validation, evidence and investor guardrails</h2>
+    <div class="grid3">
+      <div class="card"><span class="tag fact">EXTERNAL FACT</span><h3>Evidence used</h3><p>Official factory counts/output bands and current public software anchors.</p></div>
+      <div class="card"><span class="tag recommend">RECOMMENDATION</span><h3>Management choice</h3><p>Two offers, pricing, package rules, CAC ceilings, funding and per-agent allocation.</p></div>
+      <div class="card"><span class="tag assume">ASSUMPTION</span><h3>Must be proven</h3><p>Acceptance, conversion, mix, gross margin, sales cycle, retention and market capture.</p></div>
+    </div>
+
+    <h3>Eight gates before calling either package validated</h3>
+    <table>
+      <thead><tr><th>#</th><th>Test</th><th>Pass condition</th><th>If it fails</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Segment fit</td><td>20 qualified interviews per segment; repeated urgent problem and named buyer.</td><td>Narrow vertical/use case.</td></tr>
+        <tr><td>2</td><td>Willingness to pay</td><td>≥3 paid pilots in each segment near the recommended price.</td><td>Repair scope/value proof before discounting.</td></tr>
+        <tr><td>3</td><td>Value</td><td>Signed baseline and ≥5× annual value or accepted risk equivalent.</td><td>Do not convert at full price.</td></tr>
+        <tr><td>4</td><td>Delivery</td><td>MSME accepted ≤6 weeks; Multi-Plant accepted ≤12 weeks.</td><td>Standardize data and connectors.</td></tr>
+        <tr><td>5</td><td>Conversion</td><td>≥50% of completed paid pilots sign the correct annual package.</td><td>Fix buyer, adoption, scope or contract.</td></tr>
+        <tr><td>6</td><td>Margin</td><td>≥70% early recurring margin; path to segment targets.</td><td>Reprice usage/support or reduce labour.</td></tr>
+        <tr><td>7</td><td>Retention</td><td>GRR ≥90%, NRR ≥105% after real renewals.</td><td>Pause acquisition and repair durable value.</td></tr>
+        <tr><td>8</td><td>Cash</td><td>Annual prepayment; DSO and burn reviewed monthly by segment.</td><td>Tighten terms before hiring.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sources</h3>
+    <ol class="small">
+      <li><b>MoSPI, ASI Summary Results 2023–24.</b> Statements 13A and 16A. <a href="https://mospi.gov.in/uploads/publications_reports/publications_reports1759229789833_2b8ed8ad-314e-46b7-b123-b08cb17f1233_ASI_Summary_Results_2023-24C.pdf">Official PDF</a>.</li>
+      <li><b>Microsoft Business Central India pricing.</b> Essentials ₹6,655 and Premium ₹9,150 per user/month, paid yearly; GST extra. <a href="https://www.microsoft.com/en-in/dynamics-365/products/business-central/pricing">Official pricing</a>.</li>
+      <li><b>Frappe Cloud pricing.</b> Dedicated from ₹20,000/month and Premium from ₹40,000/month. <a href="https://frappecloud.com/pricing">Official pricing</a>.</li>
+      <li><b>SaaS Capital, 2025 private B2B retention benchmarks.</b> Metric definitions and ACV/retention direction only. <a href="https://www.saas-capital.com/blog-posts/what-is-a-good-retention-rate-for-a-private-saas-company/">Research note</a>.</li>
+      <li><b>Bessemer Venture Partners, Scaling to $100 Million.</b> Historic cloud gross-margin context. <a href="https://www.bvp.com/atlas/scaling-to-100-million">Benchmark framework</a>.</li>
+      <li><b>Ministry of MSME.</b> Revised legal classification effective 1 April 2025. <a href="https://www.msme.gov.in/ministry/about-us/details/Title%3DWhat%27s-MSME-IzMzITMtQWa">Official classification</a>.</li>
+      <li><b>OpenView SaaS benchmarks.</b> Segment sensitivity of CAC payback. <a href="https://openviewpartners.com/2022-saas-benchmarks-calculator-results/">Benchmark calculator results</a>.</li>
+      <li><b>Randstad India Salary Trends 2025–26.</b> IT leads current salary rankings; software, cloud and product roles are among the top-paying mid-level jobs. <a href="https://info.randstad.in/download-salary-trends-report-2025-2026">Official report page</a>.</li>
+      <li><b>Foundit Insights Tracker, October 2025.</b> India experience-level salary ranges for computer software, AI and computer/network security. <a href="https://www.foundit.in/career-advice/wp-content/uploads/2025/11/foundit-Insights-Tracker-Oct25-Trends.pdf">Report PDF</a>.</li>
+      <li><b>IVCA and Bain, India Venture Capital Report 2026.</b> 2025 seed deal count and approximate average disclosed deal value; software/SaaS funding context. <a href="https://static.levocdn.com/WGLBUT82/bainreportindiaventurecapitalreport20261-7457340414102605824.pdf">Report PDF</a>.</li>
+    </ol>
+
+    <div class="callout"><b>Board decision:</b> approve the two offers as controlled pricing tests. Publish neither as an irreversible tariff until at least five paid pilots per segment have validated scope, willingness to pay, delivery cost and value.</div>
+    <p class="tiny"><b>Model boundary:</b> All XELOR prices, customer mix, conversion, CAC, margins, market filters, funding need and forecasts are recommendations or assumptions. No actual customer, ARR, booking, renewal, margin, CAC, production readiness or valuation is claimed. Amounts exclude GST. This is a planning document, not tax, accounting, legal, securities or valuation advice.</p>
+  </section>
+
+  <section class="page compact">
+    <h2>11. What to charge for each XELOR agent</h2>
+    <p class="lead">Individual pricing should help a customer start smaller, but it must not break governance. A specialist agent can be added only on top of the mandatory XELOR Control Foundation: ONYX + HEXA + ACHILES.</p>
+
+    <table>
+      <thead><tr><th>Agent</th><th>Plain-language responsibility</th><th>MSME · 1 plant</th><th>Multi-Plant · 2 plants</th></tr></thead>
+      <tbody>
+        <tr><td><b>ONYX</b></td><td>Coordinates agents, missions, evidence and decisions.</td><td>₹3.0L/year<br>₹25,000/month</td><td>₹9.0L/year<br>₹75,000/month</td></tr>
+        <tr><td><b>HEXA</b></td><td>Permissions, organisation, approvals and governance.</td><td>₹2.0L/year<br>₹16,667/month</td><td>₹6.0L/year<br>₹50,000/month</td></tr>
+        <tr><td><b>MICA</b></td><td>Sales, customer service and commercial coordination.</td><td>₹2.4L/year<br>₹20,000/month</td><td>₹7.2L/year<br>₹60,000/month</td></tr>
+        <tr><td><b>SPAR</b></td><td>Purchasing, suppliers and inventory coordination.</td><td>₹2.4L/year<br>₹20,000/month</td><td>₹7.2L/year<br>₹60,000/month</td></tr>
+        <tr><td><b>AXLE</b></td><td>Engineering, product structure and planning.</td><td>₹2.4L/year<br>₹20,000/month</td><td>₹7.2L/year<br>₹60,000/month</td></tr>
+        <tr><td><b>KILN</b></td><td>Production, quality and maintenance operations.</td><td>₹3.6L/year<br>₹30,000/month</td><td>₹10.8L/year<br>₹90,000/month</td></tr>
+        <tr><td><b>RASP</b></td><td>Finance, working capital, spend and people insights.</td><td>₹3.0L/year<br>₹25,000/month</td><td>₹9.0L/year<br>₹75,000/month</td></tr>
+        <tr><td><b>RELAY</b></td><td>Service workflow, incidents, changes and operating visibility.</td><td>₹1.2L/year<br>₹10,000/month</td><td>₹3.6L/year<br>₹30,000/month</td></tr>
+        <tr><td><b>ACHILES</b></td><td>Platform assurance, security, reliability and recovery checks.</td><td>₹1.0L/year<br>₹8,333/month</td><td>₹3.0L/year<br>₹25,000/month</td></tr>
+        <tr><td><b>Individual total</b></td><td>All nine bought separately.</td><td><b>₹21.0L/year</b></td><td><b>₹63.0L/year</b></td></tr>
+        <tr><td><b>All-nine bundle</b></td><td>Recommended complete platform price.</td><td><b>₹18.0L/year</b></td><td><b>₹54.0L/year</b></td></tr>
+        <tr><td><b>Bundle saving</b></td><td>Reward for adopting the coordinated system.</td><td><b>₹3.0L · 14.3%</b></td><td><b>₹9.0L · 14.3%</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card"><h3>Mandatory minimum purchase</h3><p><b>Control Foundation</b> = ONYX + HEXA + ACHILES.</p><p>MSME: <b>₹6L/year</b><br>Multi-Plant: <b>₹18L/year</b></p><p class="small">This ensures every specialist action keeps coordination, permissions, audit and assurance.</p></div>
+      <div class="card"><h3>How modular buying works</h3><p>Start with Control Foundation, then add MICA, SPAR, AXLE, KILN, RASP or RELAY at the listed price.</p><p class="small">Implementation, connectors, plants, usage and human managed services remain separate. Individual agent licences do not include custom integration.</p></div>
+    </div>
+
+    <h3>Example entry configurations</h3>
+    <table>
+      <thead><tr><th>Customer need</th><th>Agents</th><th>MSME recurring price</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Sales and customer coordination</td><td>Control Foundation + MICA</td><td>₹8.4L/year</td><td>Governed commercial workflow without the full operational suite.</td></tr>
+        <tr><td>Supply and production control</td><td>Control Foundation + SPAR + KILN</td><td>₹12.0L/year</td><td>Purchase/inventory and factory execution working under shared control.</td></tr>
+        <tr><td>Planning and factory operations</td><td>Control Foundation + AXLE + KILN</td><td>₹12.0L/year</td><td>Engineering/planning coordinated with production, quality and maintenance.</td></tr>
+        <tr><td>Finance-led command</td><td>Control Foundation + RASP</td><td>₹9.0L/year</td><td>Working-capital and finance intelligence with governed decisions.</td></tr>
+        <tr><td>Complete system</td><td>All nine agents</td><td><b>₹18.0L/year</b></td><td>Best economic value and the intended coordinated product.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout good"><b>Final recommendation:</b> show individual prices when a customer needs a smaller entry point, but lead every commercial discussion with the all-nine bundle. The bundle is simpler to understand, cheaper than the individual total and preserves XELOR’s central promise: coordinated intelligence across the whole factory.</div>
+    <div class="callout warning"><b>RELAY clarification:</b> ₹1.2L/₹3.6L is the software agent allocation only. An actual human managed-services team is charged separately at ₹6L for MSME Lite or ₹18–36L for Multi-Plant coverage.</div>
+  </section>
+</body>
+</html>

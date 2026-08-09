@@ -807,6 +807,50 @@ export const PERMISSION_REGISTRY = [
     privileged: true,
   },
 
+  // ---- FACTORY CONNECT ---------------------------------------------------------
+  {
+    permission: "integration.factory-connect.read",
+    docType: "integration_factory_connect_view",
+    description:
+      "Open the Integration Factory Connect view for governed connector evidence.",
+    privileged: false,
+  },
+  {
+    permission: "production.factory-connect.read",
+    docType: "production_factory_connect_view",
+    description:
+      "Open the Production robot-cell view backed by Factory Connect evidence.",
+    privileged: false,
+  },
+  {
+    permission: "planning.factory-flow.read",
+    docType: "planning_factory_flow_view",
+    description:
+      "Open the Planning factory-flow view backed by dwell and asset evidence.",
+    privileged: false,
+  },
+  {
+    permission: "factory.connect.read",
+    docType: "industrial_asset_binding",
+    description:
+      "Read factory gateways, robot cells, dwell intervals and command evidence.",
+    privileged: false,
+  },
+  {
+    permission: "factory.telemetry.ingest",
+    docType: "asset_state_event",
+    description:
+      "Ingest idempotent operational events through reserved factory edge gateway authority.",
+    privileged: true,
+  },
+  {
+    permission: "factory.command.execute",
+    docType: "machine_command",
+    description:
+      "Request an approval-bound allowlisted simulator command evaluation; physical edge execution is disabled.",
+    privileged: true,
+  },
+
   // ---- COPILOT ------------------------------------------------------------------
   // Holding this lets a person ASK. It does not let them see anything: every question in
   // the catalogue declares its own module permission on top, so the copilot can only

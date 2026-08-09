@@ -1,6 +1,10 @@
 "use client";
 
 import { api } from "@spine/api/client";
+import type {
+  FactoryOverview,
+  MachineCommandRequest,
+} from "@ind-core/platform/factory-connect/contracts";
 
 export type AgentKey =
   "ONYX" | "HEXA" | "MICA" | "SPAR" | "AXLE" | "KILN" | "RASP" | "RELAY" | "ACHILES";
@@ -366,6 +370,134 @@ interface DataEnvelope<T> {
   data: T;
 }
 
+export interface FactoryCommandResult {
+  commandKey: string;
+  status: string;
+  simulated: boolean;
+  replayed?: boolean;
+  verdict?: string;
+  result: unknown;
+}
+
+export type FactoryProductionView = Pick<
+  FactoryOverview,
+  "generatedAt" | "boundary" | "gateways" | "assets" | "summary" | "mission"
+>;
+
+export interface FactoryCommandEvidenceEnvelope {
+  command: (FactoryCommandResult & { capability: string; createdAt: string }) | null;
+}
+
+export const FACTORY_PRODUCTION_VIEW_PATH = "/integration/factory/views/production";
+export const factoryCommandEvidencePath = (approvalRef: string): string =>
+  `/integration/factory/commands/by-approval/${encodeURIComponent(approvalRef)}`;
+
+type PendingMutation = { fingerprint: string; key: string };
+type PendingMutationAttempt = { storageKey: string; key: string; attemptKey: string };
+type ActivePendingMutation = { inFlight: number; sawAmbiguousOutcome: boolean };
+
+const activePendingMutations = new Map<string, ActivePendingMutation>();
+
+function mutationActorContext(): string {
+  try {
+    const stored = JSON.parse(
+      window.sessionStorage.getItem("aikyantra.session") ?? "null",
+    ) as { accessToken?: string } | null;
+    const payload = stored?.accessToken?.split(".")[1];
+    if (!payload) return "public-demo-presenter";
+    const decoded = JSON.parse(
+      atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+    ) as { sub?: unknown; groups?: unknown };
+    return JSON.stringify({
+      subject: typeof decoded.sub === "string" ? decoded.sub : "unknown-subject",
+      groups: Array.isArray(decoded.groups)
+        ? decoded.groups.filter((group): group is string => typeof group === "string").sort()
+        : [],
+    });
+  } catch {
+    return "unresolved-session";
+  }
+}
+
+async function mutationFingerprint(value: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+}
+
+/**
+ * Keep one key for one logical launch until its response is received. This survives a page
+ * reload after an ambiguous network failure without making a later, intentionally new run
+ * replay forever. Only the payload hash and random key are retained in session storage.
+ */
+async function pendingMutationKey(
+  scope: string,
+  identity: unknown,
+): Promise<PendingMutationAttempt> {
+  const fingerprint = await mutationFingerprint({
+    actor: mutationActorContext(),
+    identity,
+  });
+  const storageKey = `xelor:pending-mutation:${scope}`;
+  try {
+    const parsed = JSON.parse(
+      window.sessionStorage.getItem(storageKey) ?? "null",
+    ) as PendingMutation | null;
+    if (parsed?.fingerprint === fingerprint && parsed.key) {
+      return registerPendingMutationAttempt(storageKey, parsed.key);
+    }
+  } catch {
+    // Storage can be unavailable in hardened/private browser contexts. The server remains
+    // idempotent; only cross-reload retry continuity is unavailable in that environment.
+  }
+  const key = crypto.randomUUID();
+  try {
+    window.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({ fingerprint, key } satisfies PendingMutation),
+    );
+  } catch {
+    // See the storage boundary above.
+  }
+  return registerPendingMutationAttempt(storageKey, key);
+}
+
+function registerPendingMutationAttempt(
+  storageKey: string,
+  key: string,
+): PendingMutationAttempt {
+  const attemptKey = `${storageKey}:${key}`;
+  const active = activePendingMutations.get(attemptKey);
+  if (active) active.inFlight += 1;
+  else activePendingMutations.set(attemptKey, { inFlight: 1, sawAmbiguousOutcome: false });
+  return { storageKey, key, attemptKey };
+}
+
+function settlePendingMutation(
+  attempt: PendingMutationAttempt,
+  receivedSuccess: boolean,
+): void {
+  const active = activePendingMutations.get(attempt.attemptKey);
+  if (!active) return;
+  if (!receivedSuccess) active.sawAmbiguousOutcome = true;
+  active.inFlight -= 1;
+  if (active.inFlight > 0) return;
+  activePendingMutations.delete(attempt.attemptKey);
+  if (active.sawAmbiguousOutcome || !receivedSuccess) return;
+  try {
+    const parsed = JSON.parse(
+      window.sessionStorage.getItem(attempt.storageKey) ?? "null",
+    ) as PendingMutation | null;
+    if (parsed?.key === attempt.key) {
+      window.sessionStorage.removeItem(attempt.storageKey);
+    }
+  } catch {
+    // A successful request needs no recovery key when storage is unavailable.
+  }
+}
+
 export const agentOsApi = {
   catalogue: async (): Promise<AgentCatalogue> =>
     (await api.get<DataEnvelope<AgentCatalogue>>("/agent-os/catalogue")).data,
@@ -414,30 +546,57 @@ export const agentOsApi = {
         query: { limit, ...(runId ? { runId } : {}) },
       })
     ).data,
-  start: async (goal: string, graphKey: string): Promise<AgentRunDetail> =>
-    (
-      await api.post<DataEnvelope<AgentRunDetail>>("/agent-os/runs", {
-        graphKey,
-        goal,
-        input: { surface: "phase-2-mission-control" },
-      })
-    ).data,
-  signal: async (): Promise<AgentRunDetail> =>
-    (
-      await api.post<DataEnvelope<AgentRunDetail>>("/agent-os/signals", {
-        eventId: `northstar-risk-${crypto.randomUUID()}`,
-        eventType: "delivery.commitment.at_risk",
-        sourceDomain: "operations",
-        summary:
-          "Northstar PX-400 delivery commitment requires a coordinated recovery review.",
-        severity: "high",
-        payload: {
-          customer: "Northstar Process Systems",
-          product: "PX-400",
-          source: "local_investor_demo",
-        },
-      })
-    ).data,
+  start: async (
+    goal: string,
+    graphKey: string,
+    input: Record<string, unknown> = {},
+  ): Promise<AgentRunDetail> => {
+    const body = {
+      graphKey,
+      goal,
+      input: { surface: "phase-2-mission-control", ...input },
+    };
+    return (await api.post<DataEnvelope<AgentRunDetail>>("/agent-os/runs", body)).data;
+  },
+  factoryOverview: async (): Promise<FactoryProductionView> =>
+    api.get<FactoryProductionView>(FACTORY_PRODUCTION_VIEW_PATH),
+  submitFactoryCommand: async (
+    request: MachineCommandRequest,
+  ): Promise<FactoryCommandResult> =>
+    api.post<FactoryCommandResult>("/integration/factory/commands", request, {
+      idempotencyKey: request.idempotencyKey,
+    }),
+  signal: async (): Promise<AgentRunDetail> => {
+    const signalIdentity = {
+      eventType: "delivery.commitment.at_risk",
+      sourceDomain: "operations",
+      story: "northstar-px400",
+    };
+    const pending = await pendingMutationKey("agent-os-signal", signalIdentity);
+    const eventId = `northstar-risk-${pending.key}`;
+    let receivedSuccess = false;
+    try {
+      const result = (
+        await api.post<DataEnvelope<AgentRunDetail>>("/agent-os/signals", {
+          eventId,
+          eventType: "delivery.commitment.at_risk",
+          sourceDomain: "operations",
+          summary:
+            "Northstar PX-400 delivery commitment requires a coordinated recovery review.",
+          severity: "high",
+          payload: {
+            customer: "Northstar Process Systems",
+            product: "PX-400",
+            source: "local_investor_demo",
+          },
+        }, { idempotencyKey: eventId })
+      ).data;
+      receivedSuccess = true;
+      return result;
+    } finally {
+      settlePendingMutation(pending, receivedSuccess);
+    }
+  },
   decide: async (
     approvalId: string,
     decision: "approved" | "rejected",

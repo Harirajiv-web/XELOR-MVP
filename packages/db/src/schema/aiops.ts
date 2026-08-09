@@ -4,7 +4,7 @@ import { tenantScopedColumns } from "./columns.js";
 /**
  * AI OPERATIONS (ONYX, Module 16) — the control plane for the AI itself.
  *
- * The platform already had a router, a closed 8-feature registry, a hash-chained action log
+ * The platform already had a router, a governed feature registry, a hash-chained action log
  * and per-tenant governance. Those are the *mechanism*. This module is the *operations*
  * plane over them: who may turn a feature on, what prompt is serving, which provider
  * answered and from which region, what it cost, whether the eval gate passed, what left the

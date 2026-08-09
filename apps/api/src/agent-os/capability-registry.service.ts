@@ -18,6 +18,7 @@ import { AgentAuthorizationService } from "./agent-authorization.service.js";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentActionService } from "./agent-action.service.js";
 import { PlatformHealthService } from "../modules/platform-health/platform-health.service.js";
+import { FactoryConnectService } from "../modules/integration/factory-connect.service.js";
 
 export interface CapabilityDescriptor {
   key: string;
@@ -44,6 +45,7 @@ export interface CapabilityExecutionContext {
   runId: string;
   nodeId: string;
   approvalNodeId?: string;
+  executionToken?: string;
 }
 
 @Injectable()
@@ -61,6 +63,7 @@ export class CapabilityRegistryService {
     private readonly accounts: AccountsService,
     private readonly quality: QualityService,
     private readonly platformHealth: PlatformHealthService,
+    private readonly factoryConnect: FactoryConnectService,
     private readonly actions: AgentActionService,
   ) {
     const registered: RegisteredCapability[] = [
@@ -165,6 +168,20 @@ export class CapabilityRegistryService {
             .parse(input),
         execute: async (input: Record<string, unknown>) =>
           this.production.listOrders(input.limit as number),
+      },
+      {
+        key: "production.factory-connect.read",
+        name: "Read connected factory operations",
+        description:
+          "Returns the tenant-scoped Production Factory projection: gateways, bound assets, summary and recovery mission evidence.",
+        mode: "read",
+        requiredPermission: "production.factory-connect.read",
+        allowedAgents: ["KILN"],
+        executionBoundary: "domain_service",
+        sideEffecting: false,
+        approvalRequired: false,
+        parse: (input: unknown) => z.object({}).parse(input),
+        execute: async () => this.factoryConnect.productionView(),
       },
       {
         key: "accounts.vouchers.read",
@@ -446,7 +463,7 @@ export class CapabilityRegistryService {
           input: Record<string, unknown>,
           context: CapabilityExecutionContext | undefined,
         ) => {
-          if (!context?.approvalNodeId) {
+          if (!context?.approvalNodeId || !context.executionToken) {
             throw new AppError(
               "AGENT_ACTION_APPROVAL_REQUIRED",
               409,
@@ -457,6 +474,7 @@ export class CapabilityRegistryService {
             runId: context.runId,
             nodeId: context.nodeId,
             approvalNodeId: context.approvalNodeId,
+            executionToken: context.executionToken,
             agentKey: context.agentKey,
             targetDomain: input.targetDomain as string,
             actionType: input.actionType as string,
@@ -489,6 +507,19 @@ export class CapabilityRegistryService {
     }
     const { parse: _parse, execute: _execute, ...descriptor } = capability;
     return descriptor;
+  }
+
+  permissionByCapability(): ReadonlyMap<string, string> {
+    return new Map(
+      [...this.capabilities.values()].map((capability) => [
+        capability.key,
+        capability.requiredPermission,
+      ]),
+    );
+  }
+
+  currentActorPermissions(): Promise<ReadonlySet<string>> {
+    return this.authorization.permissions();
   }
 
   async invoke(

@@ -1,5 +1,6 @@
 import {
   boolean,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -59,6 +60,7 @@ export const agentRun = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
   (t) => [
+    unique("uq_agentrun_tenant_id").on(t.tenantId, t.id),
     unique("uq_agentrun_tenant_idem").on(t.tenantId, t.idempotencyKey),
     index("ix_agentrun_tenant_status_time").on(
       t.tenantId,
@@ -81,6 +83,8 @@ export const agentNodeRun = pgTable(
     capabilityKey: text("capability_key"),
     status: text("status").notNull().default("pending"),
     attempt: integer("attempt").notNull().default(0),
+    executionToken: uuid("execution_token"),
+    executionLeaseExpiresAt: timestamp("execution_lease_expires_at", { withTimezone: true }),
     input: jsonb("input").notNull().default({}),
     output: jsonb("output"),
     errorCode: text("error_code"),
@@ -91,6 +95,11 @@ export const agentNodeRun = pgTable(
   (t) => [
     unique("uq_agentnode_run_node").on(t.tenantId, t.runId, t.nodeId),
     index("ix_agentnode_run_status").on(t.tenantId, t.runId, t.status),
+    foreignKey({
+      name: "fk_agentnode_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
   ],
 );
 
@@ -107,6 +116,11 @@ export const agentCheckpoint = pgTable(
   (t) => [
     unique("uq_agentcheckpoint_run_seq").on(t.tenantId, t.runId, t.sequence),
     index("ix_agentcheckpoint_run_time").on(t.tenantId, t.runId, t.createdAt),
+    foreignKey({
+      name: "fk_agentcheckpoint_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
   ],
 );
 
@@ -127,12 +141,18 @@ export const agentApproval = pgTable(
     decidedAt: timestamp("decided_at", { withTimezone: true }),
   },
   (t) => [
+    unique("uq_agentapproval_tenant_id").on(t.tenantId, t.id),
     unique("uq_agentapproval_run_node").on(t.tenantId, t.runId, t.nodeId),
     index("ix_agentapproval_tenant_status").on(
       t.tenantId,
       t.status,
       t.createdAt,
     ),
+    foreignKey({
+      name: "fk_agentapproval_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
   ],
 );
 
@@ -150,6 +170,11 @@ export const agentRunEvent = pgTable(
   (t) => [
     unique("uq_agentevent_run_seq").on(t.tenantId, t.runId, t.sequence),
     index("ix_agentevent_run_time").on(t.tenantId, t.runId, t.createdAt),
+    foreignKey({
+      name: "fk_agentevent_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
   ],
 );
 
@@ -181,11 +206,27 @@ export const agentActionDispatch = pgTable(
       .defaultNow(),
   },
   (t) => [
+    unique("uq_agentaction_tenant_id").on(t.tenantId, t.id),
     unique("uq_agentaction_run_node").on(t.tenantId, t.runId, t.nodeId),
     index("ix_agentaction_tenant_time").on(
       t.tenantId,
       t.dispatchedAt,
     ),
+    foreignKey({
+      name: "fk_agentaction_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
+    foreignKey({
+      name: "fk_agentaction_approval_tenant",
+      columns: [t.tenantId, t.runId, t.approvalNodeId],
+      foreignColumns: [agentApproval.tenantId, agentApproval.runId, agentApproval.nodeId],
+    }),
+    foreignKey({
+      name: "fk_agentaction_node_tenant",
+      columns: [t.tenantId, t.runId, t.nodeId],
+      foreignColumns: [agentNodeRun.tenantId, agentNodeRun.runId, agentNodeRun.nodeId],
+    }),
   ],
 );
 
@@ -229,6 +270,11 @@ export const agentStepGate = pgTable(
     unique("uq_agentstep_run_wave").on(t.tenantId, t.runId, t.waveKey),
     unique("uq_agentstep_run_sequence").on(t.tenantId, t.runId, t.sequence),
     index("ix_agentstep_tenant_status").on(t.tenantId, t.status, t.requestedAt),
+    foreignKey({
+      name: "fk_agentstep_run_tenant",
+      columns: [t.tenantId, t.runId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }).onDelete("restrict"),
   ],
 );
 
@@ -268,6 +314,11 @@ export const decisionEvidenceLink = pgTable(
     ),
     index("ix_decisionevidence_tenant_decision").on(t.tenantId, t.decisionKey),
     index("ix_decisionevidence_tenant_source").on(t.tenantId, t.sourceDomain, t.sourceType, t.sourceId),
+    foreignKey({
+      name: "fk_decisionevidence_run_tenant",
+      columns: [t.tenantId, t.missionRunId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
   ],
 );
 
@@ -302,5 +353,15 @@ export const decisionOutcomeMetric = pgTable(
     unique("uq_decisionoutcome_metric").on(t.tenantId, t.decisionKey, t.metricKey),
     index("ix_decisionoutcome_tenant_status").on(t.tenantId, t.verificationStatus, t.createdAt),
     index("ix_decisionoutcome_tenant_run").on(t.tenantId, t.missionRunId),
+    foreignKey({
+      name: "fk_decisionoutcome_run_tenant",
+      columns: [t.tenantId, t.missionRunId],
+      foreignColumns: [agentRun.tenantId, agentRun.id],
+    }),
+    foreignKey({
+      name: "fk_decisionoutcome_action_tenant",
+      columns: [t.tenantId, t.actionDispatchId],
+      foreignColumns: [agentActionDispatch.tenantId, agentActionDispatch.id],
+    }),
   ],
 );

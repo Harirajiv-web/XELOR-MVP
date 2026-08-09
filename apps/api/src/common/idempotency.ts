@@ -38,6 +38,39 @@ function resolveExisting<T>(
 /**
  * Run `work` at most once per Idempotency-Key. `work` performs the real mutation
  * (in its own tenant transaction) and returns the {status, body} to remember.
+ *
+ * ---------------------------------------------------------------------------
+ * A KEY CAN WEDGE, AND THAT IS THE SAFE FAILURE — DO NOT "FIX" IT WITH A TTL
+ * ---------------------------------------------------------------------------
+ * Step 3 does the work; step 4 records the answer. Between those two the row is
+ * `pending`. If the process is killed in that window — a deploy, an OOM, a pulled plug —
+ * the row stays `pending` for ever and every retry of that key gets
+ * `IDEMPOTENCY_IN_PROGRESS` (409). Permanently. That looks like a bug and it is reported
+ * as one, so the reasoning is written down here rather than rediscovered under pressure.
+ *
+ * The obvious repair — expire `pending` rows after N minutes and let the retry through —
+ * is WRONG here, because the two states this code cannot distinguish are:
+ *
+ *   (a) the work never ran            -> replaying is correct;
+ *   (b) the work ran and committed,
+ *       and only the bookkeeping died -> replaying posts it TWICE.
+ *
+ * These are the endpoints that carry stock movements, GST invoices and journal vouchers.
+ * (b) is a duplicate financial write into an append-only ledger with no row-level undo;
+ * (a) is a request the caller can simply re-issue under a new key. A stuck 409 is the
+ * cheaper of the two by a wide margin, so it is deliberate, not an oversight.
+ *
+ * OPERATOR PROCEDURE when a caller reports a permanently-409 key:
+ *
+ *   1. Find it:  SELECT * FROM idempotency_key
+ *                 WHERE tenant_id = $1 AND key = $2 AND status = 'pending';
+ *   2. Decide whether the work actually landed — look for the domain row the request
+ *      would have written (the voucher, the stock entry, the invoice), NOT at this table.
+ *   3. If it did land: the request succeeded. Nothing to replay; tell the caller the
+ *      outcome and leave the row alone.
+ *   4. If it did NOT land: delete that single row, and the next retry runs cleanly.
+ *
+ * Step 2 is the whole procedure. Deleting without it is the double-post.
  */
 export async function runIdempotent<T>(
   key: string,

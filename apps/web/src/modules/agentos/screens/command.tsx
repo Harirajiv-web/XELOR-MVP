@@ -63,10 +63,10 @@
  * the record count and the execution mode; they never print the rows.
  *
  * ───────────────────────────────────────────────────────────────────────────────
- * EIGHT AGENTS, SEVEN LANES
+ * NINE AGENTS, EIGHT SPECIALIST LANES
  * ───────────────────────────────────────────────────────────────────────────────
  * `AGENT_KEYS` is ONYX plus HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY and ACHILES. ONYX is the
- * supervisor and has its own region; the runway therefore has seven lanes and the network
+ * supervisor and has its own region; the runway therefore has eight lanes and the network
  * is nine agents. Both numbers are true and they are not interchangeable — "9/9 connected"
  * counts the registry, "eight specialists" counts the delegates.
  *
@@ -79,13 +79,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import * as Icons from "lucide-react";
+import type {
+  MachineCommandIntent,
+  MachineCommandRequest,
+} from "@ind-core/platform/factory-connect/contracts";
 import { useAccess } from "@spine/access/permissions";
+import { useQuery } from "@spine/data/use-query";
 import { department } from "@spine/registry/departments";
+import type { ScreenProps } from "@spine/registry/manifest";
 import { Meter } from "@spine/ui/motion";
 import { cn } from "@spine/ui/cn";
 import { Disclosure } from "@spine/ui/disclosure";
 import {
   agentOsApi,
+  FACTORY_PRODUCTION_VIEW_PATH,
+  factoryCommandEvidencePath,
+  type FactoryCommandResult,
+  type FactoryCommandEvidenceEnvelope,
+  type FactoryProductionView,
   type AgentAction,
   type AgentCatalogue,
   type AgentKey,
@@ -95,6 +106,18 @@ import {
   type GraphDefinition,
   type GraphNodeDefinition,
 } from "../api";
+import {
+  buildFactoryCommandIntent,
+  completePendingFactoryCommandIntent,
+  commandableSimulatorAssets,
+  compatibleCapabilities,
+  defaultFactoryCommandDraft,
+  pendingFactoryCommandIntent,
+  FactoryCommandComposer,
+  FactoryCommandIntentView,
+  readFactoryCommandIntent,
+  type FactoryCommandDraft,
+} from "./factory-command";
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    THE CAST
@@ -137,6 +160,17 @@ const PRESETS = [
   "Prepare an investor-ready operating brief using current tenant evidence.",
   "Identify the most material cross-functional operating risks and show their evidence.",
 ] as const;
+
+const DEFAULT_GRAPH_KEY = "operations.controlled-action-mission";
+const FACTORY_FLOW_GRAPH_KEY = "factory.flow-recovery";
+const FACTORY_FLOW_GOAL =
+  "Review the current factory constraint and material dwell evidence, then prepare a bounded recovery for human approval.";
+
+function runGraphLabel(graphKey: string): string {
+  if (graphKey === DEFAULT_GRAPH_KEY) return "Run controlled-action mission";
+  if (graphKey === FACTORY_FLOW_GRAPH_KEY) return "Run factory-flow recovery";
+  return "Run nine-agent review";
+}
 
 const TERMINAL = new Set(["completed", "failed", "cancelled"]);
 const NODE_DONE = new Set(["succeeded", "skipped"]);
@@ -281,6 +315,12 @@ function errorMessage(error: unknown): string {
   return error instanceof Error
     ? error.message
     : "The Agent OS request could not be completed.";
+}
+
+function resultNote(value: unknown): string | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const note = (value as Record<string, unknown>).note;
+  return typeof note === "string" ? note : null;
 }
 
 function formatWhen(value: string | null | undefined): string {
@@ -875,23 +915,31 @@ function deriveEvidence(
    THE SCREEN
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-export default function AgentCommandScreen(): React.JSX.Element {
-  const { can } = useAccess();
+export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.Element {
+  const { can, identity } = useAccess();
   const canOperate = can("agentos.run.operate");
   const canDecide = can("agentos.approval.decide");
+  const canReadFactory = can("production.factory-connect.read");
+  const canExecuteFactory = can("factory.command.execute");
+  const canViewFactoryLedger = can("integration.factory-connect.read");
+  const requestedGraphKey = params[0];
 
   const [catalogue, setCatalogue] = useState<AgentCatalogue | null>(null);
   const [runs, setRuns] = useState<readonly AgentRunSummary[]>([]);
   const [actions, setActions] = useState<readonly AgentAction[]>([]);
   const [active, setActive] = useState<AgentRunDetail | null>(null);
   const [selectedGraphKey, setSelectedGraphKey] = useState(
-    "operations.controlled-action-mission",
+    requestedGraphKey ?? DEFAULT_GRAPH_KEY,
   );
-  const [goal, setGoal] = useState<string>(PRESETS[0]);
+  const [goal, setGoal] = useState<string>(
+    requestedGraphKey === FACTORY_FLOW_GRAPH_KEY ? FACTORY_FLOW_GOAL : PRESETS[0],
+  );
   const [busy, setBusy] = useState<
-    "loading" | "starting" | "signalling" | "cancelling" | null
+    "loading" | "starting" | "signalling" | "cancelling" | "submitting-factory" | null
   >("loading");
   const [error, setError] = useState<string | null>(null);
+  const [factoryDraft, setFactoryDraft] = useState<FactoryCommandDraft | null>(null);
+  const [factoryCommandResult, setFactoryCommandResult] = useState<FactoryCommandResult | null>(null);
 
   /** Which lane is open. One at a time — the others compress rather than disappear. */
   const [openLane, setOpenLane] = useState<AgentKey | null>(null);
@@ -904,6 +952,43 @@ export default function AgentCommandScreen(): React.JSX.Element {
   const [usedOnly, setUsedOnly] = useState(false);
   /** Ticks only while a mission is in flight. See the effect below. */
   const [now, setNow] = useState<number>(() => Date.now());
+
+  const factorySurfaceActive =
+    selectedGraphKey === FACTORY_FLOW_GRAPH_KEY ||
+    active?.run.graphKey === FACTORY_FLOW_GRAPH_KEY;
+  const factoryQuery = useQuery<FactoryProductionView>(
+    factorySurfaceActive && canReadFactory ? FACTORY_PRODUCTION_VIEW_PATH : null,
+  );
+
+  useEffect(() => {
+    if (!requestedGraphKey) return;
+    setSelectedGraphKey(requestedGraphKey);
+    if (requestedGraphKey === FACTORY_FLOW_GRAPH_KEY) setGoal(FACTORY_FLOW_GOAL);
+  }, [requestedGraphKey]);
+
+  useEffect(() => {
+    const overview = factoryQuery.data;
+    if (selectedGraphKey !== FACTORY_FLOW_GRAPH_KEY || !overview) return;
+    setFactoryDraft((current) => {
+      if (current) {
+        const currentAsset = commandableSimulatorAssets(overview).find(
+          (asset) => asset.assetCode === current.assetCode,
+        );
+        if (
+          currentAsset &&
+          currentAsset.state === current.requiredState &&
+          compatibleCapabilities(currentAsset).includes(current.capability)
+        ) {
+          return current;
+        }
+      }
+      return defaultFactoryCommandDraft(overview);
+    });
+  }, [factoryQuery.data, selectedGraphKey]);
+
+  useEffect(() => {
+    setFactoryCommandResult(null);
+  }, [active?.run.id]);
 
   const refreshRuns = useCallback(async (preferredRunId?: string) => {
     const nextRuns = await agentOsApi.runs();
@@ -990,7 +1075,25 @@ export default function AgentCommandScreen(): React.JSX.Element {
           (candidate) => candidate.key === selectedGraphKey,
         ) ?? catalogue.graphs[0];
       if (!graph) throw new Error("No active Agent OS graph is registered.");
-      const detail = await agentOsApi.start(goal.trim(), graph.key);
+      let missionInput: Record<string, unknown> = {};
+      let sealedFactoryIntent: MachineCommandIntent | null = null;
+      if (graph.key === FACTORY_FLOW_GRAPH_KEY && canExecuteFactory) {
+        if (!canReadFactory) {
+          throw new Error("Current factory state cannot be read with this role, so a command intent cannot be approved.");
+        }
+        if (factoryQuery.loading || factoryQuery.error || !factoryDraft) {
+          throw new Error("A valid state-compatible simulator command is required before starting this recovery mission.");
+        }
+        const intent = pendingFactoryCommandIntent(
+          factoryDraft,
+          identity?.subject ?? "unresolved-actor",
+        );
+        if (!intent.valid) throw new Error(intent.reason);
+        sealedFactoryIntent = intent.value;
+        missionInput = { factoryCommand: intent.value };
+      }
+      const detail = await agentOsApi.start(goal.trim(), graph.key, missionInput);
+      if (sealedFactoryIntent) completePendingFactoryCommandIntent(sealedFactoryIntent);
       setActive(detail);
       await refreshRuns(detail.run.id);
     } catch (cause) {
@@ -1063,10 +1166,90 @@ export default function AgentCommandScreen(): React.JSX.Element {
   const pendingApproval = active?.approvals.find(
     (approval) => approval.status === "pending",
   );
+  const activeFactoryIntent =
+    active?.run.graphKey === FACTORY_FLOW_GRAPH_KEY
+      ? readFactoryCommandIntent(active.run.input.factoryCommand)
+      : null;
+  const factoryApproval =
+    active?.run.graphKey === FACTORY_FLOW_GRAPH_KEY
+      ? active.approvals.find((approval) => approval.nodeId === "human-approval")
+      : undefined;
+  const factoryEvidenceQuery = useQuery<FactoryCommandEvidenceEnvelope>(
+    canExecuteFactory && factoryApproval
+      ? factoryCommandEvidencePath(factoryApproval.id)
+      : null,
+  );
+  const recordedFactoryCommand = factoryEvidenceQuery.data?.command ?? undefined;
+  const factoryEvidence =
+    factoryCommandResult ??
+    (recordedFactoryCommand
+      ? {
+          commandKey: recordedFactoryCommand.commandKey,
+          status: recordedFactoryCommand.status,
+          simulated: recordedFactoryCommand.simulated,
+          result: recordedFactoryCommand.result,
+        }
+      : null);
+  const activeFactoryAsset = activeFactoryIntent
+    ? factoryQuery.data?.assets.find(
+        (asset) => asset.assetCode === activeFactoryIntent.assetCode,
+      )
+    : undefined;
+  const factoryIntentExpired = activeFactoryIntent
+    ? Date.parse(activeFactoryIntent.expiresAt) <= Date.now()
+    : false;
+  const factoryMissionCompleted = active?.run.status === "completed";
+  const factoryDraftValidation = factoryDraft
+    ? buildFactoryCommandIntent(factoryDraft)
+    : null;
+  const factoryComposerReady =
+    selectedGraphKey !== FACTORY_FLOW_GRAPH_KEY ||
+    !canExecuteFactory ||
+    (canReadFactory &&
+      !factoryQuery.loading &&
+      !factoryQuery.error &&
+      factoryDraftValidation?.valid === true);
 
   useEffect(() => {
     window.dispatchEvent(new Event("xelor:approvals-changed"));
   }, [pendingApproval?.id]);
+
+  const submitFactoryCommand = async (): Promise<void> => {
+    if (
+      !activeFactoryIntent ||
+      !factoryApproval ||
+      factoryApproval.status !== "approved" ||
+      !factoryMissionCompleted ||
+      !canExecuteFactory ||
+      activeFactoryAsset?.adapterMode !== "simulator" ||
+      factoryEvidenceQuery.loading ||
+      factoryEvidenceQuery.error ||
+      factoryEvidence
+    ) {
+      return;
+    }
+    if (Date.parse(activeFactoryIntent.expiresAt) <= Date.now()) {
+      setError("This exact approved simulator intent has expired. Start a new Factory Flow mission to request a fresh approval.");
+      return;
+    }
+    const idempotencyKey = `factory-command:${factoryApproval.id}`;
+    const request = {
+      ...activeFactoryIntent,
+      approvalRef: factoryApproval.id,
+      idempotencyKey,
+    } as MachineCommandRequest;
+    setBusy("submitting-factory");
+    setError(null);
+    try {
+      const result = await agentOsApi.submitFactoryCommand(request);
+      setFactoryCommandResult(result);
+      factoryEvidenceQuery.reload();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const nodeTotal = active?.nodes.length ?? 0;
   const nodeDone =
@@ -1149,7 +1332,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
           />
           <BarStat
             label="Agents working"
-            value={`${activeAgents}/6`}
+            value={`${activeAgents}/${SPECIALISTS.length}`}
             icon={Icons.Users}
             numeric
           />
@@ -1217,6 +1400,115 @@ export default function AgentCommandScreen(): React.JSX.Element {
         </section>
       ) : null}
 
+      {activeFactoryIntent ? (
+        <section
+          className="rounded-[13px] border border-[color-mix(in_srgb,var(--warn)_34%,var(--border-subtle))] bg-[var(--warn-soft)] p-4"
+          aria-labelledby="active-factory-command-title"
+          data-testid="active-factory-command"
+        >
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-[var(--warn-ink)]">Separate simulator command gate</p>
+              <h2 id="active-factory-command-title" className="mt-1 text-[14px] font-extrabold text-[var(--text-primary)]">Approval-bound Factory Connect intent</h2>
+              <p className="mt-1 max-w-[72ch] text-[10.5px] leading-4 text-[var(--text-secondary)]">The mission may analyse and approve this exact request. Only the separate submit action below can record it with the simulator.</p>
+            </div>
+            <span className="rounded-full border border-[var(--status-pending-border)] bg-[var(--surface)] px-2.5 py-1 text-[9.5px] font-bold text-[var(--warn-ink)]">
+              {factoryApproval ? humanise(factoryApproval.status) : "Not at approval yet"}
+            </span>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
+            <FactoryCommandIntentView intent={activeFactoryIntent} />
+            <div className="rounded-[11px] border border-[var(--border-subtle)] bg-[var(--surface)] p-3">
+              {factoryEvidence ? (
+                <div role="status" data-testid="factory-command-result">
+                  <div className="flex items-start gap-2">
+                    {factoryEvidence.simulated ? (
+                      <Icons.CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ok)]" aria-hidden />
+                    ) : (
+                      <Icons.Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--warn)]" aria-hidden />
+                    )}
+                    <div>
+                      <h3 className="text-[12px] font-extrabold text-[var(--text-primary)]">
+                        {factoryEvidence.simulated
+                          ? "Simulator evidence recorded — no physical execution"
+                          : "Edge request recorded — execution not confirmed"}
+                      </h3>
+                      <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">
+                        {resultNote(factoryEvidence.result) ??
+                          "The command record is stored with its approval and result evidence."}
+                      </p>
+                    </div>
+                  </div>
+                  <dl className="mt-3 grid gap-2 text-[10px] sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <div><dt className="text-[var(--text-muted)]">Command key</dt><dd className="font-[var(--font-mono)] text-[var(--text-primary)]">{factoryEvidence.commandKey}</dd></div>
+                    <div><dt className="text-[var(--text-muted)]">Recorded status</dt><dd className="font-semibold text-[var(--text-primary)]">{humanise(factoryEvidence.status)}</dd></div>
+                  </dl>
+                  {canViewFactoryLedger ? (
+                    <Link href="/integration/factory-connect" className="btn btn-ghost btn-sm mt-3 inline-flex">
+                      View Factory Connect ledger
+                      <Icons.ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                    </Link>
+                  ) : (
+                    <p className="mt-3 text-[9.5px] leading-4 text-[var(--text-muted)]">The Integration operator can inspect this record in the Factory Connect ledger.</p>
+                  )}
+                </div>
+              ) : factoryApproval?.status === "rejected" ? (
+                <div>
+                  <h3 className="text-[12px] font-extrabold text-[var(--bad-ink)]">Command intent rejected</h3>
+                  <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">No simulator command can be submitted from this mission.</p>
+                </div>
+              ) : factoryApproval?.status === "approved" ? (
+                <div>
+                  <h3 className="text-[12px] font-extrabold text-[var(--text-primary)]">Human approval recorded</h3>
+                  {!factoryMissionCompleted ? (
+                    <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">ONYX is finishing the approved recovery brief before a simulator submission is offered.</p>
+                  ) : factoryIntentExpired ? (
+                    <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">This exact approval has expired. Start a new Factory Flow mission to create a fresh bounded intent.</p>
+                  ) : !canExecuteFactory ? (
+                    <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">Your role can inspect this approval but does not hold <code>factory.command.execute</code>.</p>
+                  ) : factoryEvidenceQuery.loading ? (
+                    <p className="mt-1 text-[10px] text-[var(--text-secondary)]">Checking whether this approval already has simulator evidence…</p>
+                  ) : factoryEvidenceQuery.error ? (
+                    <div role="alert">
+                      <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">The command ledger could not be checked, so XELOR will not offer another submission.</p>
+                      <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={factoryEvidenceQuery.reload}>Check again</button>
+                    </div>
+                  ) : factoryQuery.loading ? (
+                    <p className="mt-1 text-[10px] text-[var(--text-secondary)]">Rechecking the simulator asset and gateway…</p>
+                  ) : activeFactoryAsset?.adapterMode !== "simulator" ? (
+                    <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">This surface submits only to an explicit simulator. No physical or unverified edge command is offered.</p>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">One click records the exact approved request against the simulator. The same approval and stable idempotency key are reused on a safe retry.</p>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm mt-3 w-full justify-center"
+                        disabled={busy !== null}
+                        onClick={() => void submitFactoryCommand()}
+                      >
+                        {busy === "submitting-factory" ? (
+                          <Icons.LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                        ) : (
+                          <Icons.Send className="h-3.5 w-3.5" aria-hidden />
+                        )}
+                        {busy === "submitting-factory" ? "Recording with simulator…" : "Submit simulated command"}
+                      </button>
+                      <p className="mt-2 text-[9px] leading-3.5 text-[var(--text-muted)]">This does not claim robot motion, material movement or controller execution.</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-[12px] font-extrabold text-[var(--text-primary)]">No command submitted</h3>
+                  <p className="mt-1 text-[10px] leading-4 text-[var(--text-secondary)]">The intent is sealed into this mission and remains inactive while evidence is verified and the human decision is pending.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* Run start, delegation, approval, failure and completion, announced (§13). A screen
           whose whole subject is "work is happening elsewhere" has to say so out loud, or it
           is a picture only sighted users are invited to. */}
@@ -1251,7 +1543,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
               <div>
                 <p className="agent-panel-kicker">Department activity</p>
                 <h2 id="agent-runway-heading">
-                  Work across seven departments.
+                  Work across eight specialist departments.
                 </h2>
               </div>
               <label className="agent-follow">
@@ -1424,6 +1716,25 @@ export default function AgentCommandScreen(): React.JSX.Element {
                 </option>
               ))}
             </select>
+            {selectedGraphKey === FACTORY_FLOW_GRAPH_KEY ? (
+              <>
+                <FactoryCommandComposer
+                  overview={factoryQuery.data}
+                  loading={factoryQuery.loading}
+                  error={factoryQuery.error}
+                  canRead={canReadFactory}
+                  canExecute={canExecuteFactory}
+                  draft={factoryDraft}
+                  onDraftChange={setFactoryDraft}
+                  onRetry={factoryQuery.reload}
+                />
+                {canExecuteFactory && factoryDraftValidation?.valid === false ? (
+                  <p className="agent-permission-note" role="alert">
+                    {factoryDraftValidation.reason}
+                  </p>
+                ) : null}
+              </>
+            ) : null}
             <label className="agent-goal-label" htmlFor="agent-goal">
               What should ONYX help with?
             </label>
@@ -1450,7 +1761,7 @@ export default function AgentCommandScreen(): React.JSX.Element {
             <button
               type="button"
               className="agent-primary-action"
-              disabled={!canOperate || busy !== null || goal.trim().length < 5}
+              disabled={!canOperate || busy !== null || goal.trim().length < 5 || !factoryComposerReady}
               onClick={() => void startMission()}
             >
               {busy === "starting" ? (
@@ -1463,9 +1774,9 @@ export default function AgentCommandScreen(): React.JSX.Element {
               )}
               {busy === "starting"
                 ? "Coordinating…"
-                : selectedGraphKey === "operations.controlled-action-mission"
-                  ? "Run controlled-action mission"
-                  : "Run nine-agent review"}
+                : selectedGraphKey === FACTORY_FLOW_GRAPH_KEY && !canExecuteFactory
+                  ? "Run factory-flow analysis"
+                  : runGraphLabel(selectedGraphKey)}
             </button>
             <button
               type="button"

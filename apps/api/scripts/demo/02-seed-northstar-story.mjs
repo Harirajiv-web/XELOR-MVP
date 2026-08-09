@@ -36,10 +36,11 @@
  *
  *   node scripts/demo/02-seed-northstar-story.mjs [--verbose]
  *
- * Idempotent by construction: every mutation carries a deterministic Idempotency-Key, so a
- * second run replays rather than duplicates. For a genuinely clean rebuild between
- * presentations use `pnpm demo:rebuild` — see `packages/db/src/demo-reset.ts` for why a
- * row-by-row undo is not possible in a system whose ledgers refuse DELETE.
+ * Stable mutations use deterministic Idempotency-Keys and explicit conflict handling, but
+ * several newer scenario endpoints do not yet expose an idempotency contract. Do not use a
+ * whole-script rerun as a cleanliness guarantee. For a deterministic presentation dataset
+ * use `pnpm demo:rebuild` — see `packages/db/src/demo-reset.ts` for why a row-by-row undo is
+ * not possible in a system whose ledgers refuse DELETE.
  */
 
 import {
@@ -1546,28 +1547,35 @@ async function micaDispatch(call) {
         totalValue: 1_734_600,
         aato: 150_000_000,
       });
-      const irnOk = irn.status === 200 || irn.status === 201;
-      const ewb = await call("POST", "/api/v1/integration/ewaybill/generate", {
-        shipmentRef: `SHP-NS-${String(created.dispatchNo ?? "0001").slice(-4)}`,
-        invoiceRef: created.invoiceNo,
-        consignmentValue: 1_734_600,
-        distanceKm: 470,
-        vehicleNo: "MH14JK5520",
-        transporterGstin: "27AACFT5566H1ZP",
-        shipToGstin: NS.gstin,
-        billToState: "27",
-        shipToState: "24",
-      });
-      const ewbOk = ewb.status === 200 || ewb.status === 201;
-      // A shipment already billed answers 500 rather than 409 — `uq_ewb_tenant_shipment`
-      // fires and the duplicate-key violation is not mapped to the error envelope. Same
-      // defect as the claim submit above; it only shows on a re-run.
-      const ewbNote = ewbOk
-        ? `e-way bill on ${ewb.body?.portalUsed ?? "portal"}`
-        : ewb.status === 500
-          ? "e-way bill already raised for this shipment"
-          : `EWB ${ewb.status}`;
-      return { note: `${irnOk ? `IRN ${irn.body?.status ?? "generated"}` : `IRN ${irn.status}`} · ${ewbNote}` };
+      const irnBody = expect(irn, [200, 201], "submit invoice to IRP");
+
+      const shipmentRef = `SHP-NS-${String(created.dispatchNo ?? "0001").slice(-4)}`;
+      const existingBills = rows(
+        expect(await call("GET", "/api/v1/integration/ewaybill"), 200, "read e-way bills"),
+      );
+      const existingBill = existingBills.find((bill) => bill.shipmentRef === shipmentRef);
+      let ewbNote;
+      if (existingBill) {
+        ewbNote = `e-way bill already present on ${existingBill.portalUsed ?? "recorded portal"}`;
+      } else {
+        const ewbBody = expect(
+          await call("POST", "/api/v1/integration/ewaybill/generate", {
+            shipmentRef,
+            invoiceRef: created.invoiceNo,
+            consignmentValue: 1_734_600,
+            distanceKm: 470,
+            vehicleNo: "MH14JK5520",
+            transporterGstin: "27AACFT5566H1ZP",
+            shipToGstin: NS.gstin,
+            billToState: "27",
+            shipToState: "24",
+          }),
+          [200, 201],
+          "generate e-way bill",
+        );
+        ewbNote = `e-way bill on ${ewbBody.portalUsed ?? "portal"}`;
+      }
+      return { note: `IRN ${irnBody.status ?? "generated"} · ${ewbNote}` };
     });
   }
 
@@ -1610,7 +1618,18 @@ async function decisionIntelligence(call) {
     throw new Error("the decision room must contain both a planning risk and the Northstar commitment");
   }
 
+  const priorOutcomes = rows(
+    expect(await call("GET", "/api/v1/agent-os/commander/outcomes?limit=100"), 200, "read decision outcomes"),
+  );
+  const historyAlreadyRecorded = priorOutcomes.some(
+    (outcome) =>
+      outcome.metricKey === "governed_work_items_verified" &&
+      outcome.verificationStatus === "verified" &&
+      String(outcome.decisionKey ?? "").startsWith("planning:"),
+  );
+
   const historical = await step("create the governed example that becomes organizational memory", async () => {
+    if (historyAlreadyRecorded) return SKIPPED;
     const body = expect(
       await call(
         "POST",
@@ -1626,12 +1645,17 @@ async function decisionIntelligence(call) {
   });
 
   if (historical?.run?.id) {
-    const hexa = makeClient(await token("hexa.admin"));
+    // The approver must be a different person who can inspect every source used by this
+    // cross-functional graph. The HEXA persona intentionally cannot read commercial,
+    // finance, planning and manufacturing records; using it here would ask somebody to
+    // approve evidence they are forbidden to review. Hari is the separate, full-evidence
+    // demo administrator, while Venkat remains the mission requester.
+    const reviewer = makeClient(await token("hari", "1234"));
     await step("a different person approves the historical governed plan", async () => {
       const pending = historical.approvals?.find((approval) => approval.status === "pending");
       if (!pending) return SKIPPED;
       const body = expect(
-        await hexa(
+        await reviewer(
           "POST",
           `/api/v1/agent-os/approvals/${pending.id}/decide`,
           {
@@ -1649,7 +1673,7 @@ async function decisionIntelligence(call) {
 
     await step("record one verified non-financial outcome for decision learning", async () => {
       const body = expect(
-        await hexa(
+        await reviewer(
           "POST",
           "/api/v1/agent-os/commander/outcomes",
           {
@@ -1742,13 +1766,23 @@ async function onyx(call) {
     });
   }
 
-  // A correlation id is metered ONCE — a repeat is a duplicate reading, and the store
-  // refuses it. On a re-run against a database that already has the row that surfaces as a
-  // 500 rather than a 409, so it is tolerated here rather than reported as a broken step.
+  // A correlation id is metered ONCE. Read the exact record first so a rerun is genuinely
+  // idempotent even while the API's unique-constraint mapping is being hardened. This is
+  // deliberately not "500 means duplicate": only a readable metric with this correlation
+  // id is evidence that the intended work already happened.
   await step("record what those calls cost", async () => {
+    const correlationId = `ns-copilot-${TODAY}`;
+    const existing = await call("GET", `/api/v1/aiops/explain/${encodeURIComponent(correlationId)}`);
+    if (existing.status === 200) {
+      const b = expect(existing, 200, "read existing meter");
+      if (b.correlationId === correlationId && b.cost) return SKIPPED;
+      throw new Error(`AI explanation ${correlationId} exists without its metered cost`);
+    }
+    expect(existing, 404, "check existing meter");
+
     const res = await call("POST", "/api/v1/aiops/metrics", {
       featureKey: "copilot.retrieval_qa",
-      correlationId: `ns-copilot-${TODAY}`,
+      correlationId,
       modelCode: "stub-deterministic",
       providerCode: "stub",
       region: "ap-south-1",
@@ -1756,9 +1790,9 @@ async function onyx(call) {
       outputTokens: 610,
       latencyMs: 340,
     });
-    if (res.status === 409 || res.status === 500) return SKIPPED;
+    if (res.status === 409) return SKIPPED;
     const b = expect(res, [200, 201], "meter");
-    return { note: `${b.inputTokens + b.outputTokens} tokens priced at the rate in force on ${b.priceEffectiveFrom}` };
+    return { note: `${2840 + 610} tokens priced at the rate in force on ${b.priceEffectiveFrom}` };
   });
 
   /**
@@ -1858,6 +1892,9 @@ async function hexa(call) {
   console.log("\nHEXA — the evidence, last, so it covers everything above");
 
   await step("the governance review for the credit override", async () => {
+    const incidents = rows(expect(await call("GET", "/api/v1/admin/incidents"), 200, "read governance records"));
+    if (incidents.some((incident) => incident.incidentNo === "HEXA-GOV-024")) return SKIPPED;
+
     const res = await call("POST", "/api/v1/admin/incidents", {
       incidentNo: "HEXA-GOV-024",
       title: "Credit limit overridden on the Northstar PX-400 order",
@@ -1871,9 +1908,9 @@ async function hexa(call) {
       piiAffected: false,
       certInReportable: false,
     });
-    // 500 here is `uq_incident_tenant_no` on a re-run — the same unmapped duplicate-key
-    // violation as the claim submit and the e-way bill.
-    if (res.status === 409 || res.status === 500) return SKIPPED;
+    // Re-runs may meet the named unique incident and receive the API's explicit conflict.
+    // An arbitrary 5xx is never evidence that the intended record already exists.
+    if (res.status === 409) return SKIPPED;
     const b = expect(res, [200, 201], "raise governance record");
     return { note: `${b.incidentNo ?? "HEXA-GOV-024"} — a control that fired, logged as one` };
   });

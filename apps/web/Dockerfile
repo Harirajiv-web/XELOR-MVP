@@ -26,12 +26,12 @@ COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/platform/package.json packages/platform/
 COPY packages/db/package.json packages/db/
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@ind-core/web..."
+RUN pnpm install --frozen-lockfile --filter "@ind-core/web..."
 
 # ---------------------------------------------------------------------- build
 FROM deps AS build
 COPY tsconfig.base.json ./
+COPY packages/platform ./packages/platform
 COPY apps/web ./apps/web
 
 ARG NEXT_PUBLIC_API_ORIGIN=http://api:3000
@@ -46,14 +46,14 @@ ENV NEXT_PUBLIC_API_ORIGIN=$NEXT_PUBLIC_API_ORIGIN \
     NEXT_PUBLIC_PUBLIC_DEMO=$NEXT_PUBLIC_PUBLIC_DEMO \
     NODE_ENV=production
 
-# next.config.ts sets `typescript.ignoreBuildErrors: false`, so a type error fails the
-# image rather than shipping a screen that renders a blank column.
-RUN pnpm --filter @ind-core/web build
+# The web imports shared platform contracts through the package's dist/ export. Build that
+# workspace package in the clean image before Next typechecks the application.
+RUN pnpm --filter @ind-core/platform build \
+ && pnpm --filter @ind-core/web build
 
 # -------------------------------------------------------------------- runtime
 FROM build AS pruned
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@ind-core/web..."
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@ind-core/web..."
 
 FROM base AS runtime
 ENV NODE_ENV=production

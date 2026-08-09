@@ -6,7 +6,7 @@ connector is configured.
 
 ## Controlled action graph
 
-`operations.controlled-action-mission@2`:
+`operations.controlled-action-mission@3`:
 
 1. ONYX bounds the operating objective.
 2. HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY and ACHILES read eight live, tenant-scoped

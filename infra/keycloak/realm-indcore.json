@@ -18,8 +18,11 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
-      "redirectUris": ["*"],
-      "webOrigins": ["*"],
+      "redirectUris": [
+        "http://localhost:3001/callback",
+        "http://localhost:3001"
+      ],
+      "webOrigins": ["http://localhost:3001"],
       "protocolMappers": [
         {
           "name": "groups",

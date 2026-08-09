@@ -1,6 +1,7 @@
 import { chromium } from "@playwright/test";
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
@@ -27,20 +28,19 @@ const htmlDir = resolve(root, "docs/reports/agent-guides");
 const pdfDir = resolve(root, "docs/05-deliverables/agent-guides");
 const proofDir = resolve(root, "apps/web/test-results/agent-guide-proofs");
 
-const SNAPSHOT = "7 August 2026";
+const SNAPSHOT = "8 August 2026";
 
 /* ============================================================================
    SYSTEM FACTS — counted from the implementation, not estimated.
    ============================================================================ */
 const SYSTEM = {
   agents: 9,
-  capabilities: 18,
-  graphs: 6,
-  graphNodes: 84,
+  capabilities: 19,
+  graphs: 7,
   modules: 22,
-  permissions: 141,
+  permissions: 147,
   copilotIntents: 21,
-  aiFeatures: 8,
+  aiFeatures: 9,
   sideEffecting: 1,
 };
 
@@ -87,7 +87,7 @@ const MODULES = [
     handoffs:
       "Coordinates all eight specialists. Domain reads still pass through their normal services, and the single effect writes a governed assignment rather than modifying ERP records. ACHILES has no effectful tool.",
     boundary:
-      "Six mission graphs and durable orchestration are live. Agent language reasoning is deterministic and dispatched work remains work for a person, not proof of completion.",
+      "Seven mission graphs and durable orchestration are live, including factory-flow recovery. Agent language reasoning is deterministic and dispatched work remains work for a person, not proof of completion.",
   },
   {
     key: "aiops",
@@ -172,7 +172,7 @@ const MODULES = [
     purpose:
       "The evidence and access centre for roles, separation of duties, security posture, incidents, privacy requests, audit integrity and licences.",
     records:
-      "139 permission keys, roles and grants, SoD rules/findings, access simulations, CERT-In incident clocks, privacy requests, audit-chain verification/anchors, retention and licence state.",
+      `${SYSTEM.permissions} permission keys, roles and grants, SoD rules/findings, access simulations, CERT-In incident clocks, privacy requests, audit-chain verification/anchors, retention and licence state.`,
     screens:
       "Roles & access; Segregation; Security posture; Incidents; Privacy; Audit; Licence.",
     workflow:
@@ -182,7 +182,7 @@ const MODULES = [
     handoffs:
       "Every module consumes identity and permission decisions. Agent OS uses the same authority context; Integration and AI Operations report incidents and evidence into the control view.",
     boundary:
-      "Core access, SoD, audit and incident evidence are live. Row/field policy is mainly a preview, soft-revoked grants need a guard correction, and escalation/delegation automation is not complete.",
+      "Core access, SoD, audit and incident evidence are live. Row/field policy is mainly a preview, and escalation/delegation automation is not complete.",
   },
   {
     key: "integration",
@@ -191,16 +191,16 @@ const MODULES = [
     purpose:
       "A governed place to describe external connections, trace messages and handle failures without pretending an unavailable downstream system is healthy.",
     records:
-      "Connector and connection definitions, flow state, message attempts, correlation traces, dead letters, circuit state, e-invoice/e-way-bill records and webhook secrets/deliveries.",
-    screens: "Connections; Flows; Dead letters; Statutory filings; Webhooks.",
+      "Connector and connection definitions, factory edge gateways, industrial asset bindings, state/location events, dwell intervals, governed machine commands, message attempts, dead letters, circuit state, statutory records and webhook deliveries.",
+    screens: "Factory Connect; Connections; Flows; Dead letters; Statutory filings; Webhooks.",
     workflow:
-      "Preflight a flow, classify each outcome, retry only transient failures with bounded policy, trip a circuit on repeated faults, quarantine terminal messages, and require a reviewed replay or resolution. Webhooks are signed and secrets can rotate.",
+      "Preflight a flow, classify each outcome, retry only transient failures, trip a circuit, and quarantine terminal messages. Factory Connect stores idempotent operational-event records and can evaluate one exact, approved, state/expiry-gated command intent in simulator mode.",
     controls:
-      "Idempotency/correlation ids, retry classification, circuit breakers, dead-letter custody, signed payload verification, secret rotation and statutory-window watches.",
+      "Idempotency/correlation ids, retry classification, circuit breakers, dead-letter custody, HMAC checks on the separate webhook path, tenant RLS and a closed machine-command catalogue that excludes safety override, raw motion and unverified program upload. Factory telemetry ingestion itself is not yet authenticated as a plant gateway.",
     handoffs:
-      "Designed to connect Sales, Purchase, Accounts, statutory services and external consumers; feeds incidents and health evidence to Administration and Agent OS.",
+      "Holds business-integration records and submitted factory-event records; gives KILN robot/cell evidence, AXLE material-dwell context, Agent OS the factory-flow recovery view, and Administration the audit trail.",
     boundary:
-      "The resilience rules and screens are real and tested, but external network transports are simulate-driven in the MVP. No live GST, bank or supplier connector is claimed.",
+      "The resilience rules and Factory Connect schema/API/screens are implemented. OPC UA, MQTT, ROS 2, Cisco Spaces and Splunk are catalogue/reserved targets only. The standalone edge simulator contract is not connected to the API, and the API records a simulated policy result without dispatching to or receiving acknowledgement from a controller.",
   },
   {
     key: "sales",
@@ -305,13 +305,13 @@ const MODULES = [
       "Converts dated demand, stock, open supply, product structure and policy into explainable proposals for what to make or buy and when.",
     records:
       "Planning policies, calendars, forecasts, demand/consumption, MPS, immutable MRP runs/workings, planned orders, pegging, exceptions, requisitions, capacity views and draft schedules.",
-    screens: "MRP; Planned orders; Exceptions; Demand; Policies; Explain.",
+    screens: "Factory flow; MRP; Planned orders; Exceptions; Demand; Policies; Explain.",
     workflow:
       "Compute low-level codes; consume forecast with nearby orders; net demand bucket by bucket; apply safety stock and lot-sizing; offset over working days; explode components into release buckets; persist workings/pegs; create ranked exceptions; optionally firm or convert a proposal.",
     controls:
       "Cycle refusal, required work calendar, immutable completed-run workings, upward lot rounding, past-due flagging, plan-to-execution uniqueness and explicit exception acceptance/snooze behavior.",
     handoffs:
-      "Reads Sales demand, Engineering BOMs, Inventory balances, Purchase open supply and Production state; outputs buy/make proposals to Purchase and Production.",
+      "Reads Sales demand, Engineering BOMs, Inventory balances, Purchase open supply and Production state; the Factory flow view adds KILN-owned dwell evidence without giving AXLE machine authority.",
     boundary:
       "MRP, pegging and explainability are live. Capacity is an infinite-capacity report, scheduling is a draft heuristic, and firmed orders do not yet feed the next run reliably.",
   },
@@ -324,15 +324,15 @@ const MODULES = [
     records:
       "Production orders, BOM/component snapshot, operation sequence/status, operator/evidence notes, issue movements, completion quantity and finished-goods receipt references.",
     screens:
-      "Production orders; Order detail with component issue, operation progress and completion actions.",
+      "Machines & robot cells with an operational map; Production orders; Order detail with component issue, operation progress and completion actions.",
     workflow:
       "Create from a manufactured item/BOM; snapshot components; define/start/complete operations in predecessor order; issue components through Inventory; require all routed work complete; receive finished goods; expose the full execution trail.",
     controls:
       "Idempotency, predecessor gates, accountable operator/evidence, pinned BOM, all-blockers-at-once completion check, tenant RLS and atomic inventory movements.",
     handoffs:
-      "Receives make proposals from Planning, consumes Engineering BOM data and Inventory components, exposes lots to Quality, and reports execution/downtime context to Maintenance and Decision Commander.",
+      "Receives make proposals from Planning, consumes Engineering BOM and Inventory components, joins Factory Connect robot/cell evidence, exposes lots to Quality, and reports execution context to Maintenance and Decision Commander.",
     boundary:
-      "Order, operation, issue and receipt workflows are live. The quality completion gate is not automatically armed, rejects do not post scrap, and detailed genealogy/costing is incomplete.",
+      "Order, operation, issue and receipt workflows are live. The robot-cell screen shows stored demo/API-submitted records; no physical controller or plant protocol adapter is connected. The quality completion gate, scrap posting and detailed genealogy/costing remain incomplete.",
   },
   {
     key: "quality",
@@ -370,7 +370,7 @@ const MODULES = [
     handoffs:
       "Links assets to Production work centres, uses Inventory spares, records external-work purchasing context and feeds KILN/Decision Commander with uptime risk.",
     boundary:
-      "Core maintenance workflow and KPIs are live. Shift calendars, sensor ingestion, advanced predictive maintenance and automatic external procurement are not complete.",
+      "Core maintenance workflow and KPIs are live. Factory Connect can store bounded operational-event submissions, but does not authenticate them as sensor/controller-originated evidence; predictive models, certified adapters, shift calendars and automatic external procurement are not complete.",
   },
   {
     key: "accounts",
@@ -449,8 +449,18 @@ const MODULES = [
   },
 ];
 
-/* The six registered mission graphs, exactly as `GraphRegistryService` builds them. */
+/* The seven registered mission graphs, exactly as `GraphRegistryService` builds them. */
 const GRAPHS = [
+  {
+    key: "factory.flow-recovery",
+    name: "Factory flow recovery",
+    nodes: 18,
+    maxSteps: 24,
+    timeout: "300s",
+    dispatches: 0,
+    shape:
+      "KILN reads stored robot and dwell evidence while MICA, SPAR, AXLE and RASP read business consequences; specialists assess; HEXA checks the declared boundary; a production supervisor approves the proposed simulator request; ONYX publishes a brief. The graph has no dispatch node and never contacts a controller.",
+  },
   {
     key: "foundation.cross-functional-readiness",
     name: "Cross-functional readiness review",
@@ -465,7 +475,7 @@ const GRAPHS = [
     key: "operations.full-command-review",
     name: "Nine-agent operating review",
     nodes: 21,
-    maxSteps: 28,
+    maxSteps: 29,
     timeout: "300s",
     dispatches: 0,
     shape:
@@ -475,7 +485,7 @@ const GRAPHS = [
     key: "operations.controlled-action-mission",
     name: "Nine-agent controlled action mission",
     nodes: 31,
-    maxSteps: 36,
+    maxSteps: 39,
     timeout: "600s",
     dispatches: 7,
     shape:
@@ -635,7 +645,7 @@ const agents = [
     },
     live: [
       "21 permission-checked Copilot questions",
-      "6 registered mission graphs",
+      "7 registered mission graphs",
       "Parallel waves, checkpoints and recovery",
       "Signal and Decision Commander mission triggers",
       "Closed AI registry with kill switch and cost ledger",
@@ -670,7 +680,7 @@ const agents = [
       ],
       [
         "Administration",
-        "139 permissions, roles, separation of duties, audit verification and the auditor pack.",
+        `${SYSTEM.permissions} permissions, roles, separation of duties, factory-command authority, audit verification and the auditor pack.`,
       ],
       [
         "Integration",
@@ -723,7 +733,7 @@ const agents = [
       ],
       [
         "Permission",
-        "139 keys shaped module.entity.action, typed at compile time. A permission that is not in the catalogue cannot even be granted — a trigger refuses the insert.",
+        `${SYSTEM.permissions} keys shaped module.entity.action, typed at compile time. A permission that is not in the catalogue cannot even be granted — a trigger refuses the insert.`,
       ],
       [
         "Approval",
@@ -749,7 +759,7 @@ const agents = [
       ],
       [
         "CI enforces the fence",
-        "db:rls-check asserts FORCE RLS and that a policy really keys on app.current_tenant; a two-tenant leak probe proves it live; perm-check reconciles all 139 routes against the registry.",
+        `db:rls-check asserts FORCE RLS and that a policy really keys on app.current_tenant; a two-tenant leak probe proves it live; perm-check reconciles all ${SYSTEM.permissions} permissions against the registry.`,
       ],
     ],
     example: {
@@ -762,16 +772,16 @@ const agents = [
     },
     live: [
       "FORCE RLS on every tenant table, CI-verified",
-      "139 typed permissions with a catalogue trigger",
+      `${SYSTEM.permissions} typed permissions with a catalogue trigger`,
       "W1 approvals with a hash-chained trail",
       "Audit verification, anchoring and the auditor pack",
       "Circuit breakers, DLQ triage and signed webhooks as pure, tested logic",
     ],
     limits: [
-      "The permission guard does not filter is_active, so a soft-revoked grant is still honoured — a real divergence from the access simulator",
+      "Inactive users, roles and grants are filtered by the runtime guard as well as the access simulator",
       "W1 has no cancel, no delegation and no escalation; the SLA is a pull query with no timer",
       "Row-scope and field masking are reachable only through the access preview, not applied by list endpoints",
-      "Integration has no transport: the resilience logic is real and tested, the I/O half is simulate-driven",
+      "No live external or OT transport is wired: webhook/Factory paths store or evaluate local records, while vendor and plant adapters remain catalogue/reserved work",
     ],
     sources: [
       "apps/api/src/common/tenant.middleware.ts",
@@ -1141,6 +1151,7 @@ const agents = [
       "Six lot-sizing rules and working-day offsetting",
       "Seven exception types ranked by consequence",
       "Immutable run workings and an explain-in-words view",
+      "Factory flow view links dwell exceptions to planning consequence without granting machine authority",
     ],
     limits: [
       "No ECR/ECO change control — a BOM records the result of a change, never the change",
@@ -1152,6 +1163,7 @@ const agents = [
       "packages/platform/src/planning/netting.ts",
       "apps/api/src/modules/planning/mrp.service.ts",
       "packages/platform/src/planning/exceptions.ts",
+      "apps/web/src/modules/planning/screens/factory-flow.tsx",
     ],
   },
 
@@ -1185,6 +1197,13 @@ const agents = [
     prefixes: ["production.", "quality.", "maintenance.", "agent."],
     delegates: [],
     tools: [
+      [
+        "production.factory-connect.read",
+        "Read",
+        "Robot, AMR, gateway and material-dwell evidence",
+        "factory.connect.read",
+        "No",
+      ],
       [
         "production.orders.read",
         "Read",
@@ -1240,6 +1259,7 @@ const agents = [
       "Whether components can be issued",
       "Readings, verdicts and dispositions",
       "Downtime and preventive-maintenance signals",
+      "Stored robot, AMR and material-dwell records from Factory Connect",
     ],
     produces: [
       "Whether the order can finish",
@@ -1311,17 +1331,24 @@ const agents = [
       "Critical-defect override on the lot verdict",
       "NCR → CAPA with a human-owned effectiveness decision",
       "Downtime, preventive schedules and reproducible KPIs",
+      "Stored Factory Connect demo evidence for robot cells, AMRs, gateways and material dwell",
+      "A governed factory-flow recovery mission with HEXA verification and a production-supervisor gate; the separate API result is a simulator policy evaluation only",
     ],
     limits: [
       "The manufacturing quality gate is built but unarmed — nothing creates the inspection it reads, so it never fires as shipped",
       "Purchase does not wire the receipt-side inspection gate either",
       "Rejected quantity is recorded on the operation but posts no scrap movement",
       "No calibration or gauge management, and no batch genealogy written from Production",
+      "No physical robot, PLC or safety controller is connected; the standalone edge simulator is not wired to the Factory Connect API",
+      "The ERP never replaces a robot controller, safety PLC, interlock, emergency stop or certified cell logic",
     ],
     sources: [
       "apps/api/src/modules/production/production.service.ts",
       "packages/platform/src/quality/sampling.ts",
       "packages/platform/src/maintenance/reliability.ts",
+      "packages/platform/src/factory-connect/contracts.ts",
+      "apps/api/src/modules/integration/factory-connect.service.ts",
+      "apps/edge/src/runtime.ts",
     ],
   },
 
@@ -1801,6 +1828,10 @@ const agents = [
 const MISSION_ROLES = {
   ONYX: [
     [
+      "Factory flow recovery",
+      "Frames the constrained-cell goal and publishes the recovery brief after approval",
+    ],
+    [
       "Cross-functional readiness",
       "Frames the mission, then writes the final synthesis after approval",
     ],
@@ -1823,6 +1854,10 @@ const MISSION_ROLES = {
     ],
   ],
   HEXA: [
+    [
+      "Factory flow recovery",
+      "Checks tenant evidence, the named allow-list and the declared local-control boundary; it does not query a controller or certify safety",
+    ],
     [
       "Cross-functional readiness",
       "Verifies policy and evidence before the human gate",
@@ -1849,6 +1884,7 @@ const MISSION_ROLES = {
     ],
   ],
   MICA: [
+    ["Factory flow recovery", "Reads commitments and assesses customer impact without changing a promise"],
     [
       "Cross-functional readiness",
       "Reads sales orders, then assesses commitments",
@@ -1872,6 +1908,7 @@ const MISSION_ROLES = {
     ],
   ],
   SPAR: [
+    ["Factory flow recovery", "Reads material position and assesses an internal-movement recovery"],
     ["Cross-functional readiness", "Reads stock, then assesses supply"],
     [
       "Nine-agent operating review",
@@ -1889,6 +1926,7 @@ const MISSION_ROLES = {
     ],
   ],
   AXLE: [
+    ["Factory flow recovery", "Reads the plan and assesses capacity, sequence and alternate routing"],
     ["Cross-functional readiness", "Not involved"],
     [
       "Nine-agent operating review",
@@ -1906,6 +1944,7 @@ const MISSION_ROLES = {
     ],
   ],
   KILN: [
+    ["Factory flow recovery", "Reads stored robot and dwell evidence and explains recovery constraints; it neither determines local safety nor dispatches a machine command"],
     ["Cross-functional readiness", "Not involved"],
     [
       "Nine-agent operating review",
@@ -1926,6 +1965,7 @@ const MISSION_ROLES = {
     ],
   ],
   RASP: [
+    ["Factory flow recovery", "Reads finance evidence and states only evidenced downtime exposure"],
     ["Cross-functional readiness", "Not involved"],
     [
       "Nine-agent operating review",
@@ -1946,6 +1986,7 @@ const MISSION_ROLES = {
     ],
   ],
   RELAY: [
+    ["Factory flow recovery", "Coordinates only XELOR service impact; factory maintenance remains KILN's"],
     ["Cross-functional readiness", "Not involved"],
     [
       "Nine-agent operating review",
@@ -1963,6 +2004,7 @@ const MISSION_ROLES = {
     ],
   ],
   ACHILES: [
+    ["Factory flow recovery", "Preserves the boundary: reports XELOR health and never assesses or commands the robot"],
     ["Cross-functional readiness", "Not involved"],
     [
       "Nine-agent operating review",
@@ -2302,7 +2344,7 @@ function agentGuide(a) {
       title,
       "09",
       `
-    ${heading("07 · In the six missions", `Where ${a.name} actually appears`, "Node by node, from the registered graph definitions")}
+    ${heading("07 · In the seven missions", `Where ${a.name} actually appears`, "Node by node, from the registered graph definitions")}
     <table class="mission-table"><thead><tr><th>Mission graph</th><th>What ${esc(a.name)} does in it</th></tr></thead><tbody>${MISSION_ROLES[
       a.name
     ]
@@ -2403,8 +2445,8 @@ function masterGuide() {
       `
     <div class="eyebrow">XELOR system handbook · built from the implementation</div>
     <h1>The XELOR<br>agent system</h1><div class="rule"></div>
-    <p class="lead">Nine agents, eighteen tools and six missions — and the machinery that keeps all of it inside the authority of the person who asked.</p>
-    <div class="cover-note"><b>Covers:</b> what XELOR is, the nine agents, the architecture, every capability, all six mission graphs, how a run actually executes, the trust model, and what is honestly not built.<br><b>Companion set:</b> one guide per agent.<br><b>Truth standard:</b> the repository as it stands on ${SNAPSHOT}.</div>
+    <p class="lead">Nine agents, nineteen tools and seven missions — and the machinery that keeps all of it inside the authority of the person who asked.</p>
+    <div class="cover-note"><b>Covers:</b> what XELOR is, the nine agents, the architecture, every capability, all seven mission graphs, how a run actually executes, the trust model, and what is honestly not built.<br><b>Companion set:</b> one guide per agent.<br><b>Truth standard:</b> the repository as it stands on ${SNAPSHOT}.</div>
     <div class="big-mark">MASTER</div>`,
       "cover",
     ),
@@ -2538,6 +2580,7 @@ function masterGuide() {
       <tr><td>inventory.on-hand.read</td><td>Read</td><td>SPAR</td><td>Stock balances</td><td>inventory.stock.read</td></tr>
       <tr><td>planning.planned-orders.read</td><td>Read</td><td>AXLE</td><td>Planned orders</td><td>planning.mrp.read</td></tr>
       <tr><td>production.orders.read</td><td>Read</td><td>KILN</td><td>Production orders</td><td>production.order.read</td></tr>
+      <tr><td>production.factory-connect.read</td><td>Read</td><td>KILN</td><td>Robot, AMR, gateway and material-dwell evidence</td><td>factory.connect.read</td></tr>
       <tr><td>quality.inspections.read</td><td>Read</td><td>KILN</td><td>Inspections</td><td>quality.inspection.read</td></tr>
       <tr><td>accounts.vouchers.read</td><td>Read</td><td>RASP</td><td>Journal vouchers</td><td>accounts.ledger.read</td></tr>
       <tr><td>finance.cash-position.read</td><td>Read</td><td>RASP</td><td>Trial balance</td><td>accounts.ledger.read</td></tr>
@@ -2552,7 +2595,7 @@ function masterGuide() {
       <tr><td>platform-health.status.read</td><td>Read</td><td>ACHILES</td><td>Private platform status and history</td><td>platform_health.overview.read</td></tr>
       <tr><td><b>agent.action.dispatch</b></td><td><b>Execute</b></td><td>HEXA, MICA, SPAR, AXLE, KILN, RASP, RELAY</td><td>Governed work item</td><td>agentos.run.operate</td></tr>
     </tbody></table>
-    <div class="callout"><strong>Seventeen of eighteen cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX and ACHILES are absent from the execute row.</p></div>`,
+    <div class="callout"><strong>${SYSTEM.capabilities - SYSTEM.sideEffecting} of ${SYSTEM.capabilities} cannot change anything</strong><p>Exactly one capability has a side effect, and a test asserts that count so it cannot drift. That one requires an approved human gate above it in the graph, and the engine checks the ancestry itself rather than trusting the capability to behave. Note also that ONYX and ACHILES are absent from the execute row.</p></div>`,
     ),
   );
 
@@ -2563,9 +2606,9 @@ function masterGuide() {
       title,
       "08",
       `
-    ${heading("07 · The six missions", "Every registered graph", `${SYSTEM.graphNodes} nodes in total, all written down before any run starts`)}
+    ${heading("07 · The seven missions", "Every registered graph", `${GRAPHS.reduce((total, graph) => total + graph.nodes, 0)} nodes in total, all written down before any run starts`)}
     ${GRAPHS.map((g) => `<div class="graph-card"><b>${esc(g.name)}</b><div class="meta">${esc(g.key)} · ${g.nodes} nodes · step budget ${g.maxSteps} · timeout ${g.timeout} · ${g.dispatches} dispatch node${g.dispatches === 1 ? "" : "s"}</div><p>${esc(g.shape)}</p></div>`).join("")}
-    <div class="callout"><strong>Five of the six cannot act at all</strong><p>Only the controlled action mission contains dispatch nodes, and it has seven — six domain work items plus one RELAY coordination item, every one structurally downstream of a single human gate. The other five graphs read, analyse, draft and explain. Tests assert that the Working Capital, QMS and Managed Service Assurance missions contain no dispatch node.</p></div>`,
+    <div class="callout"><strong>${SYSTEM.graphs - 1} of ${SYSTEM.graphs} cannot act at all</strong><p>Only the controlled action mission contains dispatch nodes, and it has seven — six domain work items plus one RELAY coordination item, every one structurally downstream of a single human gate. Every remaining graph reads, analyses, drafts and explains. Tests assert that the Factory Flow, Working Capital, QMS and Managed Service Assurance missions contain no dispatch node.</p></div>`,
     ),
   );
 
@@ -2576,7 +2619,7 @@ function masterGuide() {
       title,
       "09",
       `
-    ${heading("08 · How a run works", "The execution rules, in plain terms", "The same engine drives all six missions")}
+    ${heading("08 · How a run works", "The execution rules, in plain terms", "The same engine drives all seven missions")}
     ${steps([
       [
         "Everything ready runs together",
@@ -2628,7 +2671,7 @@ function masterGuide() {
     <div class="grid-2">
       <article class="card"><h3>Failure is visible</h3><p>A failed node, a timeout or a deadlock is recorded and the run stops. Nothing is smoothed over to keep a demo comfortable.</p></article>
       <article class="card"><h3>Recovery is real</h3><p>Checkpoints let an interrupted run continue without pretending the interrupted step had finished.</p></article>
-      <article class="card"><h3>AI is fenced separately</h3><p>A closed registry of ${SYSTEM.aiFeatures} features, a kill switch, budgets and an evaluation gate that must beat a rules-only baseline before anything ships.</p></article>
+      <article class="card"><h3>AI is fenced separately</h3><p>The governed registry has ${SYSTEM.aiFeatures} routable entries: eight canonical features plus the read-only Copilot still marked <code>in_eval</code>. A separate non-routable Integrations null declaration makes the absence of Integration AI explicit. A kill switch, budgets and evaluation gates constrain promotion.</p></article>
       <article class="card"><h3>Code decides, people approve</h3><p>Tax, stock, quality verdicts, payroll and accounting are arithmetic. A model may phrase an explanation; it never sets the number.</p></article>
     </div>
     <div class="callout"><strong>Where the guarantees are actually kept</strong><p>Continuous integration re-proves the tenant fence on every build, a live two-tenant probe tries to read across the boundary and fails, and all ${SYSTEM.permissions} permissions are reconciled against the routes that demand them. These are gates, not intentions.</p></div>`,
@@ -2671,7 +2714,7 @@ function masterGuide() {
       <div class="yes"><h3>Live in the repository</h3>${bullets([
         "Nine agents with fixed allow-lists",
         `${SYSTEM.capabilities} registered capabilities, one of them effectful`,
-        "Six versioned, content-hashed mission graphs",
+        `${SYSTEM.graphs} versioned, content-hashed mission graphs`,
         "Parallel waves, checkpoints, bounded retries, recovery",
         "Tenant fencing and permissions, proven by CI",
         "Approval gates with an append-only trail",
@@ -2786,5 +2829,32 @@ try {
 } finally {
   await browser.close();
 }
+
+const sha256 = async (path) =>
+  createHash("sha256").update(await readFile(path)).digest("hex");
+const rendererPath = fileURLToPath(import.meta.url);
+const renderManifest = {
+  version: 1,
+  renderer: relative(root, rendererPath).replaceAll("\\", "/"),
+  rendererSha256: await sha256(rendererPath),
+  artifacts: await Promise.all(
+    reports.map(async (report) => {
+      const sourcePath = resolve(htmlDir, `${report.id}.html`);
+      const pdfPath = resolve(pdfDir, report.pdf);
+      return {
+        id: report.id,
+        source: relative(root, sourcePath).replaceAll("\\", "/"),
+        sourceSha256: await sha256(sourcePath),
+        pdf: relative(root, pdfPath).replaceAll("\\", "/"),
+        pdfSha256: await sha256(pdfPath),
+      };
+    }),
+  ),
+};
+await writeFile(
+  resolve(htmlDir, "render-manifest.json"),
+  `${JSON.stringify(renderManifest, null, 2)}\n`,
+  "utf8",
+);
 
 process.stdout.write(`Guide set ready in ${pdfDir}\n`);

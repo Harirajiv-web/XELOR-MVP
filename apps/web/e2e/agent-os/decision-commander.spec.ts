@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");
   await Promise.race([
@@ -12,6 +14,31 @@ async function signIn(page: Page): Promise<void> {
     await page.getByRole("button", { name: "Enter XELOR" }).click();
   }
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
+}
+
+async function ensureAutomationActive(page: Page): Promise<void> {
+  const token = await page.evaluate(() => {
+    const raw = sessionStorage.getItem("aikyantra.session");
+    return raw
+      ? ((JSON.parse(raw) as { accessToken?: string }).accessToken ?? null)
+      : null;
+  });
+  const headers: Record<string, string> = token
+    ? { authorization: `Bearer ${token}` }
+    : { "x-xelor-public-demo": "investor-presentation" };
+  const state = await page.request.get(`${baseUrl}/api/v1/agent-os/control`, {
+    headers,
+  });
+  expect(state.status()).toBe(200);
+  const body = (await state.json()) as {
+    data: { automation: { status: "active" | "stopped" } };
+  };
+  if (body.data.automation.status === "active") return;
+  const release = await page.request.post(
+    `${baseUrl}/api/v1/agent-os/control/kill-switch/release`,
+    { headers, data: {} },
+  );
+  expect(release.status()).toBe(201);
 }
 
 test("decision commander explains current risk and separates exposure from verified value", async ({ page }) => {
@@ -75,4 +102,41 @@ test("decision intelligence, memory and MVP readiness remain usable from desktop
   await page.getByRole("button", { name: "Close navigation" }).first().click();
   await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
   expect(browserErrors).toEqual([]);
+});
+
+test("a lost Agent OS launch response reuses one logical idempotency key", async ({
+  page,
+}) => {
+  await signIn(page);
+  await ensureAutomationActive(page);
+  await page.goto("/agentos/commander");
+
+  const keys: string[] = [];
+  let firstAttempt = true;
+  await page.route("**/api/v1/agent-os/commander/risks/*/start", async (route) => {
+    keys.push(route.request().headers()["idempotency-key"] ?? "");
+    if (firstAttempt) {
+      firstAttempt = false;
+      await route.abort("connectionfailed");
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "Start governed recovery" }).click();
+  await expect(page.getByText("Could not reach the server", { exact: true })).toBeVisible();
+
+  const completedRetry = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/api/v1/agent-os/commander/risks/") &&
+      response.status() === 201,
+  );
+  await page.getByRole("button", { name: "Start governed recovery" }).click();
+  await completedRetry;
+
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(keys[1]).toBe(keys[0]);
+  await expect(page.getByRole("link", { name: "Open human approval" })).toBeVisible();
 });

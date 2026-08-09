@@ -7,7 +7,7 @@ import { AiOperationsService } from "./operations.service.js";
 /**
  * AI OPERATIONS (ONYX, Module 16) — the control plane for the AI itself.
  *
- * The platform already had the mechanism: a router, a closed 8-feature registry, a
+ * The platform already had the mechanism: a router, a governed feature registry, a
  * hash-chained action log, per-tenant governance. This module is the operations plane over
  * it — rollout, routing, prompts, evals, guardrails, human review, cost, drift, evidence
  * and the switch.

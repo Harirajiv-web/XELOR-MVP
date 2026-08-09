@@ -3,7 +3,15 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "infra/railway/Dockerfile.api",
-    "watchPatterns": ["apps/api/**", "packages/**", "infra/railway/**", "package.json", "pnpm-lock.yaml"]
+    "watchPatterns": [
+      "apps/api/**",
+      "packages/**",
+      "infra/railway/**",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig.base.json"
+    ]
   },
   "deploy": {
     "startCommand": "sh infra/railway/start-worker.sh",
