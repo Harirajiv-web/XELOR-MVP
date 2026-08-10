@@ -191,25 +191,50 @@ export function AlertCentre(): React.JSX.Element | null {
       return p;
     };
 
-    const batches = await Promise.all(
-      sources.map(async ({ m, s }) => {
-        try {
-          const data = await fetchOnce(s.path, s.query);
-          return s.reduce(data).map(
-            (a): Live => ({
-              ...a,
-              moduleKey: m.key,
-              moduleName: m.name,
-              departmentCode: m.department,
-            }),
-          );
-        } catch {
-          // Deliberately silent. A watch that fails must not turn into a warning — that is
-          // how people learn to ignore the colour red.
-          return [] as Live[];
-        }
-      }),
-    );
+    /**
+     * A FEW AT A TIME, NOT ALL AT ONCE.
+     *
+     * This was `Promise.all(sources.map(...))`, which fires every watch the viewer is
+     * entitled to simultaneously — seventeen on a full licence — on top of whatever the
+     * screen itself is loading. On a developer's machine that is free and the code looks
+     * perfectly reasonable.
+     *
+     * Against a hosted API it is not. Measured on the deployed stack: eighteen concurrent
+     * requests, four of which never returned at all, and the screen sat on "Loading…"
+     * indefinitely because the data it needed was queued behind sixteen background watches
+     * nobody was waiting for.
+     *
+     * The bell is the LEAST urgent thing on the page. Four at a time keeps it well clear of
+     * any sensible concurrency limit and, more importantly, leaves room for the request the
+     * user is actually waiting on. Total wall-clock is a little longer; the number nobody
+     * is watching gets slower so the number everybody is watching gets faster.
+     */
+    const WATCHES_AT_ONCE = 4;
+
+    const batches: Live[][] = [];
+    for (let i = 0; i < sources.length; i += WATCHES_AT_ONCE) {
+      const slice = sources.slice(i, i + WATCHES_AT_ONCE);
+      const done = await Promise.all(
+        slice.map(async ({ m, s }) => {
+          try {
+            const data = await fetchOnce(s.path, s.query);
+            return s.reduce(data).map(
+              (a): Live => ({
+                ...a,
+                moduleKey: m.key,
+                moduleName: m.name,
+                departmentCode: m.department,
+              }),
+            );
+          } catch {
+            // Deliberately silent. A watch that fails must not turn into a warning — that is
+            // how people learn to ignore the colour red.
+            return [] as Live[];
+          }
+        }),
+      );
+      batches.push(...done);
+    }
 
     // Deduplicated by id: two modules can legitimately notice the same fact (a work order
     // blocked for material is Production's problem and Inventory's), and it should reach
@@ -266,7 +291,19 @@ export function AlertCentre(): React.JSX.Element | null {
     const run = (): void => {
       if (!stopped) void poll();
     };
-    run();
+
+    /**
+     * LET THE SCREEN GO FIRST.
+     *
+     * The bell used to start polling in the same tick the page mounted, so a background
+     * watch and the data the user is actually waiting for raced for the same connections —
+     * and on a hosted API the background watch sometimes won.
+     *
+     * A second and a half is far too short for anyone to notice a late bell, and it is long
+     * enough for the screen's own request to be well clear. Nothing about the alert is
+     * urgent to the millisecond: `POLL_MS` is already ninety seconds.
+     */
+    const first = setTimeout(run, 1_500);
     const t = setInterval(run, POLL_MS);
     // A tab left open overnight should catch up the moment somebody looks at it again,
     // rather than showing this morning's news until the next ninety-second tick.
@@ -276,6 +313,7 @@ export function AlertCentre(): React.JSX.Element | null {
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       stopped = true;
+      clearTimeout(first);
       clearInterval(t);
       document.removeEventListener("visibilitychange", onVisible);
     };

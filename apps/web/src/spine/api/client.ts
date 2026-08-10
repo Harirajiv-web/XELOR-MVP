@@ -43,7 +43,29 @@ export interface RequestOptions {
   /** Overrides the generated key. Pass a stable one to make a retry replay rather than repeat. */
   idempotencyKey?: string;
   signal?: AbortSignal;
+  /**
+   * How long to wait before giving up. Defaults below; pass 0 to wait indefinitely.
+   *
+   * There was no default at all, and the consequence was not a slow screen — it was a
+   * screen that said "Loading…" for ever. A request that never returns produces no error,
+   * no retry and no way for a user to tell a slow network from a broken one.
+   */
+  timeoutMs?: number;
 }
+
+/**
+ * A read that has not answered in fifteen seconds is not going to. Failing is strictly
+ * better than spinning: an error can be retried and reported, a spinner can only be
+ * stared at.
+ */
+const READ_TIMEOUT_MS = 15_000;
+
+/**
+ * Mutations get longer. They are user-initiated, the person is watching, and giving up on
+ * a write that may already have committed is a worse outcome than waiting — the
+ * `Idempotency-Key` machinery makes the retry safe, but only once the caller knows to retry.
+ */
+const WRITE_TIMEOUT_MS = 30_000;
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const url = new URL(API_BASE + path, window.location.origin);
@@ -219,6 +241,7 @@ async function request<T>(
   if (token) headers.authorization = `Bearer ${token}`;
   if (body !== undefined) headers["content-type"] = "application/json";
 
+  const clearTimers: Array<() => void> = [];
   let generatedLease: PendingRequestLease | null = null;
   let generatedPending: PendingRequest | null = null;
   if (method !== "GET") {
@@ -231,6 +254,33 @@ async function request<T>(
 
   let outcome: PendingRequestOutcome = "ambiguous";
   let requestMayHaveReachedServer = false;
+  let timedOut = false;
+
+  /**
+   * The caller's signal and our deadline, as one signal.
+   *
+   * `AbortSignal.any` is used where available so a caller cancelling still wins
+   * immediately; the manual fallback keeps this working on older Safari, which matters
+   * because a plant office is exactly where an old browser turns up.
+   */
+  function timeoutSignal(m: string, o: RequestOptions): AbortSignal | null {
+    const ms = o.timeoutMs ?? (m === "GET" ? READ_TIMEOUT_MS : WRITE_TIMEOUT_MS);
+    if (ms <= 0) return o.signal ?? null;
+
+    const deadline = new AbortController();
+    const timer = setTimeout(() => {
+      timedOut = true;
+      deadline.abort();
+    }, ms);
+    // Never let the timer hold a page open; it is cleared as soon as anything settles.
+    clearTimers.push(() => clearTimeout(timer));
+
+    if (!o.signal) return deadline.signal;
+    const anyOf = (AbortSignal as unknown as { any?: (s: AbortSignal[]) => AbortSignal }).any;
+    if (anyOf) return anyOf([o.signal, deadline.signal]);
+    o.signal.addEventListener("abort", () => deadline.abort(), { once: true });
+    return deadline.signal;
+  }
   try {
     if (generatedLease) {
       generatedPending = await generatedLease.group.pending;
@@ -246,10 +296,24 @@ async function request<T>(
         method,
         headers,
         body: serializedBody,
-        signal: opts.signal ?? null,
+        signal: timeoutSignal(method, opts),
       });
     } catch (e) {
-      if ((e as Error)?.name === "AbortError") throw e;
+      // A timeout aborts, so it arrives here as an AbortError indistinguishable from a
+      // caller cancelling. `timedOut` is the flag that tells them apart — a cancelled
+      // request should stay silent, a timed-out one must surface as a failure the screen
+      // can render and the user can retry.
+      if ((e as Error)?.name === "AbortError") {
+        if (timedOut) {
+          throw new AppError({
+            code: "REQUEST_TIMED_OUT",
+            message:
+              "The server did not answer in time. It may be busy — try again in a moment.",
+            httpStatus: 0,
+          });
+        }
+        throw e;
+      }
       throw new AppError({
         code: "NETWORK_UNREACHABLE",
         message:
@@ -302,6 +366,9 @@ async function request<T>(
     outcome = "definitive";
     return parsed as T;
   } finally {
+    // Always, on every path. A pending timer keeps a reference alive and, on a screen that
+    // navigates away mid-request, would fire an abort against a request nobody is waiting for.
+    for (const clear of clearTimers) clear();
     if (generatedLease) {
       settlePendingRequest(
         generatedLease,
