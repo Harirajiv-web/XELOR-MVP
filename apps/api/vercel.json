@@ -8,7 +8,7 @@
     },
     {
       "path": "/api/v1/internal/platform-health/run",
-      "schedule": "0 * * * *"
+      "schedule": "30 0 * * *"
     }
   ]
 }
