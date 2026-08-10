@@ -68,6 +68,19 @@ export class AccountsController {
     return this.accounts.recordReceipt(p.data, idk);
   }
 
+  /**
+   * Why a posted voucher has no Edit button, and what to press instead.
+   *
+   * Always `editable: false`, `correctBy: "reversing_entry"`. There is no edit path in this
+   * module and the absence is deliberate — a journal that has hit the ledger is part of the
+   * eight-year statutory record, and the correction is its opposite, not its replacement.
+   */
+  @Get("vouchers/:id/edit-policy")
+  @RequirePermission("accounts.ledger.read")
+  async voucherEditPolicy(@Param("id") id: string) {
+    return this.accounts.voucherEditPolicy(id);
+  }
+
   @Post("vouchers/:id/reverse")
   @RequirePermission("accounts.voucher.reverse")
   async reverse(@Param("id") id: string, @Body() body: unknown, @Headers("idempotency-key") key?: string) {

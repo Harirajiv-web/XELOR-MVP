@@ -1,5 +1,5 @@
 import { boolean, date, index, integer, numeric, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * SMBD (MICA, Module 07) — Sales & dispatch: the sell side of the spine.
@@ -40,6 +40,7 @@ export const salesOrder = pgTable(
   "sales_order",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     soNo: text("so_no").notNull(),
     customerId: uuid("customer_id").notNull(), // intra-module FK
     custPoNo: text("cust_po_no").notNull(),

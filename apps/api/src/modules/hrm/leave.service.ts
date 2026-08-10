@@ -3,6 +3,7 @@ import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import { newId, derivedId, currentTenant, AppError, Errors } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { AttendanceService } from "./attendance.service.js";
 
 const { employee, leaveType, leaveApplication, leaveBalance, shiftRoster } = schema;
@@ -50,10 +51,19 @@ export interface ApplyLeaveResult {
  * the single number payroll prorates on. That is the whole design: one path, no second
  * opinion.
  */
+/** A correction to a leave application. Absent means "leave alone". */
+export interface EditLeaveInput {
+  fromDate?: string;
+  toDate?: string;
+  halfDay?: boolean;
+  reasonText?: string;
+  reason?: string;
+}
 @Injectable()
 export class LeaveService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly attendance: AttendanceService,
   ) {}
 
@@ -367,4 +377,100 @@ export class LeaveService {
       }));
     });
   }
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * `employeeId` and `leaveTypeId` are absent: whose leave it is, and which entitlement it
+   * comes out of, are what the balance was checked against. Changing either is a different
+   * application against a different balance.
+   */
+  private static readonly EDITABLE_LEAVE_FIELDS = ["fromDate", "toDate", "halfDay", "days", "reason"] as const;
+
+  /**
+   * Correct a leave application, or amend an approved one.
+   *
+   * AN APPROVED CHANGE GOES BACK TO THE MANAGER. Someone who approved 3 days did not
+   * approve 8, and silently extending an approved absence is the version of this feature
+   * that gets it removed again. So an amendment returns the application to `applied` and
+   * the manager decides on the new dates.
+   */
+  async editLeave(applicationId: string, input: EditLeaveInput) {
+    this.edits.requireDocumentId(applicationId, "leave application");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "leave_application", applicationId);
+      const [before] = await tx
+        .select()
+        .from(leaveApplication)
+        .where(eq(leaveApplication.id, applicationId))
+        .limit(1);
+      if (!before) throw Errors.notFound(`leave application '${applicationId}'`);
+
+      const fromDate = input.fromDate ?? before.fromDate;
+      const toDate = input.toDate ?? before.toDate;
+      if (toDate < fromDate) {
+        throw Errors.validation([{ field: "toDate", message: "leave cannot end before it starts" }]);
+      }
+
+      const patch: Record<string, unknown> = {};
+      if (input.fromDate !== undefined) patch.fromDate = input.fromDate;
+      if (input.toDate !== undefined) patch.toDate = input.toDate;
+      if (input.halfDay !== undefined) patch.halfDay = input.halfDay;
+      if (input.reasonText !== undefined) patch.reason = input.reasonText;
+
+      // Days is derived from the dates, so it must move with them or the balance check on
+      // re-approval runs against a figure nobody can reproduce from the record.
+      if (input.fromDate !== undefined || input.toDate !== undefined || input.halfDay !== undefined) {
+        const halfDay = input.halfDay ?? before.halfDay;
+        const spanDays =
+          Math.round(
+            (new Date(`${toDate}T00:00:00Z`).getTime() - new Date(`${fromDate}T00:00:00Z`).getTime()) /
+              86_400_000,
+          ) + 1;
+        patch.days = (halfDay ? 0.5 : spanDays).toFixed(1);
+      }
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "hrm.leave",
+        id: applicationId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: LeaveService.EDITABLE_LEAVE_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      if (outcome.reapprovalRequired && before.status === "approved") {
+        columns.status = "applied";
+        columns.approverId = null;
+        columns.decidedAt = null;
+      }
+
+      await tx.update(leaveApplication).set(columns).where(eq(leaveApplication.id, applicationId));
+      const [after] = await tx
+        .select()
+        .from(leaveApplication)
+        .where(eq(leaveApplication.id, applicationId))
+        .limit(1);
+      return after;
+    });
+  }
+
+  async leaveHistory(applicationId: string) {
+    this.edits.requireDocumentId(applicationId, "leave application");
+    return this.edits.history("hrm.leave", applicationId);
+  }
+
+  async leaveEditPolicy(applicationId: string) {
+    this.edits.requireDocumentId(applicationId, "leave application");
+    const [row] = await withTenant((tx) =>
+      tx.select({ status: leaveApplication.status, revisionNo: leaveApplication.revisionNo })
+        .from(leaveApplication).where(eq(leaveApplication.id, applicationId)).limit(1),
+    );
+    if (!row) throw Errors.notFound(`leave application '${applicationId}'`);
+    return { ...this.edits.policy("hrm.leave", row.status), status: row.status, revisionNo: row.revisionNo };
+  }
+
 }

@@ -18,6 +18,7 @@ import {
   type PolicyFlag,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { ExpNumberingService } from "./exp-numbering.service.js";
 import { BudgetService } from "./budget.service.js";
 import { PostingService } from "./posting.service.js";
@@ -78,10 +79,18 @@ export interface CreateClaimInput {
  *    that refuses a missing receipt teaches people to stop claiming rather than to attach
  *    receipts.
  */
+/** A correction to an expense claim. Absent means "leave alone". */
+export interface EditClaimInput {
+  claimDate?: string;
+  costCentreRef?: string;
+  projectRef?: string;
+  reason?: string;
+}
 @Injectable()
 export class ClaimService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: ExpNumberingService,
     private readonly budgets: BudgetService,
     private readonly postings: PostingService,
@@ -537,6 +546,93 @@ export class ClaimService {
       })),
     };
   }
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * `employeeRef` is absent: a claim belongs to the person who spent the money, and
+   * re-pointing it at someone else is not a correction, it is a different claim. The
+   * money totals are absent too — they are derived from the claim's LINES, so a
+   * correction changes a line and lets the total follow.
+   */
+  private static readonly EDITABLE_CLAIM_FIELDS = ["claimDate", "costCentreRef", "projectRef"] as const;
+
+  /**
+   * Correct an expense claim, or withdraw one from approval to amend it.
+   *
+   * An APPROVED claim is closed to edits and the refusal says to reverse it. That boundary
+   * is where the money commitment happens: after approval the claim is a payable, and a
+   * payable that can be edited is a payable nobody can reconcile.
+   */
+  /** By NUMBER — every other route in this module is keyed that way, so these match. */
+  async editClaimByNo(claimNo: string, input: Parameters<ClaimService["editClaim"]>[1]) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, claimNo)).id);
+    return this.editClaim(id, input);
+  }
+
+  async editClaimPolicyByNo(claimNo: string) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, claimNo)).id);
+    return this.claimEditPolicy(id);
+  }
+
+  async editClaim(claimId: string, input: EditClaimInput) {
+    this.edits.requireDocumentId(claimId, "expense claim");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "expense_claim", claimId);
+      const [before] = await tx.select().from(expenseClaim).where(eq(expenseClaim.id, claimId)).limit(1);
+      if (!before) throw Errors.notFound(`expense claim '${claimId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.claimDate !== undefined) patch.claimDate = input.claimDate;
+      if (input.costCentreRef !== undefined) patch.costCentreRef = input.costCentreRef;
+      if (input.projectRef !== undefined) patch.projectRef = input.projectRef;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "expenditure.claim",
+        id: claimId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: ClaimService.EDITABLE_CLAIM_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      // Withdrawn from approval, for the same reason a PO is: an approver looking at a
+      // claim must be approving the claim that is actually in front of them.
+      if (outcome.reapprovalRequired && ["submitted", "in_approval"].includes(before.status)) {
+        columns.status = "draft";
+        columns.workflowInstanceId = null;
+        columns.submittedAt = null;
+      }
+
+      await tx.update(expenseClaim).set(columns).where(eq(expenseClaim.id, claimId));
+      const [after] = await tx.select().from(expenseClaim).where(eq(expenseClaim.id, claimId)).limit(1);
+      return after;
+    });
+  }
+
+  /** Every correction ever made to this claim, newest first. */
+  async claimHistory(claimId: string) {
+    this.edits.requireDocumentId(claimId, "expense claim");
+    return this.edits.history("expenditure.claim", claimId);
+  }
+
+  /** Whether this claim may be edited right now, and what to tell the user if not. */
+  async claimEditPolicy(claimId: string) {
+    this.edits.requireDocumentId(claimId, "expense claim");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: expenseClaim.status, revisionNo: expenseClaim.revisionNo })
+        .from(expenseClaim)
+        .where(eq(expenseClaim.id, claimId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`expense claim '${claimId}'`);
+    return { ...this.edits.policy("expenditure.claim", row.status), status: row.status, revisionNo: row.revisionNo };
+  }
+
 }
 
 /** Trishul's Pune-Chakan registration — the §7 demo universe's primary GSTIN. In production

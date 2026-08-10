@@ -23,6 +23,8 @@ import {
   lineTaxableValue,
   newLineDraft,
   toCreateOrderBody,
+  toEditOrderBody,
+  orderDraftFrom,
   validateOrderDraft,
   type CreateFailure,
   type DraftContext,
@@ -30,7 +32,8 @@ import {
   type OrderLineDraft,
 } from "../order-draft";
 import { FailureNotch } from "./failure-notch";
-import { Modal } from "./modal";
+import { Modal } from "@spine/ui/modal";
+import { ConfirmChanges, localChanges } from "@spine/ui/corrections";
 
 /**
  * NEW SALES ORDER — the first write path in this application.
@@ -82,13 +85,45 @@ import { Modal } from "./modal";
  */
 const FORM_ID = "new-sales-order-form";
 
+/**
+ * What the confirmation step compares, in the order a reader wants to see it.
+ *
+ * The form's own field names, not the API's — this diff is shown to a person, and the
+ * server writes its own (authoritative) diff into the audit trail from the columns. Lines
+ * are absent because a line-level diff needs its own presentation; the total is what tells
+ * a user their line edit landed, and it is recomputed on save.
+ */
+const AMENDABLE_FORM_FIELDS = [
+  "custPoNo",
+  "orderDate",
+  "shipToStateCode",
+  "shipToGstin",
+  "shipToAddress",
+  "fgWarehouseId",
+] as const;
+
 export function NewOrderDialog({
   onClose,
   onCreated,
+  /**
+   * Present when this dialog is CORRECTING an order rather than raising one.
+   *
+   * One dialog for both, not two forms. Two forms for one document is how validation
+   * drifts apart, and the pair that drifts first is always create-strict / edit-lax — a
+   * rule the new-order form enforces and the edit form quietly does not. Everything below
+   * that differs between the modes is derived from this one prop.
+   */
+  editing,
 }: {
   onClose: () => void;
   onCreated: (order: SalesOrderView) => void;
+  editing?: {
+    order: SalesOrderView;
+    /** True once the order has left draft: the change needs a reason and re-approval. */
+    amend: boolean;
+  };
 }): React.JSX.Element {
+  const isEdit = Boolean(editing);
   const bannerRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -107,7 +142,15 @@ export function NewOrderDialog({
    */
   const [idempotencyKey] = useState<string>(() => crypto.randomUUID());
 
-  const [draft, setDraft] = useState<OrderDraft>(() => emptyOrderDraft());
+  const [draft, setDraft] = useState<OrderDraft>(() =>
+    editing ? orderDraftFrom(editing.order) : emptyOrderDraft(),
+  );
+
+  /**
+   * An amendment stops at a confirmation before it is sent. The reason is typed while
+   * looking at "120 → 96", which is a better reason than one typed from memory afterwards.
+   */
+  const [pendingReason, setPendingReason] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [failure, setFailure] = useState<CreateFailure | null>(null);
@@ -228,21 +271,47 @@ export function NewOrderDialog({
       return;
     }
 
+    // An amendment pauses here for the confirmation step. `pendingReason` being non-null
+    // means the user has already been through it and pressed Save on the diff.
+    if (editing?.amend && pendingReason === null) {
+      setPendingReason("");
+      return;
+    }
+
+    await send(pendingReason ?? undefined);
+  }
+
+  /**
+   * The write itself, for all three cases: create, correct, amend.
+   *
+   * The route differs for an amendment — `PATCH /orders/:id/amend` sits behind
+   * `sales.order.amend`, a permission a clerk who may fix their own draft does not
+   * necessarily hold. Sending an amendment to the plain edit route would be asking the
+   * server to accept it under the lower right.
+   */
+  async function send(reason?: string): Promise<void> {
     setSubmitting(true);
     setFailure(null);
     try {
       // The form's own key overrides the one `api.post` would mint per call — see the note
       // on `idempotencyKey` above. This is the difference between a retry that replays and a
       // retry that raises a second sales order.
-      const created = await api.post<SalesOrderView>(
-        salesApi.ordersPath,
-        toCreateOrderBody(draft),
-        { idempotencyKey },
-      );
-      onCreated(created);
+      const saved = editing
+        ? await api.patch<SalesOrderView>(
+            editing.amend
+              ? `${salesApi.orderPath(editing.order.id)}/amend`
+              : salesApi.orderPath(editing.order.id),
+            toEditOrderBody(draft, reason),
+            { idempotencyKey },
+          )
+        : await api.post<SalesOrderView>(salesApi.ordersPath, toCreateOrderBody(draft), {
+            idempotencyKey,
+          });
+      onCreated(saved);
     } catch (err) {
       setFailure(describeCreateFailure(err));
       setSubmitting(false);
+      setPendingReason(null);
     }
   }
 
@@ -259,18 +328,59 @@ export function NewOrderDialog({
 
   const requestClose = useCallback(() => {
     if (submitting) return;
-    if (dirty && !window.confirm("Discard this order? Nothing has been saved.")) return;
+    if (
+      dirty &&
+      !window.confirm(
+        isEdit
+          ? "Discard these changes? The order stays exactly as it is now."
+          : "Discard this order? Nothing has been saved.",
+      )
+    )
+      return;
     onClose();
-  }, [dirty, submitting, onClose]);
+  }, [dirty, submitting, onClose, isEdit]);
 
   /* -------------------------------- render ------------------------------ */
 
   const itemsBlocked = items.error instanceof AppError ? items.error : null;
 
+  // The amendment's confirmation step. Rendered INSTEAD of the form, not on top of it: two
+  // stacked dialogs is where focus trapping stops being trustworthy, and the user has
+  // already finished with the form by the time they reach this.
+  if (pendingReason !== null && editing) {
+    return (
+      <ConfirmChanges
+        title={`Amend ${editing.order.soNo}`}
+        changes={localChanges(
+          orderDraftFrom(editing.order) as unknown as Record<string, unknown>,
+          draft as unknown as Record<string, unknown>,
+          AMENDABLE_FORM_FIELDS,
+        )}
+        reasonRequired
+        reapprovalRequired
+        busy={submitting}
+        onCancel={() => setPendingReason(null)}
+        onConfirm={(reason) => void send(reason)}
+      />
+    );
+  }
+
   return (
     <Modal
-      title="New sales order"
-      subtitle="Entered against a customer in the master. GST is computed and fixed by the system when the order is saved."
+      title={
+        isEdit
+          ? editing!.amend
+            ? `Amend ${editing!.order.soNo}`
+            : `Correct ${editing!.order.soNo}`
+          : "New sales order"
+      }
+      subtitle={
+        isEdit
+          ? editing!.amend
+            ? "This order is already confirmed. Your change needs a reason, and it goes back through the credit check before anyone is committed to it."
+            : "This order is still a draft — change anything you need. What it said before is kept in the change history."
+          : "Entered against a customer in the master. GST is computed and fixed by the system when the order is saved."
+      }
       onClose={requestClose}
       locked={submitting}
       width="max-w-4xl"
@@ -297,7 +407,7 @@ export function NewOrderDialog({
                 Saving…
               </>
             ) : (
-              "Save order"
+              isEdit ? (editing!.amend ? "Review the change" : "Save changes") : "Save order"
             )}
           </button>
         </>

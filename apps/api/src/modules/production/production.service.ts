@@ -13,6 +13,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import {
   STOCK_READER,
@@ -29,6 +30,14 @@ import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.por
 import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
 
 const { productionOrder, productionOrderComponent, productionOperation, outboxEvent } = schema;
+
+/** A correction to a production order. Absent means "leave alone". */
+export interface EditProductionOrderInput {
+  qtyToProduce?: number;
+  sourceWarehouseId?: string;
+  fgWarehouseId?: string;
+  reason?: string;
+}
 
 export interface CreateProductionOrderInput {
   itemId: string;
@@ -159,6 +168,7 @@ const q3 = (n: number): string => n.toFixed(3);
 export class ProductionService implements SupplySource, ProductionOrderCreator {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     @Inject(BOM_PROVIDER) private readonly bom: BomProvider,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
@@ -187,6 +197,148 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       body: await this.doCreate(input, bom),
     }));
     return result.body;
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * What a correction may touch on a production order.
+   *
+   * `itemId` and `bomId` are absent, and that is the whole design: changing what is being
+   * made, or which recipe it is made from, is a different order. A running order has
+   * already had components issued against its exploded component list — re-pointing it at
+   * another BOM would leave that material issued against a recipe the order no longer uses.
+   */
+  private static readonly EDITABLE_ORDER_FIELDS = [
+    "qtyToProduce",
+    "sourceWarehouseId",
+    "fgWarehouseId",
+  ] as const;
+
+  /**
+   * Correct or amend a production order's target quantity and warehouses.
+   *
+   * A PRODUCED QUANTITY IS A FLOOR. Once 40 of 120 are off the line and booked into stock,
+   * the order can be cut to 40 but not to 30 — those 40 physically exist, and an order
+   * claiming otherwise makes the finished-goods balance unexplainable.
+   *
+   * Changing the target RE-EXPLODES the component requirement, because the required
+   * quantity is a function of the target and the BOM. It does NOT touch `issuedQty`: what
+   * has left the store has left the store, and the difference between required and issued
+   * is exactly the shortage or excess the supervisor needs to see.
+   */
+  async editOrder(orderId: string, input: EditProductionOrderInput, idempotencyKey: string) {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ ...input, orderId, op: "edit-production-order" }),
+      async () => ({ status: 200, body: await this.doEditOrder(orderId, input) }),
+    );
+    return result.body;
+  }
+
+  private async doEditOrder(orderId: string, input: EditProductionOrderInput) {
+    this.edits.requireDocumentId(orderId, "production order");
+    const { actorId } = currentTenant();
+    const now = new Date();
+
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "production_order", orderId);
+      const [before] = await tx
+        .select()
+        .from(productionOrder)
+        .where(eq(productionOrder.id, orderId))
+        .limit(1);
+      if (!before) throw Errors.notFound(`production order '${orderId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.qtyToProduce !== undefined) {
+        if (input.qtyToProduce <= 0) {
+          throw Errors.validation([{ field: "qtyToProduce", message: "must be > 0" }]);
+        }
+        const produced = Number(before.producedQty);
+        if (input.qtyToProduce < produced) {
+          throw new AppError(
+            "PRODUCED_QTY_EXCEEDS_EDIT",
+            409,
+            `${produced} have already been produced and booked into stock, so the target cannot be cut to ${input.qtyToProduce}.`,
+          );
+        }
+        patch.qtyToProduce = input.qtyToProduce.toFixed(3);
+      }
+      if (input.sourceWarehouseId !== undefined) patch.sourceWarehouseId = input.sourceWarehouseId;
+      if (input.fgWarehouseId !== undefined) patch.fgWarehouseId = input.fgWarehouseId;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "production.order",
+        id: orderId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: ProductionService.EDITABLE_ORDER_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return this.viewInTx(tx, orderId);
+
+      await tx.update(productionOrder).set(outcome.columns).where(eq(productionOrder.id, orderId));
+
+      // Re-explode against the new target. Required quantity is a function of the target
+      // and the BOM, so leaving it at the old figure would have the shop floor picking
+      // material for an order size that no longer exists.
+      if (input.qtyToProduce !== undefined) {
+        const scale = input.qtyToProduce / Number(before.qtyToProduce);
+        const components = await tx
+          .select()
+          .from(productionOrderComponent)
+          .where(eq(productionOrderComponent.orderId, orderId));
+        for (const c of components) {
+          await tx
+            .update(productionOrderComponent)
+            .set({
+              requiredQty: (Number(c.requiredQty) * scale).toFixed(3),
+              updatedAt: now,
+              updatedBy: actorId,
+            })
+            .where(eq(productionOrderComponent.id, c.id));
+        }
+      }
+
+      await tx.insert(outboxEvent).values({
+        id: newId(),
+        tenantId: before.tenantId,
+        name: eventName("production", "order", outcome.tier === "amend" ? "amended" : "corrected"),
+        payload: {
+          id: orderId,
+          orderNo: before.orderNo,
+          revisionNo: outcome.revisionNo,
+          qtyToProduce: patch.qtyToProduce ?? before.qtyToProduce,
+          reason: input.reason ?? null,
+        },
+        createdAt: now,
+      });
+
+      return this.viewInTx(tx, orderId);
+    });
+  }
+
+  /** Every correction ever made to this production order, newest first. */
+  async orderHistory(orderId: string) {
+    this.edits.requireDocumentId(orderId, "production order");
+    return this.edits.history("production.order", orderId);
+  }
+
+  /** Whether this order may be edited right now, and what to tell the user if not. */
+  async orderEditPolicy(orderId: string) {
+    this.edits.requireDocumentId(orderId, "production order");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: productionOrder.status, revisionNo: productionOrder.revisionNo })
+        .from(productionOrder)
+        .where(eq(productionOrder.id, orderId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`production order '${orderId}'`);
+    return { ...this.edits.policy("production.order", row.status), status: row.status, revisionNo: row.revisionNo };
   }
 
   private async doCreate(

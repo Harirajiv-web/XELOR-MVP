@@ -12,7 +12,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * HRM & ATTENDANCE (RASP, Module 09) — the people-and-pay backbone.
@@ -360,6 +360,7 @@ export const leaveApplication = pgTable(
   "leave_application",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     employeeId: uuid("employee_id").notNull(),
     leaveTypeId: uuid("leave_type_id").notNull(),
     fromDate: date("from_date").notNull(),

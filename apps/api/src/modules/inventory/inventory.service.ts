@@ -11,6 +11,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import type {
   StockPoster,
   PostStockEntryInput,
@@ -93,6 +94,7 @@ export function allocateFifoBatches(
 export class InventoryService implements StockPoster, StockReader {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
 
@@ -367,6 +369,57 @@ export class InventoryService implements StockPoster, StockReader {
       createdBy: actorId,
     });
     return next;
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * `code` is absent: a warehouse code is stencilled on the building and printed on every
+   * gate pass. `warehouseType` is present because a bin genuinely gets recategorised —
+   * quarantine becomes accepted when the area is re-certified — and the audit change set
+   * is what makes that visible rather than mysterious.
+   */
+  private static readonly EDITABLE_WAREHOUSE_FIELDS = ["name", "warehouseType"] as const;
+
+  /** Correct a warehouse's details. */
+  async editWarehouse(warehouseId: string, patch: { name?: string; warehouseType?: string }) {
+    this.edits.requireDocumentId(warehouseId, "warehouse");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "warehouse", warehouseId);
+      const [before] = await tx.select().from(warehouse).where(eq(warehouse.id, warehouseId)).limit(1);
+      if (!before) throw Errors.notFound(`warehouse '${warehouseId}'`);
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "inventory.warehouse",
+        id: warehouseId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.isActive ? "active" : "inactive",
+        patch: patch as Record<string, unknown>,
+        editableFields: InventoryService.EDITABLE_WAREHOUSE_FIELDS,
+      });
+
+      if (outcome.changed) {
+        await tx.update(warehouse).set(outcome.columns).where(eq(warehouse.id, warehouseId));
+      }
+      const [after] = await tx.select().from(warehouse).where(eq(warehouse.id, warehouseId)).limit(1);
+      return after as unknown as WarehouseRow;
+    });
+  }
+
+  /**
+   * A STOCK ENTRY IS NEVER EDITED, and this is the endpoint that says so out loud.
+   *
+   * The stock ledger is the record of what physically moved. Editing a past movement does
+   * not change the shelf — it changes the story about the shelf, which is the one thing a
+   * stock system must never do. §5's single write path exists so that every movement has
+   * exactly one origin; an edit path would be a second one.
+   *
+   * Returning a considered refusal rather than a 404 matters: a 404 tells a client the
+   * route is wrong, while this tells the user to post a correcting entry, which is the
+   * action that actually fixes their problem.
+   */
+  stockEntryEditPolicy() {
+    return this.edits.policy("inventory.stock", "posted");
   }
 
   async listWarehouses(): Promise<WarehouseRow[]> {

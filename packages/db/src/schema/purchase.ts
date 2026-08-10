@@ -8,7 +8,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * PURCHASE (SPAR, Module 04) — procurement. Owns the VENDOR master, PURCHASE ORDERS
@@ -41,6 +41,7 @@ export const purchaseOrder = pgTable(
   "purchase_order",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     poNo: text("po_no").notNull(),
     vendorId: uuid("vendor_id").notNull(), // intra-module FK -> vendor
     status: text("status").notNull(), // draft | pending_approval | approved | rejected | partially_received | received | cancelled

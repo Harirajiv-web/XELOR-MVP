@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -19,9 +19,40 @@ const createBomSchema = z.object({
   lines: z.array(bomLineSchema).min(1),
 });
 
+const editBomSchema = z.object({
+  outputQty: z.number().positive().optional(),
+  uom: z.string().min(1).max(20).optional(),
+  notes: z.string().max(1000).nullable().optional(),
+});
+
 @Controller("engineering/boms")
 export class BomController {
   constructor(private readonly engineering: EngineeringService) {}
+
+  /**
+   * Correct a DRAFT bill of materials.
+   *
+   * An ACTIVE BOM refuses, with the reason saying to publish a new version — production
+   * orders are pinned to a version precisely so a change never alters a build already on
+   * the floor, and editing in place would defeat that.
+   */
+  @Patch(":id")
+  @RequirePermission("engineering.bom.update")
+  async edit(@Param("id") id: string, @Body() body: unknown) {
+    const p = editBomSchema.safeParse(body ?? {});
+    if (!p.success) {
+      throw Errors.validation(p.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })));
+    }
+    return this.engineering.editBom(id, p.data);
+  }
+
+  /** May this BOM be edited, or does it need a new version? */
+  @Get(":id/edit-policy")
+  @RequirePermission("engineering.bom.read")
+  async editPolicy(@Param("id") id: string) {
+    return this.engineering.bomEditPolicy(id);
+  }
+
 
   @Post()
   @RequirePermission("engineering.bom.create")

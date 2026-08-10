@@ -224,7 +224,7 @@
       <thead><tr><th>Concern</th><th>Implemented demo behavior</th><th>Still required for production</th></tr></thead>
       <tbody>
         <tr><td>Images/config</td><td>Four Dockerfiles, five Railway service descriptors, watch patterns and health/restart policies under <code>infra/railway</code>.</td><td>Registry signing, SBOM, vulnerability policy, promoted immutable digests and IaC.</td></tr>
-        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 87 forward migrations through <code>0088</code>, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
+        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 90 forward migrations through <code>0091</code>, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
         <tr><td>Identity</td><td>Explicit Web/API public-demo flags provide fixed seeded personas and remove the sign-in page for the disposable demo.</td><td>Keycloak/enterprise IdP, MFA, lifecycle, strict session policy and zero demo bypass.</td></tr>
         <tr><td>Networking</td><td>Only web is public; API, database, worker and Valkey communicate on Railway private DNS.</td><td>WAF/edge protection, network policy, private endpoints, rate limits and threat monitoring.</td></tr>
         <tr><td>Operations</td><td>Liveness/readiness, dependency waits, restart policy and reproducible local five-container parity Compose.</td><td>Metrics/traces/log aggregation, SLOs, alerting, on-call, capacity and incident response.</td></tr>

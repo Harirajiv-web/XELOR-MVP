@@ -14,6 +14,7 @@ import {
   type SlaMatrixRow,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { AssetService } from "./asset.service.js";
 import { DowntimeService } from "./downtime.service.js";
@@ -66,10 +67,33 @@ export interface RequestView {
  *   - **The SLA clock starts at request time**, so the person being measured cannot reset
  *     it by taking longer to open the queue.
  */
+/** A correction to a maintenance request. Absent means "leave alone". */
+export interface EditMaintenanceRequestInput {
+  severity?: string;
+  symptomCode?: string;
+  detail?: string;
+  lineStopped?: boolean;
+  reason?: string;
+}
+
 @Injectable()
 export class RequestService {
+  /**
+   * `assetId` is absent: a request against the wrong machine is a different report, and
+   * re-pointing it would move an SLA clock that started ticking against another asset's
+   * criticality. `lineStopped` IS editable — it is the field most often wrong in the first
+   * thirty seconds of a breakdown, and it drives the SLA.
+   */
+  private static readonly EDITABLE_REQUEST_FIELDS = [
+    "severity",
+    "symptomCode",
+    "detail",
+    "lineStopped",
+  ] as const;
+
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     private readonly assets: AssetService,
     private readonly downtime: DowntimeService,
@@ -471,4 +495,95 @@ export class RequestService {
       mwoNo: mwo?.mwoNo ?? null,
     };
   }
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * Correct a maintenance request, or amend one the desk has already picked up.
+   *
+   * Once a work order has been raised from a request the request becomes CLOSED to edits,
+   * and the refusal says to change the work order instead. That is not pedantry: the
+   * request is the record of what the operator originally reported, and quietly rewriting
+   * it after the fact destroys the only evidence of what the symptom looked like before
+   * anyone diagnosed it — which is exactly what reliability analysis reads.
+   */
+  /**
+   * The by-number wrappers. Every other maintenance route is keyed on the request NUMBER —
+   * that is what is written on the shop-floor slip — so these keep the edit endpoints
+   * consistent with the module rather than making one route the odd one out.
+   */
+  async editByNo(requestNo: string, input: EditMaintenanceRequestInput) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, requestNo)).id);
+    return this.editRequest(id, input);
+  }
+
+  async editPolicyByNo(requestNo: string) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, requestNo)).id);
+    return this.requestEditPolicy(id);
+  }
+
+  async editRequest(requestId: string, input: EditMaintenanceRequestInput) {
+    this.edits.requireDocumentId(requestId, "maintenance request");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "maintenance_request", requestId);
+      const [before] = await tx
+        .select()
+        .from(maintenanceRequest)
+        .where(eq(maintenanceRequest.id, requestId))
+        .limit(1);
+      if (!before) throw Errors.notFound(`maintenance request '${requestId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.severity !== undefined) patch.severity = input.severity;
+      if (input.symptomCode !== undefined) patch.symptomCode = input.symptomCode;
+      if (input.detail !== undefined) patch.detail = input.detail;
+      if (input.lineStopped !== undefined) patch.lineStopped = input.lineStopped;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "maintenance.request",
+        id: requestId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: RequestService.EDITABLE_REQUEST_FIELDS,
+        reason: input.reason,
+      });
+
+      if (outcome.changed) {
+        await tx
+          .update(maintenanceRequest)
+          .set(outcome.columns)
+          .where(eq(maintenanceRequest.id, requestId));
+      }
+      const [after] = await tx
+        .select()
+        .from(maintenanceRequest)
+        .where(eq(maintenanceRequest.id, requestId))
+        .limit(1);
+      return after;
+    });
+  }
+
+  /** Every correction ever made to this request, newest first. */
+  async requestHistory(requestId: string) {
+    return this.edits.history("maintenance.request", requestId);
+  }
+
+  /** Whether this request may be edited right now, and what to tell the user if not. */
+  async requestEditPolicy(requestId: string) {
+    this.edits.requireDocumentId(requestId, "maintenance request");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: maintenanceRequest.status, revisionNo: maintenanceRequest.revisionNo })
+        .from(maintenanceRequest)
+        .where(eq(maintenanceRequest.id, requestId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`maintenance request '${requestId}'`);
+    return {
+      ...this.edits.policy("maintenance.request", row.status),
+      status: row.status,
+      revisionNo: row.revisionNo,
+    };
+  }
+
 }

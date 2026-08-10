@@ -38,7 +38,7 @@ const SYSTEM = {
   capabilities: 19,
   graphs: 7,
   modules: 22,
-  permissions: 147,
+  permissions: 165,
   copilotIntents: 21,
   aiFeatures: 9,
   sideEffecting: 1,

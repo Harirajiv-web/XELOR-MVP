@@ -12,7 +12,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * EXPENDITURE (RASP, Module 12) — the money going out that is not a purchase order.
@@ -231,6 +231,7 @@ export const expenseClaim = pgTable(
   "expense_claim",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     claimNo: text("claim_no").notNull(),
     employeeRef: uuid("employee_ref").notNull(), // logical ref → HRM employee
     claimDate: date("claim_date").notNull(),
@@ -297,6 +298,7 @@ export const travelRequest = pgTable(
   "travel_request",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     travelNo: text("travel_no").notNull(),
     employeeRef: uuid("employee_ref").notNull(),
     costCentreRef: text("cost_centre_ref").notNull(),
@@ -323,6 +325,7 @@ export const cashAdvance = pgTable(
   "cash_advance",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     advanceNo: text("advance_no").notNull(),
     employeeRef: uuid("employee_ref").notNull(),
     purpose: text("purpose").notNull(),
@@ -367,6 +370,7 @@ export const purchaseExpense = pgTable(
   "purchase_expense",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     expNo: text("exp_no").notNull(),
     docKind: text("doc_kind").notNull(), // direct_invoice | indirect_pr | utility_bill
     vendorRef: uuid("vendor_ref"), // logical ref → Purchase vendor

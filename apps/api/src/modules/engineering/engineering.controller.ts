@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Res } from "@nestjs/common";
 import type { Response } from "express";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
@@ -25,9 +25,31 @@ const listQuerySchema = z.object({
   cursor: z.string().optional(),
 });
 
+/** `itemCode` is not editable — it is the key the whole plant already knows the part by. */
+const editItemSchema = createItemSchema.partial().omit({ itemCode: true, acknowledgeDuplicates: true });
+
 @Controller("engineering/items")
 export class EngineeringController {
   constructor(private readonly engineering: EngineeringService) {}
+
+  /** Correct an item master's details. */
+  @Patch(":id")
+  @RequirePermission("engineering.item.update")
+  async edit(@Param("id") id: string, @Body() body: unknown) {
+    const p = editItemSchema.safeParse(body ?? {});
+    if (!p.success) {
+      throw Errors.validation(p.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })));
+    }
+    return this.engineering.editItem(id, p.data);
+  }
+
+  /** Every correction ever made to this item, newest first. */
+  @Get(":id/history")
+  @RequirePermission("engineering.item.read")
+  async history(@Param("id") id: string) {
+    return { entries: await this.engineering.itemHistory(id) };
+  }
+
 
   @Post()
   @RequirePermission("engineering.item.create")

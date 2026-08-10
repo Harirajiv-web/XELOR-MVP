@@ -18,6 +18,7 @@ import {
   type PerDiemRate,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { ExpNumberingService } from "./exp-numbering.service.js";
 
 const { cashAdvance, advanceSettlement, travelRequest, perDiemRate, outboxEvent } = schema;
@@ -35,10 +36,31 @@ const { cashAdvance, advanceSettlement, travelRequest, perDiemRate, outboxEvent 
  * travel request. A rate revised in October must not restate a July trip, and an employee
  * promoted in September must be paid the grade they held when they travelled.
  */
+/** A correction to a cash advance. Absent means "leave alone". */
+export interface EditAdvanceInput {
+  purpose?: string;
+  amount?: number;
+  neededBy?: string;
+  settleBy?: string;
+  reason?: string;
+}
+
+/** A correction to a travel request. Absent means "leave alone". */
+export interface EditTravelInput {
+  purpose?: string;
+  fromCity?: string;
+  toCity?: string;
+  fromDate?: string;
+  toDate?: string;
+  modeOfTravel?: string;
+  estCost?: number;
+  reason?: string;
+}
 @Injectable()
 export class AdvanceService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: ExpNumberingService,
   ) {}
 
@@ -308,4 +330,188 @@ export class AdvanceService {
       settlements: settlements.map((s) => ({ type: s.settlementType, amount: Number(s.amount), at: s.settledAt.toISOString(), note: s.note })),
     };
   }
+  /* ------------------------------ corrections ----------------------------- */
+
+  private static readonly EDITABLE_ADVANCE_FIELDS = ["purpose", "amount", "neededBy", "settleBy"] as const;
+  private static readonly EDITABLE_TRAVEL_FIELDS = [
+    "purpose",
+    "fromCity",
+    "toCity",
+    "fromDate",
+    "toDate",
+    "modeOfTravel",
+    "estCost",
+  ] as const;
+
+  /**
+   * Correct a cash advance before it is paid out.
+   *
+   * Once DISBURSED the money has left the account and the refusal says so — the correction
+   * is a refund or a reversing entry, both of which leave the disbursement standing as the
+   * record of what was actually paid on the day.
+   */
+  /** By NUMBER — every other route in this module is keyed that way, so these match. */
+  async editAdvanceByNo(advanceNo: string, input: Parameters<AdvanceService["editAdvance"]>[1]) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, advanceNo)).id);
+    return this.editAdvance(id, input);
+  }
+
+  async editAdvancePolicyByNo(advanceNo: string) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, advanceNo)).id);
+    return this.advanceEditPolicy(id);
+  }
+
+  async editAdvance(advanceId: string, input: EditAdvanceInput) {
+    this.edits.requireDocumentId(advanceId, "advance");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "cash_advance", advanceId);
+      const [before] = await tx.select().from(cashAdvance).where(eq(cashAdvance.id, advanceId)).limit(1);
+      if (!before) throw Errors.notFound(`advance '${advanceId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.purpose !== undefined) patch.purpose = input.purpose;
+      if (input.amount !== undefined) {
+        if (input.amount <= 0) throw Errors.validation([{ field: "amount", message: "must be > 0" }]);
+        patch.amount = input.amount.toFixed(2);
+      }
+      if (input.neededBy !== undefined) patch.neededBy = input.neededBy;
+      if (input.settleBy !== undefined) patch.settleBy = input.settleBy;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "expenditure.advance",
+        id: advanceId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: AdvanceService.EDITABLE_ADVANCE_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      // An approved advance whose AMOUNT changed is a different commitment; it goes back.
+      if (outcome.reapprovalRequired && before.status === "approved" && input.amount !== undefined) {
+        columns.status = "requested";
+        columns.workflowInstanceId = null;
+      }
+      // The outstanding balance is a function of the amount, so it must move with it. An
+      // advance is only editable while `requested` or `approved`, so nothing has been paid
+      // or settled against it yet and the balance is simply the amount — but it is computed
+      // from the components rather than assumed, so this stays correct if the policy ever
+      // opens a later state.
+      if (input.amount !== undefined) {
+        const settled = Number(before.settledAmount ?? 0);
+        const refunded = Number(before.refundedAmount ?? 0);
+        columns.balance = (input.amount - settled - refunded).toFixed(2);
+      }
+
+      await tx.update(cashAdvance).set(columns).where(eq(cashAdvance.id, advanceId));
+      const [after] = await tx.select().from(cashAdvance).where(eq(cashAdvance.id, advanceId)).limit(1);
+      return after;
+    });
+  }
+
+  /** Travel requests are keyed by number on every other route too. */
+  async editTravelByNo(travelNo: string, input: EditTravelInput) {
+    const id = await withTenant(async (tx) => {
+      const [row] = await tx
+        .select({ id: travelRequest.id })
+        .from(travelRequest)
+        .where(eq(travelRequest.travelNo, travelNo))
+        .limit(1);
+      if (!row) throw Errors.notFound(`travel request '${travelNo}'`);
+      return row.id;
+    });
+    return this.editTravel(id, input);
+  }
+
+  async editTravelPolicyByNo(travelNo: string) {
+    const id = await withTenant(async (tx) => {
+      const [row] = await tx
+        .select({ id: travelRequest.id })
+        .from(travelRequest)
+        .where(eq(travelRequest.travelNo, travelNo))
+        .limit(1);
+      if (!row) throw Errors.notFound(`travel request '${travelNo}'`);
+      return row.id;
+    });
+    return this.travelEditPolicy(id);
+  }
+
+  /** Correct or amend a travel request. */
+  async editTravel(travelId: string, input: EditTravelInput) {
+    this.edits.requireDocumentId(travelId, "travel request");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "travel_request", travelId);
+      const [before] = await tx.select().from(travelRequest).where(eq(travelRequest.id, travelId)).limit(1);
+      if (!before) throw Errors.notFound(`travel request '${travelId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.purpose !== undefined) patch.purpose = input.purpose;
+      if (input.fromCity !== undefined) patch.fromCity = input.fromCity;
+      if (input.toCity !== undefined) patch.toCity = input.toCity;
+      if (input.fromDate !== undefined) patch.fromDate = input.fromDate;
+      if (input.toDate !== undefined) patch.toDate = input.toDate;
+      if (input.modeOfTravel !== undefined) patch.modeOfTravel = input.modeOfTravel;
+      if (input.estCost !== undefined) patch.estCost = input.estCost.toFixed(2);
+
+      const fromDate = input.fromDate ?? before.fromDate;
+      const toDate = input.toDate ?? before.toDate;
+      if (toDate < fromDate) {
+        throw Errors.validation([{ field: "toDate", message: "a trip cannot end before it starts" }]);
+      }
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "expenditure.travel",
+        id: travelId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: AdvanceService.EDITABLE_TRAVEL_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      if (outcome.reapprovalRequired && ["submitted", "approved"].includes(before.status)) {
+        columns.status = "draft";
+        columns.workflowInstanceId = null;
+      }
+
+      await tx.update(travelRequest).set(columns).where(eq(travelRequest.id, travelId));
+      const [after] = await tx.select().from(travelRequest).where(eq(travelRequest.id, travelId)).limit(1);
+      return after;
+    });
+  }
+
+  /** Every correction ever made to this advance / travel request, newest first. */
+  async advanceHistory(advanceId: string) {
+    return this.edits.history("expenditure.advance", advanceId);
+  }
+  async travelHistory(travelId: string) {
+    return this.edits.history("expenditure.travel", travelId);
+  }
+
+  async advanceEditPolicy(advanceId: string) {
+    this.edits.requireDocumentId(advanceId, "advance");
+    const [row] = await withTenant((tx) =>
+      tx.select({ status: cashAdvance.status, revisionNo: cashAdvance.revisionNo })
+        .from(cashAdvance).where(eq(cashAdvance.id, advanceId)).limit(1),
+    );
+    if (!row) throw Errors.notFound(`advance '${advanceId}'`);
+    return { ...this.edits.policy("expenditure.advance", row.status), status: row.status, revisionNo: row.revisionNo };
+  }
+
+  async travelEditPolicy(travelId: string) {
+    this.edits.requireDocumentId(travelId, "travel request");
+    const [row] = await withTenant((tx) =>
+      tx.select({ status: travelRequest.status, revisionNo: travelRequest.revisionNo })
+        .from(travelRequest).where(eq(travelRequest.id, travelId)).limit(1),
+    );
+    if (!row) throw Errors.notFound(`travel request '${travelId}'`);
+    return { ...this.edits.policy("expenditure.travel", row.status), status: row.status, revisionNo: row.revisionNo };
+  }
+
 }

@@ -1,5 +1,7 @@
 import { Global, Module } from "@nestjs/common";
 import { NumberingService } from "./numbering.service.js";
+import { AuditLogService } from "./audit-log.service.js";
+import { DocumentEditService } from "./document-edit.service.js";
 
 /**
  * Cross-cutting services every module may inject without importing another module —
@@ -11,7 +13,7 @@ import { NumberingService } from "./numbering.service.js";
  */
 @Global()
 @Module({
-  providers: [NumberingService],
-  exports: [NumberingService],
+  providers: [NumberingService, AuditLogService, DocumentEditService],
+  exports: [NumberingService, AuditLogService, DocumentEditService],
 })
 export class CommonModule {}

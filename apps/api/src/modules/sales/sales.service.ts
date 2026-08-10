@@ -22,6 +22,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
@@ -31,6 +32,26 @@ import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 import type { DemandSource, OpenDemandLine } from "../../ports/planning-inputs.port.js";
 
 const { customer, salesOrder, salesOrderLine, dispatch, dispatchLine, outboxEvent } = schema;
+
+/**
+ * A correction to a sales order. Every field is optional: absent means "leave it alone",
+ * which is what makes this safe to call from a form that only knows about two fields.
+ *
+ * `lines` is all-or-nothing. A partial line list would be ambiguous in the one way that
+ * matters — is the missing line being deleted, or simply not mentioned? — so supplying it
+ * replaces the whole set and omitting it leaves every line untouched.
+ */
+export interface EditOrderInput {
+  custPoNo?: string;
+  orderDate?: string;
+  shipToStateCode?: string;
+  shipToGstin?: string;
+  shipToAddress?: string;
+  fgWarehouseId?: string | null;
+  lines?: CreateOrderInput["lines"];
+  /** Required once the order is confirmed. Recorded on the row and in the audit trail. */
+  reason?: string;
+}
 
 export interface CreateCustomerInput {
   code: string;
@@ -189,6 +210,42 @@ export interface DispatchResult {
   dueDate: string;
 }
 
+/**
+ * What a correction may touch, per document. Everything else in the row — the SO number,
+ * the customer, the tenant, the credit snapshots, `created_by` — is not editable, and
+ * saying so as a list is what makes that true rather than hoping no caller tries.
+ *
+ * `customerId` is deliberately absent from the order list: re-pointing an order at a
+ * different customer changes who owes the money, which is a new order, not an edit.
+ */
+const EDITABLE_CUSTOMER_FIELDS = [
+  "name",
+  "gstin",
+  "isRegistered",
+  "contactEmail",
+  "contactPhone",
+  "billingAddress",
+  "creditLimit",
+  "creditDays",
+] as const;
+
+const EDITABLE_ORDER_FIELDS = [
+  "custPoNo",
+  "orderDate",
+  "shipToStateCode",
+  "shipToGstin",
+  "shipToAddress",
+  "placeOfSupply",
+  "isInterState",
+  "fgWarehouseId",
+  "subtotal",
+  "cgstTotal",
+  "sgstTotal",
+  "igstTotal",
+  "roundOff",
+  "grandTotal",
+] as const;
+
 const m2 = (n: number): string => n.toFixed(2);
 const q3 = (n: number): string => n.toFixed(3);
 const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(v));
@@ -213,6 +270,7 @@ const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(
 export class SalesService implements DemandSource {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     private readonly dedup: DedupExplainer,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
@@ -514,6 +572,370 @@ export class SalesService implements DemandSource {
       });
       return this.viewInTx(tx, id);
     });
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * Correct a customer. A master nobody has transacted against yet and a master with two
+   * years of orders behind it are edited the same way — what changes is only that the
+   * audit trail carries the second one's history, which is exactly the right difference.
+   */
+  async editCustomer(customerId: string, patch: Partial<CreateCustomerInput>): Promise<MasterRecord> {
+    this.edits.requireDocumentId(customerId, "customer");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "customer", customerId);
+      const [before] = await tx.select().from(customer).where(eq(customer.id, customerId)).limit(1);
+      if (!before) throw Errors.notFound(`Customer ${customerId}`);
+
+      // A customer has no status column: a master is always in one state. The policy still
+      // decides, so the answer lives in one table rather than being assumed here.
+      const outcome = await this.edits.apply(tx, {
+        docType: "sales.customer",
+        id: customerId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.isActive ? "active" : "inactive",
+        patch: patch as Record<string, unknown>,
+        editableFields: EDITABLE_CUSTOMER_FIELDS,
+      });
+
+      if (outcome.changed) {
+        await tx.update(customer).set(outcome.columns).where(eq(customer.id, customerId));
+      }
+      const [after] = await tx.select().from(customer).where(eq(customer.id, customerId)).limit(1);
+      return after as unknown as MasterRecord;
+    });
+  }
+
+  /**
+   * Correct or amend a sales order.
+   *
+   * One method covers both because the DIFFERENCE is data, not control flow: the policy
+   * decides whether this is a free correction or an amendment that needs a reason, and the
+   * shared edit service applies whichever it is. Two methods would mean two places to
+   * forget the audit append.
+   *
+   * Three things here are Sales' own business and cannot live in the shared service:
+   *
+   *   1. TAX IS RECOMPUTED, never patched. A quantity change that left `grand_total`
+   *      alone would produce an order whose lines and total disagree — and the total is
+   *      what the credit gate reads and what gets invoiced.
+   *   2. A DISPATCHED LINE IS FLOOR, not a suggestion. Once 40 of 120 have shipped, the
+   *      order may be cut to 40 but not below: the remainder is a fact about a lorry.
+   *   3. A VALUE CHANGE RE-OPENS THE CREDIT GATE. Amending a confirmed order upward and
+   *      leaving `credit_status = passed` would let an order past a limit it was never
+   *      checked against — the one outcome the gate exists to prevent.
+   */
+  async editOrder(orderId: string, input: EditOrderInput, idempotencyKey: string): Promise<SalesOrderView> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ ...input, orderId, op: "edit-so" }),
+      async () => ({ status: 200, body: await this.doEditOrder(orderId, input) }),
+    );
+    return result.body;
+  }
+
+  private async doEditOrder(orderId: string, input: EditOrderInput): Promise<SalesOrderView> {
+    this.edits.requireDocumentId(orderId, "sales order");
+    const { actorId } = currentTenant();
+    const config = this.gstConfig();
+
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "sales_order", orderId);
+      const [before] = await tx.select().from(salesOrder).where(eq(salesOrder.id, orderId)).limit(1);
+      if (!before) throw Errors.notFound(`Sales order ${orderId}`);
+
+      const existingLines = await tx
+        .select()
+        .from(salesOrderLine)
+        .where(eq(salesOrderLine.orderId, orderId))
+        .orderBy(asc(salesOrderLine.lineNo));
+
+      const orderDate = input.orderDate ?? before.orderDate;
+      const shipToStateCode = input.shipToStateCode ?? before.shipToStateCode;
+
+      // Header patch, before the lines: the tax computation below reads the state code, so
+      // a change to ship-to and a change to quantity in the same request must be applied in
+      // that order or the tax is computed against the old destination.
+      const header: Record<string, unknown> = {};
+      if (input.custPoNo !== undefined) header.custPoNo = input.custPoNo;
+      if (input.orderDate !== undefined) header.orderDate = orderDate;
+      if (input.shipToStateCode !== undefined) header.shipToStateCode = shipToStateCode;
+      if (input.shipToGstin !== undefined) header.shipToGstin = input.shipToGstin;
+      if (input.shipToAddress !== undefined) header.shipToAddress = input.shipToAddress;
+      if (input.fgWarehouseId !== undefined) header.fgWarehouseId = input.fgWarehouseId;
+
+      if (input.shipToStateCode !== undefined) {
+        header.placeOfSupply = shipToStateCode;
+        header.isInterState = stateCodeOfGstin(before.supplierGstin) !== shipToStateCode;
+      }
+
+      // The 1 Aug 2026 ship-to mandate applies to an EDIT exactly as it does to a create:
+      // moving the destination is precisely how an order that satisfied the rule stops
+      // satisfying it, and finding that out at e-invoicing time is finding out too late.
+      if (input.shipToGstin !== undefined || input.shipToStateCode !== undefined) {
+        const [cust] = await tx
+          .select({ isRegistered: customer.isRegistered, gstin: customer.gstin })
+          .from(customer)
+          .where(eq(customer.id, before.customerId))
+          .limit(1);
+        const shipTo = checkShipToGstin({
+          docDate: orderDate,
+          shipToGstin: input.shipToGstin ?? before.shipToGstin ?? cust?.gstin,
+          shipToIsRegistered: cust?.isRegistered ?? false,
+          config,
+        });
+        if (!shipTo.ok) {
+          throw new AppError("SHIP_TO_GSTIN_REQUIRED", 422, shipTo.reason ?? "ship-to GSTIN required");
+        }
+        if (shipTo.value && shipTo.value !== "URP") {
+          const shipState = stateCodeOfGstin(shipTo.value);
+          if (shipState && shipState !== shipToStateCode) {
+            throw Errors.validation([
+              {
+                field: "shipToGstin",
+                message: `ship-to GSTIN is registered in state ${shipState}, but the order ships to ${shipToStateCode}`,
+              },
+            ]);
+          }
+        }
+      }
+
+      // A customer PO number is the one header field with a uniqueness rule, and editing
+      // into a collision must be a domain error rather than a raw 23505 (§5).
+      if (input.custPoNo !== undefined && input.custPoNo !== before.custPoNo) {
+        const clash = await tx
+          .select({ soNo: salesOrder.soNo })
+          .from(salesOrder)
+          .where(
+            and(
+              eq(salesOrder.customerId, before.customerId),
+              eq(salesOrder.custPoNo, input.custPoNo),
+              ne(salesOrder.id, orderId),
+            ),
+          )
+          .limit(1);
+        if (clash[0]) {
+          throw new AppError(
+            "DUPLICATE_CUSTOMER_PO",
+            409,
+            `Customer PO '${input.custPoNo}' is already on sales order ${clash[0].soNo}.`,
+          );
+        }
+      }
+
+      // ---- lines, and the tax they imply ------------------------------------
+      let tax: ReturnType<typeof computeOrderTax> | null = null;
+      if (input.lines) {
+        if (input.lines.length === 0) {
+          throw Errors.validation([{ field: "lines", message: "a sales order needs at least one line" }]);
+        }
+
+        // Rule 2: a shipped quantity is a floor. Checked per ITEM rather than per line
+        // number, because an edit legitimately reorders and renumbers lines and the lorry
+        // does not care which row the item sat on.
+        const shipped = new Map<string, number>();
+        for (const l of existingLines) {
+          const qty = Number(l.deliveredQty);
+          if (qty > 0) shipped.set(l.itemId, (shipped.get(l.itemId) ?? 0) + qty);
+        }
+        for (const [itemId, deliveredQty] of shipped) {
+          const kept = input.lines
+            .filter((l) => l.itemId === itemId)
+            .reduce((sum, l) => sum + l.qty, 0);
+          if (kept < deliveredQty) {
+            throw new AppError(
+              "DISPATCHED_QTY_EXCEEDS_EDIT",
+              409,
+              `${deliveredQty} of this item has already been dispatched, so the order cannot be cut to ${kept}. ` +
+                `Raise a return or a credit note for the difference.`,
+            );
+          }
+        }
+
+        for (const [i, l] of input.lines.entries()) {
+          if (l.requestedDeliveryDate && l.requestedDeliveryDate < orderDate) {
+            throw Errors.validation([
+              {
+                field: `lines.${i}.requestedDeliveryDate`,
+                message: `${l.requestedDeliveryDate} is before the order date ${orderDate} — a delivery cannot be promised for a date already past.`,
+              },
+            ]);
+          }
+        }
+
+        try {
+          tax = computeOrderTax({
+            supplierGstin: before.supplierGstin,
+            placeOfSupplyStateCode: shipToStateCode,
+            lines: input.lines.map((l, i) => ({
+              lineNo: i + 1,
+              qty: l.qty,
+              rate: l.rate,
+              discountPct: l.discountPct,
+              gstRatePct: l.gstRatePct,
+              hsn: l.hsn,
+            })),
+          });
+        } catch (e) {
+          throw new AppError("GST_INPUT_INVALID", 422, e instanceof Error ? e.message : String(e));
+        }
+
+        header.subtotal = m2(tax.subtotal);
+        header.cgstTotal = m2(tax.cgstTotal);
+        header.sgstTotal = m2(tax.sgstTotal);
+        header.igstTotal = m2(tax.igstTotal);
+        header.roundOff = m2(tax.roundOff);
+        header.grandTotal = m2(tax.grandTotal);
+      }
+
+      // The policy decides, the shared service records. Everything above was Sales working
+      // out WHAT the document should say; this is the single place that decides whether it
+      // is allowed to say it and writes down that it did.
+      const outcome = await this.edits.apply(tx, {
+        docType: "sales.order",
+        id: orderId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch: header,
+        editableFields: EDITABLE_ORDER_FIELDS,
+        reason: input.reason,
+      });
+
+      const linesChanged = input.lines !== undefined && this.linesDiffer(existingLines, input.lines);
+      if (!outcome.changed && !linesChanged) {
+        // Nothing moved. No UPDATE, no event, no revision spent — see DocumentEditService.
+        return this.viewInTx(tx, orderId);
+      }
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+
+      // Rule 3. A value change on an order the customer was already promised puts it back
+      // in front of the credit gate; leaving the old verdict in place would be a limit
+      // check that silently no longer applies to the number it was checking.
+      const valueMoved = tax !== null && m2(tax.grandTotal) !== before.grandTotal;
+      if (valueMoved && outcome.reapprovalRequired) {
+        columns.creditStatus = "pending";
+        columns.creditLimitSnapshot = null;
+        columns.creditExposureSnapshot = null;
+        columns.status = "draft";
+      }
+
+      // An amendment always writes, even when only the lines moved: the revision number
+      // and the reason belong to the document, not to whichever column happened to change.
+      if (Object.keys(columns).length > 0) {
+        columns.updatedAt = new Date();
+        columns.updatedBy = actorId;
+        await tx.update(salesOrder).set(columns).where(eq(salesOrder.id, orderId));
+      }
+
+      if (input.lines && tax) {
+        // Replace rather than reconcile. Line identity across an edit is not stable — an
+        // operator deletes row 2 and adds a new row 4 — so matching by line number would
+        // silently attach one line's history to another. The audit change set already
+        // holds what the lines used to be.
+        await tx.delete(salesOrderLine).where(eq(salesOrderLine.orderId, orderId));
+        for (let i = 0; i < input.lines.length; i++) {
+          const src = input.lines[i]!;
+          const t = tax.lines[i]!;
+          const previouslyDelivered = existingLines
+            .filter((l) => l.itemId === src.itemId)
+            .reduce((sum, l) => sum + Number(l.deliveredQty), 0);
+          await tx.insert(salesOrderLine).values({
+            id: newId(),
+            tenantId: before.tenantId,
+            createdBy: actorId,
+            updatedBy: actorId,
+            orderId,
+            lineNo: i + 1,
+            itemId: src.itemId,
+            qty: q3(src.qty),
+            uom: src.uom ?? null,
+            rate: m2(src.rate),
+            discountPct: m2(src.discountPct ?? 0),
+            hsn: src.hsn,
+            gstRatePct: m2(src.gstRatePct),
+            taxableValue: m2(t.taxableValue),
+            cgst: m2(t.cgst),
+            sgst: m2(t.sgst),
+            igst: m2(t.igst),
+            lineTotal: m2(t.lineTotal),
+            // Carried forward, not reset. A rebuilt line for an item that has already part
+            // shipped must keep that history or the order looks undispatched and the goods
+            // get sent twice.
+            deliveredQty: q3(Math.min(previouslyDelivered, src.qty)),
+            requestedDeliveryDate: src.requestedDeliveryDate ?? null,
+          });
+        }
+      }
+
+      // A downstream module planned against the old numbers. PLANNING nets open demand and
+      // CSP quotes promised dates, and neither re-reads an order it has already consumed —
+      // so an amendment that stayed inside Sales would leave the plan quietly wrong.
+      await tx.insert(outboxEvent).values({
+        id: newId(),
+        tenantId: before.tenantId,
+        name: eventName("sales", "order", outcome.tier === "amend" ? "amended" : "corrected"),
+        payload: {
+          id: orderId,
+          soNo: before.soNo,
+          customerId: before.customerId,
+          revisionNo: outcome.revisionNo,
+          grandTotal: tax ? m2(tax.grandTotal) : before.grandTotal,
+          creditRecheckRequired: valueMoved && outcome.reapprovalRequired,
+          changes: outcome.changeSet?.changes.map((c) => c.field) ?? [],
+          reason: input.reason ?? null,
+        },
+        createdAt: new Date(),
+      });
+
+      return this.viewInTx(tx, orderId);
+    });
+  }
+
+  /**
+   * Do these two line sets say the same thing?
+   *
+   * Compared on the fields a customer would notice, in order. Not a deep equality on the
+   * rows: the stored lines carry computed tax and delivery columns the input never has, so
+   * a naive comparison would report a change on every single save.
+   */
+  private linesDiffer(
+    existing: Array<typeof schema.salesOrderLine.$inferSelect>,
+    incoming: NonNullable<EditOrderInput["lines"]>,
+  ): boolean {
+    if (existing.length !== incoming.length) return true;
+    return existing.some((l, i) => {
+      const n = incoming[i]!;
+      return (
+        l.itemId !== n.itemId ||
+        Number(l.qty) !== n.qty ||
+        Number(l.rate) !== n.rate ||
+        Number(l.gstRatePct) !== n.gstRatePct ||
+        l.hsn !== n.hsn ||
+        Number(l.discountPct) !== (n.discountPct ?? 0) ||
+        (l.requestedDeliveryDate ?? null) !== (n.requestedDeliveryDate ?? null)
+      );
+    });
+  }
+
+  /** Every correction made to this order, newest first. */
+  async orderHistory(orderId: string) {
+    this.edits.requireDocumentId(orderId, "sales order");
+    return this.edits.history("sales.order", orderId);
+  }
+
+  /** Whether this order may be edited right now, and what to tell the user if not. */
+  async orderEditPolicy(orderId: string) {
+    this.edits.requireDocumentId(orderId, "sales order");
+    const [row] = await withTenant((tx) =>
+      tx.select({ status: salesOrder.status, revisionNo: salesOrder.revisionNo })
+        .from(salesOrder)
+        .where(eq(salesOrder.id, orderId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`Sales order ${orderId}`);
+    return { ...this.edits.policy("sales.order", row.status), status: row.status, revisionNo: row.revisionNo };
   }
 
   /* ------------------------------ credit gate ----------------------------- */

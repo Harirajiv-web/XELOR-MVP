@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -135,6 +135,41 @@ function requireKey(key: string | undefined, what: string): string {
  * rather than a silent double-reservation.
  */
 // Prefix is relative — `api/v1` is set globally in main.ts (see CspController).
+const reasonField = { reason: z.string().trim().min(3, "say why in a few words").optional() };
+
+const editClaimSchema = z.object({
+  claimDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  costCentreRef: z.string().max(60).optional(),
+  projectRef: z.string().max(60).optional(),
+  ...reasonField,
+});
+
+const editAdvanceSchema = z.object({
+  purpose: z.string().min(1).max(500).optional(),
+  amount: z.number().positive().optional(),
+  neededBy: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  settleBy: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ...reasonField,
+});
+
+const editTravelSchema = z.object({
+  purpose: z.string().min(1).max(500).optional(),
+  fromCity: z.string().max(120).optional(),
+  toCity: z.string().max(120).optional(),
+  fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  modeOfTravel: z.string().max(40).optional(),
+  estCost: z.number().nonnegative().optional(),
+  ...reasonField,
+});
+
+const editIndirectSchema = z.object({
+  vendorInvoiceNo: z.string().max(60).optional(),
+  invoiceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  costCentreRef: z.string().max(60).optional(),
+  ...reasonField,
+});
+
 @Controller("expenditure")
 export class ExpenditureController {
   constructor(
@@ -170,6 +205,66 @@ export class ExpenditureController {
   @RequirePermission("expenditure.budget.manage")
   async revise(@Body() body: unknown) {
     return this.budgets.revise(parse(reviseSchema, body));
+  }
+
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * Correct an expense claim, or withdraw one from approval to amend it.
+   *
+   * APPROVED and later is closed: after approval the claim is a payable, and a payable that
+   * can be edited is a payable nobody can reconcile. The refusal offers a reversing entry.
+   */
+  @Patch("claims/:claimNo")
+  @RequirePermission("expenditure.claim.update")
+  async editClaim(@Param("claimNo") claimNo: string, @Body() body: unknown) {
+    return this.claims.editClaimByNo(claimNo, parse(editClaimSchema, body ?? {}));
+  }
+
+  @Get("claims/:claimNo/edit-policy")
+  @RequirePermission("expenditure.claim.read")
+  async claimEditPolicy(@Param("claimNo") claimNo: string) {
+    return this.claims.editClaimPolicyByNo(claimNo);
+  }
+
+  /** Correct a cash advance before it is paid out. */
+  @Patch("advances/:advanceNo")
+  @RequirePermission("expenditure.advance.update")
+  async editAdvance(@Param("advanceNo") advanceNo: string, @Body() body: unknown) {
+    return this.advances.editAdvanceByNo(advanceNo, parse(editAdvanceSchema, body ?? {}));
+  }
+
+  @Get("advances/:advanceNo/edit-policy")
+  @RequirePermission("expenditure.claim.read")
+  async advanceEditPolicy(@Param("advanceNo") advanceNo: string) {
+    return this.advances.editAdvancePolicyByNo(advanceNo);
+  }
+
+  /** Correct or amend a travel request. */
+  @Patch("travel-requests/:travelNo")
+  @RequirePermission("expenditure.travel.update")
+  async editTravel(@Param("travelNo") travelNo: string, @Body() body: unknown) {
+    return this.advances.editTravelByNo(travelNo, parse(editTravelSchema, body ?? {}));
+  }
+
+  @Get("travel-requests/:travelNo/edit-policy")
+  @RequirePermission("expenditure.claim.read")
+  async travelEditPolicy(@Param("travelNo") travelNo: string) {
+    return this.advances.editTravelPolicyByNo(travelNo);
+  }
+
+  /** Correct an indirect expense that has not been approved and posted. */
+  @Patch("indirect-expenses/:expNo")
+  @RequirePermission("expenditure.indirect.update")
+  async editIndirect(@Param("expNo") expNo: string, @Body() body: unknown) {
+    return this.indirect.editIndirectByNo(expNo, parse(editIndirectSchema, body ?? {}));
+  }
+
+  @Get("indirect-expenses/:expNo/edit-policy")
+  @RequirePermission("expenditure.budget.read")
+  async indirectEditPolicy(@Param("expNo") expNo: string) {
+    return this.indirect.editIndirectPolicyByNo(expNo);
   }
 
   /* --------------------------------- claims -------------------------------- */

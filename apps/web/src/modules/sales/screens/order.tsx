@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, History } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
@@ -8,6 +9,8 @@ import { Empty } from "@spine/states";
 import { inr, num, qty, date, relativeDays } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
+import { EditButton, DocumentHistory, useEditPolicy } from "@spine/ui/corrections";
+import { NewOrderDialog } from "../components/new-order-dialog";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { SalesOrderLineView, SalesOrderView } from "../api";
 import { creditBadge, isPastDue, salesApi } from "../api";
@@ -33,6 +36,14 @@ export default function OrderScreen({ params }: ScreenProps): React.JSX.Element 
   const { data, loading, error, reload } = useQuery<SalesOrderView>(
     orderId ? salesApi.orderPath(orderId) : null,
   );
+
+  // The server decides whether this order may change, and what to say when it may not. A
+  // copy of that rule here would be a second source of truth, and the direction it drifts
+  // is always the same: the button says yes, the endpoint says no, and the user has
+  // already filled in the form.
+  const policy = useEditPolicy(orderId ? salesApi.orderEditPolicyPath(orderId) : null);
+  const [editing, setEditing] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const columns: ReadonlyArray<Column<SalesOrderLineView>> = [
     {
@@ -168,6 +179,22 @@ export default function OrderScreen({ params }: ScreenProps): React.JSX.Element 
       <PageHeader
         title={data ? data.soNo : "Sales order"}
         subtitle="One order as it stands: who it is for, what was agreed line by line, the GST that was fixed on the order date, and how much of it has shipped."
+        actions={
+          data ? (
+            <div className="flex flex-wrap items-start gap-2">
+              <EditButton policy={policy} onEdit={() => setEditing(true)} />
+              <button
+                type="button"
+                className="btn btn-ghost gap-2"
+                onClick={() => setShowHistory((v) => !v)}
+                aria-expanded={showHistory}
+              >
+                <History className="h-4 w-4" aria-hidden />
+                {showHistory ? "Hide changes" : "Change history"}
+              </button>
+            </div>
+          ) : null
+        }
         meta={
           data
             ? [
@@ -229,6 +256,29 @@ export default function OrderScreen({ params }: ScreenProps): React.JSX.Element 
             />
           </dl>
         </section>
+      ) : null}
+
+      {showHistory && orderId ? (
+        <section className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)] p-4">
+          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+            Every change made to this order
+          </h2>
+          <DocumentHistory path={salesApi.orderHistoryPath(orderId)} />
+        </section>
+      ) : null}
+
+      {editing && data && policy?.editable ? (
+        <NewOrderDialog
+          editing={{ order: data, amend: policy.tier === "amend" }}
+          onClose={() => setEditing(false)}
+          onCreated={() => {
+            setEditing(false);
+            // Re-read rather than trusting the response: an amendment can change the STATUS
+            // too (a confirmed order goes back to draft for the credit re-check), and the
+            // header must show that rather than the state the user started from.
+            reload();
+          }}
+        />
       ) : null}
 
       <DataTable

@@ -1,5 +1,5 @@
 import { index, integer, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * PRODUCTION (KILN, Module 05) — manufacturing. A production order consumes BOM
@@ -13,6 +13,7 @@ export const productionOrder = pgTable(
   "production_order",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     orderNo: text("order_no").notNull(),
     itemId: uuid("item_id").notNull(), // the finished good to make
     bomId: uuid("bom_id").notNull(), // the BOM used (pinned)

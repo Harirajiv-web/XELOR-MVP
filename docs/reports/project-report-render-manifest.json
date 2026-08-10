@@ -6,44 +6,44 @@
     {
       "id": "handoff",
       "source": "docs/reports/xelor-mvp-technical-handoff-brief.html",
-      "sourceSha256": "9812c6bd5068a449773e234319d175410cd134835b2576eeb10477cbc8738b65",
+      "sourceSha256": "5d55eb2ff4d7f750ff6e7971c78a9359eb2f5c788b6cd8e8afea7f73a8a52ccd",
       "pdf": "docs/05-deliverables/project-reports/XELOR_MVP_TECHNICAL_HANDOFF_BRIEF.pdf",
-      "pdfSha256": "d07c52657e8053d0091db44422d58325162fd50cba736cfa508f8210fd3ccfbb"
+      "pdfSha256": "7c8bdb29916ede0e54fd163103d1e7140ea246f5c9f55a5f88bc7f3ce7a4a91a"
     },
     {
       "id": "simple-platform-guide",
       "source": "docs/reports/xelor-complete-platform-simple-guide.html",
       "sourceSha256": "868a4849903c16b39c97b9e2731482650108742b4e41ac960fb9d513786caf0b",
       "pdf": "docs/05-deliverables/project-reports/XELOR_COMPLETE_PLATFORM_SIMPLE_GUIDE.pdf",
-      "pdfSha256": "98b771ca85efa4252a5c74aa103a39bf28c56a62bc757c1ee100539aff88880b"
+      "pdfSha256": "04ac6bbdb84aefce198e0ddcd1205ba8114d028b61ffaba1068d7039b601badb"
     },
     {
       "id": "stack",
       "source": "docs/reports/xelor-technology-stack-roadmap.html",
-      "sourceSha256": "01001c2386c2976ff033c77e49206f8e15056efa265a6e1d3779c960b1b41e0c",
+      "sourceSha256": "aff4880585ec66a89340a5d959a003107965f3cc49d56a289625566887b7e865",
       "pdf": "docs/05-deliverables/project-reports/XELOR_TECHNOLOGY_STACK_AND_PRODUCTION_ROADMAP.pdf",
-      "pdfSha256": "7889225236deedaba2243a9edd62dfa5aaa245fdce37d5d63910aa6272273b37"
+      "pdfSha256": "e0cb776c8eeaf6f6d987bc86141b46340875cb21be1e7c4087286cc796cfab88"
     },
     {
       "id": "agentic",
       "source": "docs/reports/xelor-agentic-ai-implementation-strategy.html",
       "sourceSha256": "812e181ac3bf238f58ee6391246a53e7a16ff0768d32211247a2e235c9abd238",
       "pdf": "docs/05-deliverables/project-reports/XELOR_AGENTIC_AI_IMPLEMENTATION_AND_STRATEGY.pdf",
-      "pdfSha256": "7227a5937149c2b978aed9193e65e7c1ee600f3c98422dac4d524ef172ae5f81"
+      "pdfSha256": "8872af28406c2871b6a44394ec6acb3c665a9ff7930c46e6ac95e425b2ce0888"
     },
     {
       "id": "architecture-playbook",
       "source": "docs/reports/xelor-architecture-implementation-playbook.html",
-      "sourceSha256": "4947b3cdf7fbd1b7c2be2dfc92031c09e8629c022fce5ecc698371bbacda06df",
+      "sourceSha256": "5abd28928d47abb11f96a98970ffb5d70c47f15cf15e5576a8fdea67fda837f6",
       "pdf": "docs/05-deliverables/project-reports/XELOR_ARCHITECTURE_AND_IMPLEMENTATION_PLAYBOOK.pdf",
-      "pdfSha256": "1af0b9ddeaef4aa80878b19814d172cc96ac562c4019bc4dbe43efcf6b7e92d7"
+      "pdfSha256": "e2b4197c88b2f1c81ab3d51694d6866ee48fdc6f240649b6d18df89d6cccdfe4"
     },
     {
       "id": "business-revenue",
       "source": "docs/reports/xelor-business-revenue-model.html",
       "sourceSha256": "afb88446aab04ba11b0b1615467da205cdc9af0c9a1b2a9beab179b921c45e09",
       "pdf": "docs/05-deliverables/project-reports/XELOR_BUSINESS_REVENUE_MODEL.pdf",
-      "pdfSha256": "6204c500d2f7cbef0e055fb4659729e9f7280da02e4e87e534ca2684680b7307"
+      "pdfSha256": "09b59d67fb822a8e9a3400bd0065fd8f07e96ce648c2f61e134b4d5f6b78e3ae"
     }
   ]
 }

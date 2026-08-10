@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { withTenant, schema } from "@ind-core/db";
 import { Errors, currentTenant, newId } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 import { NumberingService, fyCodeFor } from "./numbering.service.js";
 import { EntitlementService } from "./entitlement.service.js";
@@ -33,10 +34,20 @@ export interface SpareRequestInput {
  * checkbox the customer ticks. A customer who ticks "warranty" on a machine that is out of
  * cover has made a claim, not a decision, and the difference is a real cost.
  */
+/** A correction to a spare request. Absent means "leave alone". */
+export interface EditSpareRequestInput {
+  qty?: number;
+  uom?: string;
+  shipToGstin?: string;
+  shipToAddress?: string;
+  reason?: string;
+}
+
 @Injectable()
 export class SpareService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     private readonly entitlement: EntitlementService,
     private readonly tickets: TicketService,
@@ -174,5 +185,88 @@ export class SpareService {
       }
       return out;
     });
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * `itemRef` and `itemCode` are absent: the wrong part is a different request, and the
+   * warranty entitlement was evaluated against THIS part. `isWarranty` and the prices are
+   * absent because they are the entitlement engine's output, not free text.
+   */
+  private static readonly EDITABLE_SPARE_FIELDS = ["qty", "uom", "shipToGstin", "shipToAddress"] as const;
+
+  /**
+   * Correct a spare request, or amend one already quoted or reserved.
+   *
+   * FULFILLED is closed: the parts have physically been issued, and the correction is a
+   * stock adjustment against what actually went out of the door.
+   */
+  async editRequest(requestNo: string, input: EditSpareRequestInput) {
+    return withTenant(async (tx) => {
+      const [found] = await tx
+        .select({ id: cspSpareRequest.id })
+        .from(cspSpareRequest)
+        .where(eq(cspSpareRequest.requestNo, requestNo))
+        .limit(1);
+      if (!found) throw Errors.notFound(`spare request '${requestNo}'`);
+
+      await this.edits.lock(tx, "csp_spare_request", found.id);
+      const [before] = await tx
+        .select()
+        .from(cspSpareRequest)
+        .where(eq(cspSpareRequest.id, found.id))
+        .limit(1);
+      if (!before) throw Errors.notFound(`spare request '${requestNo}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.qty !== undefined) {
+        if (input.qty <= 0) throw Errors.validation([{ field: "qty", message: "must be > 0" }]);
+        patch.qty = input.qty.toFixed(3);
+      }
+      if (input.uom !== undefined) patch.uom = input.uom;
+      if (input.shipToGstin !== undefined) patch.shipToGstin = input.shipToGstin;
+      if (input.shipToAddress !== undefined) patch.shipToAddress = input.shipToAddress;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "csp.spare",
+        id: found.id,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: SpareService.EDITABLE_SPARE_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      // The line amount follows the quantity. A quoted request whose quantity moved
+      // without its total moving is a quote the customer would be right to dispute.
+      if (input.qty !== undefined && before.unitPrice) {
+        columns.lineAmount = (input.qty * Number(before.unitPrice)).toFixed(2);
+      }
+
+      await tx.update(cspSpareRequest).set(columns).where(eq(cspSpareRequest.id, found.id));
+      const [after] = await tx
+        .select()
+        .from(cspSpareRequest)
+        .where(eq(cspSpareRequest.id, found.id))
+        .limit(1);
+      return after;
+    });
+  }
+
+  /** Whether this request may be edited right now, and what to tell the user if not. */
+  async editPolicy(requestNo: string) {
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: cspSpareRequest.status, revisionNo: cspSpareRequest.revisionNo })
+        .from(cspSpareRequest)
+        .where(eq(cspSpareRequest.requestNo, requestNo))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`spare request '${requestNo}'`);
+    return { ...this.edits.policy("csp.spare", row.status), status: row.status, revisionNo: row.revisionNo };
   }
 }

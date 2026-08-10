@@ -17,6 +17,7 @@ import {
   purchaseApi,
 } from "../api";
 import { Modal } from "./modal";
+import { ConfirmChanges, localChanges } from "@spine/ui/corrections";
 import { FailureNotch } from "./failure-notch";
 
 /**
@@ -59,21 +60,47 @@ function blankLine(): DraftLine {
 export function NewPurchaseOrderModal({
   onClose,
   onCreated,
+  /**
+   * Present when this dialog is CORRECTING a PO rather than raising one.
+   *
+   * One dialog for both. A separate edit form would drift from this one's validation, and
+   * the direction it drifts is always create-strict / edit-lax — which is exactly the wrong
+   * way round for a document a vendor is holding.
+   */
+  editing,
 }: {
   onClose: () => void;
   /** Called with the new order's id before this component navigates away. */
   onCreated?: (po: PoDetail) => void;
+  editing?: { po: PoDetail; amend: boolean };
 }): React.JSX.Element {
   const router = useRouter();
+  const isEdit = Boolean(editing);
 
   // One key for the lifetime of this open form. See the note above — this is the mechanism,
   // not the disabled button.
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
-  const [vendorId, setVendorId] = useState("");
-  const [expectedDate, setExpectedDate] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [lines, setLines] = useState<DraftLine[]>(() => [blankLine()]);
+  const [vendorId, setVendorId] = useState(() => editing?.po.vendorId ?? "");
+  const [expectedDate, setExpectedDate] = useState(() =>
+    editing?.po.expectedDate ? editing.po.expectedDate.slice(0, 10) : "",
+  );
+  const [remarks, setRemarks] = useState(() => editing?.po.remarks ?? "");
+  const [lines, setLines] = useState<DraftLine[]>(() =>
+    editing?.po.lines?.length
+      ? editing.po.lines.map((l) => ({
+          ...blankLine(),
+          itemId: l.itemId,
+          // NUMERIC arrives as a string and stays one. Parsing it here would turn 1234.10
+          // into 1234.1 in the input, which reads as an edit the user did not make.
+          qty: String(l.qty).replace(/\.?0+$/, "") || "0",
+          rate: String(l.rate),
+        }))
+      : [blankLine()],
+  );
+
+  /** An amendment stops at a confirmation before it is sent. */
+  const [pendingReason, setPendingReason] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [failure, setFailure] = useState<FailureNotice | null>(null);
@@ -134,12 +161,29 @@ export function NewPurchaseOrderModal({
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   }
 
-  async function submit(): Promise<void> {
+  async function submit(reason?: string): Promise<void> {
     setAttempted(true);
     if (!valid || submitting) return;
+    // An amendment pauses for the confirmation step; a non-null `pendingReason` means the
+    // user has already been through it.
+    if (editing?.amend && reason === undefined) {
+      setPendingReason("");
+      return;
+    }
     setFailure(null);
     setSubmitting(true);
     try {
+      // `vendorId` is absent from the edit body: re-pointing a PO at a different vendor
+      // changes who is owed the money, which is a new PO rather than a correction.
+      const editBody = {
+        lines: lines.map((l) => ({
+          itemId: l.itemId.trim(),
+          qty: parseNumeric(l.qty) ?? 0,
+          rate: parseNumeric(l.rate) ?? 0,
+        })),
+        ...(expectedDate ? { expectedDate } : {}),
+        ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
+      };
       const body: CreatePoBody = {
         vendorId,
         lines: lines.map((l) => ({
@@ -153,10 +197,21 @@ export function NewPurchaseOrderModal({
         ...(expectedDate ? { expectedDate } : {}),
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
       };
-      const po = await api.post<PoDetail>(purchaseApi.ordersPath, body, { idempotencyKey });
+      // The amend route sits behind `purchase.po.amend`, a permission a buyer who may fix
+      // their own draft does not necessarily hold. Sending an amendment down the plain edit
+      // route would be asking the server to accept it under the lower right.
+      const po = editing
+        ? await api.patch<PoDetail>(
+            editing.amend
+              ? `${purchaseApi.orderPath(editing.po.id)}/amend`
+              : purchaseApi.orderPath(editing.po.id),
+            { ...editBody, ...(reason ? { reason } : {}) },
+            { idempotencyKey },
+          )
+        : await api.post<PoDetail>(purchaseApi.ordersPath, body, { idempotencyKey });
       onCreated?.(po);
       onClose();
-      router.push(`/purchase/order/${po.id}`);
+      if (!editing) router.push(`/purchase/order/${po.id}`);
     } catch (e) {
       setFailure(describeFailure(e, "create"));
     } finally {
@@ -164,10 +219,52 @@ export function NewPurchaseOrderModal({
     }
   }
 
+  if (pendingReason !== null && editing) {
+    return (
+      <ConfirmChanges
+        title={`Amend ${editing.po.poNo}`}
+        changes={localChanges(
+          {
+            expectedDate: editing.po.expectedDate?.slice(0, 10) ?? "",
+            remarks: editing.po.remarks ?? "",
+            lineCount: editing.po.lines?.length ?? 0,
+            totalAmount: editing.po.totalAmount,
+          },
+          {
+            expectedDate,
+            remarks,
+            lineCount: lines.length,
+            totalAmount: lines
+              .reduce((sum, l) => sum + (parseNumeric(l.qty) ?? 0) * (parseNumeric(l.rate) ?? 0), 0)
+              .toFixed(2),
+          },
+          ["expectedDate", "remarks", "lineCount", "totalAmount"],
+        )}
+        reasonRequired
+        reapprovalRequired
+        busy={submitting}
+        onCancel={() => setPendingReason(null)}
+        onConfirm={(reason) => void submit(reason)}
+      />
+    );
+  }
+
   return (
     <Modal
-      title="New purchase order"
-      subtitle="Raised as a draft. Nothing is committed to the vendor until it has been submitted and approved."
+      title={
+        isEdit
+          ? editing!.amend
+            ? `Amend ${editing!.po.poNo}`
+            : `Correct ${editing!.po.poNo}`
+          : "New purchase order"
+      }
+      subtitle={
+        isEdit
+          ? editing!.amend
+            ? "This PO has left draft and the vendor may already hold it. Your change needs a reason, and it goes back through approval before anyone is committed to the new version."
+            : "This PO is still a draft — change anything you need. What it said before is kept in the change history."
+          : "Raised as a draft. Nothing is committed to the vendor until it has been submitted and approved."
+      }
       onClose={onClose}
       busy={submitting}
       footer={

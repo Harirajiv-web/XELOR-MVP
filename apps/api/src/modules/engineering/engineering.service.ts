@@ -19,6 +19,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
 
 const { item, bom, bomLine, outboxEvent } = schema;
@@ -110,6 +111,7 @@ export interface BomView {
 export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly dedup: DedupExplainer,
   ) {}
 
@@ -246,6 +248,117 @@ export class EngineeringService implements BomProvider, ItemProvider, BomGraph {
         scrapPct: Number(l.scrapPct),
       })),
     };
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * What a correction may touch on an item.
+   *
+   * `itemCode` is absent: it is the business key printed on drawings, quoted on POs and
+   * stencilled on bins. Changing it renames a thing the whole plant already knows by that
+   * name. `uom` is present but dangerous for the same reason — an item measured in kg
+   * whose unit becomes nos makes every stock balance ever recorded against it a different
+   * quantity. The audit change set is what makes that reviewable rather than silent.
+   */
+  private static readonly EDITABLE_ITEM_FIELDS = [
+    "name",
+    "description",
+    "itemType",
+    "uom",
+    "hsnCode",
+    "itemGroup",
+    "isPurchasable",
+    "isManufacturable",
+    "isSellable",
+    "standardCost",
+  ] as const;
+
+  /** Correct an item master's details. */
+  async editItem(itemId: string, patch: Partial<CreateItemInput>) {
+    this.edits.requireDocumentId(itemId, "item");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "item", itemId);
+      const [before] = await tx.select().from(item).where(eq(item.id, itemId)).limit(1);
+      if (!before) throw Errors.notFound(`item '${itemId}'`);
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "engineering.item",
+        id: itemId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.isActive ? "active" : "inactive",
+        patch: patch as Record<string, unknown>,
+        editableFields: EngineeringService.EDITABLE_ITEM_FIELDS,
+      });
+
+      if (outcome.changed) {
+        await tx.update(item).set(outcome.columns).where(eq(item.id, itemId));
+      }
+      const [after] = await tx.select().from(item).where(eq(item.id, itemId)).limit(1);
+      return after;
+    });
+  }
+
+  /** Every correction ever made to this item, newest first. */
+  async itemHistory(itemId: string) {
+    this.edits.requireDocumentId(itemId, "item");
+    return this.edits.history("engineering.item", itemId);
+  }
+
+  /**
+   * Correct a DRAFT bill of materials, or refuse an active one with the reason why.
+   *
+   * A BOM has no status column — it has a version and an active flag, which is a better
+   * design and means the edit policy reads the flag instead: an inactive BOM is a draft
+   * nobody builds from, an active one is pinned by every production order raised against
+   * it. Editing the active version in place would silently change builds already on the
+   * floor, defeating the exact guarantee that pinning exists to give. The refusal says
+   * "publish a new version", because that is the correct action and not a workaround.
+   */
+  private static readonly EDITABLE_BOM_FIELDS = ["outputQty", "uom", "notes"] as const;
+
+  async editBom(bomId: string, patch: { outputQty?: number; uom?: string; notes?: string | null }) {
+    this.edits.requireDocumentId(bomId, "BOM");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "bom", bomId);
+      const [before] = await tx.select().from(bom).where(eq(bom.id, bomId)).limit(1);
+      if (!before) throw Errors.notFound(`BOM '${bomId}'`);
+
+      const shaped: Record<string, unknown> = {};
+      if (patch.outputQty !== undefined) shaped.outputQty = patch.outputQty.toFixed(3);
+      if (patch.uom !== undefined) shaped.uom = patch.uom;
+      if (patch.notes !== undefined) shaped.notes = patch.notes;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "engineering.bom",
+        id: bomId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.isActive ? "active" : "draft",
+        patch: shaped,
+        editableFields: EngineeringService.EDITABLE_BOM_FIELDS,
+      });
+
+      if (outcome.changed) {
+        await tx.update(bom).set(outcome.columns).where(eq(bom.id, bomId));
+      }
+      const [after] = await tx.select().from(bom).where(eq(bom.id, bomId)).limit(1);
+      return after;
+    });
+  }
+
+  /** Whether this BOM may be edited, and what to do instead when it may not. */
+  async bomEditPolicy(bomId: string) {
+    this.edits.requireDocumentId(bomId, "BOM");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ isActive: bom.isActive, version: bom.version })
+        .from(bom)
+        .where(eq(bom.id, bomId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`BOM '${bomId}'`);
+    const status = row.isActive ? "active" : "draft";
+    return { ...this.edits.policy("engineering.bom", status), status, version: row.version };
   }
 
   async createItem(

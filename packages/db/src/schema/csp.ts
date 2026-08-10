@@ -12,7 +12,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * CSP — CUSTOMER SERVICE PORTAL (MICA, Module 11).
@@ -243,6 +243,7 @@ export const cspTicket = pgTable(
   "csp_ticket",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     customerAccountId: uuid("customer_account_id").notNull(),
     ticketNo: text("ticket_no").notNull(),
     contactRef: uuid("contact_ref"), // logical ref → SMBD contact
@@ -508,6 +509,7 @@ export const cspSpareRequest = pgTable(
   "csp_spare_request",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     customerAccountId: uuid("customer_account_id").notNull(),
     requestNo: text("request_no").notNull(),
     ticketId: uuid("ticket_id"),

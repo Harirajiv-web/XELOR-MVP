@@ -125,6 +125,14 @@ function requireIdempotencyKey(key: string | undefined): string {
  */
 // The `api/v1` prefix is applied globally in main.ts — repeating it here served this
 // controller at /api/v1/api/v1/csp. Controller prefixes are relative, always.
+const editSpareSchema = z.object({
+  qty: z.number().positive().optional(),
+  uom: z.string().max(20).optional(),
+  shipToGstin: z.string().max(15).optional(),
+  shipToAddress: z.string().max(500).optional(),
+  reason: z.string().trim().min(3, "say why in a few words").optional(),
+});
+
 @Controller("csp")
 export class CspController {
   constructor(
@@ -276,6 +284,26 @@ export class CspController {
   @RequirePermission("csp.ticket.update")
   async spareCreate(@Body() body: unknown) {
     return this.spares.request(parse(spareSchema, body));
+  }
+
+  /**
+   * Correct a spare request that has not yet been issued.
+   *
+   * Its own permission rather than `csp.ticket.update`: a spare request moves parts and
+   * money, and the person who may retitle a ticket is not automatically the person who may
+   * change what gets shipped.
+   */
+  @Patch("spare-requests/:requestNo")
+  @RequirePermission("csp.spare.update")
+  async spareEdit(@Param("requestNo") requestNo: string, @Body() body: unknown) {
+    return this.spares.editRequest(requestNo, parse(editSpareSchema, body ?? {}));
+  }
+
+  /** May this spare request be edited right now, and what should the user be told if not? */
+  @Get("spare-requests/:requestNo/edit-policy")
+  @RequirePermission("csp.ticket.read")
+  async spareEditPolicy(@Param("requestNo") requestNo: string) {
+    return this.spares.editPolicy(requestNo);
   }
 
   @Patch("spare-requests/:requestNo/reserve")

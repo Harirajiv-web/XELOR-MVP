@@ -8,6 +8,7 @@ import { Empty, ErrorState, Loading } from "@spine/states";
 import { date, humanise, inr } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
+import { EditButton, useEditPolicy } from "@spine/ui/corrections";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { Voucher, VoucherLine } from "../api";
 import { accountsApi } from "../api";
@@ -39,6 +40,15 @@ export default function VoucherScreen(props: ScreenProps): React.JSX.Element {
   const { data, loading, error, reload } = useQuery<Voucher>(
     voucherId ? accountsApi.voucherPath(voucherId) : null,
   );
+
+  // A posted voucher is never editable, and this is where the product says so out loud.
+  //
+  // Asking the server for a verdict everyone already knows is not waste: it means the
+  // sentence a user reads comes from the same table that enforces the rule, so the
+  // explanation cannot drift from the behaviour. The refusal offers "Reverse this entry",
+  // which is the action that actually fixes their problem — a greyed-out Edit with no way
+  // forward is what sends people to ring somebody instead.
+  const policy = useEditPolicy(voucherId ? accountsApi.voucherEditPolicyPath(voucherId) : null);
 
   const columns: ReadonlyArray<Column<VoucherLine>> = [
     {
@@ -120,7 +130,21 @@ export default function VoucherScreen(props: ScreenProps): React.JSX.Element {
           { label: "Debit", value: inr(data.totalDebit) },
           { label: "Credit", value: inr(data.totalCredit) },
         ]}
-        actions={<BackLink />}
+        actions={
+          <div className="flex flex-wrap items-start gap-2">
+            <EditButton
+              policy={policy}
+              onEdit={() => undefined}
+              onCorrectInstead={() => {
+                // Reversal is its own guarded action with its own reason, and it belongs on
+                // the vouchers list where the finance user already works. Pointing at it is
+                // honest; opening a half-built dialog here would not be.
+                window.location.assign("/accounts/vouchers?reverse=" + (voucherId ?? ""));
+              }}
+            />
+            <BackLink />
+          </div>
+        }
       />
 
       {data.narration ? (

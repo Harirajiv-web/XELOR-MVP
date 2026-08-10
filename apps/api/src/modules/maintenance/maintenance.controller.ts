@@ -159,6 +159,14 @@ function requireKey(key?: string): string {
  * downtime interval's endpoints without a reason; a correction is its own verb, needs its
  * own permission, and retains the original values.
  */
+const editRequestSchema = z.object({
+  severity: z.enum(["stopped", "degraded", "cosmetic"]).optional(),
+  symptomCode: z.string().min(1).max(60).optional(),
+  detail: z.string().max(2000).optional(),
+  lineStopped: z.boolean().optional(),
+  reason: z.string().trim().min(3, "say why in a few words").optional(),
+});
+
 @Controller("maintenance")
 export class MaintenanceController {
   constructor(
@@ -228,6 +236,26 @@ export class MaintenanceController {
   @RequirePermission("mnt.request.create")
   submitRequest(@Body() body: unknown, @Headers("idempotency-key") key?: string) {
     return this.requests.submit({ ...parse(requestSchema, body), idempotencyKey: requireKey(key) });
+  }
+
+  /**
+   * Correct a maintenance request, or amend one the desk has already picked up.
+   *
+   * Once a work order exists this refuses and points at the work order — the request is the
+   * record of what the operator ORIGINALLY reported, and reliability analysis reads exactly
+   * that. Rewriting it after diagnosis destroys the only evidence of the raw symptom.
+   */
+  @Patch("requests/:no")
+  @RequirePermission("mnt.request.update")
+  async editRequest(@Param("no") no: string, @Body() body: unknown) {
+    return this.requests.editByNo(no, parse(editRequestSchema, body ?? {}));
+  }
+
+  /** May this request be edited right now, and what should the user be told if not? */
+  @Get("requests/:no/edit-policy")
+  @RequirePermission("mnt.request.read")
+  async requestEditPolicy(@Param("no") no: string) {
+    return this.requests.editPolicyByNo(no);
   }
 
   @Get("requests")

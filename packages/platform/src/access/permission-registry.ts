@@ -1002,6 +1002,128 @@ export const PERMISSION_REGISTRY = [
     description: "Run a private, read-only ACHILES platform-health check.",
     privileged: true,
   },
+
+  // ---- CORRECTIONS (migration 0089) ----------------------------------------
+  // Every document a user can create, they can now also correct. `update` covers a draft
+  // nobody has relied on yet; `amend` covers a document already approved or sent, and is
+  // privileged because changing an approved commitment is exactly the kind of act an
+  // access review exists to look at. Modules with a suitable write permission already
+  // (hrm.employee.write, mnt.asset.write, mnt.mwo.write, csp.ticket.update) reuse it
+  // rather than minting a second name for the same authority.
+  {
+    permission: "sales.customer.update",
+    docType: "customer",
+    description: "Correct a customer's details.",
+    privileged: false,
+  },
+  {
+    permission: "sales.order.update",
+    docType: "sales_order",
+    description: "Correct a sales order that is still a draft or on credit hold.",
+    privileged: false,
+  },
+  {
+    permission: "sales.order.amend",
+    docType: "sales_order",
+    description:
+      "Amend a CONFIRMED sales order — the customer has been promised it, so the change carries a reason and re-runs the credit check.",
+    privileged: true,
+  },
+  {
+    permission: "purchase.vendor.update",
+    docType: "vendor",
+    description: "Correct a vendor's details.",
+    privileged: false,
+  },
+  {
+    permission: "purchase.po.update",
+    docType: "purchase_order",
+    description: "Correct a purchase order that is still a draft or was rejected back.",
+    privileged: false,
+  },
+  {
+    permission: "purchase.po.amend",
+    docType: "purchase_order",
+    description:
+      "Amend an APPROVED purchase order — the vendor may already hold it, so the change carries a reason and goes back for approval.",
+    privileged: true,
+  },
+  {
+    permission: "production.order.update",
+    docType: "production_order",
+    description: "Correct or amend a production order's target quantity and dates.",
+    privileged: false,
+  },
+  {
+    permission: "engineering.item.update",
+    docType: "item",
+    description: "Correct an item master's details.",
+    privileged: false,
+  },
+  {
+    permission: "engineering.bom.update",
+    docType: "bom",
+    description:
+      "Correct a DRAFT bill of materials. An active BOM is never edited in place — production orders are pinned to it.",
+    privileged: false,
+  },
+  {
+    permission: "inventory.warehouse.update",
+    docType: "warehouse",
+    description: "Correct a warehouse or bin's details.",
+    privileged: false,
+  },
+  {
+    permission: "quality.inspection.update",
+    docType: "qms_inspection",
+    description:
+      "Correct an inspection reading. After completion the correction carries a reason and the original value stays visible.",
+    privileged: true,
+  },
+  {
+    permission: "mnt.request.update",
+    docType: "maintenance_request",
+    description: "Correct a maintenance request's description, priority or asset.",
+    privileged: false,
+  },
+  {
+    permission: "expenditure.claim.update",
+    docType: "expense_claim",
+    description:
+      "Correct an expense claim that has not been approved. An approved claim is corrected by a reversing entry.",
+    privileged: false,
+  },
+  {
+    permission: "expenditure.travel.update",
+    docType: "travel_request",
+    description: "Correct or amend a travel request.",
+    privileged: false,
+  },
+  {
+    permission: "expenditure.advance.update",
+    docType: "cash_advance",
+    description: "Correct a cash advance that has not yet been disbursed.",
+    privileged: false,
+  },
+  {
+    permission: "expenditure.indirect.update",
+    docType: "purchase_expense",
+    description: "Correct an indirect expense that has not been approved and posted.",
+    privileged: false,
+  },
+  {
+    permission: "hrm.leave.update",
+    docType: "leave_application",
+    description:
+      "Correct a leave application. Changing approved dates re-opens it for the manager's decision.",
+    privileged: false,
+  },
+  {
+    permission: "csp.spare.update",
+    docType: "csp_spare_request",
+    description: "Correct a spare request that has not yet been issued.",
+    privileged: false,
+  },
 ] as const satisfies readonly PermissionSpec[];
 
 /**

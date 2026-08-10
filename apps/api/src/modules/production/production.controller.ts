@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -54,9 +54,47 @@ function requireKey(key?: string): string {
   return key;
 }
 
+const editOrderSchema = z.object({
+  qtyToProduce: z.number().positive().optional(),
+  sourceWarehouseId: z.string().uuid().optional(),
+  fgWarehouseId: z.string().uuid().optional(),
+  reason: z.string().trim().min(3, "say why in a few words").optional(),
+});
+
 @Controller("production/orders")
 export class ProductionController {
   constructor(private readonly production: ProductionService) {}
+
+  /**
+   * Correct or amend a production order's target and warehouses.
+   *
+   * Changing the target RE-EXPLODES the component requirement. It does not touch what has
+   * already been issued — the gap between required and issued is the shortage the
+   * supervisor needs to see, not something to paper over.
+   */
+  @Patch(":id")
+  @RequirePermission("production.order.update")
+  async edit(@Param("id") id: string, @Body() body: unknown, @Headers("idempotency-key") key?: string) {
+    const idk = requireKey(key);
+    const p = editOrderSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.production.editOrder(id, p.data, idk);
+  }
+
+  /** May this order be edited right now, and what should the user be told if not? */
+  @Get(":id/edit-policy")
+  @RequirePermission("production.order.read")
+  async editPolicy(@Param("id") id: string) {
+    return this.production.orderEditPolicy(id);
+  }
+
+  /** Every correction ever made to this order, newest first. */
+  @Get(":id/history")
+  @RequirePermission("production.order.read")
+  async history(@Param("id") id: string) {
+    return { entries: await this.production.orderHistory(id) };
+  }
+
 
   @Post()
   @RequirePermission("production.order.create")

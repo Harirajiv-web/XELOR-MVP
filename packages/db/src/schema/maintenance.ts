@@ -12,7 +12,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * MAINTENANCE / CMMS (KILN, Module 10) — the asset-uptime system of record.
@@ -224,6 +224,7 @@ export const maintenanceRequest = pgTable(
   "maintenance_request",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     requestNo: text("request_no").notNull(),
     assetId: uuid("asset_id").notNull(),
     requestedByRef: uuid("requested_by_ref").notNull(), // HRM.employee (logical)
@@ -261,6 +262,7 @@ export const maintenanceWorkOrder = pgTable(
   "maintenance_work_order",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     mwoNo: text("mwo_no").notNull(),
     assetId: uuid("asset_id").notNull(),
     mwoType: text("mwo_type").notNull(), // breakdown|corrective|preventive|statutory|improvement

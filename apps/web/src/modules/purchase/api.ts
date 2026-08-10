@@ -64,6 +64,10 @@ export interface PoDetail {
   currency: string;
   /** Sum of line amounts. Tax-exclusive — the order holds no GST fields at all. */
   totalAmount: string;
+  remarks: string | null;
+  /** 0 until amended. Shown beside the PO number so a vendor call has something to match. */
+  revisionNo: number;
+  amendReason: string | null;
   workflowInstanceId: string | null;
   lines: PoLineRow[];
 }
@@ -175,6 +179,10 @@ export interface PoSubmitResult {
 export const purchaseApi = {
   ordersPath: "/purchase/orders",
   orderPath: (id: string): string => `/purchase/orders/${id}`,
+  /** Whether this PO may be edited right now — asked before the button lights up. */
+  orderEditPolicyPath: (id: string): string => `/purchase/orders/${id}/edit-policy`,
+  /** Every correction ever made to this PO, from the hash-chained audit trail. */
+  orderHistoryPath: (id: string): string => `/purchase/orders/${id}/history`,
   submitPath: (id: string): string => `/purchase/orders/${id}/submit`,
   vendorsPath: "/purchase/vendors",
   /** ENGINEERING's item master — see `ItemOption`. Read-only, and never written from here. */

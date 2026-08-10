@@ -131,6 +131,10 @@ export interface WarehouseOption {
 export const salesApi = {
   ordersPath: "/sales/orders",
   orderPath: (id: string): string => `/sales/orders/${id}`,
+  /** Whether this order may be edited right now — asked before the button lights up. */
+  orderEditPolicyPath: (id: string): string => `/sales/orders/${id}/edit-policy`,
+  /** Every correction ever made to this order, from the hash-chained audit trail. */
+  orderHistoryPath: (id: string): string => `/sales/orders/${id}/history`,
   customersPath: "/sales/customers",
   /**
    * Endpoints the New-order form reads to fill its pickers. Other modules' HTTP surfaces,

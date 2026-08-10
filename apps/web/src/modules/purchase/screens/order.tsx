@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, History } from "lucide-react";
 import { useQuery } from "@spine/data/use-query";
 import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty, ErrorState, Loading } from "@spine/states";
@@ -10,6 +10,8 @@ import { Can } from "@spine/access/permissions";
 import { inr, qty, date, relativeDays, num } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
+import { EditButton, DocumentHistory, useEditPolicy } from "@spine/ui/corrections";
+import { NewPurchaseOrderModal } from "../components/new-purchase-order";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { PoDetail, PoLineRow, PoSubmitResult } from "../api";
 import { purchaseApi, isLate, shortId, canSubmitForApproval } from "../api";
@@ -33,6 +35,12 @@ export default function OrderScreen(props: ScreenProps): React.JSX.Element {
   const { data, loading, error, reload } = useQuery<PoDetail>(
     id ? purchaseApi.orderPath(id) : null,
   );
+
+  // The server decides whether this PO may change, and what to say when it may not. Keeping
+  // a copy of that rule here would give the button and the endpoint two chances to disagree.
+  const policy = useEditPolicy(id ? purchaseApi.orderEditPolicyPath(id) : null);
+  const [editing, setEditing] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   // Kept after the submit succeeds. The order is no longer a draft by then, so the strip that
   // did the submitting is gone — and "it worked, and here is where it went" is the half of
   // the answer that would otherwise disappear with it. Declared above every early return,
@@ -146,8 +154,22 @@ export default function OrderScreen(props: ScreenProps): React.JSX.Element {
       </Link>
 
       <PageHeader
-        title={data.poNo}
+        title={data.revisionNo > 0 ? `${data.poNo} · rev ${data.revisionNo}` : data.poNo}
         subtitle={`An order placed on ${data.vendorName}. Everything below is what was committed to the supplier and what has physically arrived against it.`}
+        actions={
+          <div className="flex flex-wrap items-start gap-2">
+            <EditButton policy={policy} onEdit={() => setEditing(true)} />
+            <button
+              type="button"
+              className="btn btn-ghost gap-2"
+              onClick={() => setShowHistory((v) => !v)}
+              aria-expanded={showHistory}
+            >
+              <History className="h-4 w-4" aria-hidden />
+              {showHistory ? "Hide changes" : "Change history"}
+            </button>
+          </div>
+        }
         meta={[
           { label: "Status", value: <StatusBadge status={data.status} /> },
           { label: "Vendor", value: data.vendorName },
@@ -201,6 +223,29 @@ export default function OrderScreen(props: ScreenProps): React.JSX.Element {
             }}
           />
         </Can>
+      ) : null}
+
+      {showHistory && id ? (
+        <section className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--surface)] p-4">
+          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+            Every change made to this purchase order
+          </h2>
+          <DocumentHistory path={purchaseApi.orderHistoryPath(id)} />
+        </section>
+      ) : null}
+
+      {editing && policy?.editable ? (
+        <NewPurchaseOrderModal
+          editing={{ po: data, amend: policy.tier === "amend" }}
+          onClose={() => setEditing(false)}
+          onCreated={() => {
+            setEditing(false);
+            // Re-read rather than trusting the response. An amendment past approval sends
+            // the PO back to draft, and the header must show that rather than the state the
+            // buyer started from.
+            reload();
+          }}
+        />
       ) : null}
 
       <DataTable

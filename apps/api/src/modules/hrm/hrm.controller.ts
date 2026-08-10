@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { Errors, type PiiField } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -111,6 +111,14 @@ function requireKey(key?: string): string {
  * — a change is a new effective-dated row, which the database enforces independently of
  * anything written here.
  */
+const editLeaveSchema = z.object({
+  fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  halfDay: z.boolean().optional(),
+  reasonText: z.string().max(500).optional(),
+  reason: z.string().trim().min(3, "say why in a few words").optional(),
+});
+
 @Controller("hrm")
 export class HrmController {
   constructor(
@@ -248,6 +256,36 @@ export class HrmController {
     const p = leaveSchema.safeParse(body);
     if (!p.success) badRequest(p.error.issues);
     return this.leave.apply(p.data);
+  }
+
+  /**
+   * Correct a leave application, or amend an approved one.
+   *
+   * AN APPROVED CHANGE GOES BACK TO THE MANAGER. Someone who approved three days did not
+   * approve eight, and silently extending an approved absence is the version of this
+   * feature that gets it taken away again. The application returns to `applied` and the
+   * manager decides on the new dates.
+   */
+  @Patch("leave-applications/:id")
+  @RequirePermission("hrm.leave.update")
+  async editLeave(@Param("id") id: string, @Body() body: unknown) {
+    const p = editLeaveSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.leave.editLeave(id, p.data);
+  }
+
+  /** May this application be edited right now, and what should the user be told if not? */
+  @Get("leave-applications/:id/edit-policy")
+  @RequirePermission("hrm.leave.read")
+  async leaveEditPolicy(@Param("id") id: string) {
+    return this.leave.leaveEditPolicy(id);
+  }
+
+  /** Every correction ever made to this application, newest first. */
+  @Get("leave-applications/:id/history")
+  @RequirePermission("hrm.leave.read")
+  async leaveHistory(@Param("id") id: string) {
+    return { entries: await this.leave.leaveHistory(id) };
   }
 
   @Post("leave-applications/:id/decide")

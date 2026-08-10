@@ -19,6 +19,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
@@ -136,6 +137,17 @@ const q3 = (n: number): string => n.toFixed(3);
 const q6 = (n: number): string => n.toFixed(6);
 const num = (v: string | null | undefined): number | null => (v == null ? null : Number(v));
 
+/** A correction to an inspection. Absent means "leave alone". */
+export interface EditInspectionInput {
+  lotQty?: number;
+  sampleSize?: number;
+  inspectorRef?: string;
+  sourceWarehouseRef?: string;
+  samplingRationale?: string;
+  verdictRationale?: string;
+  reason?: string;
+}
+
 /**
  * INSPECTION / QMS (KILN, Module 06) — the quality system of record, and the gate provider.
  *
@@ -152,13 +164,109 @@ const num = (v: string | null | undefined): number | null => (v == null ? null :
  */
 @Injectable()
 export class QualityService implements InspectionGate {
+  /**
+   * What a correction may touch on an inspection.
+   *
+   * The verdict itself is absent: an inspection's result comes from its readings against
+   * its sampling plan, so a correction changes the READINGS and lets the verdict follow.
+   * Letting someone type a different verdict directly would make the plan decorative.
+   */
+  private static readonly EDITABLE_INSPECTION_FIELDS = [
+    "lotQty",
+    "sampleSize",
+    "inspectorRef",
+    "sourceWarehouseRef",
+    "samplingRationale",
+    "verdictRationale",
+  ] as const;
+
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     @Inject(STOCK_POSTER) private readonly stock: StockPoster,
     // ENGINEERING owns the item master; read-only, through the shared port (§1.1).
     @Inject(ITEM_PROVIDER) private readonly items: ItemProvider,
   ) {}
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * Correct an inspection's header, or amend a completed one with a reason.
+   *
+   * An inspection that has been COMPLETED may have already accepted or rejected a lot —
+   * material moved on its verdict. So a correction after completion is an amendment: the
+   * reason is recorded and the original values stay visible in the history. What it must
+   * never do is disappear, because "the reading was changed after the lot was accepted" is
+   * precisely the fact a quality audit is looking for.
+   */
+  async editInspection(inspectionId: string, input: EditInspectionInput) {
+    this.edits.requireDocumentId(inspectionId, "inspection");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "qms_inspection", inspectionId);
+      const [before] = await tx
+        .select()
+        .from(qmsInspection)
+        .where(eq(qmsInspection.id, inspectionId))
+        .limit(1);
+      if (!before) throw Errors.notFound(`inspection '${inspectionId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.lotQty !== undefined) {
+        if (input.lotQty <= 0) throw Errors.validation([{ field: "lotQty", message: "must be > 0" }]);
+        patch.lotQty = input.lotQty.toFixed(3);
+      }
+      if (input.sampleSize !== undefined) patch.sampleSize = input.sampleSize;
+      if (input.inspectorRef !== undefined) patch.inspectorRef = input.inspectorRef;
+      if (input.sourceWarehouseRef !== undefined) patch.sourceWarehouseRef = input.sourceWarehouseRef;
+      if (input.samplingRationale !== undefined) patch.samplingRationale = input.samplingRationale;
+      if (input.verdictRationale !== undefined) patch.verdictRationale = input.verdictRationale;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "quality.inspection",
+        id: inspectionId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: QualityService.EDITABLE_INSPECTION_FIELDS,
+        reason: input.reason,
+      });
+
+      if (outcome.changed) {
+        await tx.update(qmsInspection).set(outcome.columns).where(eq(qmsInspection.id, inspectionId));
+      }
+      const [after] = await tx
+        .select()
+        .from(qmsInspection)
+        .where(eq(qmsInspection.id, inspectionId))
+        .limit(1);
+      return after;
+    });
+  }
+
+  /** Every correction ever made to this inspection, newest first. */
+  async inspectionHistory(inspectionId: string) {
+    this.edits.requireDocumentId(inspectionId, "inspection");
+    return this.edits.history("quality.inspection", inspectionId);
+  }
+
+  /** Whether this inspection may be edited right now, and what to tell the user if not. */
+  async inspectionEditPolicy(inspectionId: string) {
+    this.edits.requireDocumentId(inspectionId, "inspection");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: qmsInspection.status, revisionNo: qmsInspection.revisionNo })
+        .from(qmsInspection)
+        .where(eq(qmsInspection.id, inspectionId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`inspection '${inspectionId}'`);
+    return {
+      ...this.edits.policy("quality.inspection", row.status),
+      status: row.status,
+      revisionNo: row.revisionNo,
+    };
+  }
 
   /* ------------------------------- the gate ------------------------------- */
 

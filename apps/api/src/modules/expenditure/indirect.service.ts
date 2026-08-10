@@ -19,6 +19,7 @@ import {
   type TdsSection,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { ExpNumberingService } from "./exp-numbering.service.js";
 import { BudgetService } from "./budget.service.js";
 import { PostingService } from "./posting.service.js";
@@ -72,10 +73,18 @@ export interface CreateIndirectInput {
  * document and a finance review is raised. The system computes; it does not choose a tax
  * position on somebody else's behalf.
  */
+/** A correction to an indirect expense. Absent means "leave alone". */
+export interface EditIndirectInput {
+  vendorInvoiceNo?: string;
+  invoiceDate?: string;
+  costCentreRef?: string;
+  reason?: string;
+}
 @Injectable()
 export class IndirectExpenseService {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: ExpNumberingService,
     private readonly budgets: BudgetService,
     private readonly postings: PostingService,
@@ -565,6 +574,84 @@ export class IndirectExpenseService {
       })),
     };
   }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * The money fields are absent from this list on purpose. Basic amount, GST and TDS are
+   * computed together — changing one without the others produces an expense whose tax does
+   * not follow from its value, which is the shape of every ITC mismatch notice ever issued.
+   * A wrong amount is corrected by cancelling and re-entering, or after posting by a
+   * reversing entry.
+   */
+  private static readonly EDITABLE_INDIRECT_FIELDS = [
+    "vendorInvoiceNo",
+    "invoiceDate",
+    "costCentreRef",
+  ] as const;
+
+  /** Correct an indirect expense, or withdraw one from approval to amend it. */
+  /** By NUMBER — every other route in this module is keyed that way, so these match. */
+  async editIndirectByNo(expNo: string, input: Parameters<IndirectExpenseService["editIndirect"]>[1]) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, expNo)).id);
+    return this.editIndirect(id, input);
+  }
+
+  async editIndirectPolicyByNo(expNo: string) {
+    const id = await withTenant(async (tx) => (await this.byNoInTx(tx, expNo)).id);
+    return this.indirectEditPolicy(id);
+  }
+
+  async editIndirect(expenseId: string, input: EditIndirectInput) {
+    this.edits.requireDocumentId(expenseId, "indirect expense");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "purchase_expense", expenseId);
+      const [before] = await tx.select().from(purchaseExpense).where(eq(purchaseExpense.id, expenseId)).limit(1);
+      if (!before) throw Errors.notFound(`indirect expense '${expenseId}'`);
+
+      const patch: Record<string, unknown> = {};
+      if (input.vendorInvoiceNo !== undefined) patch.vendorInvoiceNo = input.vendorInvoiceNo;
+      if (input.invoiceDate !== undefined) patch.invoiceDate = input.invoiceDate;
+      if (input.costCentreRef !== undefined) patch.costCentreRef = input.costCentreRef;
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "expenditure.indirect",
+        id: expenseId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch,
+        editableFields: IndirectExpenseService.EDITABLE_INDIRECT_FIELDS,
+        reason: input.reason,
+      });
+
+      if (!outcome.changed) return before;
+
+      const columns: Record<string, unknown> = { ...outcome.columns };
+      if (outcome.reapprovalRequired && ["submitted", "in_approval", "blocked"].includes(before.status)) {
+        columns.status = "draft";
+        columns.workflowInstanceId = null;
+      }
+
+      await tx.update(purchaseExpense).set(columns).where(eq(purchaseExpense.id, expenseId));
+      const [after] = await tx.select().from(purchaseExpense).where(eq(purchaseExpense.id, expenseId)).limit(1);
+      return after;
+    });
+  }
+
+  async indirectHistory(expenseId: string) {
+    return this.edits.history("expenditure.indirect", expenseId);
+  }
+
+  async indirectEditPolicy(expenseId: string) {
+    this.edits.requireDocumentId(expenseId, "indirect expense");
+    const [row] = await withTenant((tx) =>
+      tx.select({ status: purchaseExpense.status, revisionNo: purchaseExpense.revisionNo })
+        .from(purchaseExpense).where(eq(purchaseExpense.id, expenseId)).limit(1),
+    );
+    if (!row) throw Errors.notFound(`indirect expense '${expenseId}'`);
+    return { ...this.edits.policy("expenditure.indirect", row.status), status: row.status, revisionNo: row.revisionNo };
+  }
+
 }
 
 function groupSum(pairs: Array<[string, number]>): Record<string, number> {
@@ -577,4 +664,5 @@ function groupSum(pairs: Array<[string, number]>): Record<string, number> {
 function deterministicVendorRef(name: string): string {
   const h = createHash("sha256").update(name).digest("hex");
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-7${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
+
 }

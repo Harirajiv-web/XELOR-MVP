@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Res } from "@nestjs/common";
 import type { Response } from "express";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
@@ -49,6 +49,21 @@ const orderSchema = z.object({
     )
     .min(1),
 });
+
+/**
+ * A correction. Every field optional — absent means "leave alone" — so a form that edits
+ * one field sends one field. `lines` is all-or-nothing (see EditOrderInput).
+ *
+ * `reason` is validated here as a shape only. WHETHER it is required is the edit policy's
+ * decision, made against the document's actual status, because a controller cannot know
+ * whether this particular order is a draft or was confirmed last Tuesday.
+ */
+const editCustomerSchema = customerSchema.partial().omit({ code: true, acknowledgeDuplicates: true });
+
+const editOrderSchema = orderSchema
+  .partial()
+  .omit({ customerId: true, supplierGstin: true })
+  .extend({ reason: z.string().trim().min(3, "say why in a few words").optional() });
 
 const confirmSchema = z.object({ overrideReason: z.string().min(1).optional() });
 
@@ -111,6 +126,94 @@ export class SalesController {
     const p = orderSchema.safeParse(body);
     if (!p.success) badRequest(p.error.issues);
     return this.sales.createOrder(p.data, idk);
+  }
+
+  /**
+   * Correct a customer's details.
+   *
+   * PATCH rather than PUT, and the difference is not pedantry: a PUT would mean "this is
+   * the whole customer now", so a client that had not loaded the credit limit would blank
+   * it. PATCH means "change these", which is what an edit form actually does.
+   */
+  @Patch("customers/:id")
+  @RequirePermission("sales.customer.update")
+  async editCustomer(@Param("id") id: string, @Body() body: unknown) {
+    const p = editCustomerSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.sales.editCustomer(id, p.data);
+  }
+
+  /**
+   * Correct or amend a sales order.
+   *
+   * ONE route for both, guarded by the LOWER of the two permissions. The higher one cannot
+   * be enforced here — whether this is a correction or an amendment depends on the order's
+   * status, which the guard cannot see — so `sales.order.amend` is checked in the service
+   * against the document's actual state. A guard that refused every edit because some
+   * orders are confirmed would make the common case unreachable.
+   */
+  @Patch("orders/:id")
+  @RequirePermission("sales.order.update")
+  async editOrder(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key?: string,
+  ) {
+    const idk = requireKey(key);
+    const p = editOrderSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.sales.editOrder(id, p.data, idk);
+  }
+
+  /**
+   * AMEND a confirmed order — the same operation, behind the higher permission.
+   *
+   * Two routes rather than one, and perm-check is what made the case: a permission no
+   * route enforces is a grant that confers nothing, so `sales.order.amend` had to be
+   * attached to something. Splitting it turns out to be the better design anyway.
+   * Correcting your own draft and changing a commitment the customer has already been
+   * given are different acts, and now the RBAC wall says so — a clerk can hold
+   * `sales.order.update` and still be unable to move a confirmed order.
+   *
+   * Both routes reach the same service method, so the edit policy remains the single
+   * decision-maker about what each status actually permits.
+   */
+  @Patch("orders/:id/amend")
+  @RequirePermission("sales.order.amend")
+  async amendOrder(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key?: string,
+  ) {
+    const idk = requireKey(key);
+    const p = editOrderSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.sales.editOrder(id, p.data, idk);
+  }
+
+  /**
+   * May this order be edited, and if not, what should the user be told?
+   *
+   * The Edit button asks this before it lights up, so a user learns "this order shipped —
+   * raise a credit note" from a disabled button with a reason on it, rather than from a
+   * 409 after filling in a form.
+   */
+  @Get("orders/:id/edit-policy")
+  @RequirePermission("sales.order.read")
+  async orderEditPolicy(@Param("id") id: string) {
+    return this.sales.orderEditPolicy(id);
+  }
+
+  /**
+   * Every correction ever made to this order.
+   *
+   * Guarded by the ORDER's read permission, not the audit permission: whoever may read
+   * SO-0007 may see that its quantity went from 120 to 96 and why.
+   */
+  @Get("orders/:id/history")
+  @RequirePermission("sales.order.read")
+  async orderHistory(@Param("id") id: string) {
+    return { entries: await this.sales.orderHistory(id) };
   }
 
   /** Overriding a credit hold needs its own permission and a reason — both audited. */

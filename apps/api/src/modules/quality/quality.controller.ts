@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
@@ -56,9 +56,49 @@ function requireKey(key?: string): string {
  * production order. The gate belongs to the module that owns the transaction; Quality
  * only answers through the INSPECTION_GATE port (INSPECTION §1.2).
  */
+const editInspectionSchema = z.object({
+  lotQty: z.number().positive().optional(),
+  sampleSize: z.number().int().positive().optional(),
+  inspectorRef: z.string().uuid().optional(),
+  sourceWarehouseRef: z.string().uuid().optional(),
+  samplingRationale: z.string().max(1000).optional(),
+  verdictRationale: z.string().max(1000).optional(),
+  reason: z.string().trim().min(3, "say why in a few words").optional(),
+});
+
 @Controller("quality/inspections")
 export class QualityController {
   constructor(private readonly quality: QualityService) {}
+
+  /**
+   * Correct an inspection, or amend a completed one with a reason.
+   *
+   * After completion the lot may already have been accepted or rejected on this result, so
+   * the correction carries a reason and the original value stays visible in the history —
+   * "the reading was changed after the lot was accepted" is exactly what an audit looks for.
+   */
+  @Patch(":id")
+  @RequirePermission("quality.inspection.update")
+  async edit(@Param("id") id: string, @Body() body: unknown) {
+    const p = editInspectionSchema.safeParse(body ?? {});
+    if (!p.success) badRequest(p.error.issues);
+    return this.quality.editInspection(id, p.data);
+  }
+
+  /** May this inspection be edited right now, and what should the user be told if not? */
+  @Get(":id/edit-policy")
+  @RequirePermission("quality.inspection.read")
+  async editPolicy(@Param("id") id: string) {
+    return this.quality.inspectionEditPolicy(id);
+  }
+
+  /** Every correction ever made to this inspection, newest first. */
+  @Get(":id/history")
+  @RequirePermission("quality.inspection.read")
+  async history(@Param("id") id: string) {
+    return { entries: await this.quality.inspectionHistory(id) };
+  }
+
 
   @Post()
   @RequirePermission("quality.inspection.execute")

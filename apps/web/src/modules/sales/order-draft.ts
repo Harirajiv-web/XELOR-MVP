@@ -606,3 +606,90 @@ export function describeCreateFailure(error: unknown): CreateFailure {
       };
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Editing an order that already exists                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Fill the form from an order that has already been saved.
+ *
+ * This is what makes the New-order dialog do double duty rather than there being a second
+ * edit form. Two forms for one document is how the validation rules drift apart — and the
+ * pair that drifts first is always create-strict / edit-lax, which is the wrong direction.
+ *
+ * The stored order carries computed columns the form has no field for (tax per line, the
+ * delivered quantity, the credit snapshots). Those are dropped here deliberately: the
+ * server recomputes them from the lines, and a form that round-tripped them would let a
+ * stale browser overwrite a total the server had already corrected.
+ */
+export function orderDraftFrom(view: {
+  custPoNo: string;
+  orderDate: string;
+  supplierGstin: string;
+  shipToStateCode: string;
+  shipToGstin: string | null;
+  shipToAddress?: string | null;
+  fgWarehouseId?: string | null;
+  customerId: string;
+  lines: ReadonlyArray<{
+    itemId: string;
+    qty: string;
+    rate: string;
+    hsn: string;
+    gstRatePct: string;
+    discountPct?: string;
+    uom: string | null;
+    requestedDeliveryDate: string | null;
+  }>;
+}): OrderDraft {
+  return {
+    customerId: view.customerId,
+    custPoNo: view.custPoNo,
+    orderDate: view.orderDate,
+    // Left blank on purpose. The header date is a CONVENIENCE for typing a new order — it
+    // fills lines that have none. Every stored line already carries its own promise, so
+    // pre-filling this would silently rewrite each line's date to a single value on save.
+    requestedDeliveryDate: "",
+    supplierGstin: view.supplierGstin,
+    shipToStateCode: view.shipToStateCode ?? "",
+    shipToGstin: view.shipToGstin ?? "",
+    shipToAddress: view.shipToAddress ?? "",
+    fgWarehouseId: view.fgWarehouseId ?? "",
+    lines: view.lines.map((l) => ({
+      ...newLineDraft(),
+      itemId: l.itemId,
+      // `NUMERIC` arrives as a string and stays one all the way to the input. Parsing it
+      // here would turn 1234.10 into 1234.1 in the box, which reads as an unrequested edit.
+      qty: trimZeros(l.qty),
+      rate: l.rate,
+      hsn: l.hsn,
+      gstRatePct: trimZeros(l.gstRatePct),
+      discountPct: l.discountPct ? trimZeros(l.discountPct) : "",
+      uom: l.uom ?? "",
+      requestedDeliveryDate: l.requestedDeliveryDate ?? "",
+    })),
+  };
+}
+
+/**
+ * The body for `PATCH /sales/orders/:id`.
+ *
+ * Same shape as the create body minus the two fields an edit may not touch: `customerId`
+ * (re-pointing an order at another customer changes who owes the money — that is a new
+ * order) and `supplierGstin` (the selling registration the tax was computed against).
+ * `reason` rides along and the server decides whether it was required.
+ */
+export function toEditOrderBody(
+  draft: OrderDraft,
+  reason?: string,
+): Omit<CreateOrderBody, "customerId" | "supplierGstin"> & { reason?: string } {
+  const { customerId: _customerId, supplierGstin: _supplierGstin, ...rest } = toCreateOrderBody(draft);
+  return reason?.trim() ? { ...rest, reason: reason.trim() } : rest;
+}
+
+/** "120.000" -> "120", "1.500" -> "1.5". Trailing scale zeros are storage, not intent. */
+function trimZeros(numeric: string): string {
+  if (!numeric.includes(".")) return numeric;
+  return numeric.replace(/0+$/, "").replace(/\.$/, "");
+}

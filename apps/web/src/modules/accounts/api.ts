@@ -81,6 +81,11 @@ export const accountsApi = {
   trialBalancePath: "/accounts/trial-balance",
   vouchersPath: "/accounts/vouchers",
   voucherPath: (id: string) => `/accounts/vouchers/${id}`,
+  /**
+   * Always answers `editable: false`. The endpoint exists so the screen can say WHY and
+   * offer the reversal, rather than showing a dead control or no control at all.
+   */
+  voucherEditPolicyPath: (id: string) => `/accounts/vouchers/${id}/edit-policy`,
   /** The demo world's today. An as-at date is required of any trial balance worth reading. */
   demoToday: "2026-07-20",
 } as const;

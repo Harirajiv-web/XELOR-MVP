@@ -181,6 +181,28 @@ test("successful sales and purchase forms unlock their matching demo steps", asy
     if (route.request().method() !== "POST") return route.continue();
     await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(purchaseOrder) });
   });
+  // The detail screens ask a SECOND question about every document they show — whether it
+  // may be corrected — so the double has to answer that too. Mocked BEFORE the document
+  // read, because Playwright matches routes most-recently-registered first and
+  // `**/orders/browser-demo-sales-order` would otherwise swallow the `/edit-policy` path.
+  //
+  // Answering "draft, editable" is the honest double for a document the demo just created.
+  const draftPolicy = {
+    tier: "open",
+    editable: true,
+    reasonRequired: false,
+    reapprovalRequired: false,
+    correctBy: "none",
+    reason: "This order is still a draft — change anything you need.",
+    status: "draft",
+    revisionNo: 0,
+  };
+  await page.route("**/api/v1/*/orders/browser-demo-*/edit-policy", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(draftPolicy) }),
+  );
+  await page.route("**/api/v1/*/orders/browser-demo-*/history", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ entries: [] }) }),
+  );
   await page.route("**/api/v1/sales/orders/browser-demo-sales-order", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(salesOrder) }),
   );

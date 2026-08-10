@@ -324,7 +324,7 @@
       <div>Next.js 15 / React 19<br>authenticated web app<br><code>:3001</code></div><div class="arrow">→</div><div>NestJS 11<br>modular API<br><code>:3000/api/v1</code></div><div class="arrow">→</div><div>PostgreSQL 17<br>system of record<br><code>:5432</code></div>
     </div>
     <div class="flow">
-      <div>Keycloak 26<br>OIDC + PKCE<br><code>:8080</code></div><div class="arrow">→</div><div>Tenant + RBAC guards<br>147 registered permissions</div><div class="arrow">→</div><div>FORCE RLS<br>233 tenant tables</div>
+      <div>Keycloak 26<br>OIDC + PKCE<br><code>:8080</code></div><div class="arrow">→</div><div>Tenant + RBAC guards<br>165 registered permissions</div><div class="arrow">→</div><div>FORCE RLS<br>233 tenant tables</div>
     </div>
     <div class="flow">
       <div>Transactional outbox<br>domain events</div><div class="arrow">→</div><div>Valkey + worker<br><code>:6379</code></div><div class="arrow">→</div><div>Idempotent consumers<br>attributable effects</div>
@@ -540,7 +540,7 @@
       <div>Verified Keycloak token<br>tenant + subject</div><div class="arrow">→</div><div>Route permission guard<br>deny by default</div><div class="arrow">→</div><div>PostgreSQL SET LOCAL<br>FORCE RLS policy</div>
     </div>
     <ul>
-      <li>147 permissions are registered and reconciled against the routes that demand them.</li>
+      <li>165 permissions are registered and reconciled against the routes that demand them.</li>
       <li>The permission catalogue covers two seeded tenants with no uncatalogued grants.</li>
       <li>233 tenant-scoped tables pass the FORCE RLS/policy check.</li>
       <li>The stores persona is explicitly denied the administration role registry.</li>
@@ -590,7 +590,7 @@
     <h2>11. Deterministic seed and rebuild process</h2>
     <p>The demo database can be rebuilt from source rather than repaired manually before each meeting.</p>
     <div class="flow">
-      <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>87 migration files<br>through 0088</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
+      <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>90 migration files<br>through 0091</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
     </div>
     <div class="flow">
       <div>Northstar story<br>99 verified checks</div><div class="arrow">→</div><div>Worker drains<br>transactional outbox</div><div class="arrow">→</div><div>99-check matrix<br>must pass</div>

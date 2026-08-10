@@ -16,6 +16,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import type { SupplySource, OpenSupplyLine } from "../../ports/planning-inputs.port.js";
 import { DedupExplainer } from "../../ai/dedup-explainer.js";
@@ -30,6 +31,18 @@ import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
 // read-only join across a logical reference — no FK is declared and none is implied (§1.1);
 // Purchase still never writes it.
 const { vendor, purchaseOrder, purchaseOrderLine, grn, grnLine, item, outboxEvent } = schema;
+
+/**
+ * A correction to a purchase order. Every field optional; `lines` is all-or-nothing.
+ * `reason` is required once the PO has left draft — the policy decides, not this shape.
+ */
+export interface EditPoInput {
+  expectedDate?: string | null;
+  currency?: string;
+  remarks?: string | null;
+  lines?: Array<{ itemId: string; qty: number; rate: number }>;
+  reason?: string;
+}
 
 export interface CreateVendorInput {
   code: string;
@@ -97,6 +110,10 @@ export interface PoView {
   expectedDate: string | null;
   currency: string;
   totalAmount: string;
+  remarks: string | null;
+  /** 0 until amended; the number a vendor quotes back when asking which PO they hold. */
+  revisionNo: number;
+  amendReason: string | null;
   workflowInstanceId: string | null;
   lines: PoLineView[];
 }
@@ -173,6 +190,7 @@ export interface GrnView {
 export class PurchaseService implements SupplySource {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
     private readonly dedup: DedupExplainer,
     @Inject(WORKFLOW_EXECUTOR) private readonly wf: WorkflowExecutor,
@@ -370,6 +388,247 @@ export class PurchaseService implements SupplySource {
       });
       return this.viewPoInTx(tx, id);
     });
+  }
+
+  /* ------------------------------ corrections ----------------------------- */
+
+  /**
+   * What a correction may touch. `code` is absent on purpose: a vendor code is quoted on
+   * every PO ever raised against them, so changing it rewrites history in every direction
+   * at once. Deactivate and create instead.
+   */
+  private static readonly EDITABLE_VENDOR_FIELDS = [
+    "name",
+    "gstin",
+    "contactEmail",
+    "contactPhone",
+    "address",
+    "paymentTerms",
+  ] as const;
+
+  /**
+   * `vendorId` is absent for the same reason `customerId` is absent from a sales order
+   * edit: re-pointing a PO at a different vendor changes who is owed the money, which is a
+   * new PO. `poNo` is absent because the vendor is holding a document with that number on it.
+   */
+  private static readonly EDITABLE_PO_FIELDS = [
+    "expectedDate",
+    "currency",
+    "remarks",
+    "totalAmount",
+  ] as const;
+
+  /** Correct a vendor's details. */
+  async editVendor(vendorId: string, patch: Partial<CreateVendorInput>): Promise<VendorRow> {
+    this.edits.requireDocumentId(vendorId, "vendor");
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "vendor", vendorId);
+      const [before] = await tx.select().from(vendor).where(eq(vendor.id, vendorId)).limit(1);
+      if (!before) throw Errors.notFound(`vendor '${vendorId}'`);
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "purchase.vendor",
+        id: vendorId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.isActive ? "active" : "inactive",
+        patch: patch as Record<string, unknown>,
+        editableFields: PurchaseService.EDITABLE_VENDOR_FIELDS,
+      });
+
+      if (outcome.changed) {
+        await tx.update(vendor).set(outcome.columns).where(eq(vendor.id, vendorId));
+      }
+      const [after] = await tx.select().from(vendor).where(eq(vendor.id, vendorId)).limit(1);
+      return after as unknown as VendorRow;
+    });
+  }
+
+  /**
+   * Correct or amend a purchase order.
+   *
+   * THE RULE THAT MAKES THIS SAFE: an amendment WITHDRAWS THE PO FROM APPROVAL.
+   *
+   * A PO sitting at `pending_approval` has an approver looking at a number. Editing that
+   * number underneath them and leaving the workflow instance running means the approval
+   * that eventually comes back approves a document that no longer exists — the single most
+   * dangerous outcome available in a purchasing module, because it produces a real,
+   * apparently-approved commitment to a vendor that no human ever agreed to.
+   *
+   * So: any amendment cancels the running instance and returns the PO to `draft`. The
+   * buyer resubmits. That is one extra click, and it is the difference between an approval
+   * meaning something and an approval being a formality.
+   *
+   * A RECEIVED QUANTITY IS A FLOOR. Goods on the shelf cannot be un-ordered; the PO may be
+   * cut back to what arrived but not below it.
+   */
+  async editPo(poId: string, input: EditPoInput, idempotencyKey: string): Promise<PoView> {
+    const result = await runIdempotent(
+      idempotencyKey,
+      fingerprint({ ...input, poId, op: "edit-po" }),
+      async () => ({ status: 200, body: await this.doEditPo(poId, input) }),
+    );
+    return result.body;
+  }
+
+  private async doEditPo(poId: string, input: EditPoInput): Promise<PoView> {
+    this.edits.requireDocumentId(poId, "purchase order");
+    const { tenantId, actorId } = currentTenant();
+    const now = new Date();
+
+    return withTenant(async (tx) => {
+      await this.edits.lock(tx, "purchase_order", poId);
+      const [before] = await tx.select().from(purchaseOrder).where(eq(purchaseOrder.id, poId)).limit(1);
+      if (!before) throw Errors.notFound(`purchase order '${poId}'`);
+
+      const existingLines = await tx
+        .select()
+        .from(purchaseOrderLine)
+        .where(eq(purchaseOrderLine.poId, poId))
+        .orderBy(asc(purchaseOrderLine.lineNo));
+
+      const header: Record<string, unknown> = {};
+      if (input.expectedDate !== undefined) {
+        header.expectedDate = input.expectedDate ? new Date(input.expectedDate) : null;
+      }
+      if (input.currency !== undefined) header.currency = input.currency;
+      if (input.remarks !== undefined) header.remarks = input.remarks;
+
+      let newTotal: number | null = null;
+      if (input.lines) {
+        if (input.lines.length === 0) {
+          throw Errors.validation([{ field: "lines", message: "a purchase order needs at least one line" }]);
+        }
+
+        // Received is a floor, checked per item rather than per line number — an edit
+        // legitimately renumbers rows and the goods on the shelf do not move with them.
+        const received = new Map<string, number>();
+        for (const l of existingLines) {
+          const qty = Number(l.receivedQty);
+          if (qty > 0) received.set(l.itemId, (received.get(l.itemId) ?? 0) + qty);
+        }
+        for (const [itemId, receivedQty] of received) {
+          const kept = input.lines.filter((l) => l.itemId === itemId).reduce((sum, l) => sum + l.qty, 0);
+          if (kept < receivedQty) {
+            throw new AppError(
+              "RECEIVED_QTY_EXCEEDS_EDIT",
+              409,
+              `${receivedQty} of this item has already been received, so the PO cannot be cut to ${kept}. ` +
+                `Raise a debit note or a return to the vendor for the difference.`,
+            );
+          }
+        }
+
+        newTotal = round2(input.lines.reduce((sum, l) => sum + round2(l.qty * l.rate), 0));
+        header.totalAmount = newTotal.toFixed(2);
+      }
+
+      const outcome = await this.edits.apply(tx, {
+        docType: "purchase.po",
+        id: poId,
+        before: before as unknown as Record<string, unknown>,
+        status: before.status,
+        patch: header,
+        editableFields: PurchaseService.EDITABLE_PO_FIELDS,
+        reason: input.reason,
+      });
+
+      const linesChanged =
+        input.lines !== undefined &&
+        (existingLines.length !== input.lines.length ||
+          existingLines.some((l, i) => {
+            const n = input.lines![i]!;
+            return l.itemId !== n.itemId || Number(l.qty) !== n.qty || Number(l.rate) !== n.rate;
+          }));
+
+      if (!outcome.changed && !linesChanged) return this.viewPoInTx(tx, poId);
+
+      const columns: Record<string, unknown> = { ...outcome.columns, updatedAt: now, updatedBy: actorId };
+
+      // Withdraw from approval. `pending_approval` has a live instance to cancel;
+      // `approved` and `partially_received` have a decision that no longer applies to the
+      // document in front of it.
+      // DETACHED, not cancelled — and the distinction is a governance one, not a shortcut.
+      // The `WorkflowExecutor` port carries a hard feature budget (§1.4); adding a `cancel`
+      // method to it is an ADR, not a line of code. Detaching gives the identical safety
+      // property without touching the port: `syncApproval` refuses outright when
+      // `workflowInstanceId` is null, so a decision that arrives on the orphaned instance
+      // can never attach itself to the amended document. The instance is left to be closed
+      // by the approver or expired by the SLA sweep, and the audit trail records why.
+      let withdrawn = false;
+      if (outcome.reapprovalRequired && ["pending_approval", "approved", "partially_received"].includes(before.status)) {
+        // A partially-received PO stays receivable — the balance is still legitimately
+        // coming. Only an unreceived one goes all the way back to draft.
+        columns.status = before.status === "partially_received" ? "partially_received" : "draft";
+        columns.workflowInstanceId = null;
+        withdrawn = columns.status === "draft";
+      }
+
+      await tx.update(purchaseOrder).set(columns).where(eq(purchaseOrder.id, poId));
+
+      if (input.lines) {
+        await tx.delete(purchaseOrderLine).where(eq(purchaseOrderLine.poId, poId));
+        await tx.insert(purchaseOrderLine).values(
+          input.lines.map((l, i) => {
+            const alreadyReceived = existingLines
+              .filter((e) => e.itemId === l.itemId)
+              .reduce((sum, e) => sum + Number(e.receivedQty), 0);
+            return {
+              id: newId(),
+              tenantId,
+              createdBy: actorId,
+              updatedBy: actorId,
+              poId,
+              lineNo: i + 1,
+              itemId: l.itemId,
+              qty: l.qty.toFixed(3),
+              rate: l.rate.toFixed(2),
+              amount: round2(l.qty * l.rate).toFixed(2),
+              // Carried forward: a rebuilt line for a part-received item must keep what
+              // arrived, or the GRN path will happily receive the same goods twice.
+              receivedQty: Math.min(alreadyReceived, l.qty).toFixed(3),
+            };
+          }),
+        );
+      }
+
+      await tx.insert(outboxEvent).values({
+        id: newId(),
+        tenantId,
+        name: eventName("purchase", "po", outcome.tier === "amend" ? "amended" : "corrected"),
+        payload: {
+          id: poId,
+          poNo: before.poNo,
+          vendorId: before.vendorId,
+          revisionNo: outcome.revisionNo,
+          totalAmount: newTotal !== null ? newTotal.toFixed(2) : before.totalAmount,
+          withdrawnFromApproval: withdrawn,
+          reason: input.reason ?? null,
+        },
+        createdAt: now,
+      });
+
+      return this.viewPoInTx(tx, poId);
+    });
+  }
+
+  /** Every correction ever made to this PO, newest first. */
+  async poHistory(poId: string) {
+    this.edits.requireDocumentId(poId, "purchase order");
+    return this.edits.history("purchase.po", poId);
+  }
+
+  /** Whether this PO may be edited right now, and what to tell the user if not. */
+  async poEditPolicy(poId: string) {
+    this.edits.requireDocumentId(poId, "purchase order");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: purchaseOrder.status, revisionNo: purchaseOrder.revisionNo })
+        .from(purchaseOrder)
+        .where(eq(purchaseOrder.id, poId))
+        .limit(1),
+    );
+    if (!row) throw Errors.notFound(`purchase order '${poId}'`);
+    return { ...this.edits.policy("purchase.po", row.status), status: row.status, revisionNo: row.revisionNo };
   }
 
   /** Submit a draft PO into the W1 approval engine (po_approval: stores → admin). */
@@ -765,6 +1024,12 @@ export class PurchaseService implements SupplySource {
         expectedDate: purchaseOrder.expectedDate,
         currency: purchaseOrder.currency,
         totalAmount: purchaseOrder.totalAmount,
+        // Both added for the correction feature, and both were genuinely missing rather
+        // than omitted: an edit form cannot pre-fill a field the read path does not
+        // return, and it would have silently blanked `remarks` on every save.
+        remarks: purchaseOrder.remarks,
+        revisionNo: purchaseOrder.revisionNo,
+        amendReason: purchaseOrder.amendReason,
         workflowInstanceId: purchaseOrder.workflowInstanceId,
       })
       .from(purchaseOrder)

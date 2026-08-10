@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Res } from "@nestjs/common";
 import type { Response } from "express";
 import { z } from "zod";
 import { Errors } from "@ind-core/platform";
@@ -15,6 +15,9 @@ const createVendorSchema = z.object({
   paymentTerms: z.string().max(60).optional(),
   acknowledgeDuplicates: z.boolean().optional(),
 });
+/** `code` is not editable — it is quoted on every PO ever raised against this vendor. */
+const editVendorSchema = createVendorSchema.partial().omit({ code: true, acknowledgeDuplicates: true });
+
 const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),
@@ -48,6 +51,19 @@ export class VendorController {
     }
     res.status(201);
     return result.vendor;
+  }
+
+  /** Correct a vendor's details. PATCH, so a form that edits one field sends one field. */
+  @Patch(":id")
+  @RequirePermission("purchase.vendor.update")
+  async edit(@Param("id") id: string, @Body() body: unknown) {
+    const parsed = editVendorSchema.safeParse(body ?? {});
+    if (!parsed.success) {
+      throw Errors.validation(
+        parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
+      );
+    }
+    return this.purchase.editVendor(id, parsed.data);
   }
 
   @Get()

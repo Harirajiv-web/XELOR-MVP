@@ -22,6 +22,7 @@ import {
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { DocumentEditService } from "../../common/document-edit.service.js";
 import { NumberingService, fyCode } from "../../common/numbering.service.js";
 import type {
   AccountsPoster,
@@ -142,6 +143,7 @@ const addDays = (iso: string, days: number): string => {
 export class AccountsService implements AccountsPoster {
   constructor(
     private readonly audit: AuditLogService,
+    private readonly edits: DocumentEditService,
     private readonly numbering: NumberingService,
   ) {}
 
@@ -520,6 +522,37 @@ export class AccountsService implements AccountsPoster {
   /* ------------------------------ the reversal ---------------------------- */
 
   /** Correction is a reversal voucher, never an edit — the database enforces it too. */
+  /**
+   * A POSTED VOUCHER IS NEVER EDITED — and this endpoint is how the user finds that out
+   * politely, with the right action offered rather than a greyed-out button and no reason.
+   *
+   * There is no `editVoucher` anywhere in this module, and the absence is the design. A
+   * journal that has hit the ledger is part of the eight-year statutory record (§3); an
+   * edit path would make that record a record of something that never happened. The
+   * correction is `reverseVoucher` — the same thing an accountant does on paper, and the
+   * only version of "fix it" that survives a GST audit, because the pair of entries shows
+   * both what was wrong and when it was put right.
+   *
+   * So this always answers `editable: false` with `correctBy: "reversing_entry"`, and the
+   * UI turns that into a "Reverse this entry" button instead of an "Edit" one.
+   */
+  async voucherEditPolicy(voucherId: string) {
+    this.edits.requireDocumentId(voucherId, "voucher");
+    const [row] = await withTenant((tx) =>
+      tx
+        .select({ status: journalVoucher.status, voucherNo: journalVoucher.voucherNo })
+        .from(journalVoucher)
+        .where(eq(journalVoucher.id, voucherId))
+        .limit(1),
+    );
+    if (!row) throw new AppError("VOUCHER_NOT_FOUND", 404, `No voucher ${voucherId}.`);
+    return {
+      ...this.edits.policy("accounts.journal", row.status),
+      status: row.status,
+      voucherNo: row.voucherNo,
+    };
+  }
+
   async reverseVoucher(voucherId: string, reason: string, idempotencyKey: string): Promise<VoucherView> {
     const result = await runIdempotent(
       idempotencyKey,

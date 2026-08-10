@@ -4,21 +4,21 @@ import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 /**
- * A MODAL DIALOG.
+ * A MODAL DIALOG — the spine's, now that more than one module needs one.
  *
- * ⚠ THIS BELONGS IN THE SPINE. It lives in `modules/sales/` only because there is no modal
- * in `src/spine/ui/` yet and this department may not add one. The moment a second module
- * needs a dialog, this file should move to `spine/ui/modal.tsx` unchanged and this copy
- * should be deleted — it has no Sales knowledge in it at all, which is the test.
+ * This file used to live in `modules/sales/components/`, with a note saying it belonged
+ * here and should move the moment a second module needed a dialog. Three modules had
+ * copied it by then (sales, purchase, production) and the copies had already drifted —
+ * different focus handling in each, which is exactly the failure the note predicted. The
+ * correction feature needs a dialog in a dozen more, so it moved.
  *
- * Shape taken from MAINDECK's `modal()`: a card on a dimmed page, a `.panel-h` title row
- * with a subtitle, a scrolling `.panel-b`, and a footer whose primary action sits on the
- * right. Everything else here is behaviour the deck did not have to worry about:
+ * Shape: a card on a dimmed page, a `.panel-h` title row with a subtitle, a scrolling
+ * `.panel-b`, and a footer whose primary action sits on the right. Everything else here is
+ * behaviour a static deck did not have to worry about:
  *
- *   NO PORTAL. `createPortal` lives in `react-dom`, which this module may not import, so
- *   the dialog renders inline as `position: fixed`. That is only safe because no ancestor
- *   in the app shell creates a containing block (no transform, filter or contain) — checked,
- *   and worth re-checking if the shell ever gains one.
+ *   NO PORTAL. The dialog renders inline as `position: fixed`. That is only safe because no
+ *   ancestor in the app shell creates a containing block (no transform, filter or contain) —
+ *   checked, and worth re-checking if the shell ever gains one.
  *
  *   ESCAPE CLOSES, THE BACKDROP DOES NOT. Clicking slightly outside a form is far too easy,
  *   and losing a half-typed five-line order to a stray click is the kind of thing people do

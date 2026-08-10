@@ -1,5 +1,5 @@
 import { boolean, date, index, integer, jsonb, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import { tenantScopedColumns } from "./columns.js";
+import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
  * INSPECTION / QMS (KILN, Module 06) — the quality system of record.
@@ -93,6 +93,7 @@ export const qmsInspection = pgTable(
   "qms_inspection",
   {
     ...tenantScopedColumns,
+    ...amendableColumns,
     inspectionNo: text("inspection_no").notNull(),
     templateId: uuid("template_id"),
     templateVersion: integer("template_version"),

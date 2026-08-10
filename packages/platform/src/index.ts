@@ -9,6 +9,8 @@ export * from "./events/event-name.js";
 export * from "./events/outbox.js";
 export * from "./tenancy/tenant-context.js";
 export * from "./audit/hash-chain.js";
+export * from "./audit/edit-policy.js";
+export * from "./audit/change-set.js";
 export * from "./api/pagination.js";
 export * from "./ai/index.js";
 export * from "./masterdata/dedup.js";
