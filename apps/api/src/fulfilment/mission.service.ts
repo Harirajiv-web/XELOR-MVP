@@ -1408,9 +1408,9 @@ export class FulfilmentMissionService {
       // the whole point of the scenario: the second attempt is not a different code path.
       if (ctx.armedFaultId !== null && failure === SIMULATED_FAULT.reason) {
         await tx.update(fulfilmentEvent).set({
-          disposition: "fired",
+          disposition: "deterministic",
           handledAt: new Date(),
-          impact: { step: SIMULATED_FAULT.stepKey, planVersion: pv.versionNo, documentsPrevented: wanted.length },
+          impact: { lifecycle: "fired", step: SIMULATED_FAULT.stepKey, planVersion: pv.versionNo, documentsPrevented: wanted.length },
           updatedAt: new Date(),
           updatedBy: currentTenant().actorId,
         }).where(eq(fulfilmentEvent.id, ctx.armedFaultId));
@@ -2413,9 +2413,9 @@ export class FulfilmentMissionService {
         eventName: STEP_RETRY_EVENT,
         source: "operator",
         simulated: false,
-        payload: { stepKey: f.stepKey, seq: f.seq, attempt, previousFailure },
+        payload: { lifecycle: "retried", stepKey: f.stepKey, seq: f.seq, attempt, previousFailure },
         impact: { rewoundToSeq: f.seq, stepsDiscarded: f.stepKey },
-        disposition: "retried",
+        disposition: "deterministic",
         handledAt: new Date(),
       });
 
@@ -2572,9 +2572,9 @@ export class FulfilmentMissionService {
         eventName: SIMULATED_FAULT.eventName,
         source: "world-simulator",
         simulated: true,
-        payload: { step: SIMULATED_FAULT.stepKey, reason: SIMULATED_FAULT.reason, oneShot: true },
+        payload: { lifecycle: "armed", step: SIMULATED_FAULT.stepKey, reason: SIMULATED_FAULT.reason, oneShot: true },
         impact: { willPrevent: "every purchase order on the next attempt at the procure step" },
-        disposition: "armed",
+        disposition: null,
       });
 
       await this.audit.appendInTx(tx, {
@@ -2696,8 +2696,8 @@ export class FulfilmentMissionService {
           itemCodes: parsed.itemCodes,
           rows: parsed.rows,
         },
-        impact: { supersedes: "seeded sourcing terms", forItemCodes: parsed.itemCodes },
-        disposition: "accepted",
+        impact: { lifecycle: "accepted", supersedes: "seeded sourcing terms", forItemCodes: parsed.itemCodes },
+        disposition: "deterministic",
         handledAt: new Date(),
       });
 

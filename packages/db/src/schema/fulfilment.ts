@@ -172,6 +172,21 @@ export const fulfilmentAction = pgTable(
   ],
 );
 
+/**
+ * The event-impact vocabulary enforced by migration 0094.
+ *
+ * `text(..., { enum })` is a TypeScript constraint, not a second PostgreSQL enum and not a
+ * schema change. Keeping the tuple beside the column makes an invalid application literal
+ * fail compilation before PostgreSQL's CHECK constraint has to reject it at runtime.
+ */
+export const FULFILMENT_EVENT_DISPOSITIONS = [
+  "no_impact",
+  "deterministic",
+  "replan",
+  "escalate",
+] as const;
+export type FulfilmentEventDisposition = (typeof FULFILMENT_EVENT_DISPOSITIONS)[number];
+
 /** Something happened. Internal or simulated-external, always with its impact analysis. */
 export const fulfilmentEvent = pgTable(
   "fulfilment_event",
@@ -185,7 +200,7 @@ export const fulfilmentEvent = pgTable(
     simulated: boolean("simulated").notNull().default(false),
     payload: jsonb("payload").notNull(),
     impact: jsonb("impact"),
-    disposition: text("disposition"),
+    disposition: text("disposition", { enum: FULFILMENT_EVENT_DISPOSITIONS }),
     observedAt: timestamp("observed_at", { withTimezone: true }).notNull().defaultNow(),
     handledAt: timestamp("handled_at", { withTimezone: true }),
   },

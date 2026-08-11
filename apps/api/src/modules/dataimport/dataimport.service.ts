@@ -729,7 +729,11 @@ export class DataImportService {
     const { actorId } = currentTenant();
     const rowNos = group.group.rows.map((r) => r.rowNo);
     const envelope = response.body as
-      | { error?: { code?: string; message?: string }; outcome?: string; explanation?: string }
+      | {
+          error?: { code?: string; message?: string; details?: unknown };
+          outcome?: string;
+          explanation?: string;
+        }
       | null;
 
     let patch: Record<string, unknown>;
@@ -758,10 +762,18 @@ export class DataImportService {
       // Left pending on purpose — see the doc comment.
       return;
     } else {
+      // KEEP THE FIELD-LEVEL DETAIL, because without it this row is unfixable.
+      //
+      // The canonical error envelope carries `details: [{field, message}]`, and the top-level
+      // `message` for a validation failure is the generic "Request failed validation." On its
+      // own that tells an operator staring at a rejected row precisely nothing — measured: a
+      // row with a malformed GSTIN reported "Request failed validation." and named neither the
+      // column nor the value, on a screen whose entire job is to say which cell to correct.
+      const base = envelope?.error?.message ?? `The endpoint answered ${response.status}.`;
       patch = {
         status: "failed",
         failureCode: envelope?.error?.code ?? `HTTP_${response.status}`,
-        failureMessage: envelope?.error?.message ?? `The endpoint answered ${response.status}.`,
+        failureMessage: formatImportFailureMessage(base, envelope?.error?.details),
       };
     }
 
@@ -894,4 +906,26 @@ export function canResumeImportBatch(status: string, acceptedPending: number): b
     acceptedPending > 0 &&
     (status === "running" || status === "partial" || status === "failed")
   );
+}
+
+/**
+ * Add canonical field-level validation detail to the row's durable failure reason.
+ *
+ * `response.body` crossed an HTTP boundary and is therefore untrusted at runtime even
+ * though this application's canonical envelope promises `{field, message}` objects. A
+ * malformed/null element must be ignored rather than throwing after the domain request has
+ * already completed and leaving the import row falsely pending.
+ */
+export function formatImportFailureMessage(base: string, details: unknown): string {
+  if (!Array.isArray(details)) return base;
+  const fields = details
+    .map((detail) => {
+      if (typeof detail !== "object" || detail === null) return null;
+      const rec = detail as { field?: unknown; message?: unknown };
+      const field = typeof rec.field === "string" ? rec.field : null;
+      const message = typeof rec.message === "string" ? rec.message : null;
+      return field && message ? `${field}: ${message}` : (message ?? field);
+    })
+    .filter((value): value is string => Boolean(value));
+  return fields.length > 0 ? `${base} ${fields.join("; ")}` : base;
 }
