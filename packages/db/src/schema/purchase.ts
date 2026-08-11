@@ -70,8 +70,15 @@ export const purchaseOrderLine = pgTable(
     rate: numeric("rate", { precision: 18, scale: 2 }).notNull(),
     amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
     receivedQty: numeric("received_qty", { precision: 18, scale: 3 }).notNull().default("0"),
+    // Trace spine (migration 0093). Without these the chain stops at the requisition, and
+    // a goods receipt cannot be traced back to the customer whose order caused the buy.
+    requisitionId: uuid("requisition_id"),
+    salesOrderLineId: uuid("sales_order_line_id"),
   },
-  (t) => [unique("uq_poline_po_line").on(t.tenantId, t.poId, t.lineNo)],
+  (t) => [
+    unique("uq_poline_po_line").on(t.tenantId, t.poId, t.lineNo),
+    index("ix_poline_tenant_so_line").on(t.tenantId, t.salesOrderLineId),
+  ],
 );
 
 // A goods receipt against a PO. Posting a GRN records stock through Inventory's single

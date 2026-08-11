@@ -46,6 +46,7 @@ export * from "./planning/lotsize.js";
 export * from "./planning/forecast.js";
 export * from "./planning/mps.js";
 export * from "./planning/netting.js";
+export * from "./planning/scrap.js";
 export * from "./planning/exceptions.js";
 export * from "./planning/capacity.js";
 export * from "./planning/dispatch.js";
@@ -74,3 +75,27 @@ export * from "./agent-os/types.js";
 export * from "./agent-os/graph.js";
 export * from "./agent-os/confidence.js";
 export * from "./managed-services/operating-model.js";
+
+// The fulfilment planner names two calendar helpers that `planning/calendar.js` also
+// exports. They are not the same function — the planning pair takes a configurable
+// `PlanCalendar`, the fulfilment pair assumes the six-day week the mission plans against —
+// so the fix is to keep both and let callers import the fulfilment ones by path, rather
+// than rename a correctly-named function to dodge a collision at the barrel.
+export {
+  DEFAULT_WEIGHTS,
+  applyAutonomy,
+  critique,
+  fmtInr,
+  generateCandidates,
+  rank,
+  type Candidate,
+  type Critique,
+  type Fact,
+  type PlanningEvidence,
+  type ShortageLine,
+  type SourcingDecision,
+  type StrategyKey,
+  type SupplierOption,
+  type TradeOffWeights,
+} from "./fulfilment/planner.js";
+export * from "./fulfilment/narrate.js";

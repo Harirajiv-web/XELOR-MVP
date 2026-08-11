@@ -9,6 +9,7 @@ import {
   decodeCursor,
   AppError,
   Errors,
+  grossUpForScrap,
   type CursorPage,
 } from "@ind-core/platform";
 import { runIdempotent, fingerprint } from "../../common/idempotency.js";
@@ -45,6 +46,10 @@ export interface CreateProductionOrderInput {
   bomId?: string;
   sourceWarehouseId: string;
   fgWarehouseId: string;
+  /** The trace spine — who this is for, and when it is wanted (migration 0093). */
+  salesOrderLineId?: string | null;
+  plannedOrderId?: string | null;
+  needDate?: string | null;
 }
 
 export interface AddProductionOperationInput {
@@ -347,7 +352,12 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
   ): Promise<ProductionOrderCore> {
     const { tenantId, actorId } = currentTenant();
     const now = new Date();
-    // Explode: required = (componentQty / bomOutput) * qtyToProduce * (1 + scrap%).
+    // Explode: required = (componentQty / bomOutput) * qtyToProduce, grossed up for scrap.
+    //
+    // The gross-up is `grossUpForScrap`, shared with MRP, and NOT the `* (1 + scrap%)` that
+    // stood here. The two disagreed: at 20% scrap Planning bought 125 and this issued 120,
+    // so every order left five units of material planned-for and never consumed. See
+    // `packages/platform/src/planning/scrap.ts` for why the yield form is the correct one.
     const factor = input.qtyToProduce / (bom.outputQty || 1);
     const components = bom.components.map((c, i) => ({
       id: newId(),
@@ -357,7 +367,7 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       orderId: "", // set below
       lineNo: i + 1,
       componentItemId: c.componentItemId,
-      requiredQty: q3(c.qty * factor * (1 + c.scrapPct / 100)),
+      requiredQty: q3(grossUpForScrap(c.qty * factor, c.scrapPct).qty),
     }));
 
     return withTenant(async (tx) => {
@@ -375,6 +385,9 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
         sourceWarehouseId: input.sourceWarehouseId,
         fgWarehouseId: input.fgWarehouseId,
         status: "planned",
+        salesOrderLineId: input.salesOrderLineId ?? null,
+        plannedOrderId: input.plannedOrderId ?? null,
+        needDate: input.needDate ?? null,
       });
       await tx.insert(productionOrderComponent).values(components.map((c) => ({ ...c, orderId: id })));
       await this.audit.appendInTx(tx, {
@@ -800,6 +813,13 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
         qtyToProduce: input.qty,
         sourceWarehouseId: warehouses.source,
         fgWarehouseId: warehouses.fg,
+        // The three fields this method used to drop. `needDate` and `plannedOrderKey` were
+        // already on the port and already being passed; nothing read them. A work order
+        // without a need date is as urgent as every other work order, which is the same as
+        // no work order being urgent.
+        salesOrderLineId: input.salesOrderLineId ?? null,
+        plannedOrderId: input.plannedOrderId ?? null,
+        needDate: input.needDate,
       },
       idempotencyKey,
     );

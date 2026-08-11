@@ -98,6 +98,10 @@ export const salesOrderLine = pgTable(
     igst: numeric("igst", { precision: 18, scale: 2 }).notNull().default("0"),
     lineTotal: numeric("line_total", { precision: 18, scale: 2 }).notNull(),
     deliveredQty: numeric("delivered_qty", { precision: 18, scale: 3 }).notNull().default("0"),
+    // Stock committed to this line and no longer available to promise elsewhere. A mission
+    // that decides "there is enough" and acts three steps later has, in between, told the
+    // truth about a quantity anybody could take (migration 0093).
+    reservedQty: numeric("reserved_qty", { precision: 18, scale: 3 }).notNull().default("0"),
     // When the customer wants it. Nullable: an order taken without a promised date is a
     // real thing, and PLANNING flags it rather than inventing one (migration 0033).
     requestedDeliveryDate: date("requested_delivery_date"),

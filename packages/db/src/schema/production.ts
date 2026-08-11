@@ -1,4 +1,4 @@
-import { index, integer, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { date, index, integer, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { amendableColumns, tenantScopedColumns } from "./columns.js";
 
 /**
@@ -22,10 +22,19 @@ export const productionOrder = pgTable(
     sourceWarehouseId: uuid("source_warehouse_id").notNull(), // components issued from
     fgWarehouseId: uuid("fg_warehouse_id").notNull(), // finished goods received into
     status: text("status").notNull(), // planned | in_progress | completed | cancelled
+    // THE TRACE SPINE (migration 0093). Which customer commitment this work order serves,
+    // and when its output is actually wanted. Both were computed by Planning and then
+    // dropped by `createFromPlan`, which took the item and the quantity and nothing else —
+    // so a work order knew what to make and not who it was for, and every one of them was
+    // equally urgent. NULL is a real state: make-to-stock has no customer line.
+    salesOrderLineId: uuid("sales_order_line_id"),
+    plannedOrderId: uuid("planned_order_id"),
+    needDate: date("need_date"),
   },
   (t) => [
     unique("uq_prodorder_tenant_no").on(t.tenantId, t.orderNo),
     index("ix_prodorder_tenant_status").on(t.tenantId, t.status),
+    index("ix_prodorder_tenant_so_line").on(t.tenantId, t.salesOrderLineId),
   ],
 );
 

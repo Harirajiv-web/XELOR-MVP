@@ -1,6 +1,7 @@
 import { bucketOf, bucketStart, offsetWorkingDaysBack, workingDaysBetween, type PlanCalendar, DEFAULT_PLAN_CALENDAR } from "./calendar.js";
 import { computeLowLevelCodes, type BomEdge } from "./llc.js";
 import { applyLotRule, type LotPolicy } from "./lotsize.js";
+import { grossUpForScrap } from "./scrap.js";
 
 /**
  * MRP NETTING (PLANNING §11.4) — the engine.
@@ -289,11 +290,12 @@ export function runMrp(input: MrpRunInput): MrpRunResult {
         // Explode into components, in the RELEASE bucket — the components are needed when
         // the parent starts, not when it finishes.
         for (const link of childrenOf.get(it.itemId) ?? []) {
-          const scrapFactor = link.scrapPct > 0 && link.scrapPct < 100 ? 1 / (1 - link.scrapPct / 100) : 1;
-          if (link.scrapPct >= 100) {
-            runWarnings.push(`BOM line ${it.itemCode} → component has scrap ${fmt(link.scrapPct)}% — a 100% loss cannot be grossed up; treated as no scrap.`);
+          // The formula lives in `scrap.ts` so Production cannot drift away from it again.
+          const grossed = grossUpForScrap(plannedReceipt * link.qtyPer, link.scrapPct);
+          if (grossed.warning) {
+            runWarnings.push(`BOM line ${it.itemCode} → component: ${grossed.warning}.`);
           }
-          const qty = plannedReceipt * link.qtyPer * scrapFactor;
+          const qty = grossed.qty;
           if (!dependent.has(link.componentItemId)) dependent.set(link.componentItemId, new Map());
           const m = dependent.get(link.componentItemId)!;
           if (!m.has(order.releaseBucket)) m.set(order.releaseBucket, []);

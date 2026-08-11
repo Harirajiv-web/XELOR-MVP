@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { and, asc, eq, gt, inArray, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, ne, or } from "drizzle-orm";
 import { withTenant, schema, type Tx } from "@ind-core/db";
 import {
   newId,
@@ -690,12 +690,43 @@ export class QualityService implements InspectionGate {
       }
       const rejected = num(insp.qtyRejected) ?? 0;
       const moving = input.dispositionType !== "accept";
-      if (moving && input.qty > rejected + 1e-9) {
-        throw new AppError(
-          "DISPOSITION_EXCEEDS_REJECTED",
-          422,
-          `Cannot disposition ${input.qty} — only ${rejected} was rejected on ${insp.inspectionNo}.`,
-        );
+      if (moving) {
+        // AGAINST THE RUNNING TOTAL, not against this one disposition alone.
+        //
+        // The check here used to compare `input.qty` to `rejected` and nothing else, which
+        // bounded each disposition individually and the set of them not at all: on a lot
+        // with 100 rejected you could scrap 100, then return 100 to the supplier, then
+        // rework 100. Each call passed. Three hundred units left a lot that held one, and
+        // because Quality asks Inventory to move stock for each one, the ledger followed.
+        //
+        // `FOR UPDATE` on the prior rows, not merely SUM: without it two dispositions
+        // racing each other both read the same total and both pass the check they should
+        // not. Read-then-write on a quantity is a lock, or it is a bug waiting for two
+        // inspectors and one bad lot.
+        const priorRows = await tx
+          .select({ qty: qmsDisposition.qty })
+          .from(qmsDisposition)
+          .where(
+            and(
+              eq(qmsDisposition.inspectionId, inspectionId),
+              ne(qmsDisposition.dispositionType, "accept"),
+              ne(qmsDisposition.status, "movement_failed"),
+            ),
+          )
+          .for("update");
+
+        const already = priorRows.reduce((sum, r) => sum + (num(r.qty) ?? 0), 0);
+        if (already + input.qty > rejected + 1e-9) {
+          const left = Math.max(0, rejected - already);
+          throw new AppError(
+            "DISPOSITION_EXCEEDS_REJECTED",
+            422,
+            already > 0
+              ? `Cannot disposition ${input.qty} — ${insp.inspectionNo} rejected ${rejected}, ` +
+                `${already} has already been dispositioned, so ${left} remains.`
+              : `Cannot disposition ${input.qty} — only ${rejected} was rejected on ${insp.inspectionNo}.`,
+          );
+        }
       }
 
       const id = newId();

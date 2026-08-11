@@ -461,6 +461,7 @@ export const purchaseRequisition = pgTable(
     needDate: date("need_date").notNull(),
     releaseDate: date("release_date").notNull(),
     suggestedVendorRef: text("suggested_vendor_ref"),
+    salesOrderLineId: uuid("sales_order_line_id"), // trace spine (migration 0093)
     status: text("status").notNull().default("open"), // open | ordered | cancelled
     purchaseOrderRef: text("purchase_order_ref"),
     note: text("note"),

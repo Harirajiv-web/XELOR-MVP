@@ -26,7 +26,13 @@ export type DocSeriesType =
   | "receipt"
   | "maintenance_request"
   | "maintenance_work_order"
-  | "payroll_run";
+  | "payroll_run"
+  // The autonomous fulfilment runtime. Numbered through the same gapless series as every
+  // other document, deliberately: a mission and its actions are records an auditor will
+  // ask to see in order, and "the AI made this one" is not a reason to number it differently.
+  | "fulfilment_mission"
+  | "fulfilment_approval"
+  | "fulfilment_action";
 
 /**
  * Shared, gapless, per-financial-year document numbering (see `document_series`).

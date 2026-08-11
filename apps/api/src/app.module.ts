@@ -27,6 +27,7 @@ import { IntegrationModule } from "./modules/integration/integration.module.js";
 import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
+import { FulfilmentModule } from "./fulfilment/fulfilment.module.js";
 import { AgentOsModule } from "./agent-os/agent-os.module.js";
 import { ManagedServicesModule } from "./modules/managed-services/managed-services.module.js";
 import { PlatformHealthModule } from "./modules/platform-health/platform-health.module.js";
@@ -81,6 +82,7 @@ import { ServerlessWorkerController } from "./serverless-worker.controller.js";
     // Governed execution layer above the ERP kernel. It calls domain services only through
     // registered capabilities; models never receive a database handle.
     AgentOsModule,
+    FulfilmentModule,
     // RELAY's service-management control plane. The MVP endpoint is an explicitly labelled
     // operating-model snapshot; live telemetry and ITSM transports remain Integration work.
     ManagedServicesModule,

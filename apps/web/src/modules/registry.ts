@@ -19,6 +19,7 @@ import { aiopsManifest } from "./aiops/manifest";
 import { administrationManifest } from "./administration/manifest";
 import { integrationManifest } from "./integration/manifest";
 import { agentosManifest } from "./agentos/manifest";
+import { fulfilmentManifest } from "./fulfilment/manifest";
 import { aiControlManifest } from "./aicontrol/manifest";
 import { managedServicesManifest } from "./managed-services/manifest";
 import { platformHealthManifest } from "./platform-health/manifest";
@@ -41,7 +42,7 @@ import { platformHealthManifest } from "./platform-health/manifest";
  * licence decides whether the company bought it, and permissions decide whether this
  * person may open it. Three independent gates, three different people who can change them.
  *
- * Twenty-two installed modules span the departmental systems of record plus the shared
+ * Twenty-three installed modules span the departmental systems of record plus the shared
  * intelligence, service-assurance and platform-health surfaces. The array below is the
  * executable inventory; keep this explanation deliberately free of a second hand-written
  * module list so adding a module cannot make the architecture comment lie again.
@@ -65,6 +66,7 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   expenditureManifest,
   workingCapitalManifest,
   agentosManifest,
+  fulfilmentManifest,
   aiopsManifest,
   aiControlManifest,
   managedServicesManifest,

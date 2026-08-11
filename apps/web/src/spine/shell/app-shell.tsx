@@ -9,13 +9,13 @@ import { useSession } from "../auth/session";
 import { useAccess } from "../access/permissions";
 import { orderedModules } from "@modules/registry";
 import { moduleAvailability, visibleNav } from "../registry/manifest";
-import { groupByDepartment } from "../registry/departments";
+import { groupByWorkspace } from "../registry/workspaces";
 import { CopilotRail } from "./copilot-rail";
 import { AlertCentre } from "./alert-centre";
+import { AgentDriver } from "./agent-driver";
 import { HumanApprovalLink } from "./human-approval-link";
 import { DemoLauncher } from "../demo/demo-launcher";
 import { ThemeToggle } from "../theme/theme-toggle";
-import { plainDepartmentName } from "../ui/plain-language";
 
 /**
  * THE APPLICATION FRAME — MAINDECK's three-column shell.
@@ -25,17 +25,22 @@ import { plainDepartmentName } from "../ui/plain-language";
  * the assistant sits beside the work instead of being somewhere you have to go.
  *
  * THE SIDEBAR IS ASSEMBLED, NEVER WRITTEN DOWN. It is the module registry filtered by what
- * this company licensed and what this person may open, grouped under the department that
- * owns each module. Module rows are destinations, not disclosure controls: the screens
- * within the active module live in the horizontal workbench navigation above the page.
- * That keeps the left rail as an orientation map and gives sibling screens the width they
- * need to be scanned and switched between.
+ * this company licensed and what this person may open. Module rows are destinations, not
+ * disclosure controls: the screens within the active module live in the horizontal
+ * workbench navigation above the page. That keeps the left rail as an orientation map and
+ * gives sibling screens the width they need to be scanned and switched between.
  *
- * GROUPED BY DEPARTMENT, because that is the organising fact of the whole system.
- * Departments are cut by system-of-record ownership, which is the same line the module
- * boundaries in the code are drawn on. Seeing "SPAR · Supply Chain" over Purchase and
- * Inventory tells a buyer in one glance why one team owns the stock ledger and why nothing
- * else may write to it.
+ * GROUPED BY THE JOB, not by the owning department — changed, and worth recording why.
+ *
+ * Department grouping is a true statement about ownership: departments are cut on
+ * system-of-record boundaries, the same line the module boundaries in the code follow. It
+ * is also the wrong axis for a menu. It produced nine groups of wildly uneven weight — five
+ * modules under ONYX, one under ACHILES — over 132 nav entries, and it asked a plant
+ * supervisor looking for the inspection screen to first know that KILN owns quality.
+ *
+ * So the rail now groups by what you are trying to DO ("Make & Prove"), and the department
+ * keeps its own pages, where the ownership story is the actual subject. See
+ * `registry/workspaces.ts` for the mapping and the reasoning behind seven groups.
  *
  * A module the user cannot open is HIDDEN rather than disabled. A greyed-out item that
  * never becomes available is a permanent advertisement for something they cannot have; the
@@ -66,7 +71,11 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
   const modules = orderedModules().filter(
     (m) => moduleAvailability(m, { isLicensed, can }) === null,
   );
-  const groups = groupByDepartment(modules);
+  // Grouped by the JOB, not by the owning department. Department is still true and is still
+  // rendered on the department pages; it is simply the wrong axis for a menu. See the note
+  // at the top of `registry/workspaces.ts` — nine uneven department groups over 132 nav
+  // entries is not a menu, it is a search problem.
+  const groups = groupByWorkspace(modules);
 
   const current = modules.find((m) => pathname.startsWith(`/${m.key}/`));
   const currentEntries = current ? visibleNav(current, can) : [];
@@ -74,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
     const href = `/${current?.key}/${n.path}`;
     return pathname === href || pathname.startsWith(href + "/");
   });
-  const currentDept = groups.find((g) => g.modules.some((m) => m.key === current?.key));
+  const currentGroup = groups.find((g) => g.modules.some((m) => m.key === current?.key));
 
   const initials = (user?.displayName ?? "?")
     .split(/\s+/)
@@ -165,44 +174,30 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
             if (openable.length === 0) return null;
 
             return (
-              <div key={g.department.code}>
+              <div key={g.workspace.code}>
                 {!collapsed ? (
-                  // The department header carries its four-letter code as a coloured
-                  // marker. Not decoration: the code is how this organisation refers to the
-                  // owner of everything underneath it, in tickets, branches and blueprints.
-                  // It is also a LINK — a department is a thing in this product with its own
-                  // dashboard, not merely a caption over some menu items.
-                  <Link
-                    href={`/department/${g.department.code}`}
-                    onClick={(event) => navigate(event, `/department/${g.department.code}`)}
-                    title={`${plainDepartmentName(g.department.code, g.department.name)} — overview`}
-                    aria-current={
-                      pathname === `/department/${g.department.code}` ? "page" : undefined
-                    }
-                    className={cn(
-                      "group flex items-start gap-2 rounded-[8px] px-2.5 py-1 pt-4 transition-colors hover:bg-[var(--bg)]",
-                      pathname === `/department/${g.department.code}` && "bg-[var(--bg)]",
-                    )}
+                  // A workspace heading says what you come here to DO — "Make & Prove",
+                  // not "KILN". The four-letter department code that used to sit here is
+                  // how the ENGINEERING ORGANISATION refers to an owner; it is not how a
+                  // plant supervisor finds the inspection screen.
+                  //
+                  // It is deliberately NOT a link. There is no workspace page, and a
+                  // heading styled to look clickable that goes nowhere is a worse lie than
+                  // a plain caption. Departments keep their own pages, reachable from the
+                  // department view and the agent map, where that story belongs.
+                  <div
+                    className="flex items-center gap-2 px-2.5 pb-1 pt-4"
+                    title={g.workspace.purpose}
                   >
                     <span
-                      className="rounded-[5px] px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-white"
-                      style={{ background: g.department.accent }}
-                    >
-                      {g.department.code}
-                    </span>
-                    {/* Wraps instead of truncating. This is the plain-English name of the
-                        department — the only part of the row a first-time user can read —
-                        so clipping it to "PRODUCTS & PLANN…" removes the entire point of
-                        having it. Tracking is reduced because 0.13em on uppercase text is
-                        what pushed it over the edge. */}
-                    <span className="min-w-0 text-[9.8px] font-bold uppercase leading-[1.35] tracking-[0.08em] text-[var(--text-muted)]">
-                      {plainDepartmentName(g.department.code, g.department.name)}
-                    </span>
-                    <Icons.ArrowRight
-                      className="ml-auto h-3 w-3 shrink-0 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: g.workspace.accent }}
                       aria-hidden
                     />
-                  </Link>
+                    <span className="min-w-0 text-[9.8px] font-bold uppercase leading-[1.35] tracking-[0.08em] text-[var(--text-muted)]">
+                      {g.workspace.name}
+                    </span>
+                  </div>
                 ) : (
                   <div className="my-2 border-t border-[var(--border-subtle)]" />
                 )}
@@ -296,9 +291,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
         <p className="hidden min-w-0 items-center text-[13px] text-[var(--text-muted)] lg:flex">
           <span className="min-w-0 truncate">
             XELOR
-            {currentDept
-              ? ` / ${plainDepartmentName(currentDept.department.code, currentDept.department.name)}`
-              : ""}
+            {currentGroup ? ` / ${currentGroup.workspace.name}` : ""}
             {current ? " / " : ""}
           </span>
           {current ? (
@@ -435,6 +428,9 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       <div style={{ gridArea: "cop" }} className="overflow-hidden">
         {railOpen ? <CopilotRail onClose={() => setRailOpen(false)} /> : null}
       </div>
+      {/* The agent walks the person through the product; it must outlive every
+          navigation, so it is rendered by the shell rather than by a screen. */}
+      <AgentDriver />
     </div>
   );
 }

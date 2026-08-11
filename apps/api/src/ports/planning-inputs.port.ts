@@ -150,6 +150,18 @@ export interface CreateFromPlanInput {
   /** Carried through so the execution document stays inside the pegging graph. */
   plannedOrderKey: string;
   needDate: string;
+  /** The planned order's own id, so the execution document can be traced back to it. */
+  plannedOrderId?: string;
+  /**
+   * The customer commitment this supply exists to serve, resolved from the planned order's
+   * peg. NULL for make-to-stock, which is a real state rather than missing data.
+   *
+   * Worth stating plainly, because it explains why this interface already had `needDate`
+   * and `plannedOrderKey` and the chain still broke: the caller was passing them and
+   * `createFromPlan` was reading `itemId` and `qty` and dropping the rest on the floor. The
+   * port was never the problem. The implementation was.
+   */
+  salesOrderLineId?: string | null;
 }
 
 export interface CreatedDocument {
