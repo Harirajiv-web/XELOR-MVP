@@ -60,6 +60,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
+      API_SELF_ORIGIN: ${API_SELF_ORIGIN:-http://127.0.0.1:3000}
       # The APP role: non-owner, NOBYPASSRLS. FORCE RLS is only a real backstop because
       # this connection cannot bypass it.
       DATABASE_URL: postgres://app_user:${APP_DB_PASSWORD:?set APP_DB_PASSWORD}@postgres:5432/indcore

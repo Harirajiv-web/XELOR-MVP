@@ -26,6 +26,12 @@ const reports = [
     output: "docs/05-deliverables/project-reports/XELOR_TECHNOLOGY_STACK_AND_PRODUCTION_ROADMAP.pdf",
   },
   {
+    id: "phase-architecture",
+    source: "docs/reports/xelor-phase-1-phase-2-technology-architecture.html",
+    output: "docs/05-deliverables/project-reports/XELOR_PHASE_1_AND_PHASE_2_TECHNOLOGY_AND_ARCHITECTURE.pdf",
+    fullBleed: true,
+  },
+  {
     id: "agentic",
     source: "docs/reports/xelor-agentic-ai-implementation-strategy.html",
     output: "docs/05-deliverables/project-reports/XELOR_AGENTIC_AI_IMPLEMENTATION_AND_STRATEGY.pdf",
@@ -101,11 +107,13 @@ try {
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
-      displayHeaderFooter: true,
+      displayHeaderFooter: !report.fullBleed,
       headerTemplate: "<span></span>",
       footerTemplate:
         '<div style="width:100%;font:8px Arial;color:#78849a;padding:0 15mm;display:flex;justify-content:space-between"><span>XELOR · AIKYANTRA</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>',
-      margin: { top: "16mm", right: "15mm", bottom: "18mm", left: "15mm" },
+      margin: report.fullBleed
+        ? { top: "0", right: "0", bottom: "0", left: "0" }
+        : { top: "16mm", right: "15mm", bottom: "18mm", left: "15mm" },
     });
     await page.close();
     process.stdout.write(`Rendered ${report.output}\n`);

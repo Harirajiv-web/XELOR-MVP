@@ -142,6 +142,61 @@
   --violet: #7c5cd6;
   --violet-soft: #efebfa;
 
+  /* ==========================================================================
+     THE FOUR SEMANTIC TONES, AS ink-ON-tint PAIRS.
+     ==========================================================================
+     These are the names the agent surfaces reach for — `agent-driver.tsx` and Mission
+     Control's evidence chips — and until now NONE OF THE NINE EXISTED. That is not a
+     cosmetic gap: `var(--good-fg)` with no declaration falls back to nothing, so the
+     approve button on the agent bar was rendering with NO background at all and the
+     progress rail with no fill. A control that is invisible until you hover it is worse
+     than an ugly one, because the person never learns it is there.
+
+     They are ALIASES, not new colours. Each is the exact hex of the deck partner it stands
+     for — `--good-*` is the `--ok-ink` / `--ok-soft` pair, `--bad-*` is `--bad-ink` /
+     `--bad-soft`, `--warn-*` is `--warn-ink` / `--warn-soft`, and `--info-*` is the brand.
+     Nothing new is introduced into the palette, so a chip drawn from these tokens and a
+     chip drawn from the deck's own names are the same chip. Written as literal hexes
+     rather than `var(--ok-ink)` to match every other token in this file: the point of the
+     two blocks is that a reviewer can read the whole palette off them without resolving
+     indirection.
+
+     `-fg` MEANS INK, and that is the contract the callers depend on — five of the six
+     usages are a label drawn in `-fg` on its paired `-bg`. One caller (the agent bar's
+     "Yes, do it" button) instead uses `--good-fg` as a solid FILL under white text. That
+     works here in light — #116932 under white is 6.5:1 — but cannot also work on the dark
+     theme, where legible ink has to be light and a white-text fill has to be dark. The
+     tokens are set for the ink contract because it is the one five callers rely on; the
+     button's dark-theme fill is a fix in that component, not in this palette.
+
+     `--border` is the same 1px rule as `--border-subtle`, under the shorter name the agent
+     surfaces already use. Kept as an alias rather than renamed at the call sites, because
+     one token with two spellings is a smaller problem than a rename touching files three
+     other people are editing. */
+  --good-fg: #116932;
+  --good-bg: #e4f4ec;
+
+  --warn-fg: #92400e;
+  --warn-bg: #fceee4;
+
+  --bad-fg: #991b1b;
+  --bad-bg: #fae7e7;
+
+  --info-fg: #1d5fd1;
+  --info-bg: #e9f0fc;
+
+  --border: #e4e9ef;
+
+  /* SOLID BUTTON FILLS, which are a different job from the `-fg` inks above.
+     `-fg` is ink drawn ON its paired `-bg`, so it must be DARK in light theme and LIGHT in
+     dark theme. A filled button reverses that: the token becomes the ground and white text
+     is drawn on it, so it must stay dark in BOTH themes. One token cannot satisfy both
+     contracts — in dark theme `--good-fg` is #4ade80, and white on #4ade80 is 1.7:1, which
+     is unreadable. These three exist so a filled control never has to borrow an ink. */
+  --good-fill: #116932;
+  --warn-fill: #92400e;
+  --bad-fill: #991b1b;
+
   /* WHAT A CHART'S NEUTRAL RAMP FADES TOWARDS.
      Shades of the brand are how a chart draws categories that carry no judgement of their
      own — warehouses, states, causes. On a white page that means fading toward white. On a
@@ -272,6 +327,31 @@
 
   --violet: #9d7fe0;
   --violet-soft: #201a35;
+
+  /* The same four pairs, lifted for a dark surface — the ink goes light and the tint goes
+     to the near-black it is read on, exactly as the deck partners above do. Each `-fg`
+     clears 8:1 against its own `-bg` here, which is what keeps an evidence chip readable
+     on a night shift. See the light block for why the ink contract wins over the one
+     caller that fills a button with `--good-fg`. */
+  --good-fg: #4ade80;
+  --good-bg: #10281a;
+
+  --warn-fg: #e0a542;
+  --warn-bg: #2b2013;
+
+  --bad-fg: #ef6a6d;
+  --bad-bg: #2c1416;
+
+  --info-fg: #5b8def;
+  --info-bg: #16274a;
+
+  --border: #202a42;
+
+  /* Lifted a step off the light-theme values so a filled button separates from the dark
+     surface behind it, while still holding white text at ~4.6:1 rather than 1.7:1. */
+  --good-fill: #15803d;
+  --warn-fill: #b45309;
+  --bad-fill: #b91c1c;
 
   /* A light steel rather than white: fading toward pure white on a dark page bleaches the
      far end of the ramp into one indistinguishable glare, which loses the categories just

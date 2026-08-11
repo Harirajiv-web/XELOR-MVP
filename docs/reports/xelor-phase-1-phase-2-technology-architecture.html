@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XELOR Phase 1 &amp; Phase 2 — Technology and Architecture</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #5c6982;
+      --line: #d9e0ea;
+      --paper: #ffffff;
+      --soft: #f4f7fb;
+      --blue: #2457d6;
+      --cyan: #00a6a6;
+      --green: #14845a;
+      --amber: #bd6b00;
+      --red: #b43a47;
+      --navy: #0b1735;
+    }
+
+    * { box-sizing: border-box; }
+
+    @page { size: A4; margin: 0; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #e9eef5;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.38;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      padding: 14mm 15mm 13mm;
+      overflow: hidden;
+      background: var(--paper);
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 165mm;
+      margin-bottom: 5mm;
+      color: #fff;
+      font-size: 29pt;
+      font-weight: 760;
+      line-height: 1.04;
+      letter-spacing: -0.6pt;
+    }
+
+    h2 {
+      margin-bottom: 3.2mm;
+      color: var(--navy);
+      font-size: 18pt;
+      line-height: 1.15;
+      letter-spacing: -0.25pt;
+    }
+
+    h3 {
+      margin-bottom: 1.7mm;
+      color: var(--navy);
+      font-size: 10.3pt;
+      line-height: 1.2;
+    }
+
+    p { margin-bottom: 2.3mm; }
+
+    .eyebrow {
+      margin-bottom: 2.5mm;
+      color: var(--blue);
+      font-size: 7.7pt;
+      font-weight: 780;
+      letter-spacing: 1.2pt;
+      text-transform: uppercase;
+    }
+
+    .section-intro {
+      max-width: 170mm;
+      margin-bottom: 4mm;
+      color: var(--muted);
+      font-size: 10pt;
+    }
+
+    .footer {
+      position: absolute;
+      right: 15mm;
+      bottom: 6mm;
+      left: 15mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 0.35mm solid var(--line);
+      padding-top: 2mm;
+      color: #78859b;
+      font-size: 7pt;
+    }
+
+    .footer strong { color: var(--ink); }
+
+    .cover {
+      background:
+        radial-gradient(circle at 86% 12%, rgba(62, 205, 214, 0.28), transparent 31%),
+        radial-gradient(circle at 10% 82%, rgba(73, 99, 222, 0.34), transparent 34%),
+        linear-gradient(145deg, #07132f 0%, #122b65 54%, #123b56 100%);
+      color: #fff;
+      padding-top: 17mm;
+    }
+
+    .cover .eyebrow { color: #70e1df; }
+
+    .cover .subtitle {
+      max-width: 155mm;
+      margin-bottom: 7mm;
+      color: #dce8ff;
+      font-size: 12pt;
+      line-height: 1.42;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18mm;
+    }
+
+    .brand {
+      font-size: 14pt;
+      font-weight: 820;
+      letter-spacing: 2.2pt;
+    }
+
+    .date-chip, .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 0.3mm solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 1.7mm 3.2mm;
+      background: rgba(255,255,255,0.08);
+      color: #eef5ff;
+      font-size: 7.8pt;
+    }
+
+    .phase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+      margin: 7mm 0 5mm;
+    }
+
+    .phase-card {
+      min-height: 48mm;
+      border: 0.35mm solid rgba(255,255,255,0.18);
+      border-radius: 4mm;
+      padding: 5mm;
+      background: rgba(255,255,255,0.09);
+      backdrop-filter: blur(4px);
+    }
+
+    .phase-card .num {
+      margin-bottom: 1.8mm;
+      color: #74e6e2;
+      font-size: 8pt;
+      font-weight: 780;
+      text-transform: uppercase;
+    }
+
+    .phase-card h2 {
+      margin-bottom: 2mm;
+      color: #fff;
+      font-size: 16pt;
+    }
+
+    .phase-card p {
+      margin: 0;
+      color: #dfe9fa;
+      font-size: 9.2pt;
+    }
+
+    .cover-callout {
+      display: flex;
+      gap: 4mm;
+      align-items: center;
+      border-left: 1.2mm solid #66e0dc;
+      border-radius: 2mm;
+      padding: 4mm 5mm;
+      background: rgba(1, 11, 33, 0.33);
+    }
+
+    .cover-callout strong {
+      display: block;
+      margin-bottom: 0.8mm;
+      color: #fff;
+      font-size: 11.5pt;
+    }
+
+    .cover-callout span { color: #dfe9fa; }
+
+    .cover .footer {
+      border-color: rgba(255,255,255,0.22);
+      color: #b9c9e3;
+    }
+
+    .cover .footer strong { color: #fff; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3.5mm;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+    }
+
+    .card {
+      border: 0.3mm solid var(--line);
+      border-radius: 3mm;
+      padding: 3.4mm;
+      background: var(--paper);
+    }
+
+    .card.soft { background: var(--soft); }
+    .card.blue { border-color: #cdd9ff; background: #f1f5ff; }
+    .card.green { border-color: #bfe2d4; background: #f0faf6; }
+    .card.amber { border-color: #edd5af; background: #fff8ed; }
+    .card.red { border-color: #edc7cc; background: #fff4f5; }
+
+    .icon-dot {
+      display: inline-flex;
+      width: 6mm;
+      height: 6mm;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1.5mm;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 7.5pt;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 8.2pt;
+      line-height: 1.25;
+    }
+
+    th {
+      padding: 2.2mm 2.5mm;
+      background: var(--navy);
+      color: #fff;
+      font-size: 7.4pt;
+      font-weight: 720;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.35pt;
+    }
+
+    th:first-child { border-radius: 2.4mm 0 0 0; }
+    th:last-child { border-radius: 0 2.4mm 0 0; }
+
+    td {
+      padding: 2mm 2.5mm;
+      border-right: 0.25mm solid var(--line);
+      border-bottom: 0.25mm solid var(--line);
+      background: #fff;
+      vertical-align: top;
+    }
+
+    td:first-child { border-left: 0.25mm solid var(--line); }
+    tr:nth-child(even) td { background: #f8faff; }
+    tr:last-child td:first-child { border-radius: 0 0 0 2.4mm; }
+    tr:last-child td:last-child { border-radius: 0 0 2.4mm 0; }
+
+    .stack-table td:nth-child(1) { width: 25%; font-weight: 700; color: var(--navy); }
+    .stack-table td:nth-child(2) { width: 30%; color: var(--blue); font-weight: 650; }
+
+    .code-tree {
+      margin: 0;
+      border-radius: 3mm;
+      padding: 3.5mm 4mm;
+      background: #0d1a36;
+      color: #dbe7ff;
+      font: 7.8pt/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    .note {
+      border-left: 1mm solid var(--blue);
+      border-radius: 1.5mm;
+      padding: 2.8mm 3.5mm;
+      background: #eef3ff;
+      color: #273756;
+    }
+
+    .note strong { color: var(--navy); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4.2mm;
+      align-items: stretch;
+      margin: 3mm 0 4mm;
+    }
+
+    .flow .node {
+      position: relative;
+      display: flex;
+      min-height: 20mm;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 0.3mm solid #cbd7ee;
+      border-radius: 3mm;
+      padding: 2.6mm;
+      background: #f5f8fe;
+      text-align: center;
+    }
+
+    .flow .node:not(:last-child)::after {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: -4.2mm;
+      width: 4.2mm;
+      color: var(--blue);
+      content: "→";
+      font-size: 11pt;
+      font-weight: 800;
+      transform: translateY(-53%);
+    }
+
+    .node strong {
+      display: block;
+      color: var(--navy);
+      font-size: 8.5pt;
+    }
+
+    .node span {
+      display: block;
+      margin-top: 0.7mm;
+      color: var(--muted);
+      font-size: 7.2pt;
+    }
+
+    .mini-list, .check-list, .warn-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .mini-list li, .check-list li, .warn-list li {
+      position: relative;
+      margin-bottom: 1.25mm;
+      padding-left: 4.5mm;
+    }
+
+    .mini-list li::before {
+      position: absolute;
+      left: 0;
+      color: var(--blue);
+      content: "•";
+      font-weight: 800;
+    }
+
+    .check-list li::before {
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      content: "✓";
+      font-weight: 800;
+    }
+
+    .warn-list li::before {
+      position: absolute;
+      left: 0;
+      color: var(--red);
+      content: "!";
+      font-weight: 850;
+    }
+
+    .security-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.6mm;
+      margin: 2.5mm 0 4mm;
+    }
+
+    .security-strip div {
+      border-radius: 2mm;
+      padding: 2.5mm 1.7mm;
+      background: #eef3ff;
+      color: #263755;
+      font-size: 7.3pt;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .arch-layout {
+      display: grid;
+      grid-template-columns: 0.88fr 1.25fr 1fr;
+      gap: 3mm;
+      align-items: stretch;
+      margin: 2.8mm 0 4mm;
+    }
+
+    .arch-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+      border: 0.3mm solid var(--line);
+      border-radius: 3mm;
+      padding: 3mm;
+      background: #f8faff;
+    }
+
+    .arch-column > strong {
+      color: var(--blue);
+      font-size: 7.3pt;
+      letter-spacing: 0.45pt;
+      text-transform: uppercase;
+    }
+
+    .arch-box {
+      border-radius: 2mm;
+      padding: 2mm;
+      background: #fff;
+      box-shadow: 0 0.3mm 1.5mm rgba(16, 35, 75, 0.08);
+      font-size: 7.6pt;
+      text-align: center;
+    }
+
+    .mission-loop {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3.4mm;
+      margin: 2.5mm 0 4mm;
+    }
+
+    .mission-loop .step {
+      position: relative;
+      border-radius: 2.4mm;
+      padding: 3mm 1.5mm;
+      background: #eef3ff;
+      color: var(--navy);
+      font-size: 7.4pt;
+      font-weight: 720;
+      text-align: center;
+    }
+
+    .mission-loop .step:not(:last-child)::after {
+      position: absolute;
+      top: 50%;
+      right: -3.3mm;
+      color: var(--blue);
+      content: "›";
+      font-size: 13pt;
+      transform: translateY(-57%);
+    }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5mm;
+      margin-bottom: 4mm;
+    }
+
+    .chapter {
+      border: 0.3mm solid var(--line);
+      border-radius: 2.5mm;
+      padding: 2.6mm;
+      background: #fff;
+    }
+
+    .chapter b {
+      display: block;
+      margin-bottom: 0.9mm;
+      color: var(--blue);
+      font-size: 7.7pt;
+    }
+
+    .chapter span {
+      color: var(--muted);
+      font-size: 7.3pt;
+    }
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2mm;
+    }
+
+    .record {
+      border-left: 0.9mm solid var(--cyan);
+      border-radius: 1.5mm;
+      padding: 2mm 2.5mm;
+      background: #f1f9fa;
+      font-size: 7.5pt;
+    }
+
+    .record b { display: block; color: var(--navy); }
+
+    .compare-table td:nth-child(1) { width: 20%; font-weight: 720; color: var(--navy); }
+    .compare-table td:nth-child(2), .compare-table td:nth-child(3) { width: 40%; }
+
+    .priority-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2mm;
+      margin-top: 3mm;
+    }
+
+    .priority {
+      border-top: 1mm solid var(--blue);
+      border-radius: 2mm;
+      padding: 2.5mm;
+      background: #f4f7fc;
+      color: #33425e;
+      font-size: 7.2pt;
+    }
+
+    .priority b {
+      display: block;
+      margin-bottom: 0.8mm;
+      color: var(--navy);
+    }
+
+    .assessment {
+      margin-top: 3.2mm;
+      border-radius: 3mm;
+      padding: 3.5mm 4mm;
+      background: linear-gradient(135deg, #0d234d, #174d5e);
+      color: #e8f5ff;
+    }
+
+    .assessment strong {
+      display: block;
+      margin-bottom: 1mm;
+      color: #fff;
+      font-size: 10.2pt;
+    }
+
+    .sources {
+      margin-top: 2.5mm;
+      color: #7a879c;
+      font-size: 6.7pt;
+      line-height: 1.3;
+    }
+
+    .tight p { margin-bottom: 1.6mm; }
+    .small { font-size: 7.7pt; }
+    .muted { color: var(--muted); }
+    .mt2 { margin-top: 2mm; }
+    .mt3 { margin-top: 3mm; }
+    .mb2 { margin-bottom: 2mm; }
+    .mb3 { margin-bottom: 3mm; }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <section class="page cover">
+    <div class="brand-row">
+      <div class="brand">XELOR</div>
+      <div class="date-chip">Technology &amp; Architecture Brief · 11 August 2026</div>
+    </div>
+
+    <div class="eyebrow">Phase 1 + Phase 2</div>
+    <h1>Manufacturing ERP and Autonomous Fulfilment, explained simply</h1>
+    <p class="subtitle">
+      A plain-English guide to the technology stack, system architecture, data flow,
+      security, AI controls, hosting model, and the practical difference between both phases.
+    </p>
+
+    <div class="phase-grid">
+      <article class="phase-card">
+        <div class="num">Phase 1 · Foundation</div>
+        <h2>The ERP</h2>
+        <p>
+          Stores and runs the company’s orders, products, BOMs, inventory, purchasing,
+          production, quality, accounts, people, maintenance, approvals and audit records.
+        </p>
+      </article>
+      <article class="phase-card">
+        <div class="num">Phase 2 · Coordination</div>
+        <h2>The mission controller</h2>
+        <p>
+          Takes a confirmed customer order, gathers evidence, compares fulfilment plans,
+          checks authority, records actions, watches for changes and can replan.
+        </p>
+      </article>
+    </div>
+
+    <div class="cover-callout">
+      <div>
+        <strong>Same core system. A new control layer.</strong>
+        <span>
+          Phase 2 is not a rewrite and not a set of microservices. It extends Phase 1’s
+          TypeScript modular monolith and PostgreSQL database with durable fulfilment missions.
+        </span>
+      </div>
+    </div>
+
+    <div class="grid-3 mt3">
+      <div class="phase-card" style="min-height:auto;padding:3.4mm">
+        <div class="num">Architecture</div>
+        <p><b style="color:#fff">Boundary-enforced modular monolith</b><br />One backend, cleanly separated business modules.</p>
+      </div>
+      <div class="phase-card" style="min-height:auto;padding:3.4mm">
+        <div class="num">Safety rule</div>
+        <p><b style="color:#fff">Code decides; AI explains</b><br />Models do not own accounting, stock or policy verdicts.</p>
+      </div>
+      <div class="phase-card" style="min-height:auto;padding:3.4mm">
+        <div class="num">Current maturity</div>
+        <p><b style="color:#fff">Advanced prototype</b><br />Real ERP data and mission records; some execution remains simulated.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <strong>XELOR Architecture Brief</strong>
+      <span>Executive summary · 1 / 5</span>
+    </div>
+  </section>
+
+  <!-- PAGE 2 -->
+  <section class="page">
+    <div class="eyebrow">Shared foundation</div>
+    <h2>1. Technology stack used by both phases</h2>
+    <p class="section-intro">
+      Phase 2 keeps the Phase 1 stack. The change is mainly new orchestration logic,
+      database records, API routes and Mission Control screens—not a new technology platform.
+    </p>
+
+    <table class="stack-table">
+      <thead>
+        <tr><th>Layer</th><th>Technology</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Language &amp; runtime</td><td>TypeScript 5.7 · Node.js 22</td><td>One strongly typed language across the browser, API and shared rules.</td></tr>
+        <tr><td>Frontend</td><td>Next.js 15 · React 19</td><td>Builds the screens, navigation and browser experience.</td></tr>
+        <tr><td>Interface design</td><td>Tailwind 4 · Radix UI · Lucide</td><td>Provides layouts, controls, accessibility primitives and icons.</td></tr>
+        <tr><td>Backend</td><td>NestJS 11 · Express 5 · Zod</td><td>Receives requests, validates data and runs ERP business services.</td></tr>
+        <tr><td>Database</td><td>PostgreSQL 17 · Drizzle ORM</td><td>Stores permanent business, audit, approval and mission records.</td></tr>
+        <tr><td>Search / AI data</td><td>pgvector · pg_trgm</td><td>Supports similarity, search and future retrieval use cases.</td></tr>
+        <tr><td>Identity &amp; access</td><td>Keycloak 26 · OIDC · RBAC</td><td>Signs users in and checks which operations they may perform.</td></tr>
+        <tr><td>Tenant isolation</td><td>PostgreSQL FORCE RLS</td><td>Keeps each company’s rows separated inside the database.</td></tr>
+        <tr><td>Jobs &amp; events</td><td>Valkey 8 · BullMQ · outbox</td><td>Runs retryable background work without losing database events.</td></tr>
+        <tr><td>Documents &amp; AI</td><td>Gotenberg · stub / Ollama</td><td>Packages PDF rendering; offers offline deterministic or optional local AI.</td></tr>
+        <tr><td>Build &amp; hosting</td><td>pnpm · Docker · Vercel adapters</td><td>Manages the monorepo, local services and demo deployments.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2 mt3">
+      <div>
+        <h3>Repository shape</h3>
+        <pre class="code-tree">XELOR/
+├─ apps/
+│  ├─ web      Next.js browser app
+│  ├─ api      NestJS API + worker
+│  └─ edge     factory simulator boundary
+├─ packages/
+│  ├─ platform pure business rules
+│  └─ db       schema, migrations, RLS
+└─ infra/      Docker and deployment files</pre>
+      </div>
+      <div class="card soft tight">
+        <h3><span class="icon-dot">M</span>What “modular monolith” means</h3>
+        <p>
+          Sales, Purchase, Inventory, Production, Quality and Accounts are separate modules,
+          but they run together as one main backend and use one primary PostgreSQL database.
+        </p>
+        <p>
+          Modules exchange information through defined interfaces or events. Code-boundary
+          checks help stop one department from reaching directly into another department’s internals.
+        </p>
+        <p class="muted small">
+          This is easier to deploy than many microservices while keeping business ownership clear.
+        </p>
+      </div>
+    </div>
+
+    <div class="note mt3">
+      <strong>Important architectural choice:</strong> exact business calculations—GST, MRP,
+      inventory, accounting, payroll, quality, scrap and policy gates—live in deterministic code.
+      A language model may explain a result, but it does not replace the calculation.
+    </div>
+
+    <div class="footer">
+      <strong>XELOR Architecture Brief</strong>
+      <span>Shared stack · 2 / 5</span>
+    </div>
+  </section>
+
+  <!-- PAGE 3 -->
+  <section class="page">
+    <div class="eyebrow">Phase 1</div>
+    <h2>2. ERP foundation and control architecture</h2>
+    <p class="section-intro">
+      Phase 1 is the system of record: it owns business documents, calculations, permissions,
+      approvals and ledgers. The browser never talks directly to the database.
+    </p>
+
+    <div class="arch-layout">
+      <div class="arch-column">
+        <strong>Experience</strong>
+        <div class="arch-box">User</div>
+        <div class="arch-box">Next.js / React</div>
+        <div class="arch-box">22 installed surfaces</div>
+      </div>
+      <div class="arch-column">
+        <strong>Business control</strong>
+        <div class="arch-box">NestJS API + permission guard</div>
+        <div class="arch-box">Sales · Engineering · Planning · Purchase</div>
+        <div class="arch-box">Inventory · Production · Quality · Accounts</div>
+        <div class="arch-box">People · Maintenance · Service · Spend</div>
+        <div class="arch-box">Workflow · AI spine · Agent OS</div>
+      </div>
+      <div class="arch-column">
+        <strong>Truth &amp; infrastructure</strong>
+        <div class="arch-box">PostgreSQL + FORCE RLS</div>
+        <div class="arch-box">Audit log + transactional outbox</div>
+        <div class="arch-box">Worker → BullMQ / Valkey</div>
+        <div class="arch-box">Gotenberg · standalone edge simulator</div>
+      </div>
+    </div>
+
+    <h3>A normal write request</h3>
+    <div class="flow">
+      <div class="node"><strong>1. Screen</strong><span>User submits a form</span></div>
+      <div class="node"><strong>2. Identity</strong><span>Token selects tenant</span></div>
+      <div class="node"><strong>3. Permission</strong><span>RBAC checks the action</span></div>
+      <div class="node"><strong>4. Transaction</strong><span>Rules + RLS + write</span></div>
+      <div class="node"><strong>5. Evidence</strong><span>Audit + outbox + result</span></div>
+    </div>
+
+    <div class="security-strip">
+      <div>OIDC sign-in</div>
+      <div>Verified tenant</div>
+      <div>RBAC permission</div>
+      <div>Restricted DB user</div>
+      <div>FORCE RLS</div>
+      <div>Audit + idempotency</div>
+    </div>
+
+    <div class="grid-3">
+      <article class="card blue tight">
+        <h3>Reliability</h3>
+        <p>Business write, audit record and outbox event commit together.</p>
+        <p>Idempotency keys prevent a network retry from creating the same document twice.</p>
+      </article>
+      <article class="card green tight">
+        <h3>AI and Agent OS</h3>
+        <p>One governed AI router checks registry, opt-out, kill switch, budget and logging.</p>
+        <p>Agents run bounded graphs with evidence, checkpoints and human approval gates.</p>
+      </article>
+      <article class="card amber tight">
+        <h3>Honest boundary</h3>
+        <p>Default AI is deterministic; Ollama is optional. No hosted LLM adapter is active.</p>
+        <p>The edge app and external industrial connections remain simulation boundaries.</p>
+      </article>
+    </div>
+
+    <div class="grid-2 mt3">
+      <div class="card soft tight">
+        <h3>Local runtime</h3>
+        <p><b>Phase 1:</b> web :3001 · API :3000 · PostgreSQL :5432 · Valkey :6379 · Keycloak :8080 · Gotenberg :3002.</p>
+        <p><b>Phase 2 workspace override:</b> web :3101 · API :3100 with a separate database so both phases can run together. Repository defaults remain :3001 / :3000.</p>
+      </div>
+      <div class="card soft tight">
+        <h3>Deployment position</h3>
+        <p>Packaging exists for Vercel, Railway and single-host Docker; this does not mean all three are operating. Deployment observed on 11 August 2026 used Vercel and managed PostgreSQL in Singapore.</p>
+        <p>The intended AWS Mumbai production platform remains planned, not commissioned.</p>
+      </div>
+    </div>
+
+    <div class="note mt3 small">
+      <strong>Public-demo warning:</strong> the fixed demo-identity bypass is acceptable only for
+      isolated synthetic data. Real customer data requires normal production identity and controls.
+    </div>
+
+    <div class="footer">
+      <strong>XELOR Architecture Brief</strong>
+      <span>Phase 1 architecture · 3 / 5</span>
+    </div>
+  </section>
+
+  <!-- PAGE 4 -->
+  <section class="page">
+    <div class="eyebrow">Phase 2</div>
+    <h2>3. Policy-governed autonomous fulfilment</h2>
+    <p class="section-intro">
+      Phase 2 adds a durable mission above the ERP. A confirmed order can now carry its
+      objective, evidence, plan versions, approval, actions, events and outcome over time.
+    </p>
+
+    <div class="mission-loop">
+      <div class="step">Observe</div>
+      <div class="step">Diagnose</div>
+      <div class="step">Plan</div>
+      <div class="step">Authorize</div>
+      <div class="step">Act</div>
+      <div class="step">Verify</div>
+      <div class="step">Wait / Replan</div>
+    </div>
+
+    <div class="chapter-grid">
+      <div class="chapter"><b>1–2 · Accept &amp; engineer</b><span>Read the order and prove one active BOM exists.</span></div>
+      <div class="chapter"><b>3–5 · Gather evidence</b><span>Calculate shortages, capacity and qualified supply.</span></div>
+      <div class="chapter"><b>6–7 · Decide &amp; critique</b><span>Compare strategies and recompute the winner from live facts, derived calculations and labelled seeded assumptions.</span></div>
+      <div class="chapter"><b>8 · Authorize</b><span>Apply autonomy limits or stop for a plan-specific approval.</span></div>
+      <div class="chapter"><b>9–11 · Controlled action</b><span>Reserve stock, create supplier-specific draft POs and create pegged planned production orders.</span></div>
+      <div class="chapter"><b>12–13 · Watch &amp; close</b><span>React to events, replan when required and verify the result.</span></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card blue tight">
+        <h3>Deterministic planner</h3>
+        <p>Generates only strategies supported by current evidence: stock-only, normal supplier, faster expedite or split sourcing.</p>
+        <p>Calculates material date, production time, schedule slack, total cost, margin, premium, supplier reliability, capacity confidence and policy breaches.</p>
+        <p>A physical impossibility cannot be approved away; a feasible policy exception can be escalated.</p>
+      </div>
+      <div class="card green tight">
+        <h3>Five responsibility planes</h3>
+        <ul class="mini-list small">
+          <li><b>Mission:</b> objective, state, dependencies and completion.</li>
+          <li><b>Decision:</b> evidence, candidates and bounded critique.</li>
+          <li><b>Truth:</b> ERP facts and deterministic calculations.</li>
+          <li><b>Governance:</b> authority, policy, approval and risk.</li>
+          <li><b>Execution:</b> controlled action, observation and verification.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="mt3">New durable mission records</h3>
+    <div class="record-grid">
+      <div class="record"><b>Mission</b>Customer promise and definition of done.</div>
+      <div class="record"><b>Plan version</b>Frozen strategy with digest and expected result.</div>
+      <div class="record"><b>Step</b>Evidence, finding, explanation and status.</div>
+      <div class="record"><b>Action</b>Proposed change, execution and separate verification.</div>
+      <div class="record"><b>Event</b>Something changed, plus its mission impact.</div>
+      <div class="record"><b>Approval</b>Human authority tied to one exact plan digest.</div>
+    </div>
+
+    <div class="note mt3 small">
+      <strong>Trace spine:</strong> Phase 2 connects the sales-order line to reservation,
+      purchase requisition, PO line, planned order, production order and quality release.
+      It also enforces one active BOM per item and strengthens scrap and quality-disposition rules.
+    </div>
+
+    <div class="card soft mt3 small">
+      <h3>Mission Control experience</h3>
+      Confirmed orders can start a mission; users select an A2/A3/A4 autonomy envelope.
+      The stream repeatedly calls the one-step <code>advance()</code> operation, allowing users to
+      watch the 13-step timeline, inspect live/derived/seeded evidence, compare candidate plans,
+      decide approval cards, simulate a supplier delay and review the final outcome. The UI now
+      contains 24 installed modules grouped into seven job-based workspaces.
+    </div>
+
+    <div class="footer">
+      <strong>XELOR Architecture Brief</strong>
+      <span>Phase 2 architecture · 4 / 5</span>
+    </div>
+  </section>
+
+  <!-- PAGE 5 -->
+  <section class="page">
+    <div class="eyebrow">Assessment</div>
+    <h2>4. Phase comparison and current readiness</h2>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th>Question</th><th>Phase 1</th><th>Phase 2</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Main job</td><td>Run and record business departments.</td><td>Coordinate one order across those departments.</td></tr>
+        <tr><td>Role</td><td>System of record.</td><td>Mission and control layer.</td></tr>
+        <tr><td>Planning</td><td>MRP and departmental worklists.</td><td>Cross-functional strategy, approval and replanning.</td></tr>
+        <tr><td>Data</td><td>ERP documents, ledgers and audit.</td><td>Adds missions, plans, steps, actions, events and approvals.</td></tr>
+        <tr><td>Agents</td><td>Bounded reviews and governed work items.</td><td>Durable fulfilment mission with wait/replan intent.</td></tr>
+        <tr><td>Maturity</td><td>Broad guarded ERP prototype.</td><td>Advanced orchestration and investor prototype.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2 mt3">
+      <div class="card green">
+        <h3>Implemented and backed by real records</h3>
+        <ul class="check-list small">
+          <li>Durable state and at most one active mission per order</li>
+          <li>Live ERP evidence reads and deterministic planning</li>
+          <li>Cost, date, margin, risk and feasibility comparison</li>
+          <li>Immutable plan versions and digest-bound approvals</li>
+          <li>Step, action, event and postcondition history</li>
+          <li>Per-line, partial-stock demand and trace pegs</li>
+          <li>Real draft POs and planned production orders</li>
+          <li>Retry-safe actions and a durable waiting boundary</li>
+          <li>Closure checks dispatch, quality, invoice and margin evidence</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <h3>Still simulated or incomplete</h3>
+        <ul class="warn-list small">
+          <li>Purchasing creates draft POs directly; no PR workflow is created</li>
+          <li>No event bridge yet wakes a waiting mission from downstream ERP changes</li>
+          <li>PO approval, receipt and production completion are not autonomously progressed</li>
+          <li>Actual production cost and actual margin roll-up are not available</li>
+          <li>Dispatch proves ERP shipment, not external customer receipt</li>
+          <li>No database-backed test yet proves the complete order-to-delivery chain</li>
+          <li>Concurrent missions could over-promise shared stock</li>
+          <li>Supplier and physical-world events are seeded simulations</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="mt3">Highest-priority next work</h3>
+    <div class="priority-row">
+      <div class="priority"><b>1 · Wake safely</b>Connect real ERP events to impact analysis and mission resume.</div>
+      <div class="priority"><b>2 · Progress</b>Drive PO approval, receipt and production completion through governed capabilities.</div>
+      <div class="priority"><b>3 · Cost</b>Roll up actual production cost and calculate actual margin.</div>
+      <div class="priority"><b>4 · Protect ATP</b>Lock and net stock across all competing reservations.</div>
+      <div class="priority"><b>5 · Test</b>Run one database-backed order through the full document chain.</div>
+    </div>
+
+    <div class="assessment">
+      <strong>Final assessment</strong>
+      Phase 1 is a well-guarded manufacturing ERP foundation. Phase 2 adds a strong,
+      traceable and approval-aware coordination layer above it. The architectural direction
+      is sound, but Phase 2 should currently be presented as an <b>autonomous-fulfilment
+      prototype</b>, not yet as proven end-to-end autonomous delivery.
+    </div>
+
+    <div class="sources">
+      <b>Evidence base:</b> PHASE-1/README.md · apps/api/src/app.module.ts · packages/db/src/client.ts ·
+      infra/docker-compose.yml · PHASE-2/UPGRADE.md · apps/api/src/fulfilment/mission.service.ts ·
+      packages/platform/src/fulfilment/planner.ts · migrations 0092–0097 · Mission Control UI.
+    </div>
+
+    <div class="footer">
+      <strong>XELOR Architecture Brief</strong>
+      <span>Readiness and next steps · 5 / 5</span>
+    </div>
+  </section>
+
+</body>
+</html>

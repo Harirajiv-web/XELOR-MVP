@@ -48,12 +48,12 @@ const expect = (condition, message) => {
   if (!condition) problems.push(message);
 };
 const verifiedTests = Object.freeze({
-  total: 783,
-  platform: 712,
-  api: 56,
-  database: 4,
+  total: 991,
+  platform: 821,
+  api: 101,
+  database: 5,
   edge: 6,
-  web: 5,
+  web: 58,
 });
 expect(
   verifiedTests.platform +

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, Sse } from "@nestjs/common";
 import { z } from "zod";
 import { Observable } from "rxjs";
-import { Errors, currentTenant, runWithTenant } from "@ind-core/platform";
+import { Errors, SOURCE_CATALOGUE, currentTenant, runWithTenant } from "@ind-core/platform";
 import { RequirePermission } from "../common/permission.guard.js";
-import { CHAPTERS, FulfilmentMissionService } from "./mission.service.js";
+import { CHAPTERS, FulfilmentMissionService, isMissionStopStatus } from "./mission.service.js";
 import { AUTONOMY_TIERS } from "./scenario.js";
 
 const decisionSchema = z.object({
@@ -44,7 +44,53 @@ export class FulfilmentController {
   @Get("meta")
   @RequirePermission("agentos.run.read")
   meta() {
-    return { data: { autonomyTiers: AUTONOMY_TIERS, chapters: CHAPTERS } };
+    return { data: { autonomyTiers: AUTONOMY_TIERS, chapters: CHAPTERS, sources: SOURCE_CATALOGUE } };
+  }
+
+  /**
+   * WHERE PHASE 2 GETS ITS FACTS — and, just as importantly, where it does not.
+   *
+   * Three lists: our own Phase 1 modules, which are genuinely connected and read live; the
+   * two facts Phase 1 has no table for, which are stood in for and labelled everywhere they
+   * surface; and the connector shelf — SAP, Tally, Odoo, Dynamics 365, MES/SCADA,
+   * Excel/CSV, REST, Database — every one of which is `connected: false`.
+   *
+   * The shelf is on screen because the same Phase 2 layer is designed to sit on somebody
+   * else's Phase 1, which is a real product claim. It carries no green lights, because a
+   * demo that implied a live SAP connection would make every true thing beside it worthless.
+   */
+  @Get("sources")
+  @RequirePermission("agentos.run.read")
+  sources() {
+    return { data: SOURCE_CATALOGUE };
+  }
+
+  /**
+   * The nine demo scenarios, answered against THIS tenant's records.
+   *
+   * Each row says whether it can genuinely run, on which sales order, and what to watch for
+   * — or says it cannot, and names the record somebody would have to create. Nothing here
+   * makes the mission behave differently; it only chooses which order and which policy
+   * setting, so that the behaviour being demonstrated actually shows up.
+   */
+  @Get("scenarios")
+  @RequirePermission("agentos.run.read")
+  async scenarios() {
+    return { data: await this.missions.scenarios() };
+  }
+
+  /** Set a scenario up and open its mission. Refuses, with the reason, if it cannot occur. */
+  @Post("scenarios/:key/start")
+  @RequirePermission("agentos.run.operate")
+  async startScenario(@Param("key") key: string) {
+    return { data: await this.missions.startScenario(key) };
+  }
+
+  /** A blank supplier price list in the shape the upload below accepts. */
+  @Get("sources/spreadsheet-template")
+  @RequirePermission("agentos.run.read")
+  template() {
+    return { data: this.missions.supplierTermsTemplate() };
   }
 
   /** Confirmed orders and whether each already has a mission. */
@@ -119,8 +165,13 @@ export class FulfilmentController {
               break;
             }
             subscriber.next({ data: JSON.stringify({ type: "step", step: result.step, status: result.status }) });
-            if (result.status === "awaiting_approval") {
-              subscriber.next({ data: JSON.stringify({ type: "end", status: result.status, reason: "a human decision is required" }) });
+            if (isMissionStopStatus(result.status)) {
+              const reason = result.status === "awaiting_approval"
+                ? "a human decision is required"
+                : result.status === "waiting"
+                  ? "the mission is waiting for a downstream event"
+                  : "the mission reached a terminal state";
+              subscriber.next({ data: JSON.stringify({ type: "end", status: result.status, reason }) });
               break;
             }
             await readable(result.step.kind);
@@ -138,6 +189,51 @@ export class FulfilmentController {
 
       return () => { cancelled = true; };
     });
+  }
+
+  /**
+   * Re-run the last step that failed.
+   *
+   * The failure is written to the event log and the audit trail BEFORE the step is
+   * discarded, and the re-run's own pipeline opens with a `retrying` row carrying the
+   * reason the first attempt failed. Every execute step's idempotency key is derived from
+   * the mission, the plan version and the vendor — never from the clock — so a retry
+   * replays what was already created and raises only what was not.
+   */
+  @Post("missions/:id/retry")
+  @RequirePermission("agentos.run.operate")
+  async retry(@Param("id") id: string) {
+    return { data: await this.missions.retry(requireUuid(id, "mission")) };
+  }
+
+  /**
+   * Give a mission its supplier terms from a spreadsheet.
+   *
+   * Phase 1 holds no price or lead-time master, so these four numbers always come from
+   * outside the ERP. This lets them come from the file a factory actually has: .xlsx, .xls
+   * or .csv, base64 in an ordinary JSON body so it inherits the same auth, tenant and error
+   * pipeline as every other write. The mission re-plans from `sourcing` onward, so the file
+   * is genuinely read rather than applied to a plan that was built before it arrived.
+   */
+  @Post("missions/:id/sources/spreadsheet")
+  @RequirePermission("agentos.run.operate")
+  async uploadTerms(@Param("id") id: string, @Body() body: unknown) {
+    const parsed = z
+      .object({
+        filename: z.string().min(1).max(200),
+        fileBase64: z.string().min(1),
+      })
+      .safeParse(body);
+    if (!parsed.success) {
+      throw Errors.validation(parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })));
+    }
+    return {
+      data: await this.missions.ingestSupplierTerms(
+        requireUuid(id, "mission"),
+        parsed.data.filename,
+        parsed.data.fileBase64,
+      ),
+    };
   }
 
   /** Record a human decision on a waiting approval. */

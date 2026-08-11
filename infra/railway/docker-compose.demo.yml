@@ -39,6 +39,7 @@ services:
       dockerfile: infra/railway/Dockerfile.api
     environment:
       PORT: "3000"
+      API_SELF_ORIGIN: http://127.0.0.1:3000
       API_PUBLIC_DEMO: "true"
       AI_PROVIDER: stub
       DB_POOL_MAX: "5"

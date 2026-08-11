@@ -4,6 +4,7 @@ import { PoController } from "./po.controller.js";
 import { GrnController } from "./grn.controller.js";
 import { PurchaseService } from "./purchase.service.js";
 import { PURCHASE_SUPPLY } from "../../ports/planning-inputs.port.js";
+import { PURCHASE_ORDER_WRITER } from "../../ports/fulfilment-docs.port.js";
 
 /**
  * PURCHASE (SPAR, Module 04) — vendor master, purchase orders (approved via the W1
@@ -18,7 +19,16 @@ import { PURCHASE_SUPPLY } from "../../ports/planning-inputs.port.js";
   // PURCHASE_SUPPLY tells PLANNING what is already on order. The engine treats every row
   // as fact at the date it carries and never redates one — moving a supplier commitment
   // is a phone call, not a database write.
-  providers: [PurchaseService, { provide: PURCHASE_SUPPLY, useExisting: PurchaseService }],
-  exports: [PurchaseService, PURCHASE_SUPPLY],
+  //
+  // PURCHASE_ORDER_WRITER is how the fulfilment mission raises a real purchase order without
+  // holding a reference to this service. Same trick, opposite direction: the token is
+  // exported from the @Global module, so the caller injects an interface it cannot reach
+  // past — and this module keeps the only entrance to `createPo` it has ever had.
+  providers: [
+    PurchaseService,
+    { provide: PURCHASE_SUPPLY, useExisting: PurchaseService },
+    { provide: PURCHASE_ORDER_WRITER, useExisting: PurchaseService },
+  ],
+  exports: [PurchaseService, PURCHASE_SUPPLY, PURCHASE_ORDER_WRITER],
 })
 export class PurchaseModule {}

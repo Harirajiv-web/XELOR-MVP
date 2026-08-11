@@ -1,26 +1,22 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema, withTenant, type Tx } from "@ind-core/db";
 import {
   AppError,
+  DeterministicEngine,
   Errors,
-  applyAutonomy,
-  buildDecisionBrief,
+  buildPipeline,
   canonicalize,
-  critique,
   currentTenant,
   eventName,
   fmtInr,
-  generateCandidates,
   narrateCapacity,
-  narrateChoice,
-  narrateCritique,
-  narrateOutcome,
   narrateShortages,
   narrateSuppliers,
   newId,
-  DEFAULT_WEIGHTS,
   type Candidate,
+  type IntelligenceEngine,
+  type PipelineStage,
   type PlanningEvidence,
   type ShortageLine,
 } from "@ind-core/platform";
@@ -29,7 +25,34 @@ import { AuditLogService } from "../common/audit-log.service.js";
 import { NumberingService, fyCode } from "../common/numbering.service.js";
 import { BOM_PROVIDER, type BomProvider } from "../ports/bom.port.js";
 import { STOCK_READER, type StockReader } from "../ports/planning-inputs.port.js";
-import { AUTONOMY_TIERS, SEEDED_DISRUPTION, SEEDED_FACTORY, SEEDED_SOURCING, defaultTermsFor, expediteLimitFor } from "./scenario.js";
+import {
+  PURCHASE_ORDER_WRITER,
+  PRODUCTION_ORDER_WRITER,
+  type PurchaseOrderWriter,
+  type ProductionOrderWriter,
+  type CreatedPurchaseOrder,
+  type CreatedProductionOrder,
+} from "../ports/fulfilment-docs.port.js";
+import {
+  AUTONOMY_TIERS,
+  SEEDED_DISRUPTION,
+  SEEDED_FACTORY,
+  SEEDED_SOURCING,
+  defaultTermsFor,
+  expediteLimitFor,
+  type SeededSupplierTerms,
+} from "./scenario.js";
+import {
+  SCENARIOS,
+  SCENARIO_BY_KEY,
+  SIMULATED_FAULT,
+  STEP_RETRY_EVENT,
+  TERMS_UPLOAD_EVENT,
+  resolveScenarios,
+  type OrderProbe,
+  type ResolvedScenario,
+} from "./scenarios.js";
+import { buildTermsCsv, parseSupplierTerms, toBase64, type UploadedSupplierTerm } from "./sourcing-terms.js";
 
 const {
   fulfilmentMission,
@@ -45,6 +68,17 @@ const {
   vendor,
   stockBalance,
   outboxEvent,
+  // PURCHASE's and PRODUCTION's own tables, read here and NEVER written here. The mission
+  // creates both documents through their modules' ports and then re-reads the rows to prove
+  // they exist — a postcondition is only worth having if it is read from the place the
+  // document actually lives, not from the answer the writer just handed back.
+  purchaseOrder,
+  purchaseOrderLine,
+  productionOrder,
+  dispatch,
+  dispatchLine,
+  qualityRelease,
+  arOpenItem,
 } = schema;
 
 /* ------------------------------------------------------------------ contracts -- */
@@ -85,10 +119,27 @@ export interface StepView {
   question: string | null;
   status: string;
   durationMs: number | null;
+  /** Server clock, ISO-8601. Null on a step written before 0094 stored them. */
+  startedAt: string | null;
+  endedAt: string | null;
   evidence: unknown;
   findings: unknown;
   narration: string | null;
   confidence: string | null;
+  /**
+   * THE THIRTEEN PHASES, FOR THIS STEP ONLY.
+   *
+   * Trigger → collect → normalise → context → analyse → recommend → explain → approve →
+   * execute → verify → update → record → continue. A step emits the phases it genuinely
+   * went through and no others: an observe step has no `execute`, and a step that failed
+   * while reading the vendor master does not go on to claim it raised anything.
+   *
+   * Derived in `@ind-core/platform`'s `buildPipeline` from the evidence and findings this
+   * step already wrote — never from a second, parallel account of what happened. If the
+   * pipeline and the narration could disagree, one of them would be lying and there would
+   * be no way to tell which.
+   */
+  pipeline: PipelineStage[];
 }
 
 export interface MissionView {
@@ -113,6 +164,70 @@ export interface MissionView {
   pendingApproval: unknown;
   actions: unknown[];
   events: unknown[];
+}
+
+/**
+ * One vendor's worth of a plan, on its way to becoming one purchase order.
+ *
+ * The planner decides line by line; a vendor is sent a document. This is where those two
+ * shapes meet, and it exists as a named type rather than an inline object because the
+ * grouping rule — one PO per vendor, every component still pegged to its SO line — is the
+ * part a reader needs to find.
+ */
+interface PoGroup {
+  vendorId: string;
+  vendorName: string;
+  /** Expected total, rounded exactly as PURCHASE will round it. */
+  value: number;
+  lines: Array<{
+    itemCode: string;
+    itemId: string;
+    salesOrderLineId: string;
+    qty: number;
+    rate: number;
+  }>;
+}
+
+/** A purchase order that now exists, with the plan's own labels kept beside it. */
+interface CreatedPo extends CreatedPurchaseOrder {
+  vendorId: string;
+  vendorName: string;
+  lineCount: number;
+  expectedDate: string;
+  lines: PoGroup["lines"];
+}
+
+interface LineDemand {
+  lineId: string;
+  itemId: string;
+  itemCode: string;
+  qty: number;
+  reservedQty: number;
+}
+
+export interface ProductionDemand extends LineDemand {
+  /** Finished quantity covered by this line's reservation plus still-free finished stock. */
+  coveredQty: number;
+  /** The exact quantity for this sales-order line that still has to be manufactured. */
+  makeQty: number;
+}
+
+interface ComponentPeg {
+  salesOrderLineId: string;
+  qty: number;
+}
+
+interface MaterialPlan {
+  shortages: ShortageLine[];
+  /** Only the uncovered component quantity, allocated to the SO line that caused it. */
+  shortagePegs: Map<string, ComponentPeg[]>;
+}
+
+interface CreatedWorkOrder extends CreatedProductionOrder {
+  itemId: string;
+  itemCode: string;
+  salesOrderLineId: string;
+  qty: number;
 }
 
 /** The next thing `advance()` will do, so the caller can pace the stream. */
@@ -211,6 +326,25 @@ const ARC: StepPlan[] = [
 /** Which chapter a step belongs to. Derived from the arc, so the two cannot disagree. */
 const CHAPTER_OF = new Map<string, ChapterKey>(ARC.map((s) => [s.key, s.chapter]));
 
+/**
+ * The steps that come after the authority gate.
+ *
+ * Used by `retry` to decide which status a re-opened mission goes back to. A mission that
+ * failed while investigating returns to `planning`; one that failed while acting returns to
+ * `executing`, because the authority to act was already granted and re-asking for it would
+ * be a second signature for one decision.
+ */
+const EXECUTE_KEYS: ReadonlySet<string> = new Set(["reserve", "procure", "workorder", "watch", "close"]);
+
+/**
+ * Does this look like a master's uuid, or like a sourcing code?
+ *
+ * `shortagesFor` puts the vendor master's uuid on a supplier when the vendor exists and the
+ * scenario's CODE when it does not, so this is how the probe tells "V-GEN" from a real row
+ * without a second query per supplier. Only ever used to answer that question.
+ */
+const UUID_LIKE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** The §7 demo universe. Copied from `tenant.middleware.ts`, which guards the same way. */
 const DEMO_TENANT_IDS: ReadonlySet<string> = new Set([
   "0192a8c0-0000-7000-8000-000000000001", // Trishul Precision Components Pvt Ltd
@@ -223,6 +357,228 @@ const DEMO_TENANT_IDS: ReadonlySet<string> = new Set([
 const STRATEGY_REFUSED = "operator refused the strategy";
 
 const num = (v: string | number | null | undefined): number => (v == null ? 0 : Number(v));
+
+/**
+ * Allocate the same finite finished-stock pool across every order line exactly once.
+ *
+ * The old mission summed every line's quantity and assigned it to line zero. Besides making
+ * the wrong item, it also made a part-stocked order produce the quantity already on the
+ * shelf. This function keeps the sales-order line as the unit of demand and shares stock
+ * deterministically in line order. `reservedElsewhere` is removed first so another order's
+ * promise is never treated as free stock.
+ */
+export function allocateProductionDemand(
+  lines: readonly LineDemand[],
+  onHand: ReadonlyMap<string, number>,
+  reservedElsewhere: ReadonlyMap<string, number> = new Map(),
+): ProductionDemand[] {
+  const ownReserved = new Map<string, number>();
+  for (const line of lines) {
+    ownReserved.set(line.itemId, (ownReserved.get(line.itemId) ?? 0) + Math.min(line.qty, Math.max(0, line.reservedQty)));
+  }
+
+  const free = new Map<string, number>();
+  for (const line of lines) {
+    if (free.has(line.itemId)) continue;
+    free.set(
+      line.itemId,
+      Math.max(
+        0,
+        (onHand.get(line.itemId) ?? 0) -
+          (reservedElsewhere.get(line.itemId) ?? 0) -
+          (ownReserved.get(line.itemId) ?? 0),
+      ),
+    );
+  }
+
+  return lines.map((line) => {
+    const reserved = Math.min(line.qty, Math.max(0, line.reservedQty));
+    const unreserved = Math.max(0, line.qty - reserved);
+    const take = Math.min(unreserved, free.get(line.itemId) ?? 0);
+    free.set(line.itemId, Math.max(0, (free.get(line.itemId) ?? 0) - take));
+    return {
+      ...line,
+      coveredQty: round3(reserved + take),
+      makeQty: round3(Math.max(0, line.qty - reserved - take)),
+    };
+  });
+}
+
+export interface SourcingPegAllocation {
+  sourceIndex: number;
+  itemCode: string;
+  salesOrderLineId: string;
+  qty: number;
+}
+
+/** Split planner sourcing quantities onto the SO lines whose component demand caused them. */
+export function allocateSourcingPegs(
+  sourcing: readonly { itemCode: string; qty: number }[],
+  pegs: ReadonlyMap<string, readonly ComponentPeg[]>,
+): { allocations: SourcingPegAllocation[]; unallocated: Array<{ itemCode: string; qty: number }> } {
+  const remaining = new Map(
+    [...pegs.entries()].map(([code, rows]) => [code, rows.map((r) => ({ ...r, qty: Math.max(0, r.qty) }))]),
+  );
+  const allocations: SourcingPegAllocation[] = [];
+  const unallocated: Array<{ itemCode: string; qty: number }> = [];
+
+  sourcing.forEach((source, sourceIndex) => {
+    let left = Math.max(0, source.qty);
+    const queue = remaining.get(source.itemCode) ?? [];
+    for (const peg of queue) {
+      if (left <= 1e-9) break;
+      if (peg.qty <= 1e-9) continue;
+      const take = Math.min(left, peg.qty);
+      allocations.push({
+        sourceIndex,
+        itemCode: source.itemCode,
+        salesOrderLineId: peg.salesOrderLineId,
+        qty: round3(take),
+      });
+      peg.qty = round3(peg.qty - take);
+      left = round3(left - take);
+    }
+    if (left > 1e-6) unallocated.push({ itemCode: source.itemCode, qty: left });
+  });
+  return { allocations, unallocated };
+}
+
+/** A stream/advance call must yield control at both kinds of durable wait. */
+export function isMissionStopStatus(status: string): boolean {
+  return ["awaiting_approval", "waiting", "completed", "failed", "cancelled"].includes(status);
+}
+
+/** The PO deadline represented by the plan, stable across an idempotent retry. */
+export function expectedMaterialDate(planCreatedAt: Date | string, materialReadyDays: number): string {
+  const date = typeof planCreatedAt === "string" ? planCreatedAt.slice(0, 10) : planCreatedAt.toISOString().slice(0, 10);
+  const out = new Date(`${date}T00:00:00Z`);
+  let left = Math.ceil(Math.max(0, materialReadyDays));
+  // Same Monday–Saturday factory calendar as the deterministic planner. Kept local because
+  // the planner currently exports the candidate, not its calendar helper, from the package
+  // root; duplicating seven lines is safer than silently changing a planned working-day
+  // deadline into calendar days.
+  while (left > 0) {
+    out.setUTCDate(out.getUTCDate() + 1);
+    if (out.getUTCDay() !== 0) left--;
+  }
+  return out.toISOString().slice(0, 10);
+}
+
+export interface OutcomeGateInput {
+  deliveryComplete: boolean;
+  qualityComplete: boolean;
+  invoiceComplete: boolean;
+  unverifiedActions: number;
+  onTime: boolean;
+  forecastMarginPct: number;
+  targetMarginPct: number;
+}
+
+/** A mission cannot close on plan values standing in for downstream facts. */
+export function evaluateOutcomeGate(input: OutcomeGateInput): {
+  downstreamReady: boolean;
+  met: boolean;
+  reasons: string[];
+} {
+  const reasons: string[] = [];
+  if (!input.deliveryComplete) reasons.push("ordered quantity has not been dispatched");
+  if (!input.qualityComplete) reasons.push("dispatched quantity is not fully covered by quality releases");
+  if (!input.invoiceComplete) reasons.push("a dispatch invoice is missing");
+  if (input.unverifiedActions > 0) reasons.push(`${input.unverifiedActions} action(s) are unverified`);
+  if (!input.onTime) reasons.push("the final dispatch was after the promised date");
+  if (input.forecastMarginPct + 1e-9 < input.targetMarginPct) {
+    reasons.push(`forecast margin ${input.forecastMarginPct.toFixed(2)}% is below target ${input.targetMarginPct.toFixed(2)}%`);
+  }
+  const downstreamReady = input.deliveryComplete && input.qualityComplete && input.invoiceComplete;
+  return {
+    downstreamReady,
+    met:
+      downstreamReady &&
+      input.unverifiedActions === 0 &&
+      input.onTime &&
+      input.forecastMarginPct + 1e-9 >= input.targetMarginPct,
+    reasons,
+  };
+}
+
+export function actionPersistenceMode(
+  existing: { status: string; verified: boolean | null } | null,
+): "insert" | "reuse_verified" | "reset_for_retry" {
+  if (!existing) return "insert";
+  return existing.status === "verified" && existing.verified === true ? "reuse_verified" : "reset_for_retry";
+}
+
+/**
+ * Rupees, rounded to the paisa the same way PURCHASE rounds a PO line.
+ *
+ * Deliberately identical arithmetic rather than "close enough": the procure step compares
+ * what it expected to commit against what the purchase orders actually total, and two
+ * roundings that disagree by a paisa would fail that check on an order that was perfectly
+ * correct — which is the kind of false alarm that gets a verification switched off.
+ */
+const paise = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
+/** Append only if it is not already there. Keeps a fault list about faults, not occurrences. */
+const note = (into: string[], line: string): void => {
+  if (!into.includes(line)) into.push(line);
+};
+
+/**
+ * "Somebody else is already doing exactly this" — the ONE refusal that is not a failure.
+ *
+ * `runIdempotent` answers `IDEMPOTENCY_IN_PROGRESS` when a request with the same key is
+ * mid-flight. For an HTTP client that is "retry shortly". For an execute step it means a
+ * sibling `advance()` — a double-click, an impatient stream, two browser tabs — is at this
+ * instant creating the very documents this attempt was about to create.
+ *
+ * Measured, because it is not obvious: two concurrent advances on one mission both reach
+ * `procure`, one raises the purchase order and the other gets this. Recording the loser's
+ * experience as a failure marked the mission failed and narrated "nothing was ordered" while
+ * a real, correct purchase order carrying that mission's number sat in PURCHASE. The
+ * duplicate was prevented — that part worked — but the mission's account of itself was
+ * wrong, which is the thing this product cannot get wrong.
+ *
+ * So the loser writes NOTHING and yields. The winner writes the step. If the winner then
+ * dies before writing it, the next advance re-runs the step, the deterministic key replays
+ * the documents it already created, and the record catches up. Self-healing, at the cost of
+ * one wasted round trip.
+ */
+function isConcurrentAttempt(e: unknown): boolean {
+  return e instanceof AppError && e.code === "IDEMPOTENCY_IN_PROGRESS";
+}
+/**
+ * THE ONE PLACE THE THINKING COMES FROM.
+ *
+ * `DeterministicEngine` is rules and arithmetic — no model, no API key, nothing leaves the
+ * process. It delegates to the planner and the narrator that were already here; it does not
+ * hold a second copy of either. What it adds is a seam: this service now asks an INTERFACE
+ * for a recommendation, a verification and a decision brief, so a real engine could be
+ * swapped in behind `IntelligenceEngine` without this file changing.
+ *
+ * The observe steps (materials, capacity, sourcing) still call the narrator directly, and
+ * that is deliberate rather than an omission: each of them holds only its own slice of the
+ * evidence, and building a full `PlanningEvidence` snapshot just to phrase one sentence
+ * would be a second database read for a wording.
+ *
+ * If a model ever sits here, `engine.kind` becomes "model", every step it touched can be
+ * labelled on screen, and `verify()` still re-derives the numbers from the evidence. A
+ * proposal the deterministic verifier cannot reproduce does not execute, whoever proposed it.
+ */
+const ENGINE: IntelligenceEngine = new DeterministicEngine();
+
+/**
+ * The facts a step VIEW needs that the step ROW does not hold.
+ *
+ * All three are properties of the mission rather than of the step — which order this is,
+ * whether a step has been re-run, and where this mission's supplier terms came from — so
+ * they are read once per view instead of once per row.
+ */
+interface StepContext {
+  soNo: string;
+  /** stepKey → the attempt number now showing, and the failure the retry recovered from. */
+  retries: Map<string, { attempt: number; previousFailure: string | null }>;
+  terms: { from: "seeded" | "spreadsheet"; file: string | null };
+}
+
 const q2 = (n: number): string => n.toFixed(2);
 const q3 = (n: number): string => n.toFixed(3);
 const digestOf = (v: unknown): string => createHash("sha256").update(canonicalize(v)).digest("hex").slice(0, 32);
@@ -248,6 +604,10 @@ export class FulfilmentMissionService {
     private readonly numbering: NumberingService,
     @Inject(BOM_PROVIDER) private readonly bom: BomProvider,
     @Inject(STOCK_READER) private readonly stock: StockReader,
+    // The two write ports. Interfaces, not services: this class cannot reach past
+    // `createPurchaseOrder` into PO amendments or approvals even if a later step wanted to.
+    @Inject(PURCHASE_ORDER_WRITER) private readonly purchaseWriter: PurchaseOrderWriter,
+    @Inject(PRODUCTION_ORDER_WRITER) private readonly productionWriter: ProductionOrderWriter,
   ) {}
 
   /* ------------------------------------------------------------------ start -- */
@@ -285,6 +645,7 @@ export class FulfilmentMissionService {
       const missionNo = await this.numbering.next(tx, "fulfilment_mission", fyCode(new Date().toISOString()));
       const promisedDate = so.promisedDate ?? addDays(so.orderDate, 30);
       const qty = so.lines.reduce((n, l) => n + num(l.qty), 0);
+      const linePromise = so.lines.map((l) => `${q3(num(l.qty))} ${l.itemCode}`).join(", ");
 
       await tx.insert(fulfilmentMission).values({
         id,
@@ -296,7 +657,7 @@ export class FulfilmentMissionService {
         soNo: so.soNo,
         customerName: so.customerName,
         objective: {
-          statement: `Deliver ${qty} ${so.lines[0]?.itemCode ?? "unit"} to ${so.customerName} by ${promisedDate}, at or above ${SEEDED_FACTORY.marginFloorPct}% margin.`,
+          statement: `Deliver ${linePromise || `${qty} unit`} to ${so.customerName} by ${promisedDate}, at or above ${SEEDED_FACTORY.marginFloorPct}% margin.`,
           orderQty: qty,
           lines: so.lines.map((l) => ({ lineId: l.id, itemId: l.itemId, itemCode: l.itemCode, qty: num(l.qty), rate: num(l.rate) })),
           hardConstraints: [
@@ -368,6 +729,12 @@ export class FulfilmentMissionService {
     if (state.m.status === "awaiting_approval") {
       return { step: null, status: "awaiting_approval", reason: state.m.waitingReason ?? "a human decision is required" };
     }
+    if (state.m.status === "waiting") {
+      // Waiting is a durable state, not a decorative step on the way to a fabricated
+      // closure. A supplier/production/quality/dispatch event must wake the mission; an SSE
+      // loop is not an event and may not advance it merely because the browser stayed open.
+      return { step: null, status: "waiting", reason: state.m.waitingReason ?? "the mission is waiting for a downstream event" };
+    }
 
     const doneKeys = new Set(state.done.map((d) => d.key));
     const next = ARC.find((s) => !doneKeys.has(s.key));
@@ -382,7 +749,8 @@ export class FulfilmentMissionService {
       const rows = await tx.select().from(fulfilmentStep)
         .where(and(eq(fulfilmentStep.missionId, missionId), eq(fulfilmentStep.seq, seq)));
       const r = rows[0];
-      return r ? this.toStepView(r) : null;
+      if (!r) return null;
+      return this.toStepView(r, await this.stepContext(tx, missionId, state.m.soNo));
     });
 
     return { step: view ? { ...view, durationMs } : null, status: outcome.status };
@@ -395,7 +763,7 @@ export class FulfilmentMissionService {
       const r = await this.advance(missionId);
       if (!r.step) break;
       out.push(r.step);
-      if (r.status === "awaiting_approval") break;
+      if (isMissionStopStatus(r.status)) break;
     }
     return out;
   }
@@ -454,26 +822,37 @@ export class FulfilmentMissionService {
   private async stepEngineering(missionId: string, plan: StepPlan, seq: number) {
     const m = await withTenant((tx) => this.loadMission(tx, missionId));
     const obj = m.objective as { lines: Array<{ itemId: string; itemCode: string }> };
-    const first = obj.lines[0];
-    const bom = first ? await this.bom.getActiveBomForItem(first.itemId) : null;
+    // One released structure per finished-good line. Checking only line zero let a
+    // multi-line order pass engineering and then either build the wrong item or fail much
+    // later in PRODUCTION, after PURCHASE had already committed its materials.
+    const structures = await Promise.all(
+      obj.lines.map(async (line) => ({ line, bom: await this.bom.getActiveBomForItem(line.itemId) })),
+    );
 
     return withTenant(async (tx) => {
-      const ok = Boolean(bom);
-      const evidence = [{
+      const missing = structures.filter((s) => !s.bom).map((s) => s.line.itemCode);
+      const ok = structures.length > 0 && missing.length === 0;
+      const evidence = structures.map(({ line, bom }) => ({
         source: "bom",
         provenance: "live",
-        ref: bom ? `BOM v${bom.version ?? "?"} for ${first?.itemCode}` : `no active BOM for ${first?.itemCode}`,
+        ref: bom ? `BOM v${bom.version ?? "?"} for ${line.itemCode}` : `no active BOM for ${line.itemCode}`,
         detail: bom ? `${bom.components.length} component lines, output ${bom.outputQty}` : "engineering has not released a structure",
-      }];
+      }));
 
       const narration = ok
-        ? `${first?.itemCode} has one released BOM in force, with ${bom!.components.length} component lines. ` +
-          `Since migration 0092 a second active revision is impossible — before it, two would have been summed and every requirement doubled.`
-        : `${first?.itemCode} has no active BOM. Nothing downstream can be planned; this needs an engineering release, which is not the mission's to grant.`;
+        ? `${structures.map((s) => s.line.itemCode).join(", ")} ${structures.length === 1 ? "has" : "each have"} one released BOM in force. ` +
+          `Every customer-order line was checked separately; none of their quantities was assigned to a different finished good.`
+        : `${missing.join(", ") || "The order"} has no active BOM. Nothing downstream can be planned for that line; ` +
+          `this needs an engineering release, which is not the mission's to grant.`;
 
       await this.writeStep(tx, missionId, plan, seq, {
         evidence,
-        findings: { engineeringReady: ok, componentLines: bom?.components.length ?? 0 },
+        findings: {
+          engineeringReady: ok,
+          checkedLines: structures.length,
+          missingItems: missing,
+          componentLines: structures.reduce((n, s) => n + (s.bom?.components.length ?? 0), 0),
+        },
         narration,
         confidence: ok ? 100 : 0,
         status: ok ? "succeeded" : "failed",
@@ -546,22 +925,13 @@ export class FulfilmentMissionService {
     const ev = await this.buildEvidence(missionId);
     const refused = await this.refusedStrategies(missionId);
 
-    // A strategy a person has already turned down is not offered again. It stays VISIBLE in
-    // the candidate list, marked as refused with their words on it — deleting it would make
-    // the next plan look like it never considered the obvious option.
-    const all = applyAutonomy(generateCandidates(ev), ev);
-    for (const c of all) {
-      if (refused.has(c.key)) {
-        // Scored out of contention, NOT marked infeasible. A strategy a person declined is
-        // still perfectly possible — they simply do not want it — and calling it impossible
-        // would be the same conflation that let an approved margin exception look like an
-        // illegal execution.
-        c.policyBreaches = [...c.policyBreaches, `you turned this down: ${refused.get(c.key)}`];
-        c.score -= 1000;
-      }
-    }
-    const ranked = [...all].sort((a, b) => b.score - a.score);
-    const chosen = ranked[0];
+    // THE ENGINE DECIDES; THIS FILE RECORDS. A strategy a person has already turned down is
+    // handed in rather than filtered out here: the engine scores it out of contention and
+    // keeps it VISIBLE in the candidate list with their words on it, because deleting it
+    // would make the next plan look as though it never considered the obvious option.
+    const rec = ENGINE.recommend(ev, refused);
+    const ranked = rec.ranked;
+    const chosen = rec.chosen;
     if (!chosen) throw new AppError("NO_CANDIDATE", 422, "no strategy could be constructed from the evidence");
 
     return withTenant(async (tx) => {
@@ -582,8 +952,8 @@ export class FulfilmentMissionService {
         digest,
         candidates: ranked,
         chosen,
-        rationale: narrateChoice(ranked, ev),
-        tradeOffWeights: DEFAULT_WEIGHTS,
+        rationale: rec.rationale,
+        tradeOffWeights: rec.weights,
         hardConstraints: (m.objective as { hardConstraints: string[] }).hardConstraints,
         feasible: chosen.feasible,
         expectedDate: chosen.completionDate,
@@ -614,7 +984,7 @@ export class FulfilmentMissionService {
             : `INFEASIBLE — ${c.violations.join("; ")}`,
         })),
         findings: { versionNo, candidateCount: ranked.length, feasibleCount: ranked.filter((c) => c.feasible).length, chosen: chosen.key, digest },
-        narration: narrateChoice(ranked, ev),
+        narration: rec.rationale,
         confidence: chosen.confidence,
       });
       return { status: "planning" };
@@ -626,7 +996,9 @@ export class FulfilmentMissionService {
     return withTenant(async (tx) => {
       const pv = await this.currentPlan(tx, missionId);
       const chosen = pv.chosen as Candidate;
-      const c = critique(chosen, ev);
+      // Independent by construction: it re-derives the date, the cost and the margin from
+      // the evidence rather than reading the plan's own claims back to itself.
+      const c = ENGINE.verify(chosen, ev);
 
       await tx.update(fulfilmentPlanVersion).set({ critique: c, updatedAt: new Date(), updatedBy: currentTenant().actorId })
         .where(eq(fulfilmentPlanVersion.id, pv.id));
@@ -640,7 +1012,7 @@ export class FulfilmentMissionService {
           detail: `${k.passed ? "PASS" : k.kind === "authority" ? "NEEDS AUTHORITY" : "FAIL"} — ${k.detail}`,
         })),
         findings: c,
-        narration: narrateCritique(c),
+        narration: ENGINE.explain({ of: "critique", critique: c }),
         confidence: c.passed ? 100 : 0,
         status: c.passed ? "succeeded" : "failed",
         refusedReason: c.passed ? null : c.objections.join("; "),
@@ -679,7 +1051,7 @@ export class FulfilmentMissionService {
         return { status: "executing" };
       }
 
-      const brief = buildDecisionBrief(chosen, ranked, ev, m.soNo, m.customerName);
+      const brief = ENGINE.brief(chosen, ranked, ev, m.soNo, m.customerName);
       const approvalId = newId();
       const approvalNo = await this.numbering.next(tx, "fulfilment_approval", fyCode(new Date().toISOString()));
 
@@ -743,26 +1115,25 @@ export class FulfilmentMissionService {
     return withTenant(async (tx) => {
       const m = await this.loadMission(tx, missionId);
       const pv = await this.currentPlan(tx, missionId);
-      const so = await this.loadOrder(tx, m.salesOrderId);
+      const demand = await this.lineDemandInTx(tx, m.salesOrderId);
 
-      const reserved: Array<{ line: string; qty: number }> = [];
-      for (const l of so.lines) {
-        const want = num(l.qty) - num(l.reservedQty);
-        if (want <= 0) continue;
-        const onHand = await this.onHandOf(tx, l.itemId);
-        const take = Math.min(want, onHand);
-        if (take <= 0) continue;
+      const reserved: Array<{ lineId: string; line: string; qty: number; total: number }> = [];
+      for (const l of demand) {
+        const take = Math.max(0, l.coveredQty - l.reservedQty);
+        if (take <= 1e-9) continue;
         await tx.update(salesOrderLine)
-          .set({ reservedQty: q3(num(l.reservedQty) + take), updatedAt: new Date(), updatedBy: currentTenant().actorId })
-          .where(eq(salesOrderLine.id, l.id));
-        reserved.push({ line: l.itemCode, qty: take });
+          .set({ reservedQty: q3(l.coveredQty), updatedAt: new Date(), updatedBy: currentTenant().actorId })
+          .where(eq(salesOrderLine.id, l.lineId));
+        reserved.push({ lineId: l.lineId, line: l.itemCode, qty: take, total: l.coveredQty });
       }
 
       const action = await this.recordAction(tx, missionId, pv.id, {
         actionType: "inventory.reserve",
         targetDomain: "inventory",
         title: `Reserve stock against ${m.soNo}`,
-        params: { lines: reserved },
+        params: {
+          lines: demand.map((l) => ({ salesOrderLineId: l.lineId, itemId: l.itemId, reservedQty: l.coveredQty })),
+        },
         autonomyTier: "A3",
       });
 
@@ -771,8 +1142,9 @@ export class FulfilmentMissionService {
       const after = await tx.select({ id: salesOrderLine.id, reservedQty: salesOrderLine.reservedQty })
         .from(salesOrderLine).where(eq(salesOrderLine.orderId, m.salesOrderId));
       const totalReserved = after.reduce((n, r) => n + num(r.reservedQty), 0);
-      const expected = reserved.reduce((n, r) => n + r.qty, 0);
-      const verified = totalReserved + 1e-6 >= expected;
+      const observed = new Map(after.map((r) => [r.id, num(r.reservedQty)]));
+      const expected = demand.reduce((n, r) => n + r.coveredQty, 0);
+      const verified = demand.every((l) => (observed.get(l.lineId) ?? 0) + 1e-6 >= l.coveredQty);
 
       await this.verifyAction(tx, action.id, verified, {
         check: "sales_order_line.reserved_qty re-read after write",
@@ -782,91 +1154,595 @@ export class FulfilmentMissionService {
 
       await this.writeStep(tx, missionId, plan, seq, {
         planVersionId: pv.id,
-        evidence: reserved.map((r) => ({ source: "sales_order_line.reserved_qty", provenance: "live" as const, ref: r.line, detail: `reserved ${q3(r.qty)}` })),
-        findings: { reserved, verified, totalReserved },
+        evidence: demand.map((r) => ({
+          source: "sales_order_line.reserved_qty",
+          provenance: "live" as const,
+          ref: `${r.itemCode} · ${r.lineId}`,
+          detail: `ordered ${q3(r.qty)}, covered ${q3(r.coveredQty)}, still to make ${q3(r.makeQty)}`,
+        })),
+        findings: { reserved, lineDemand: demand, verified, totalReserved },
         narration: reserved.length
           ? `Reserved ${reserved.map((r) => `${q3(r.qty)} ${r.line}`).join(", ")} against ${m.soNo}. Re-read after writing: ${q3(totalReserved)} committed. That quantity is no longer available to promise to anybody else.`
-          : `Nothing to reserve — no finished stock is on hand for ${m.soNo}. The whole quantity depends on the supply this plan is about to commit.`,
+          : demand.some((l) => l.coveredQty > 1e-9)
+            ? `No additional reservation was needed. ${q3(totalReserved)} units were already reserved across ${m.soNo}; each line's uncovered balance remains its own production demand.`
+            : `Nothing to reserve — no free finished stock is available for ${m.soNo}. Each line's uncovered quantity depends on the supply this plan is about to commit.`,
         confidence: verified ? 100 : 0,
       });
       return { status: "executing" };
     });
   }
 
+  /**
+   * COMMIT THE PURCHASE.
+   *
+   * This step used to write a `fulfilment_action` saying it had bought the material and
+   * stop there. No `purchase_order` row was ever created, so the mission's own narration
+   * ("Committed 775 RAW-BLT-M8 to Bharat Fasteners") described a document that did not
+   * exist anywhere in the product it was being demonstrated inside. That is the one kind of
+   * untruth this system cannot afford, because everything else it claims rests on its
+   * account of itself being checkable.
+   *
+   * ---------------------------------------------------------------------------
+   * THREE PHASES, AND THE PHASE BOUNDARY IS A TRANSACTION BOUNDARY
+   * ---------------------------------------------------------------------------
+   *   1. READ   — one `withTenant`, closed before anything else happens.
+   *   2. CREATE — the port, which opens its OWN transaction per document.
+   *   3. WRITE  — a second `withTenant` recording the action, the postcondition and the step.
+   *
+   * The shape is forced, not stylistic. `withTenant` opens a transaction on a pooled
+   * connection and `PurchaseService.createPo` opens another; calling the port from inside an
+   * open block therefore holds two of ten pool slots for the duration and, with a handful of
+   * concurrent missions, deadlocks the pool waiting for connections that the waiting
+   * transactions are themselves holding. Read, close, call, reopen.
+   *
+   * ---------------------------------------------------------------------------
+   * ONE PURCHASE ORDER PER VENDOR
+   * ---------------------------------------------------------------------------
+   * The plan reasons in LINES (this component, from that supplier, at that price); a vendor
+   * receives a DOCUMENT. Five lines across three vendors is three purchase orders — not one
+   * with three suppliers on it, which nobody can act on, and not five with one line each,
+   * which is three phone calls' work turned into five.
+   *
+   * ---------------------------------------------------------------------------
+   * THE IDEMPOTENCY KEY IS WHAT STOPS THE VENDOR GETTING THE ORDER TWICE
+   * ---------------------------------------------------------------------------
+   * Derived from mission + plan version + vendor, and from nothing that varies between
+   * attempts. If this step dies after raising two of three purchase orders — a deploy, a
+   * dropped connection, an impatient second click — the re-run replays the two and raises
+   * only the third. The plan VERSION is in the key on purpose: a replan is a different
+   * commitment and must be allowed to produce a different document, and without the version
+   * the second plan would collide with the first key under a different request body and be
+   * rejected outright (`IDEMPOTENCY_MISMATCH`) mid-demo.
+   */
   private async stepProcure(missionId: string, plan: StepPlan, seq: number) {
-    return withTenant(async (tx) => {
+    /* ---- phase 1: read everything the documents will need, then let the tx go ---- */
+    const ctx = await withTenant(async (tx) => {
       const m = await this.loadMission(tx, missionId);
       const pv = await this.currentPlan(tx, missionId);
       const chosen = pv.chosen as Candidate;
+      const [so] = await tx
+        .select({ soNo: salesOrder.soNo })
+        .from(salesOrder)
+        .where(eq(salesOrder.id, m.salesOrderId));
 
+      // The planner speaks in CODES, because that is the vocabulary of the sourcing
+      // scenario; a document needs uuids. Both masters are read once here rather than once
+      // per line — the vendor master of an MSME is a few hundred rows, and a query per
+      // sourcing line inside a loop is the shape that turns into a hundred round trips the
+      // week somebody seeds a real catalogue.
+      const vendors = await tx.select({ id: vendor.id, code: vendor.code, name: vendor.name }).from(vendor);
+      const codes = [...new Set(chosen.sourcing.map((s) => s.itemCode))];
+      const items = codes.length
+        ? await tx.select({ id: item.id, code: item.itemCode }).from(item).where(inArray(item.itemCode, codes))
+        : [];
+
+      // A FAULT SOMEBODY ARMED ON PURPOSE (demo scenario 8), and the only invented failure
+      // in the product. It is one row in `fulfilment_event` with `simulated: true`, it is
+      // consumed once, and the step that trips over it says in its own narration that
+      // PURCHASE was never called. A correctly configured tenant has no broken purchase path
+      // to borrow, and faking one silently would poison every honest thing on this screen.
+      const armed = await tx
+        .select({ id: fulfilmentEvent.id })
+        .from(fulfilmentEvent)
+        .where(and(
+          eq(fulfilmentEvent.missionId, missionId),
+          eq(fulfilmentEvent.eventName, SIMULATED_FAULT.eventName),
+          sql`${fulfilmentEvent.handledAt} IS NULL`,
+        ))
+        .limit(1);
+
+      return {
+        m, pv, chosen,
+        soNo: so?.soNo ?? m.soNo,
+        vendors, items,
+        armedFaultId: armed[0]?.id ?? null,
+      };
+    });
+
+    const { m, pv, chosen } = ctx;
+    const uploaded = await this.uploadedTermsFor(missionId);
+    const material = await this.materialPlanForOrder(m.salesOrderId, uploaded);
+    const pegged = allocateSourcingPegs(chosen.sourcing, material.shortagePegs);
+    const vendorById = new Map(ctx.vendors.map((v) => [v.id, v]));
+    const vendorByCode = new Map(ctx.vendors.map((v) => [v.code, v]));
+    const itemByCode = new Map(ctx.items.map((i) => [i.code, i]));
+
+    // Grouped by vendor id. Every line carries the common plan material-ready deadline;
+    // that is the date by which all vendors must have put the required material on site.
+    const groups = new Map<string, PoGroup>();
+    const unresolved: string[] = [];
+
+    for (const miss of pegged.unallocated) {
+      note(
+        unresolved,
+        `${q3(miss.qty)} ${miss.itemCode} cannot be pegged to a sales-order line; the plan and the line-level BOM demand disagree`,
+      );
+    }
+    const pegsBySource = new Map<number, SourcingPegAllocation[]>();
+    for (const allocation of pegged.allocations) {
+      const list = pegsBySource.get(allocation.sourceIndex) ?? [];
+      list.push(allocation);
+      pegsBySource.set(allocation.sourceIndex, list);
+    }
+
+    for (const [sourceIndex, s] of chosen.sourcing.entries()) {
+      // `SourcingDecision.vendorId` holds the master's uuid when the vendor exists and the
+      // scenario's CODE when it does not — see the fallback in `computeShortages`. Both are
+      // tried, in that order, so the id path stays the normal one and the code path only
+      // catches a scenario vendor that was never seeded.
+      const v = vendorById.get(s.vendorId) ?? vendorByCode.get(s.vendorId);
+      const it = itemByCode.get(s.itemCode);
+      if (!v) {
+        // Recorded once per missing MASTER, not once per line that wanted it. Four bolts
+        // and a seal from the same absent vendor is one problem stated once, not the same
+        // sentence printed five times in a row on the step card.
+        note(unresolved, `vendor '${s.vendorName}' (${s.vendorId}) is not in this tenant's vendor master`);
+        continue;
+      }
+      if (!it) {
+        note(unresolved, `item code '${s.itemCode}' is not in this tenant's item master`);
+        continue;
+      }
+      const allocations = pegsBySource.get(sourceIndex) ?? [];
+      if (s.qty > 1e-9 && allocations.length === 0) {
+        note(unresolved, `${q3(s.qty)} ${s.itemCode} has no customer-order line peg`);
+        continue;
+      }
+      const g = groups.get(v.id) ?? { vendorId: v.id, vendorName: v.name, value: 0, lines: [] };
+      for (const allocation of allocations) {
+        g.lines.push({
+          itemCode: s.itemCode,
+          itemId: it.id,
+          salesOrderLineId: allocation.salesOrderLineId,
+          qty: allocation.qty,
+          rate: s.unitPrice,
+        });
+        g.value = paise(g.value + paise(allocation.qty * s.unitPrice));
+      }
+      groups.set(v.id, g);
+    }
+
+    // A CODE THAT WILL NOT RESOLVE STOPS THE STEP. It would be one line of code to skip the
+    // offending sourcing decision and carry on, and the result would be a mission that
+    // reports a completed purchase while one component was silently never ordered — a
+    // shortage nobody finds until the line stops. Failing here is loud, correct, and
+    // recoverable by seeding the master the plan is asking for.
+    if (unresolved.length > 0) {
+      return withTenant(async (tx) => {
+        await this.writeStep(tx, missionId, plan, seq, {
+          planVersionId: pv.id,
+          evidence: unresolved.map((u) => ({
+            source: "vendor + item master",
+            provenance: "live" as const,
+            ref: "unresolved reference",
+            detail: u,
+          })),
+          findings: { purchaseOrders: [], committed: chosen.sourcing, totalValue: 0, unresolved, verified: false },
+          narration:
+            `Nothing was ordered. The plan names ${unresolved.length} reference${unresolved.length === 1 ? "" : "s"} this tenant's masters do not hold: ` +
+            `${unresolved.join("; ")}. Raising the rest and quietly dropping the unresolvable line would leave ` +
+            `${ctx.soNo} short of a component with no record of why, so the mission stops instead.`,
+          confidence: 0,
+          status: "failed",
+          refusedReason: "the plan names a vendor or an item this tenant does not have",
+        });
+        await this.setStatus(tx, missionId, "failed", "the plan names a vendor or an item this tenant does not have");
+        return { status: "failed" };
+      });
+    }
+
+    /* ---- phase 2: the real documents, each in its own transaction ---- */
+    const wanted = [...groups.values()];
+    // This is the material-ready date of the plan version being executed, not `SO date +
+    // lead time`. An old customer order may be planned today; dating its PO from the order
+    // date can make the expected receipt precede the document that promises it. Anchoring
+    // to plan creation is also stable across an idempotent retry.
+    const planMaterialReadyDate = expectedMaterialDate(pv.createdAt, chosen.materialReadyDays);
+    const expectedValue = paise(wanted.reduce((n, g) => n + g.value, 0));
+    const created: CreatedPo[] = [];
+    let failure: string | null = null;
+
+    // Nothing is even attempted while a fault is armed. Calling PURCHASE and then throwing
+    // its answer away would leave real documents behind a step that reports a failure.
+    for (const g of ctx.armedFaultId === null ? wanted : []) {
+      const key = `fulfil:${missionId}:v${pv.versionNo}:procure:${g.vendorId}`;
+      try {
+        const po = await this.purchaseWriter.createPurchaseOrder(
+          {
+            vendorId: g.vendorId,
+            expectedDate: planMaterialReadyDate,
+            remarks: `${m.missionNo} · ${ctx.soNo} — raised by the fulfilment mission on plan v${pv.versionNo}`,
+            lines: g.lines.map((l) => ({
+              itemId: l.itemId,
+              qty: l.qty,
+              rate: l.rate,
+              salesOrderLineId: l.salesOrderLineId,
+            })),
+          },
+          key,
+        );
+        created.push({
+          ...po,
+          vendorId: g.vendorId,
+          vendorName: g.vendorName,
+          lineCount: g.lines.length,
+          expectedDate: planMaterialReadyDate,
+          lines: g.lines,
+        });
+      } catch (e) {
+        // A sibling advance is raising these same orders right now. Yield to it without
+        // writing anything — see `isConcurrentAttempt`.
+        if (isConcurrentAttempt(e)) return { status: "executing" };
+        // Stop at the first refusal rather than pressing on. Whatever PURCHASE objected to
+        // — a vendor gone inactive, a duplicate ticket, an item it will not price — the
+        // remaining orders are part of the same plan and the same reason is likely to apply.
+        failure = `${g.vendorName}: ${e instanceof Error ? e.message : String(e)}`;
+        break;
+      }
+    }
+    if (ctx.armedFaultId !== null && wanted.length > 0) failure = SIMULATED_FAULT.reason;
+
+    /* ---- phase 3: record what actually happened, and prove it ---- */
+    return withTenant(async (tx) => {
+      // One shot. The retry finds no armed fault and raises the documents for real, which is
+      // the whole point of the scenario: the second attempt is not a different code path.
+      if (ctx.armedFaultId !== null && failure === SIMULATED_FAULT.reason) {
+        await tx.update(fulfilmentEvent).set({
+          disposition: "fired",
+          handledAt: new Date(),
+          impact: { step: SIMULATED_FAULT.stepKey, planVersion: pv.versionNo, documentsPrevented: wanted.length },
+          updatedAt: new Date(),
+          updatedBy: currentTenant().actorId,
+        }).where(eq(fulfilmentEvent.id, ctx.armedFaultId));
+      }
+
+      const totalValue = paise(created.reduce((n, c) => n + c.totalValue, 0));
       const action = await this.recordAction(tx, missionId, pv.id, {
         actionType: "purchase.commit",
         targetDomain: "purchase",
-        title: `Commit ${chosen.sourcing.length} purchase line(s) for ${m.soNo}`,
-        params: { sourcing: chosen.sourcing, strategy: chosen.key },
+        title: created.length
+          ? `Raise ${created.length} purchase order(s) for ${ctx.soNo}`
+          : `Commit ${chosen.sourcing.length} purchase line(s) for ${ctx.soNo}`,
+        params: {
+          sourcing: chosen.sourcing,
+          strategy: chosen.key,
+          materialReadyDate: planMaterialReadyDate,
+          purchaseOrders: wanted.map((g) => ({ vendorId: g.vendorId, lines: g.lines })),
+        },
+        result: {
+          purchaseOrders: created.map((c) => ({ id: c.id, poNo: c.poNo, vendorName: c.vendorName, value: c.totalValue })),
+          failure,
+        },
         autonomyTier: chosen.requiresApproval ? "A4" : "A3",
       });
 
-      const verified = chosen.sourcing.every((s) => s.qty > 0 && s.unitPrice > 0);
+      // POSTCONDITION — re-read PURCHASE's own table, not the answer the port handed back.
+      // A writer reporting its own success is a claim; the row being there afterwards is
+      // evidence, and this is the step that turns `executed` into `verified`.
+      const rows = created.length
+        ? await tx
+            .select({
+              id: purchaseOrder.id,
+              poNo: purchaseOrder.poNo,
+              vendorId: purchaseOrder.vendorId,
+              status: purchaseOrder.status,
+              expectedDate: purchaseOrder.expectedDate,
+              remarks: purchaseOrder.remarks,
+              totalAmount: purchaseOrder.totalAmount,
+            })
+            .from(purchaseOrder)
+            .where(inArray(purchaseOrder.id, created.map((c) => c.id)))
+        : [];
+      const poLines = created.length
+        ? await tx
+            .select({
+              poId: purchaseOrderLine.poId,
+              itemId: purchaseOrderLine.itemId,
+              qty: purchaseOrderLine.qty,
+              rate: purchaseOrderLine.rate,
+              salesOrderLineId: purchaseOrderLine.salesOrderLineId,
+            })
+            .from(purchaseOrderLine)
+            .where(inArray(purchaseOrderLine.poId, created.map((c) => c.id)))
+        : [];
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      const observedValue = paise(rows.reduce((n, r) => n + num(r.totalAmount), 0));
+      // A paisa of tolerance per document, and no more. Both sides round the same way, so
+      // this only absorbs float noise — a genuinely different total is a different order.
+      const valueHolds = Math.abs(observedValue - expectedValue) <= 0.01 * Math.max(1, rows.length);
+      const semanticFaults: string[] = [];
+      const lineKey = (l: { itemId: string; salesOrderLineId: string | null; qty: number | string; rate: number | string }) =>
+        `${l.itemId}|${l.salesOrderLineId ?? "none"}|${q3(num(l.qty))}|${q2(num(l.rate))}`;
+      for (const expected of created) {
+        const header = byId.get(expected.id);
+        if (!header) {
+          semanticFaults.push(`${expected.poNo} was not found after creation`);
+          continue;
+        }
+        if (header.vendorId !== expected.vendorId) semanticFaults.push(`${header.poNo} is on a different vendor`);
+        if (header.status !== "draft") semanticFaults.push(`${header.poNo} is ${header.status}, expected draft`);
+        if (header.expectedDate?.toISOString().slice(0, 10) !== expected.expectedDate) {
+          semanticFaults.push(`${header.poNo} does not carry material-ready date ${expected.expectedDate}`);
+        }
+        if (!(header.remarks ?? "").includes(m.missionNo) || !(header.remarks ?? "").includes(ctx.soNo)) {
+          semanticFaults.push(`${header.poNo} remarks lost the mission/order trace`);
+        }
+        const expectedLines = expected.lines.map((l) => lineKey(l)).sort();
+        const observedLines = poLines.filter((l) => l.poId === expected.id).map((l) => lineKey(l)).sort();
+        if (JSON.stringify(expectedLines) !== JSON.stringify(observedLines)) {
+          semanticFaults.push(`${header.poNo} item/quantity/rate/sales-order-line pegs do not match the plan`);
+        }
+      }
+      const verified =
+        failure === null &&
+        rows.length === wanted.length &&
+        valueHolds &&
+        semanticFaults.length === 0;
+      const refusal = failure ?? (verified ? null : semanticFaults.join("; ") || "purchase-order postcondition did not hold");
+
       await this.verifyAction(tx, action.id, verified, {
-        check: "every committed line has a positive quantity and a priced vendor",
-        lines: chosen.sourcing.length,
+        check: "purchase_order and purchase_order_line re-read: vendor, date, status, value, item, quantity, rate and SO-line peg",
+        expectedOrders: wanted.length,
+        observedOrders: rows.length,
+        expectedValue: q2(expectedValue),
+        observedValue: q2(observedValue),
+        materialReadyDate: planMaterialReadyDate,
+        semanticFaults,
+        poNos: rows.map((r) => r.poNo),
+        failure: refusal,
       });
+
+      const evidence = created.map((c) => ({
+        source: "purchase_order",
+        provenance: "live" as const,
+        ref: byId.get(c.id)?.poNo ?? c.poNo,
+        detail:
+          `${c.vendorName} — ${c.lineCount} line(s), Rs ${fmtInr(num(byId.get(c.id)?.totalAmount ?? c.totalValue))}, ` +
+          `status ${byId.get(c.id)?.status ?? c.status}`,
+      }));
+
+      const narration = failure === SIMULATED_FAULT.reason
+        ? `Nothing was ordered, and nothing was attempted. ${SIMULATED_FAULT.reason} ` +
+          `${wanted.length} purchase order(s) worth Rs ${fmtInr(expectedValue)} are still owed to this plan. ` +
+          `The mission is not going to report documents that do not exist — retry the step and it will run again ` +
+          `from the same evidence, against the same idempotency keys.`
+        : refusal !== null
+        ? `Stopped part-way. ${created.length === 0 ? "No purchase order was raised" : `${created.length} purchase order(s) were raised (${created.map((c) => c.poNo).join(", ")})`} ` +
+          `but the purchase commitment could not be verified — ${refusal}. The rest of this plan's material is NOT proven on order. ` +
+          `A half-placed order reported as a completed one is worse than a stopped mission, so this stops.`
+        : created.length
+          ? `Raised ${created.length} purchase order${created.length === 1 ? "" : "s, one per vendor"}: ` +
+            `${created.map((c) => `${c.poNo} on ${c.vendorName} for Rs ${fmtInr(c.totalValue)}`).join("; ")}. ` +
+            `Rs ${fmtInr(totalValue)} of purchase value against plan version ${pv.versionNo}, each document carrying ` +
+            `${m.missionNo} and ${ctx.soNo} in its remarks. Re-read from purchase_order afterwards: ${rows.length} document(s) ` +
+            `totalling Rs ${fmtInr(observedValue)}. They are DRAFTS — the stores-to-admin approval workflow still stands between ` +
+            `this and a commitment to the vendor, because a mission may decide what to buy and may not sign for it.`
+          : `No purchase is required — the order is covered from stock.`;
 
       await this.writeStep(tx, missionId, plan, seq, {
         planVersionId: pv.id,
-        evidence: chosen.sourcing.map((s) => ({
-          source: "fulfilment_action",
-          provenance: "derived" as const,
-          ref: `${s.itemCode} ← ${s.vendorName}`,
-          detail: `${q3(s.qty)} at Rs ${fmtInr(s.unitPrice)}/unit, ${s.leadTimeDays}d lead`,
-        })),
-        findings: { committed: chosen.sourcing, totalValue: chosen.sourcing.reduce((n, s) => n + s.qty * s.unitPrice, 0) },
-        narration: chosen.sourcing.length
-          ? `Committed ${chosen.sourcing.map((s) => `${q3(s.qty)} ${s.itemCode} to ${s.vendorName}`).join(" and ")}. ` +
-            `Rs ${fmtInr(chosen.sourcing.reduce((n, s) => n + s.qty * s.unitPrice, 0))} of purchase value, against plan version ${pv.versionNo}. ` +
-            `Each line carries the sales order line it serves, so a receipt can be traced back to this commitment.`
-          : `No purchase is required — the order is covered from stock.`,
+        evidence,
+        findings: {
+          // The real documents, by number. `committed` stays beside them because the
+          // sourcing decision is still what a reader wants to see explained.
+          purchaseOrders: created.map((c) => ({ poNo: c.poNo, vendorName: c.vendorName, value: c.totalValue })),
+          committed: chosen.sourcing,
+          totalValue,
+          vendorCount: wanted.length,
+          verified,
+          failure: refusal,
+        },
+        narration,
         confidence: verified ? 96 : 0,
+        status: verified ? "succeeded" : "failed",
+        refusedReason: refusal,
       });
+
+      if (!verified) {
+        await this.setStatus(tx, missionId, "failed", `purchase order creation/verification failed — ${refusal}`);
+        return { status: "failed" };
+      }
       return { status: "executing" };
     });
   }
 
+  /**
+   * RELEASE THE WORK ORDER — a real `production_order`, not a sentence about one.
+   *
+   * Same three phases and the same reason as `stepProcure`: read, then call the port (which
+   * opens its own transaction), then record and verify.
+   *
+   * The postcondition used to be the literal `true`. It recorded a `check` string describing
+   * something nobody had looked at, which is worse than no check at all — a verification
+   * that cannot fail teaches everyone downstream to trust a column that means nothing. It is
+   * now a re-read of the created row asserting that it exists, that it carries the sales
+   * order line it was released for, and that it is for the quantity the plan committed to.
+   */
   private async stepWorkOrder(missionId: string, plan: StepPlan, seq: number) {
-    return withTenant(async (tx) => {
+    /* ---- phase 1: read ---- */
+    const ctx = await withTenant(async (tx) => {
       const m = await this.loadMission(tx, missionId);
       const pv = await this.currentPlan(tx, missionId);
-      const chosen = pv.chosen as Candidate;
-      const obj = m.objective as { orderQty: number; lines: Array<{ lineId: string; itemCode: string }> };
+      return {
+        m,
+        pv,
+        chosen: pv.chosen as Candidate,
+        demand: await this.lineDemandInTx(tx, m.salesOrderId),
+      };
+    });
+    const { pv, chosen } = ctx;
+    const wanted = ctx.demand.filter((line) => line.makeQty > 1e-9);
 
+    /* ---- phase 2: one real document per sales-order line that is not covered by stock ---- */
+    const created: CreatedWorkOrder[] = [];
+    let failure: string | null = null;
+    for (const line of wanted) {
+      // The SO line is in the key. A retry replays line 1 and can still raise line 2 after
+      // line 2's first attempt failed; it can never aggregate both lines into a duplicate
+      // line-zero work order.
+      const key = `fulfil:${missionId}:v${pv.versionNo}:workorder:${line.lineId}`;
+      try {
+        const order = await this.productionWriter.createProductionOrder(
+          {
+            itemId: line.itemId,
+            qty: line.makeQty,
+            salesOrderLineId: line.lineId,
+            needDate: chosen.completionDate,
+          },
+          key,
+        );
+        created.push({
+          ...order,
+          itemId: line.itemId,
+          itemCode: line.itemCode,
+          salesOrderLineId: line.lineId,
+          qty: line.makeQty,
+        });
+      } catch (e) {
+        if (isConcurrentAttempt(e)) return { status: "executing" };
+        failure = `${line.itemCode} / ${line.lineId}: ${e instanceof Error ? e.message : String(e)}`;
+        break;
+      }
+    }
+
+    /* ---- phase 3: record and prove ---- */
+    return withTenant(async (tx) => {
       const action = await this.recordAction(tx, missionId, pv.id, {
         actionType: "production.release",
         targetDomain: "production",
-        title: `Release the work order for ${m.soNo}`,
-        params: { qty: obj.orderQty, needDate: chosen.completionDate, salesOrderLineId: obj.lines[0]?.lineId ?? null },
+        title: `Release ${wanted.length} work order(s) for ${ctx.m.soNo}`,
+        params: {
+          needDate: chosen.completionDate,
+          workOrders: wanted.map((line) => ({
+            itemId: line.itemId,
+            qty: line.makeQty,
+            salesOrderLineId: line.lineId,
+          })),
+        },
+        result: {
+          productionOrders: created.map((o) => ({ id: o.id, orderNo: o.orderNo, salesOrderLineId: o.salesOrderLineId })),
+          failure,
+        },
         autonomyTier: "A3",
       });
-      await this.verifyAction(tx, action.id, true, {
-        check: "work order carries its sales order line and need date",
-        salesOrderLineId: obj.lines[0]?.lineId ?? null,
-        needDate: chosen.completionDate,
+
+      // POSTCONDITION — the row itself, read back out of PRODUCTION's table. The claim being
+      // checked is not "a work order exists" but "a work order exists AND it knows which
+      // customer commitment it serves", because the second is the part that would silently
+      // regress: `createFromPlan` accepted `salesOrderLineId` for a release and dropped it on
+      // the floor for months without a single test noticing.
+      const rows = created.length
+        ? await tx
+            .select({
+              id: productionOrder.id,
+              orderNo: productionOrder.orderNo,
+              itemId: productionOrder.itemId,
+              status: productionOrder.status,
+              qtyToProduce: productionOrder.qtyToProduce,
+              salesOrderLineId: productionOrder.salesOrderLineId,
+              needDate: productionOrder.needDate,
+            })
+            .from(productionOrder)
+            .where(inArray(productionOrder.id, created.map((o) => o.id)))
+        : [];
+      const rowsById = new Map(rows.map((r) => [r.id, r]));
+      const semanticFaults: string[] = [];
+      for (const expected of created) {
+        const row = rowsById.get(expected.id);
+        if (!row) {
+          semanticFaults.push(`${expected.orderNo} was not found after creation`);
+          continue;
+        }
+        if (row.itemId !== expected.itemId) semanticFaults.push(`${row.orderNo} is for the wrong finished good`);
+        if (row.salesOrderLineId !== expected.salesOrderLineId) semanticFaults.push(`${row.orderNo} lost its sales-order-line peg`);
+        if (Math.abs(num(row.qtyToProduce) - expected.qty) >= 1e-6) semanticFaults.push(`${row.orderNo} has the wrong quantity`);
+        if (row.needDate !== chosen.completionDate) semanticFaults.push(`${row.orderNo} has the wrong need date`);
+        if (row.status !== "planned") semanticFaults.push(`${row.orderNo} is ${row.status}, expected planned`);
+      }
+      const verified =
+        failure === null &&
+        rows.length === wanted.length &&
+        semanticFaults.length === 0;
+      const refusal = failure ?? (verified ? null : semanticFaults.join("; ") || "production-order postcondition did not hold");
+
+      await this.verifyAction(tx, action.id, verified, {
+        check: "production_order re-read per SO line: item, quantity, demand peg, need date and planned status",
+        expectedOrders: wanted.length,
+        observedOrders: rows.length,
+        productionOrderNos: rows.map((r) => r.orderNo),
+        semanticFaults,
+        failure: refusal,
       });
+
+      const narration = refusal
+        ? `${created.length === 0 ? "No work order was released" : `${created.length} work order(s) were released (${created.map((o) => o.orderNo).join(", ")})`}, ` +
+          `but the complete line-level release could not be verified: ${refusal}. ${ctx.m.soNo} stops rather than treating a partial shop-floor release as complete.`
+        : created.length > 0
+          ? `Released ${created.length} work order(s), one for each uncovered customer-order line: ` +
+            `${created.map((o) => `${o.orderNo} · ${q3(o.qty)} ${o.itemCode}`).join("; ")}. ` +
+            `Each was re-read with its item, quantity, need date and sales-order-line peg intact.`
+          : `No work order is required. Finished stock reservations cover every line on ${ctx.m.soNo}; zero production documents were created.`;
 
       await this.writeStep(tx, missionId, plan, seq, {
         planVersionId: pv.id,
-        evidence: [{
-          source: "production_order.sales_order_line_id",
-          provenance: "live",
-          ref: obj.lines[0]?.itemCode ?? "work order",
-          detail: `${obj.orderQty} units, needed ${chosen.completionDate}, pegged to ${m.soNo}`,
-        }],
-        findings: { qty: obj.orderQty, needDate: chosen.completionDate, pegged: true },
-        narration:
-          `Work order released for ${obj.orderQty} units, needed ${chosen.completionDate}, carrying the sales order line it serves. ` +
-          `Before the trace spine landed this order would have known what to make and not who for — which made every work order equally urgent.`,
-        confidence: 94,
+        evidence: rows.length
+          ? rows.map((row) => ({
+              source: "production_order",
+              provenance: "live" as const,
+              ref: row.orderNo,
+              detail:
+                `${q3(num(row.qtyToProduce))} units, status ${row.status}, need date ${row.needDate ?? "—"}, ` +
+                `pegged to sales order line ${row.salesOrderLineId ?? "none"}`,
+            }))
+          : [{
+              source: "production_order",
+              provenance: "live" as const,
+              ref: wanted.length === 0 ? "not required" : "not created",
+              detail: wanted.length === 0 ? "every sales-order line is covered by reserved finished stock" : refusal ?? "the work order was not created",
+            }],
+        findings: {
+          productionOrders: rows.map((r) => ({
+            id: r.id,
+            orderNo: r.orderNo,
+            itemId: r.itemId,
+            qty: num(r.qtyToProduce),
+            salesOrderLineId: r.salesOrderLineId,
+            needDate: r.needDate,
+          })),
+          lineDemand: ctx.demand,
+          verified,
+          failure: refusal,
+        },
+        narration,
+        confidence: verified ? 94 : 0,
+        status: verified ? "succeeded" : "failed",
+        refusedReason: refusal,
       });
+
+      if (!verified) {
+        await this.setStatus(tx, missionId, "failed", refusal);
+        return { status: "failed" };
+      }
       return { status: "executing" };
     });
   }
@@ -906,52 +1782,162 @@ export class FulfilmentMissionService {
     return withTenant(async (tx) => {
       const m = await this.loadMission(tx, missionId);
       const pv = await this.currentPlan(tx, missionId);
-      const chosen = pv.chosen as Candidate;
-      const obj = m.objective as { orderQty: number };
-
       const actions = await tx.select().from(fulfilmentAction).where(eq(fulfilmentAction.missionId, missionId));
       const versions = await tx.select({ n: fulfilmentPlanVersion.versionNo }).from(fulfilmentPlanVersion)
         .where(eq(fulfilmentPlanVersion.missionId, missionId));
       const approved = actions.filter((a) => a.approvalId !== null).length;
       const unverified = actions.filter((a) => a.verified !== true);
+      const orderLines = await tx
+        .select({
+          id: salesOrderLine.id,
+          itemId: salesOrderLine.itemId,
+          qty: salesOrderLine.qty,
+          deliveredQty: salesOrderLine.deliveredQty,
+        })
+        .from(salesOrderLine)
+        .where(eq(salesOrderLine.orderId, m.salesOrderId));
+      const dispatches = await tx
+        .select({ id: dispatch.id, no: dispatch.dispatchNo, date: dispatch.dispatchDate, status: dispatch.status })
+        .from(dispatch)
+        .where(eq(dispatch.orderId, m.salesOrderId));
+      const dispatchLines = dispatches.length
+        ? await tx
+            .select({ dispatchId: dispatchLine.dispatchId, orderLineId: dispatchLine.orderLineId, qty: dispatchLine.qty })
+            .from(dispatchLine)
+            .where(inArray(dispatchLine.dispatchId, dispatches.map((d) => d.id)))
+        : [];
+      const releases = orderLines.length
+        ? await tx
+            .select({ lineId: qualityRelease.salesOrderLineId, releaseNo: qualityRelease.releaseNo, qty: qualityRelease.qtyReleased })
+            .from(qualityRelease)
+            .where(inArray(qualityRelease.salesOrderLineId, orderLines.map((l) => l.id)))
+        : [];
+      const invoices = await tx
+        .select({ invoiceNo: arOpenItem.invoiceNo, dispatchRef: arOpenItem.dispatchRef, gross: arOpenItem.grossReceivable })
+        .from(arOpenItem)
+        .where(eq(arOpenItem.soRef, m.soNo));
+
+      const dispatchedByLine = new Map<string, number>();
+      for (const row of dispatchLines) {
+        dispatchedByLine.set(row.orderLineId, (dispatchedByLine.get(row.orderLineId) ?? 0) + num(row.qty));
+      }
+      const releasedByLine = new Map<string, number>();
+      for (const row of releases) {
+        if (!row.lineId) continue;
+        releasedByLine.set(row.lineId, (releasedByLine.get(row.lineId) ?? 0) + num(row.qty));
+      }
+      const orderedQty = orderLines.reduce((n, l) => n + num(l.qty), 0);
+      const deliveredQty = orderLines.reduce((n, l) => n + num(l.deliveredQty), 0);
+      const deliveryComplete =
+        orderLines.length > 0 &&
+        dispatches.length > 0 &&
+        orderLines.every((l) =>
+          num(l.deliveredQty) + 1e-6 >= num(l.qty) &&
+          (dispatchedByLine.get(l.id) ?? 0) + 1e-6 >= num(l.deliveredQty),
+        );
+      const qualityComplete =
+        deliveryComplete &&
+        orderLines.every((l) => (releasedByLine.get(l.id) ?? 0) + 1e-6 >= num(l.deliveredQty));
+      const invoiceRefs = new Set(invoices.map((i) => i.dispatchRef));
+      const invoiceComplete =
+        dispatches.length > 0 &&
+        dispatches.every((d) => invoiceRefs.has(d.no));
+      const actualDate = dispatches
+        .map((d) => d.date)
+        .sort()
+        .at(-1) ?? null;
+      const forecastMarginPct = num(pv.expectedMarginPct);
+      const targetMarginPct = num(m.targetMarginPct);
+      const gate = evaluateOutcomeGate({
+        deliveryComplete,
+        qualityComplete,
+        invoiceComplete,
+        unverifiedActions: unverified.length,
+        onTime: actualDate !== null && actualDate <= m.promisedDate,
+        forecastMarginPct,
+        targetMarginPct,
+      });
 
       const outcome = {
-        orderedQty: obj.orderQty,
-        deliveredQty: obj.orderQty,
+        orderedQty,
+        deliveredQty,
         promisedDate: m.promisedDate,
-        actualDate: chosen.completionDate,
+        actualDate,
         plannedCost: num(pv.expectedCost),
-        actualCost: num(pv.expectedCost),
-        marginPct: num(pv.expectedMarginPct),
-        targetMarginPct: num(m.targetMarginPct),
+        // No production-cost roll-up exists yet. Null is an honest missing fact; copying
+        // planned cost here used to manufacture an "actual" margin from the proposal.
+        actualCost: null,
+        forecastMarginPct,
+        targetMarginPct,
+        targetMarginMet: forecastMarginPct + 1e-9 >= targetMarginPct,
+        invoicedGross: invoices.reduce((n, i) => n + num(i.gross), 0),
+        dispatches: dispatches.map((d) => ({ dispatchNo: d.no, date: d.date, status: d.status })),
+        qualityReleases: releases.map((r) => ({ releaseNo: r.releaseNo, salesOrderLineId: r.lineId, qty: num(r.qty) })),
         autonomousActions: actions.length - approved,
         approvedActions: approved,
         planVersions: versions.length,
         actionsVerified: actions.length - unverified.length,
         actionsTotal: actions.length,
+        reasons: gate.reasons,
       };
 
-      // The mission does not get to declare success. Every action must have been verified,
-      // and the delivery must actually meet the promise — otherwise this closes as `failed`
-      // with the evidence attached, which is the honest outcome and the more useful one.
-      const met = unverified.length === 0 && chosen.completionDate <= m.promisedDate;
+      if (!gate.downstreamReady) {
+        // Do not write the close step: the arc must still have a close step to run after a
+        // real dispatch/quality/invoice event wakes it. Writing a "waiting" close row would
+        // mark it done because resume is row-based.
+        const reason = `outcome not yet proven — ${gate.reasons.join("; ")}`;
+        await tx.update(fulfilmentMission).set({
+          status: "waiting",
+          stage: "monitoring",
+          waitingReason: reason,
+          outcome,
+          closedAt: null,
+          updatedAt: new Date(),
+          updatedBy: currentTenant().actorId,
+        }).where(eq(fulfilmentMission.id, missionId));
+        return { status: "waiting" };
+      }
 
       await this.writeStep(tx, missionId, plan, seq, {
         planVersionId: pv.id,
-        evidence: actions.map((a) => ({
-          source: "fulfilment_action",
-          provenance: "live" as const,
-          ref: a.actionNo,
-          detail: `${a.actionType} — ${a.verified === true ? "verified" : "NOT VERIFIED"}`,
-        })),
+        evidence: [
+          ...dispatches.map((d) => ({
+            source: "dispatch + dispatch_line",
+            provenance: "live" as const,
+            ref: d.no,
+            detail: `${d.status} on ${d.date}`,
+          })),
+          ...releases.map((r) => ({
+            source: "quality_release",
+            provenance: "live" as const,
+            ref: r.releaseNo,
+            detail: `${q3(num(r.qty))} released against SO line ${r.lineId ?? "none"}`,
+          })),
+          ...invoices.map((i) => ({
+            source: "ar_open_item",
+            provenance: "live" as const,
+            ref: i.invoiceNo,
+            detail: `dispatch ${i.dispatchRef ?? "none"}, gross Rs ${fmtInr(num(i.gross))}`,
+          })),
+          ...actions.map((a) => ({
+            source: "fulfilment_action",
+            provenance: "live" as const,
+            ref: a.actionNo,
+            detail: `${a.actionType} — ${a.verified === true ? "verified" : "NOT VERIFIED"}`,
+          })),
+        ],
         findings: outcome,
-        narration: `${narrateOutcome(outcome)} ${met ? "Every material action was independently verified against the state it claimed to change." : `${unverified.length} action(s) were never verified; the commitment is not proven met.`}`,
-        confidence: met ? 100 : 40,
-        status: met ? "succeeded" : "failed",
+        narration: gate.met
+          ? `${q3(deliveredQty)} of ${q3(orderedQty)} units were dispatched by ${actualDate}; quality releases and invoices were re-read for every dispatch. ` +
+            `The plan's ${q2(forecastMarginPct)}% forecast is at or above the ${q2(targetMarginPct)}% target, and every mission action is verified.`
+          : `The real dispatch, quality and invoice records exist, but the mission did not meet every commitment: ${gate.reasons.join("; ")}.`,
+        confidence: gate.met ? 100 : 40,
+        status: gate.met ? "succeeded" : "failed",
+        refusedReason: gate.met ? null : gate.reasons.join("; "),
       });
 
       await tx.update(fulfilmentMission).set({
-        status: met ? "completed" : "failed",
+        status: gate.met ? "completed" : "failed",
         stage: "closed",
         outcome,
         closedAt: new Date(),
@@ -963,9 +1949,9 @@ export class FulfilmentMissionService {
         action: "fulfilment.mission.closed",
         entityType: "fulfilment_mission",
         entityId: missionId,
-        data: { missionNo: m.missionNo, met, outcome },
+        data: { missionNo: m.missionNo, met: gate.met, outcome },
       });
-      return { status: met ? "completed" : "failed" };
+      return { status: gate.met ? "completed" : "failed" };
     });
   }
 
@@ -1151,6 +2137,7 @@ export class FulfilmentMissionService {
         .where(eq(fulfilmentAction.missionId, missionId)).orderBy(asc(fulfilmentAction.createdAt));
       const events = await tx.select().from(fulfilmentEvent)
         .where(eq(fulfilmentEvent.missionId, missionId)).orderBy(desc(fulfilmentEvent.observedAt));
+      const ctx = await this.stepContext(tx, missionId, m.soNo);
 
       return {
         id: m.id,
@@ -1169,7 +2156,7 @@ export class FulfilmentMissionService {
         forecastDate: m.forecastDate,
         waitingReason: m.waitingReason,
         outcome: m.outcome,
-        steps: steps.map((s) => this.toStepView(s)),
+        steps: steps.map((s) => this.toStepView(s, ctx)),
         plan: plans[0] ?? null,
         pendingApproval: approvals[0] ?? null,
         actions,
@@ -1346,9 +2333,525 @@ export class FulfilmentMissionService {
     });
   }
 
+
+  /* ------------------------------------------------------------------ retry -- */
+
+  /**
+   * RE-RUN THE LAST STEP THAT FAILED.
+   *
+   * A mission stops when a step fails, and until now the only way past that was to start
+   * again — which throws away twelve steps of correct work because the thirteenth hit a
+   * vendor on credit hold. Retrying is the ordinary operational answer, and it is safe here
+   * for a reason that is worth stating: every execute step derives its idempotency key from
+   * the mission, the plan version and the vendor, and from nothing that varies between
+   * attempts. So a re-run replays the documents that were already created and raises only
+   * the ones that were not. The vendor does not get the order twice.
+   *
+   * THE ORIGINAL FAILURE IS NOT SWALLOWED. The failed step row is removed — it has to be,
+   * because the arc's resume point is a row count and a failed row would make the mission
+   * think that step was done — but before it goes, the failure is written to the event log
+   * and to the hash-chained audit trail. The re-run's own pipeline then opens with a
+   * `retrying` row carrying the reason the first attempt failed. A retry that quietly
+   * produced a clean-looking mission would be the most dangerous feature in this product.
+   */
+  async retry(missionId: string): Promise<{
+    step: StepView | null;
+    status: string;
+    retried: { stepKey: string; seq: number; attempt: number; previousFailure: string };
+  }> {
+    const prep = await withTenant(async (tx) => {
+      const m = await this.loadMission(tx, missionId);
+
+      const failed = await tx
+        .select()
+        .from(fulfilmentStep)
+        .where(and(eq(fulfilmentStep.missionId, missionId), eq(fulfilmentStep.status, "failed")))
+        .orderBy(desc(fulfilmentStep.seq))
+        .limit(1);
+      const f = failed[0];
+      if (!f) {
+        throw new AppError("NOTHING_TO_RETRY", 409,
+          `${m.missionNo} has no failed step. Retry re-runs a step that refused; it is not a way to run a step again for a different answer.`);
+      }
+      const plan = ARC.find((a) => a.key === f.stepKey);
+      if (!plan) {
+        throw new AppError("UNKNOWN_STEP", 500, `step '${f.stepKey}' is not in this build's arc, so it cannot be re-run`);
+      }
+
+      // A REJECTED APPROVAL IS NOT A FAULT, AND RETRY MUST NOT BECOME A WAY PAST A PERSON.
+      // The authority gate only ever records "failed" because somebody said no — the step
+      // itself cannot fail technically, since a write that threw would have rolled the whole
+      // step back and left no row. Re-running it would raise a fresh approval and ask the
+      // same question again until the answer changed, which is precisely the behaviour a
+      // governed system exists to prevent.
+      if (f.stepKey === "authorize") {
+        throw new AppError("NOT_RETRYABLE", 409,
+          `${m.missionNo} stopped because a person declined the plan, which is a decision and not a failure. ` +
+          `Ask for a different approach on the approval, or change the mission's autonomy tier — either re-plans. ` +
+          `Retry re-runs a step that broke; it is not a way to ask somebody the same question twice.`);
+      }
+
+      // How many times this step has already been retried, from the event log. Counted in
+      // JS rather than with a jsonb predicate: a mission has a handful of events, and a
+      // query nobody can read is a poor trade for a scan of five rows.
+      const priorEvents = await tx
+        .select({ payload: fulfilmentEvent.payload })
+        .from(fulfilmentEvent)
+        .where(and(eq(fulfilmentEvent.missionId, missionId), eq(fulfilmentEvent.eventName, STEP_RETRY_EVENT)));
+      const prior = priorEvents.filter((e) => String((e.payload as Record<string, unknown>).stepKey ?? "") === f.stepKey).length;
+      const attempt = prior + 2; // the original run was attempt 1
+
+      const previousFailure = f.refusedReason ?? f.narration ?? "no reason was recorded";
+
+      await tx.insert(fulfilmentEvent).values({
+        id: newId(),
+        tenantId: currentTenant().tenantId,
+        createdBy: currentTenant().actorId,
+        updatedBy: currentTenant().actorId,
+        missionId,
+        eventKey: `retry:${missionId}:${f.stepKey}:${attempt}`,
+        eventName: STEP_RETRY_EVENT,
+        source: "operator",
+        simulated: false,
+        payload: { stepKey: f.stepKey, seq: f.seq, attempt, previousFailure },
+        impact: { rewoundToSeq: f.seq, stepsDiscarded: f.stepKey },
+        disposition: "retried",
+        handledAt: new Date(),
+      });
+
+      await this.audit.appendInTx(tx, {
+        action: "fulfilment.step.retried",
+        entityType: "fulfilment_mission",
+        entityId: missionId,
+        data: { missionNo: m.missionNo, stepKey: f.stepKey, seq: f.seq, attempt, previousFailure },
+      });
+
+      // The failed row and anything after it. The arc resumes on a row count, so leaving the
+      // failed row in place would make the engine believe that step had already run.
+      await tx.delete(fulfilmentStep).where(and(
+        eq(fulfilmentStep.missionId, missionId),
+        gte(fulfilmentStep.seq, f.seq),
+      ));
+
+      // A failed mission is a closed one. Re-opening it is the point of a retry, so the
+      // closure is undone explicitly rather than left for `setStatus` to overwrite later.
+      await tx.update(fulfilmentMission).set({
+        status: EXECUTE_KEYS.has(f.stepKey) ? "executing" : "planning",
+        waitingReason: null,
+        closedAt: null,
+        updatedAt: new Date(),
+        updatedBy: currentTenant().actorId,
+      }).where(eq(fulfilmentMission.id, missionId));
+
+      return { plan, seq: f.seq, attempt, previousFailure, soNo: m.soNo, stepKey: f.stepKey };
+    });
+
+    const outcome = await this.runStep(missionId, prep.plan, prep.seq);
+
+    const step = await withTenant(async (tx) => {
+      const rows = await tx.select().from(fulfilmentStep)
+        .where(and(eq(fulfilmentStep.missionId, missionId), eq(fulfilmentStep.seq, prep.seq)));
+      const r = rows[0];
+      if (!r) return null;
+      return this.toStepView(r, await this.stepContext(tx, missionId, prep.soNo));
+    });
+
+    return {
+      step,
+      status: outcome.status,
+      retried: { stepKey: prep.stepKey, seq: prep.seq, attempt: prep.attempt, previousFailure: prep.previousFailure },
+    };
+  }
+
+  /* -------------------------------------------------------------- scenarios -- */
+
+  /**
+   * The nine demo scenarios, answered against THIS tenant's actual records.
+   *
+   * Every row is probed rather than asserted: the catalogue explodes the BOM for each
+   * confirmed order, nets it against live stock and resolves the suppliers, then reports
+   * which order each scenario should run on — or reports that it cannot run, and what
+   * record somebody would have to create for it to.
+   *
+   * That costs a handful of queries per order, which is why it is capped. It is worth it:
+   * a scenario list that claims a demo works when the data has moved underneath it is worse
+   * than no list at all, because it fails in front of an audience rather than in a console.
+   */
+  async scenarios(): Promise<ResolvedScenario[]> {
+    return resolveScenarios(await this.probeOrders());
+  }
+
+  /**
+   * Set a scenario up so that it genuinely occurs, and open the mission.
+   *
+   * Everything this does is one of three things: choosing WHICH order (from the probe),
+   * choosing the autonomy tier, and — for two scenarios — recording a source or a fault as
+   * an event. It never changes how a step behaves. If a scenario is unavailable, this
+   * refuses with the same reason the catalogue gave rather than forcing it.
+   */
+  async startScenario(key: string): Promise<{ scenario: ResolvedScenario; mission: MissionView; did: string[] }> {
+    const spec = SCENARIO_BY_KEY.get(key);
+    if (!spec) {
+      throw Errors.notFound(`scenario '${key}'. Known scenarios: ${SCENARIOS.map((x) => x.key).join(", ")}`);
+    }
+    const resolved = (await this.scenarios()).find((r) => r.key === key);
+    if (!resolved || !resolved.available || !resolved.salesOrderId) {
+      throw new AppError("SCENARIO_UNAVAILABLE", 409, resolved?.reason ?? `scenario '${key}' cannot run against this tenant's data`);
+    }
+
+    const did: string[] = [];
+    const opened = await this.start(resolved.salesOrderId, spec.tier);
+    // `start` is idempotent: a second call on an order that already has a live mission
+    // returns THAT mission rather than opening a second one. Saying "opened" in that case
+    // would be the first inaccurate sentence of the demo.
+    did.push(
+      opened.steps.length > 0
+        ? `${opened.missionNo} on ${opened.soNo} for ${opened.customerName} was already running — ${opened.steps.length} step(s) in. It was returned rather than a second mission opened.`
+        : `Opened ${opened.missionNo} on ${opened.soNo} for ${opened.customerName} at tier ${spec.tier}.`,
+    );
+
+    // A returned mission keeps the tier it was opened at, and scenario 6 is only guaranteed
+    // BY the tier. Moving the dial is a real, audited operation with its own refusal — it
+    // will not lower an envelope after money has been committed — so the outcome is
+    // reported either way rather than assumed.
+    if (opened.autonomyTier !== spec.tier) {
+      try {
+        await this.setAutonomy(opened.id, spec.tier);
+        did.push(`Moved the autonomy dial from ${opened.autonomyTier} to ${spec.tier}, discarding the steps from the authority gate onward so it re-derives.`);
+      } catch (e) {
+        did.push(
+          `Could not move the autonomy dial to ${spec.tier}: ${e instanceof Error ? e.message : String(e)} ` +
+          `This scenario may not stop where it is meant to.`,
+        );
+      }
+    }
+
+    if (key === "failure-then-retry") {
+      did.push(await this.armSimulatedFault(opened.id));
+      if (opened.steps.some((st) => st.stepKey === SIMULATED_FAULT.stepKey)) {
+        did.push(
+          `This mission has ALREADY run the ${SIMULATED_FAULT.stepKey} step, so the armed fault has nothing left to bite. ` +
+          `Reset the demo, or run this scenario on an order that has no mission yet.`,
+        );
+      }
+    }
+
+    if (key === "spreadsheet-source") {
+      did.push(await this.loadDemoPriceList(opened.id));
+    }
+
+    did.push("Nothing else was changed. Run the mission and the scenario happens on its own.");
+    return { scenario: resolved, mission: await this.view(opened.id), did };
+  }
+
+  /**
+   * Arm the one simulated fault — scenario 8, and nothing else in the product.
+   *
+   * Recorded as `simulated: true` on an event the procure step reads, so it is visible in
+   * the mission's own event list before it fires, visible again after, and impossible to
+   * mistake for a genuine refusal from PURCHASE.
+   */
+  private async armSimulatedFault(missionId: string): Promise<string> {
+    return withTenant(async (tx) => {
+      const eventKey = `fault:${missionId}:${SIMULATED_FAULT.stepKey}`;
+      const existing = await tx.select({ id: fulfilmentEvent.id, handled: fulfilmentEvent.handledAt })
+        .from(fulfilmentEvent).where(eq(fulfilmentEvent.eventKey, eventKey));
+      if (existing[0]) {
+        return existing[0].handled
+          ? "A fault was already armed on this mission and has already fired; it is one-shot and will not fire again."
+          : "A fault was already armed on this mission's purchase step; arming it twice changes nothing.";
+      }
+
+      await tx.insert(fulfilmentEvent).values({
+        id: newId(),
+        tenantId: currentTenant().tenantId,
+        createdBy: currentTenant().actorId,
+        updatedBy: currentTenant().actorId,
+        missionId,
+        eventKey,
+        eventName: SIMULATED_FAULT.eventName,
+        source: "world-simulator",
+        simulated: true,
+        payload: { step: SIMULATED_FAULT.stepKey, reason: SIMULATED_FAULT.reason, oneShot: true },
+        impact: { willPrevent: "every purchase order on the next attempt at the procure step" },
+        disposition: "armed",
+      });
+
+      await this.audit.appendInTx(tx, {
+        action: "fulfilment.demo.fault_armed",
+        entityType: "fulfilment_mission",
+        entityId: missionId,
+        data: { step: SIMULATED_FAULT.stepKey, simulated: true },
+      });
+
+      return "Armed ONE simulated fault on the purchase step. It is labelled simulated, it fires once, and the retry runs the real path.";
+    });
+  }
+
+  /**
+   * Generate a supplier price list for this mission's short components, and read it in.
+   *
+   * The file is generated rather than uploaded so the scenario runs without a presenter
+   * having a spreadsheet to hand — and it is recorded as `origin: "scenario-generated"`, so
+   * nothing on screen can suggest a person supplied it. It goes through the SAME parser a
+   * real .xlsx upload goes through.
+   *
+   * The numbers are the seeded terms with one stated transformation: two days quicker and
+   * six percent dearer. That is what makes the demonstration mean anything — the plan has to
+   * visibly move when the file is read, and a file that agreed with the seeded table in
+   * every particular would prove only that the upload endpoint returned 200.
+   */
+  private async loadDemoPriceList(missionId: string): Promise<string> {
+    const shortages = await this.computeShortages(missionId);
+    const rows: UploadedSupplierTerm[] = [];
+    for (const s of shortages.filter((x) => x.shortQty > 1e-9)) {
+      for (const t of SEEDED_SOURCING[s.itemCode] ?? []) {
+        rows.push({
+          itemCode: s.itemCode,
+          vendorCode: t.vendorCode,
+          vendorName: t.vendorName,
+          unitPrice: Math.round(t.unitPrice * 1.06),
+          leadTimeDays: Math.max(1, t.leadTimeDays - 2),
+          reliability: t.reliability,
+          capacityUnits: t.capacityUnits,
+          qualified: t.qualified,
+        });
+      }
+    }
+    if (rows.length === 0) {
+      throw new AppError("SCENARIO_UNAVAILABLE", 409,
+        "This order is short of components that have no seeded supplier terms to build a price list from.");
+    }
+
+    const filename = "supplier-price-list.csv";
+    const result = await this.ingestSupplierTerms(missionId, filename, toBase64(buildTermsCsv(rows)), "scenario-generated");
+    return `Generated ${filename} — ${result.rowCount} quoted line(s) across ${result.itemCodes.length} component(s), ` +
+      `two days quicker and 6% dearer than the seeded terms, and read it through the real spreadsheet parser.`;
+  }
+
+  /* ------------------------------------------------------ the spreadsheet source -- */
+
+  /**
+   * Take a supplier price list and make it THIS mission's sourcing terms.
+   *
+   * Phase 1 has no price or lead-time master, so these four numbers always come from outside
+   * the ERP. This lets them come from the file a factory actually has, and the mission
+   * re-plans from it: the steps from `sourcing` onward are discarded so the sourcing step
+   * genuinely re-reads, rather than the new file quietly applying to a plan that was built
+   * before it arrived.
+   *
+   * REFUSED ONCE THE MISSION HAS COMMITTED ANYTHING. New terms cannot un-raise a purchase
+   * order. That needs a compensation and a person, not a re-plan.
+   */
+  async ingestSupplierTerms(
+    missionId: string,
+    filename: string,
+    fileBase64: string,
+    origin: "uploaded" | "scenario-generated" = "uploaded",
+  ): Promise<{ duplicate: boolean; rowCount: number; itemCodes: string[]; filename: string; replanned: boolean }> {
+    // Parsed BEFORE the transaction opens. A file that will not parse must not have left a
+    // half-rewound mission behind it.
+    const parsed = parseSupplierTerms(fileBase64);
+
+    return withTenant(async (tx) => {
+      const m = await this.loadMission(tx, missionId);
+      if (["completed", "failed", "cancelled"].includes(m.status)) {
+        throw new AppError("MISSION_CLOSED", 409, `${m.missionNo} is ${m.status}; new supplier terms cannot change anything now.`);
+      }
+
+      const acted = await tx.select({ id: fulfilmentAction.id })
+        .from(fulfilmentAction)
+        .where(and(eq(fulfilmentAction.missionId, missionId), eq(fulfilmentAction.status, "verified")))
+        .limit(1);
+      if (acted[0]) {
+        throw new AppError("MISSION_ALREADY_ACTED", 409,
+          `${m.missionNo} has already committed documents under its current terms. A new price list does not un-raise a ` +
+          `purchase order — that needs a compensation, not a re-plan.`);
+      }
+
+      const eventKey = `terms:${missionId}:${parsed.bytesHash.slice(0, 16)}`;
+      const dup = await tx.select({ id: fulfilmentEvent.id }).from(fulfilmentEvent).where(eq(fulfilmentEvent.eventKey, eventKey));
+      if (dup[0]) {
+        return { duplicate: true, rowCount: parsed.rows.length, itemCodes: parsed.itemCodes, filename, replanned: false };
+      }
+
+      await tx.insert(fulfilmentEvent).values({
+        id: newId(),
+        tenantId: currentTenant().tenantId,
+        createdBy: currentTenant().actorId,
+        updatedBy: currentTenant().actorId,
+        missionId,
+        eventKey,
+        eventName: TERMS_UPLOAD_EVENT,
+        source: origin === "uploaded" ? "spreadsheet-upload" : "demo-scenario",
+        // A file a person uploaded is not simulated. One this build generated for a demo is.
+        simulated: origin !== "uploaded",
+        payload: {
+          filename,
+          origin,
+          sheetName: parsed.sheetName,
+          fileKind: parsed.fileKind,
+          byteSize: parsed.byteSize,
+          bytesHash: parsed.bytesHash,
+          itemCodes: parsed.itemCodes,
+          rows: parsed.rows,
+        },
+        impact: { supersedes: "seeded sourcing terms", forItemCodes: parsed.itemCodes },
+        disposition: "accepted",
+        handledAt: new Date(),
+      });
+
+      // Rewind to sourcing so the file is genuinely read. Evidence gathered before it —
+      // the order, the BOM, the stock — is untouched: a price list does not change what is
+      // on the shelf.
+      const rewound = await tx.delete(fulfilmentStep).where(and(
+        eq(fulfilmentStep.missionId, missionId),
+        inArray(fulfilmentStep.stepKey, ["sourcing", "strategy", "critique", "authorize", "reserve", "procure", "workorder", "watch", "close"]),
+      )).returning({ id: fulfilmentStep.id });
+
+      await tx.delete(fulfilmentApproval).where(and(
+        eq(fulfilmentApproval.missionId, missionId),
+        sql`${fulfilmentApproval.decision} IS NULL`,
+      ));
+
+      const pv = await tx.select({ id: fulfilmentPlanVersion.id })
+        .from(fulfilmentPlanVersion)
+        .where(and(eq(fulfilmentPlanVersion.missionId, missionId), sql`${fulfilmentPlanVersion.supersededAt} IS NULL`));
+      for (const v of pv) {
+        await tx.update(fulfilmentPlanVersion).set({
+          supersededAt: new Date(),
+          supersedeReason: `supplier terms replaced by ${filename}`,
+          updatedAt: new Date(),
+          updatedBy: currentTenant().actorId,
+        }).where(eq(fulfilmentPlanVersion.id, v.id));
+      }
+
+      await tx.update(fulfilmentMission).set({
+        status: "planning",
+        stage: "evidence",
+        waitingReason: null,
+        updatedAt: new Date(),
+        updatedBy: currentTenant().actorId,
+      }).where(eq(fulfilmentMission.id, missionId));
+
+      await this.audit.appendInTx(tx, {
+        action: "fulfilment.sourcing.terms_uploaded",
+        entityType: "fulfilment_mission",
+        entityId: missionId,
+        data: { filename, origin, rows: parsed.rows.length, itemCodes: parsed.itemCodes, bytesHash: parsed.bytesHash },
+      });
+
+      return { duplicate: false, rowCount: parsed.rows.length, itemCodes: parsed.itemCodes, filename, replanned: rewound.length > 0 };
+    });
+  }
+
+  /** A blank price list in the shape this endpoint accepts, for somebody to fill in. */
+  supplierTermsTemplate(): { filename: string; csv: string } {
+    return {
+      filename: "supplier-terms-template.csv",
+      csv: buildTermsCsv([
+        { itemCode: "CMP-CAS50", vendorCode: "V-MER-01", vendorName: "Meridian Metals & Alloys", unitPrice: 500, leadTimeDays: 14, reliability: 0.85, capacityUnits: 10_000, qualified: true },
+      ]),
+    };
+  }
+
+  /**
+   * This mission's uploaded terms, keyed by item code.
+   *
+   * The LATEST upload wins outright rather than merging with the ones before it. Merging
+   * price lists is a sourcing decision — which quote is current? — and this is not the place
+   * to make it silently.
+   */
+  private async uploadedTermsFor(missionId: string): Promise<Map<string, SeededSupplierTerms[]> | null> {
+    const rows = await withTenant((tx) =>
+      tx.select({ payload: fulfilmentEvent.payload })
+        .from(fulfilmentEvent)
+        .where(and(eq(fulfilmentEvent.missionId, missionId), eq(fulfilmentEvent.eventName, TERMS_UPLOAD_EVENT)))
+        .orderBy(desc(fulfilmentEvent.observedAt))
+        .limit(1),
+    );
+    const payload = rows[0]?.payload as { rows?: UploadedSupplierTerm[] } | undefined;
+    const quoted = payload?.rows ?? [];
+    if (quoted.length === 0) return null;
+
+    const byItem = new Map<string, SeededSupplierTerms[]>();
+    for (const r of quoted) {
+      const list = byItem.get(r.itemCode) ?? [];
+      list.push({
+        vendorCode: r.vendorCode,
+        vendorName: r.vendorName,
+        unitPrice: r.unitPrice,
+        leadTimeDays: r.leadTimeDays,
+        reliability: r.reliability,
+        capacityUnits: r.capacityUnits,
+        qualified: r.qualified,
+      });
+      byItem.set(r.itemCode, list);
+    }
+    return byItem;
+  }
+
+  /**
+   * What each confirmed order would do if a mission were opened on it.
+   *
+   * Read-only and mission-free: it explodes the BOM, nets it against stock and resolves the
+   * suppliers exactly as a mission would, without writing anything. Capped, because this
+   * runs a BOM explosion and a stock read per order and the answer is only used to choose a
+   * demo starting point.
+   */
+  private async probeOrders(limit = 6): Promise<OrderProbe[]> {
+    const orders = await this.startable();
+    const out: OrderProbe[] = [];
+
+    for (const o of orders.slice(0, limit)) {
+      const salesOrderId = String(o.id);
+      const detail = await withTenant(async (tx) => this.loadOrder(tx, salesOrderId));
+      const first = detail.lines[0];
+      if (!first) continue;
+
+      const orderQty = detail.lines.reduce((n, l) => n + num(l.qty), 0);
+      const material = await this.materialPlanForOrder(salesOrderId);
+      const shortages = material.shortages;
+      const short = shortages.filter((x) => x.shortQty > 1e-9);
+      const structures = await Promise.all(detail.lines.map((l) => this.bom.getActiveBomForItem(l.itemId)));
+
+      // A supplier the vendor master does not hold keeps its CODE where a uuid would be —
+      // see `shortagesFor`. That is the same fact `stepProcure` refuses on, read here
+      // before a mission is opened rather than after one has stopped.
+      const unresolved = new Set<string>();
+      const unsourceable: string[] = [];
+      for (const line of short) {
+        const qualified = line.suppliers.filter((v) => v.qualified);
+        if (qualified.length === 0) unsourceable.push(line.itemCode);
+        for (const v of qualified) {
+          if (!UUID_LIKE.test(v.vendorId)) unresolved.add(`${v.vendorName} (${v.vendorId})`);
+        }
+      }
+
+      const mission = o.mission as { status?: string } | null;
+      out.push({
+        salesOrderId,
+        soNo: String(o.soNo),
+        customerName: String(o.customerName ?? "—"),
+        orderQty,
+        itemCode: detail.lines.map((l) => l.itemCode).join(", "),
+        hasReleasedBom: structures.every((b) => b !== null),
+        componentCount: shortages.length,
+        shortCount: short.length,
+        unresolvedVendors: [...unresolved],
+        unsourceable,
+        hasLiveMission: mission !== null && !["completed", "failed", "cancelled"].includes(mission?.status ?? ""),
+      });
+    }
+
+    return out;
+  }
+
   /* -------------------------------------------------------------- internals -- */
 
-  private toStepView(r: typeof fulfilmentStep.$inferSelect): StepView {
+  private toStepView(r: typeof fulfilmentStep.$inferSelect, ctx: StepContext): StepView {
+    const retry = ctx.retries.get(r.stepKey);
+    const at = r.startedAt ?? r.endedAt;
     return {
       seq: r.seq, stepKey: r.stepKey, title: r.title, kind: r.kind, agentKey: r.agentKey,
       // Derived from the arc rather than stored, so a step can never carry a chapter the
@@ -1360,8 +2863,73 @@ export class FulfilmentMissionService {
       flow: flowOf(r),
       where: whereOf(r.stepKey),
       question: r.question, status: r.status, durationMs: r.durationMs,
+      // WHEN THE STEP ACTUALLY RAN, as the server saw it.
+      //
+      // The table has stored these since 0094; the view simply never passed them on, so
+      // every consumer that wanted a timestamp had to fall back on the time the BROWSER
+      // happened to receive the row. That is a different fact wearing the same label — it
+      // drifts with network latency, and on a re-read of a finished mission it reports
+      // "now" for work that ran yesterday. An audit trail whose clock is the reader's is
+      // not an audit trail.
+      startedAt: r.startedAt ? r.startedAt.toISOString() : null,
+      endedAt: r.endedAt ? r.endedAt.toISOString() : null,
       evidence: r.evidence, findings: r.findings, narration: r.narration, confidence: r.confidence,
+      // Derived from what this step recorded, plus the three mission-level facts the row
+      // cannot know: which order it is, whether this run is a retry, and where the supplier
+      // terms came from.
+      pipeline: buildPipeline({
+        stepKey: r.stepKey,
+        status: r.status,
+        at: at ? at.toISOString() : null,
+        evidence: r.evidence,
+        findings: r.findings,
+        refusedReason: r.refusedReason,
+        soNo: ctx.soNo,
+        attempt: retry?.attempt ?? 1,
+        previousFailure: retry?.previousFailure ?? null,
+        termsFrom: ctx.terms.from,
+        termsFile: ctx.terms.file,
+      }),
     };
+  }
+
+  /**
+   * The mission-level facts every step view needs, read once.
+   *
+   * Both come out of the event log rather than out of new columns, and that is the reason
+   * a retry and a spreadsheet upload are recorded as events at all: `fulfilment_event`
+   * already holds "something happened to this mission, here is what and when", which is
+   * exactly what both of these are. A migration adding `attempt_no` to `fulfilment_step`
+   * would store the same fact in a second place.
+   */
+  private async stepContext(tx: Tx, missionId: string, soNo: string): Promise<StepContext> {
+    const rows = await tx
+      .select({ name: fulfilmentEvent.eventName, payload: fulfilmentEvent.payload, at: fulfilmentEvent.observedAt })
+      .from(fulfilmentEvent)
+      .where(and(
+        eq(fulfilmentEvent.missionId, missionId),
+        inArray(fulfilmentEvent.eventName, [STEP_RETRY_EVENT, TERMS_UPLOAD_EVENT]),
+      ))
+      .orderBy(asc(fulfilmentEvent.observedAt));
+
+    const retries = new Map<string, { attempt: number; previousFailure: string | null }>();
+    let terms: StepContext["terms"] = { from: "seeded", file: null };
+
+    for (const r of rows) {
+      const p = (r.payload ?? {}) as Record<string, unknown>;
+      if (r.name === STEP_RETRY_EVENT) {
+        const key = String(p.stepKey ?? "");
+        const attempt = Number(p.attempt ?? 2);
+        const previous = p.previousFailure == null ? null : String(p.previousFailure);
+        const held = retries.get(key);
+        // The LATEST attempt wins. A step retried twice shows attempt 3 and the failure the
+        // third run was recovering from, not the first one.
+        if (!held || attempt >= held.attempt) retries.set(key, { attempt, previousFailure: previous });
+      } else {
+        terms = { from: "spreadsheet", file: p.filename == null ? null : String(p.filename) };
+      }
+    }
+    return { soNo, retries, terms };
   }
 
   private async writeStep(
@@ -1399,7 +2967,17 @@ export class FulfilmentMissionService {
 
   private async recordAction(
     tx: Tx, missionId: string, planVersionId: string,
-    a: { actionType: string; targetDomain: string; title: string; params: unknown; autonomyTier: string },
+    a: {
+      actionType: string; targetDomain: string; title: string; params: unknown; autonomyTier: string;
+      /**
+       * What the action actually produced — the document numbers, once there are any.
+       *
+       * Was a hardcoded `{ ok: true }`, which was true of every action ever taken and
+       * therefore said nothing. An action row that names PO-2627-00014 is auditable; one
+       * that says `ok` is a claim with no way to check it.
+       */
+      result?: unknown;
+    },
   ) {
     // Which granted approval, if any, this action proceeds under.
     //
@@ -1415,9 +2993,51 @@ export class FulfilmentMissionService {
       ))
       .limit(1);
 
+    const digest = digestOf({ type: a.actionType, params: a.params, plan: planVersionId });
+    const idempotencyKey = `${missionId}:${a.actionType}:${digest}`;
+    const existing = await tx
+      .select({
+        id: fulfilmentAction.id,
+        actionNo: fulfilmentAction.actionNo,
+        digest: fulfilmentAction.digest,
+        status: fulfilmentAction.status,
+        verified: fulfilmentAction.verified,
+      })
+      .from(fulfilmentAction)
+      .where(eq(fulfilmentAction.idempotencyKey, idempotencyKey))
+      .limit(1);
+    const prior = existing[0] ?? null;
+    const mode = actionPersistenceMode(prior);
+
+    if (prior) {
+      if (prior.digest !== digest) throw Errors.idempotencyMismatch();
+      if (mode === "reset_for_retry") {
+        // One logical action keeps one row across attempts. A failed procure/work-order
+        // step used to leave this unique key behind, so retry created the missing domain
+        // document and then died forever trying to INSERT the same action key. Resetting
+        // the unverified row lets the new postcondition replace the failed attempt while
+        // the retry event/audit entry preserves why the earlier attempt stopped.
+        await tx.update(fulfilmentAction).set({
+          title: a.title,
+          params: a.params as object,
+          autonomyTier: a.autonomyTier,
+          approvalId: granted[0]?.id ?? null,
+          status: "executed",
+          executedAt: new Date(),
+          result: (a.result ?? { ok: true }) as object,
+          postcondition: null,
+          verifiedAt: null,
+          verified: null,
+          failureReason: null,
+          updatedAt: new Date(),
+          updatedBy: currentTenant().actorId,
+        }).where(eq(fulfilmentAction.id, prior.id));
+      }
+      return { id: prior.id, actionNo: prior.actionNo, digest };
+    }
+
     const id = newId();
     const actionNo = await this.numbering.next(tx, "fulfilment_action", fyCode(new Date().toISOString()));
-    const digest = digestOf({ type: a.actionType, params: a.params, plan: planVersionId });
     await tx.insert(fulfilmentAction).values({
       id,
       tenantId: currentTenant().tenantId,
@@ -1428,9 +3048,9 @@ export class FulfilmentMissionService {
       params: a.params as object, digest, autonomyTier: a.autonomyTier,
       status: "executed",
       approvalId: granted[0]?.id ?? null,
-      idempotencyKey: `${missionId}:${a.actionType}:${digest}`,
+      idempotencyKey,
       executedAt: new Date(),
-      result: { ok: true },
+      result: (a.result ?? { ok: true }) as object,
     });
     return { id, actionNo, digest };
   }
@@ -1520,44 +3140,123 @@ export class FulfilmentMissionService {
     return rows.reduce((n, r) => n + num(r.qty), 0);
   }
 
-  /** BOM explosion netted against real on-hand, with the seeded sourcing terms attached. */
-  private async computeShortages(missionId: string): Promise<ShortageLine[]> {
-    const m = await withTenant((tx) => this.loadMission(tx, missionId));
-    const obj = m.objective as { orderQty: number; lines: Array<{ itemId: string; itemCode: string }> };
-    const first = obj.lines[0];
-    if (!first) return [];
+  /**
+   * The exact finished-good quantity left to make on each order line.
+   *
+   * Reads physical stock and reservations in the same tenant transaction. Stock is grouped
+   * by item before allocation, so two lines for the same finished good cannot both consume
+   * the same five units on hand.
+   */
+  private async lineDemandInTx(tx: Tx, salesOrderId: string): Promise<ProductionDemand[]> {
+    const order = await this.loadOrder(tx, salesOrderId);
+    const lines: LineDemand[] = order.lines.map((l) => ({
+      lineId: l.id,
+      itemId: l.itemId,
+      itemCode: l.itemCode,
+      qty: num(l.qty),
+      reservedQty: num(l.reservedQty),
+    }));
+    const itemIds = [...new Set(lines.map((l) => l.itemId))];
+    if (itemIds.length === 0) return [];
 
-    const bom = await this.bom.getActiveBomForItem(first.itemId);
-    if (!bom) return [];
+    const stock = await tx
+      .select({ itemId: stockBalance.itemId, qty: stockBalance.qty })
+      .from(stockBalance)
+      .where(inArray(stockBalance.itemId, itemIds));
+    const onHand = new Map<string, number>();
+    for (const row of stock) onHand.set(row.itemId, (onHand.get(row.itemId) ?? 0) + num(row.qty));
+
+    // Reservations on every OTHER order consume ATP before this mission gets a turn.
+    const other = await tx
+      .select({ itemId: salesOrderLine.itemId, reservedQty: salesOrderLine.reservedQty })
+      .from(salesOrderLine)
+      .where(and(
+        inArray(salesOrderLine.itemId, itemIds),
+        sql`${salesOrderLine.orderId} <> ${salesOrderId}`,
+        sql`${salesOrderLine.reservedQty} > 0`,
+      ));
+    const reservedElsewhere = new Map<string, number>();
+    for (const row of other) {
+      reservedElsewhere.set(row.itemId, (reservedElsewhere.get(row.itemId) ?? 0) + num(row.reservedQty));
+    }
+    return allocateProductionDemand(lines, onHand, reservedElsewhere);
+  }
+
+  /**
+   * Explode every uncovered finished-good line, aggregate common components once, then net
+   * the shared component stock once. The peg list survives the aggregation so PURCHASE can
+   * still write one vendor document while every PO line names the customer line it serves.
+   */
+  private async materialPlanForOrder(
+    salesOrderId: string,
+    uploaded: ReadonlyMap<string, SeededSupplierTerms[]> | null = null,
+  ): Promise<MaterialPlan> {
+    const demand = await withTenant((tx) => this.lineDemandInTx(tx, salesOrderId));
+    const structures = await Promise.all(
+      demand
+        .filter((l) => l.makeQty > 1e-9)
+        .map(async (line) => ({ line, bom: await this.bom.getActiveBomForItem(line.itemId) })),
+    );
+
+    const componentDemand = new Map<string, { required: number; pegs: ComponentPeg[] }>();
+    for (const { line, bom } of structures) {
+      // Engineering records and stops on this fault before planning. Skipping here avoids
+      // inventing a BOM merely to make a scenario probe return a number.
+      if (!bom) continue;
+      const factor = line.makeQty / (Number(bom.outputQty) || 1);
+      for (const component of bom.components) {
+        const required = component.qty * factor *
+          (component.scrapPct > 0 && component.scrapPct < 100 ? 1 / (1 - component.scrapPct / 100) : 1);
+        const held = componentDemand.get(component.componentItemId) ?? { required: 0, pegs: [] };
+        held.required += required;
+        held.pegs.push({ salesOrderLineId: line.lineId, qty: required });
+        componentDemand.set(component.componentItemId, held);
+      }
+    }
 
     return withTenant(async (tx) => {
-      const compIds = bom.components.map((c) => c.componentItemId);
-      const items = compIds.length
-        ? await tx.select({ id: item.id, code: item.itemCode, name: item.name }).from(item).where(inArray(item.id, compIds))
+      const componentIds = [...componentDemand.keys()];
+      const items = componentIds.length
+        ? await tx
+            .select({ id: item.id, code: item.itemCode, name: item.name })
+            .from(item)
+            .where(inArray(item.id, componentIds))
         : [];
       const byId = new Map(items.map((i) => [i.id, i]));
-      const vendors = await tx.select({ id: vendor.id, code: vendor.code, name: vendor.name }).from(vendor);
+      const vendors = await tx.select({ id: vendor.id, code: vendor.code }).from(vendor);
       const vendorByCode = new Map(vendors.map((v) => [v.code, v]));
+      const shortages: ShortageLine[] = [];
+      const shortagePegs = new Map<string, ComponentPeg[]>();
 
-      const out: ShortageLine[] = [];
-      const factor = obj.orderQty / (Number(bom.outputQty) || 1);
+      for (const [componentItemId, requirement] of componentDemand) {
+        const meta = byId.get(componentItemId);
+        const code = meta?.code ?? componentItemId.slice(0, 8);
+        const onHand = await this.onHandOf(tx, componentItemId);
+        const shortQty = round3(Math.max(0, requirement.required - onHand));
+        let stockLeft = onHand;
+        const pegs: ComponentPeg[] = [];
+        for (const peg of requirement.pegs) {
+          const covered = Math.min(stockLeft, peg.qty);
+          stockLeft = Math.max(0, stockLeft - covered);
+          const short = round3(Math.max(0, peg.qty - covered));
+          if (short > 1e-9) pegs.push({ salesOrderLineId: peg.salesOrderLineId, qty: short });
+        }
+        // Reconcile only float/3-decimal rounding onto the final peg; a larger difference
+        // would be a real calculation fault and is left for `allocateSourcingPegs` to stop.
+        const pegTotal = round3(pegs.reduce((n, p) => n + p.qty, 0));
+        const delta = round3(shortQty - pegTotal);
+        if (pegs.length > 0 && Math.abs(delta) <= 0.002) pegs[pegs.length - 1]!.qty = round3(pegs[pegs.length - 1]!.qty + delta);
+        shortagePegs.set(code, pegs);
 
-      for (const c of bom.components) {
-        const meta = byId.get(c.componentItemId);
-        const code = meta?.code ?? c.componentItemId.slice(0, 8);
-        const required = c.qty * factor * (c.scrapPct > 0 && c.scrapPct < 100 ? 1 / (1 - c.scrapPct / 100) : 1);
-        const onHand = await this.onHandOf(tx, c.componentItemId);
-        const short = Math.max(0, required - onHand);
-
-        const terms = SEEDED_SOURCING[code] ?? defaultTermsFor(code);
-        out.push({
-          itemId: c.componentItemId,
+        const terms = uploaded?.get(code) ?? SEEDED_SOURCING[code] ?? defaultTermsFor(code);
+        shortages.push({
+          itemId: componentItemId,
           itemCode: code,
           itemName: meta?.name ?? code,
-          requiredQty: round3(required),
+          requiredQty: round3(requirement.required),
           onHandQty: round3(onHand),
           incomingQty: 0,
-          shortQty: round3(short),
+          shortQty,
           suppliers: terms.map((t) => ({
             vendorId: vendorByCode.get(t.vendorCode)?.id ?? t.vendorCode,
             vendorName: t.vendorName,
@@ -1569,17 +3268,29 @@ export class FulfilmentMissionService {
           })),
         });
       }
-      return out;
+      return { shortages, shortagePegs };
     });
+  }
+
+  /** BOM explosion netted against real on-hand, with this mission's sourcing terms attached. */
+  private async computeShortages(missionId: string): Promise<ShortageLine[]> {
+    const m = await withTenant((tx) => this.loadMission(tx, missionId));
+    const uploaded = await this.uploadedTermsFor(missionId);
+    return (await this.materialPlanForOrder(m.salesOrderId, uploaded)).shortages;
   }
 
   /** Everything the planner needs, in one snapshot so every candidate is judged alike. */
   private async buildEvidence(missionId: string): Promise<PlanningEvidence> {
     const m = await withTenant((tx) => this.loadMission(tx, missionId));
-    const obj = m.objective as { orderQty: number; lines: Array<{ rate: number }> };
+    const obj = m.objective as { orderQty: number; lines: Array<{ qty: number; rate: number }> };
     const shortages = await this.computeShortages(missionId);
 
-    const sellingPrice = obj.lines[0]?.rate ?? 0;
+    // The planner still scores one order-level candidate, so a multi-item order is expressed
+    // as total units at a revenue-weighted unit price. Taking line zero's rate made every
+    // other line free (or priced like the first one) in the margin calculation.
+    const sellingPrice = obj.orderQty > 0
+      ? obj.lines.reduce((n, l) => n + num(l.qty) * num(l.rate), 0) / obj.orderQty
+      : 0;
     const componentCost = shortages.reduce((n, s) => {
       const cheapest = Math.min(...s.suppliers.filter((v) => v.qualified).map((v) => v.unitPrice), 0);
       return n + (cheapest * s.onHandQty) / Math.max(1, obj.orderQty);
@@ -1714,12 +3425,19 @@ function plainOf(r: typeof fulfilmentStep.$inferSelect): string {
       return `I have set aside ${n(f.totalReserved)} units against this order. Nobody else can promise that stock now.`;
     }
     case "procure": {
+      // Counted from the DOCUMENTS now, not from the sourcing lines. Three lines across two
+      // vendors is two purchase orders, and telling a supervisor there are three would not
+      // match the two pieces of paper that turn up in the approval queue.
+      const pos = (f.purchaseOrders ?? []) as Array<Record<string, unknown>>;
       const lines = (f.committed ?? []) as Array<Record<string, unknown>>;
-      if (lines.length === 0) return `Nothing to buy — the order is covered from your own stock.`;
-      return `I have placed ${lines.length} purchase order${lines.length === 1 ? "" : "s"} worth ₹${fmtInr(Number(f.totalValue ?? 0))}, each one tagged to this customer order.`;
+      if (lines.length === 0 && pos.length === 0) return `Nothing to buy — the order is covered from your own stock.`;
+      if (pos.length === 0) return `I could not raise the purchase orders for this job, so nothing has been ordered.`;
+      return `I have raised ${pos.length} purchase order${pos.length === 1 ? "" : "s"} worth ₹${fmtInr(Number(f.totalValue ?? 0))} — ${pos.map((p) => String(p.poNo)).join(", ")}. ${pos.length === 1 ? "It is a draft" : "They are drafts"} until somebody approves them.`;
     }
-    case "workorder":
-      return `The job is on the shop-floor list for ${n(f.qty)} units, needed by ${String(f.needDate ?? "the promised date")}. It knows which customer it is for.`;
+    case "workorder": {
+      if (!f.productionOrderNo) return `No job went on the shop-floor list, so nothing is being built for this order yet.`;
+      return `Job ${String(f.productionOrderNo)} is on the shop-floor list for ${n(f.qty)} units, needed by ${String(f.needDate ?? "the promised date")}. It knows which customer it is for.`;
+    }
     case "watch": {
       const who = (f.watching ?? []) as string[];
       return who.length
@@ -1768,10 +3486,12 @@ function flowOf(r: typeof fulfilmentStep.$inferSelect): { from: string; did: str
       return { from: "The plan", did: "Checked your rules", to: f.requiresApproval ? "Needs your say-so" : "Allowed to proceed" };
     case "reserve":
       return { from: "Your stock", did: "Set some aside", to: `${n(f.totalReserved)} units held` };
-    case "procure":
-      return { from: "What you are short of", did: "Placed the orders", to: `₹${fmtInr(Number(f.totalValue ?? 0))} committed` };
+    case "procure": {
+      const pos = (f.purchaseOrders ?? []) as Array<Record<string, unknown>>;
+      return { from: "What you are short of", did: "Raised the purchase orders", to: `${pos.length} PO${pos.length === 1 ? "" : "s"}, ₹${fmtInr(Number(f.totalValue ?? 0))}` };
+    }
     case "workorder":
-      return { from: "The plan", did: "Told the shop floor", to: `${n(f.qty)} units to build` };
+      return { from: "The plan", did: "Released the work order", to: f.productionOrderNo ? `${String(f.productionOrderNo)}, ${n(f.qty)} units` : `${n(f.qty)} units to build` };
     case "watch":
       return { from: "The commitment", did: "Set a watch", to: "Waiting for change" };
     case "close":

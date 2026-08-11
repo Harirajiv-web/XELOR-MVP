@@ -10,6 +10,7 @@ import { Empty } from "@spine/states";
 import { inr, date, relativeDays } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
+import { StagePanel } from "@spine/ui/stage-panel";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { SalesOrderSummary } from "../api";
 import { creditBadge, isPastDue, salesApi, sumAmounts } from "../api";
@@ -179,6 +180,10 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
           </Can>
         }
       />
+
+      {/* Only drawn while the agent's current step belongs to THIS screen — see
+          `stage-panel.tsx`. On every other day it renders nothing at all. */}
+      <StagePanel />
 
       <div className="relative max-w-sm">
         <Search

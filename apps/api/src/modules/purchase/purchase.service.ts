@@ -26,6 +26,11 @@ import {
   type WorkflowInstanceView,
 } from "../../ports/workflow.port.js";
 import { STOCK_POSTER, type StockPoster } from "../../ports/stock.port.js";
+import type {
+  PurchaseOrderWriter,
+  CreateFulfilmentPoInput,
+  CreatedPurchaseOrder,
+} from "../../ports/fulfilment-docs.port.js";
 
 // `item` is ENGINEERING's table, read here only to put a code and a unit on a PO line. A
 // read-only join across a logical reference — no FK is declared and none is implied (§1.1);
@@ -74,6 +79,8 @@ export interface CreatePoLineInput {
   itemId: string;
   qty: number;
   rate: number;
+  /** Optional for ordinary replenishment; required by the fulfilment writer port. */
+  salesOrderLineId?: string | null;
 }
 export interface CreatePoInput {
   vendorId: string;
@@ -99,6 +106,8 @@ export interface PoLineView {
   rate: string;
   amount: string;
   receivedQty: string;
+  /** The customer commitment this bought material serves; null for unpegged replenishment. */
+  salesOrderLineId: string | null;
 }
 export interface PoView {
   id: string;
@@ -187,7 +196,7 @@ export interface GrnView {
  * one tenant-fenced transaction with hash-chained audit + outbox event.
  */
 @Injectable()
-export class PurchaseService implements SupplySource {
+export class PurchaseService implements SupplySource, PurchaseOrderWriter {
   constructor(
     private readonly audit: AuditLogService,
     private readonly edits: DocumentEditService,
@@ -357,6 +366,7 @@ export class PurchaseService implements SupplySource {
           qty: l.qty.toFixed(3),
           rate: l.rate.toFixed(2),
           amount: amount.toFixed(2),
+          salesOrderLineId: l.salesOrderLineId ?? null,
         };
       });
       await tx.insert(purchaseOrder).values({
@@ -388,6 +398,47 @@ export class PurchaseService implements SupplySource {
       });
       return this.viewPoInTx(tx, id);
     });
+  }
+
+  // ---- PurchaseOrderWriter port (called by the fulfilment mission) ----
+
+  /**
+   * Raise one purchase order on one vendor, for an agent that decided it was needed.
+   *
+   * This is an ADAPTER and nothing more: it maps the port's vocabulary onto `createPo` and
+   * hands back the document numbers. Every rule about what a PO is — numbering, the draft
+   * status it starts in, the audit row, the outbox event, the approval workflow that stands
+   * between a draft and a commitment — stays exactly where it was. That is the point of the
+   * port. If this method ever grows an `if`, the boundary has started leaking and the
+   * decision belongs on the other side of it.
+   *
+   * It deliberately does NOT submit the PO into the approval workflow. A mission may decide
+   * WHAT to buy inside its autonomy envelope; signing the purchase off is the stores→admin
+   * workflow's job and a person's signature, and an agent that approved its own purchase
+   * orders would make that workflow decorative.
+   */
+  async createPurchaseOrder(
+    input: CreateFulfilmentPoInput,
+    idempotencyKey: string,
+  ): Promise<CreatedPurchaseOrder> {
+    const po = await this.createPo(
+      {
+        vendorId: input.vendorId,
+        expectedDate: input.expectedDate,
+        remarks: input.remarks,
+        lines: input.lines.map((l) => ({
+          itemId: l.itemId,
+          qty: l.qty,
+          rate: l.rate,
+          salesOrderLineId: l.salesOrderLineId,
+        })),
+      },
+      idempotencyKey,
+    );
+    // `totalAmount` is a NUMERIC(18,2) string on the way out of the module. Numbered here
+    // once, so the caller mirrors PURCHASE's figure instead of re-multiplying qty x rate and
+    // arriving at a total that disagrees with the document by a rounding paisa.
+    return { id: po.id, poNo: po.poNo, totalValue: Number(po.totalAmount), status: po.status };
   }
 
   /* ------------------------------ corrections ----------------------------- */
@@ -583,6 +634,14 @@ export class PurchaseService implements SupplySource {
               qty: l.qty.toFixed(3),
               rate: l.rate.toFixed(2),
               amount: round2(l.qty * l.rate).toFixed(2),
+              // A correction must not cut the trace spine. The public edit shape does not
+              // let somebody re-peg a purchase line to a different customer commitment,
+              // so a rebuilt line carries the old peg at the same position (or, for older
+              // clients that reorder lines, the first matching item peg).
+              salesOrderLineId:
+                existingLines[i]?.salesOrderLineId ??
+                existingLines.find((e) => e.itemId === l.itemId)?.salesOrderLineId ??
+                null,
               // Carried forward: a rebuilt line for a part-received item must keep what
               // arrived, or the GRN path will happily receive the same goods twice.
               receivedQty: Math.min(alreadyReceived, l.qty).toFixed(3),
@@ -1049,6 +1108,7 @@ export class PurchaseService implements SupplySource {
         rate: purchaseOrderLine.rate,
         amount: purchaseOrderLine.amount,
         receivedQty: purchaseOrderLine.receivedQty,
+        salesOrderLineId: purchaseOrderLine.salesOrderLineId,
       })
       .from(purchaseOrderLine)
       // LEFT, deliberately. `item_id` is a cross-module LOGICAL reference with no foreign

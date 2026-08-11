@@ -11,6 +11,7 @@ import { inr, date, relativeDays } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
 import { cn } from "@spine/ui/cn";
+import { StagePanel } from "@spine/ui/stage-panel";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { PoSummaryRow } from "../api";
 import { purchaseApi, isLate } from "../api";
@@ -185,6 +186,9 @@ export default function OrdersScreen(_props: ScreenProps): React.JSX.Element {
           </Can>
         }
       />
+
+      {/* The mission lands here for the "commit the purchase" step. Absent otherwise. */}
+      <StagePanel />
 
       <div className="flex flex-wrap items-center gap-2">
         {TABS.map((t) => {

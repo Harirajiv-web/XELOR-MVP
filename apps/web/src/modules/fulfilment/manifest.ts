@@ -27,8 +27,17 @@ export const fulfilmentManifest: ModuleManifest = {
       description:
         "Start a fulfilment mission on a confirmed order and watch it work: the evidence it reads, the strategies it compares, the independent verification of its own claims, the point where it stops for a human, and the outcome it proves at the end. Every figure is labelled live, derived or seeded.",
     },
+    {
+      label: "Connectors",
+      path: "connectors",
+      permission: "agentos.run.read",
+      icon: "PlugZap",
+      description:
+        "What this intelligence layer is sitting on. One live connection — XELOR's own Phase 1 ERP, which is where every figure a mission quotes is read from and where every document it creates lands. The other eight (SAP, Tally, Odoo, Dynamics 365, MES/SCADA, Excel/CSV, REST API, direct database) are listed with what each would supply and marked NOT CONNECTED, because they are. Nothing on this screen is a demonstration of an integration that does not exist.",
+    },
   ],
   screens: {
     control: () => import("./screens/control"),
+    connectors: () => import("./screens/connectors"),
   },
 };

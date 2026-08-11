@@ -16,8 +16,22 @@ const PUBLIC_DEMO_PERMISSIONS = [
   ),
   // The investor presenter is the isolated demo tenant's control-room operator. These
   // mutation permissions are still enforced again by the API against the seeded admin.
+  // THE THREE DOCUMENTS THE DEMO CREATES BY HAND, and they must be kept together.
+  //
+  // These are drawn from a hardcoded list rather than from `/me` because public-demo mode
+  // never makes that call, so a permission the API grants is still invisible here unless
+  // it is written down twice. That cost a real bug: `production.order.create` was missing
+  // while the other two were present, so "New work order" was the one create button that
+  // never appeared — on a screen whose API call would have succeeded. It looked like a
+  // broken page and was a missing line in this array.
+  //
+  // Anything added behind <Can> on a demo screen has to be added here too.
   "sales.order.create",
   "purchase.po.create",
+  "production.order.create",
+  // Spreadsheet import: reading a file is `flow.read` (already covered by the nav entry),
+  // but committing rows into Phase 1 is `flow.manage`, which no nav entry asks for.
+  "integration.flow.manage",
   "agentos.run.operate",
   "agentos.approval.decide",
   "aiops.killswitch.operate",

@@ -80,8 +80,8 @@
     <p><span class="tag live">LIVE</span> wired and exercised in the prototype &nbsp; <span class="tag partial">PARTIAL</span> real foundation but incomplete production behavior &nbsp; <span class="tag reserved">RESERVED</span> a deliberate interface/schema extension point &nbsp; <span class="tag planned">RECOMMENDED</span> proposed after the demo.</p>
     <div class="kpi">
       <div><b>5</b>workspace packages/apps</div>
-      <div><b>31</b>NestJS controller surfaces</div>
-      <div><b>242</b>migration CREATE TABLE declarations</div>
+      <div><b>33</b>NestJS controller surfaces</div>
+      <div><b>251</b>migration CREATE TABLE declarations</div>
       <div><b>9/9</b>Agent OS identities connected</div>
     </div>
     <p class="small">Counts are repository observations, not a claim that every table or endpoint is complete for commercial production.</p>
@@ -95,7 +95,7 @@
         <tr><td>Runtime &amp; language</td><td>Node.js 22; TypeScript 5.7; ESM</td><td><span class="tag live">LIVE</span></td><td>One language across browser, API, platform rules, tests and workers.</td></tr>
         <tr><td>Monorepo</td><td>pnpm 9 workspaces</td><td><span class="tag live">LIVE</span></td><td>Coordinates five workspace packages: <code>apps/web</code>, <code>apps/api</code>, <code>apps/edge</code>, <code>packages/platform</code> and <code>packages/db</code>.</td></tr>
         <tr><td>Web application</td><td>Next.js 15 App Router; React 19; Tailwind CSS 4; Radix UI; Lucide; Three.js</td><td><span class="tag live">LIVE</span></td><td>Authenticated XELOR shell, horizontal module tabs, global Human Approvals entry with live pending count, dedicated approval inbox, department gateway, ONYX rail, Mission Control and an adaptive 3-D digital-twin sign-in scene.</td></tr>
-        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 31 controller surfaces, including health/readiness.</td></tr>
+        <tr><td>API</td><td>NestJS 11; Express adapter; RxJS; SWC build</td><td><span class="tag live">LIVE</span></td><td>Boundary-oriented modular monolith with 33 controller surfaces, including health/readiness.</td></tr>
         <tr><td>Validation</td><td>Zod 3</td><td><span class="tag live">LIVE</span></td><td>Validates most request bodies and agent capability inputs; a few documented endpoints still bypass the pattern.</td></tr>
         <tr><td>Database</td><td>PostgreSQL 17; pgvector; pg_trgm; btree_gist</td><td><span class="tag live">LIVE</span></td><td>Transactional ERP system of record, vector-ready columns, fuzzy master matching and constraint-backed invariants.</td></tr>
         <tr><td>Data access</td><td>Drizzle ORM 0.36; SQL migrations; node-postgres</td><td><span class="tag live">LIVE</span></td><td>Typed schema access plus explicit migrations and operational checks.</td></tr>
@@ -105,7 +105,7 @@
         <tr><td>Audit &amp; workflow</td><td>Hash chains; append-only tables; W1 approval engine; Agent OS human gates</td><td><span class="tag live">LIVE</span></td><td>Tenant-scoped pending inbox, permission-checked Approve/Reject, mandatory decision note, identity/time attribution, durable pause/resume and tamper evidence.</td></tr>
         <tr><td>AI</td><td>Thin provider router; deterministic stub; optional Ollama; custom eval harness; Agent OS; Decision Commander</td><td><span class="tag partial">PARTIAL</span></td><td>Cross-module analysis, missions and approvals are live; language reasoning remains deterministic and no hosted provider is active.</td></tr>
         <tr><td>Decision data</td><td>PostgreSQL evidence-link graph and outcome metrics with RLS, audit and explicit verification state</td><td><span class="tag live">LIVE</span></td><td>Estimated exposure and verified value are stored and reported separately; verification requires observed data, method and named reviewer.</td></tr>
-        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>783 unit/service tests pass (712 platform, 4 database, 56 API, 6 edge and 5 web-client); the live investor matrix passes 99/99 and Playwright lists 32 browser scenarios separately.</td></tr>
+        <tr><td>Testing</td><td>Node test runner; Playwright 1.55; ESLint 9; TypeScript checks</td><td><span class="tag live">LIVE</span></td><td>991 unit/service tests pass (821 platform, 5 database, 101 API, 6 edge and 58 web-client); one environment-dependent API integration test is skipped, the live investor matrix passes 99/99 and Playwright lists 32 browser scenarios separately.</td></tr>
         <tr><td>Deployment packaging</td><td>Docker Compose plus Railway Dockerfiles, service JSON, health/readiness and boot scripts</td><td><span class="tag live">LIVE</span></td><td>Local seven-service development and a five-service hosted-demo topology are reproducible. A currently operating cloud environment or production topology is not claimed.</td></tr>
       </tbody>
     </table>
@@ -168,7 +168,7 @@
 
   <section class="page">
     <h2>3A. Module maturity map</h2>
-    <p class="lead">All 22 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
+    <p class="lead">All 24 modules are registered and visible, but “module exists” is not the same as “enterprise workflow complete”. This map names the real centre of each module and the missing edge that matters most.</p>
     <table class="small">
       <thead><tr><th>Owner</th><th>Module</th><th>Working centre</th><th>Most important boundary</th></tr></thead>
       <tbody>
@@ -224,7 +224,7 @@
       <thead><tr><th>Concern</th><th>Implemented demo behavior</th><th>Still required for production</th></tr></thead>
       <tbody>
         <tr><td>Images/config</td><td>Four Dockerfiles, five Railway service descriptors, watch patterns and health/restart policies under <code>infra/railway</code>.</td><td>Registry signing, SBOM, vulnerability policy, promoted immutable digests and IaC.</td></tr>
-        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 90 forward migrations through <code>0091</code>, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
+        <tr><td>Database boot</td><td>Wait for PostgreSQL, apply 96 forward migrations through <code>0097</code>, start API, seed/checkpoint a named demo version once, then report readiness.</td><td>Managed Multi-AZ database, migration rehearsal/rollback policy, PITR and restore evidence.</td></tr>
         <tr><td>Identity</td><td>Explicit Web/API public-demo flags provide fixed seeded personas and remove the sign-in page for the disposable demo.</td><td>Keycloak/enterprise IdP, MFA, lifecycle, strict session policy and zero demo bypass.</td></tr>
         <tr><td>Networking</td><td>Only web is public; API, database, worker and Valkey communicate on Railway private DNS.</td><td>WAF/edge protection, network policy, private endpoints, rate limits and threat monitoring.</td></tr>
         <tr><td>Operations</td><td>Liveness/readiness, dependency waits, restart policy and reproducible local five-container parity Compose.</td><td>Metrics/traces/log aggregation, SLOs, alerting, on-call, capacity and incident response.</td></tr>

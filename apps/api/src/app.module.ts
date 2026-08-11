@@ -24,6 +24,7 @@ import { ExpenditureModule } from "./modules/expenditure/expenditure.module.js";
 import { PlanningModule } from "./modules/planning/planning.module.js";
 import { AdministrationModule } from "./modules/administration/administration.module.js";
 import { IntegrationModule } from "./modules/integration/integration.module.js";
+import { DataImportModule } from "./modules/dataimport/dataimport.module.js";
 import { AiOpsModule } from "./modules/aiops/aiops.module.js";
 import { CopilotModule } from "./modules/copilot/copilot.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
@@ -76,6 +77,10 @@ import { ServerlessWorkerController } from "./serverless-worker.controller.js";
     PlanningModule,
     AdministrationModule,
     IntegrationModule,
+    // Spreadsheet import. Sits beside Integration because a factory's Excel file IS one of
+    // its integrations; it imports no other module and posts every row through the entity's
+    // own endpoint, so removing this line removes the feature and nothing else.
+    DataImportModule,
     AiOpsModule,
     // Read-only, last: they depend on nothing and nothing depends on them.
     CopilotModule,

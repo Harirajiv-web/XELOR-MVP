@@ -37,7 +37,7 @@ const SYSTEM = {
   agents: 9,
   capabilities: 19,
   graphs: 7,
-  modules: 22,
+  modules: 24,
   permissions: 165,
   copilotIntents: 21,
   aiFeatures: 9,

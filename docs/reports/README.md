@@ -5,9 +5,9 @@ This directory holds the HTML used to produce the final PDFs. It is separated fr
 
 - `agent-guides/` contains generated HTML for the master guide and each agent.
 - `xelor-*.html` contains the editable project-report sources, including the beginner's
-  complete-platform guide and the concise business and revenue model. Their render manifest
-  binds every source and PDF to the renderer that produced it; the business model also has
-  an adjacent assumptions manifest.
+  complete-platform guide, the five-page Phase 1/Phase 2 architecture brief and the concise
+  business and revenue model. Their render manifest binds every source and PDF to the
+  renderer that produced it; the business model also has an adjacent assumptions manifest.
 
 Render the outputs from the repository root:
 

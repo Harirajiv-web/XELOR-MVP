@@ -107,7 +107,11 @@ export const WORKSPACES: readonly Workspace[] = [
     accent: "var(--dept-hexa)",
     // Managed Services and Platform Health live here rather than in their own groups: they
     // are how XELOR is operated, not how the factory is. Two departments, one job.
-    modules: ["general", "administration", "integration", "aiops", "managed-services", "platform-health"],
+    // `dataimport` sits beside `integration` because it is the same job arriving by a
+    // different road: integration is the connection a plant has, spreadsheet import is the
+    // one it has instead. Most factories bring their first year of data in through the
+    // second, so filing it anywhere else would hide the path most of them actually take.
+    modules: ["general", "administration", "integration", "dataimport", "aiops", "managed-services", "platform-health"],
   },
 ];
 

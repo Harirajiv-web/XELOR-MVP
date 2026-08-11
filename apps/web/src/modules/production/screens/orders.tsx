@@ -11,6 +11,7 @@ import { Empty } from "@spine/states";
 import { date, qty } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
 import { StatusBadge } from "@spine/ui/status-badge";
+import { StagePanel } from "@spine/ui/stage-panel";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { ProductionOrderRow } from "../api";
 import { outstanding, productionApi } from "../api";
@@ -141,6 +142,9 @@ export default function ProductionOrdersScreen(_props: ScreenProps): React.JSX.E
           </Can>
         }
       />
+
+      {/* The mission lands here for the "release the work order" step. Absent otherwise. */}
+      <StagePanel />
 
       {raised ? (
         <div

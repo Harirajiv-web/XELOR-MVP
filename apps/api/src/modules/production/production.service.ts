@@ -29,6 +29,11 @@ import { BOM_PROVIDER, type BomProvider } from "../../ports/bom.port.js";
 import { STOCK_POSTER, type StockPoster, type StockMovement } from "../../ports/stock.port.js";
 import { INSPECTION_GATE, type InspectionGate } from "../../ports/inspection.port.js";
 import { ITEM_PROVIDER, type ItemProvider, type ItemSpec } from "../../ports/item.port.js";
+import type {
+  ProductionOrderWriter,
+  CreateFulfilmentProductionOrderInput,
+  CreatedProductionOrder,
+} from "../../ports/fulfilment-docs.port.js";
 
 const { productionOrder, productionOrderComponent, productionOperation, outboxEvent } = schema;
 
@@ -170,7 +175,7 @@ const q3 = (n: number): string => n.toFixed(3);
  * by stock is refused whole (INSUFFICIENT_STOCK).
  */
 @Injectable()
-export class ProductionService implements SupplySource, ProductionOrderCreator {
+export class ProductionService implements SupplySource, ProductionOrderCreator, ProductionOrderWriter {
   constructor(
     private readonly audit: AuditLogService,
     private readonly edits: DocumentEditService,
@@ -824,6 +829,39 @@ export class ProductionService implements SupplySource, ProductionOrderCreator {
       idempotencyKey,
     );
     return { id: view.id, ref: view.orderNo };
+  }
+
+  // ---- ProductionOrderWriter port (called by the fulfilment mission) ----
+
+  /**
+   * Release one work order for a fulfilment mission that has decided to build.
+   *
+   * The same adapter shape as `createFromPlan` above and for the same reason: the caller
+   * knows what, how many, by when and who for, and nothing else. Which BOM revision is in
+   * force, how the components are snapshotted, which shelf they come off — all of that stays
+   * here, in the module that will have to answer for it on the floor.
+   *
+   * `salesOrderLineId` and `needDate` are passed straight through rather than dropped, which
+   * is the whole point of the call: they are what make the trace spine real, so a supervisor
+   * looking at this order can see the customer waiting at the end of it.
+   */
+  async createProductionOrder(
+    input: CreateFulfilmentProductionOrderInput,
+    idempotencyKey: string,
+  ): Promise<CreatedProductionOrder> {
+    const warehouses = await this.defaultWarehouses();
+    const order = await this.createOrder(
+      {
+        itemId: input.itemId,
+        qtyToProduce: input.qty,
+        sourceWarehouseId: warehouses.source,
+        fgWarehouseId: warehouses.fg,
+        salesOrderLineId: input.salesOrderLineId ?? null,
+        needDate: input.needDate ?? null,
+      },
+      idempotencyKey,
+    );
+    return { id: order.id, orderNo: order.orderNo, status: order.status };
   }
 
   /**

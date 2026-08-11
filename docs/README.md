@@ -35,6 +35,7 @@ The project documentation is ordered by purpose rather than by creation date.
 ## Architecture and implementation playbook
 
 - [Architecture, delivery pipeline and implementation playbook](reports/xelor-architecture-implementation-playbook.html) — the exact target stack, repository additions, CI/CD, database and event pipelines, security, observability, recovery, developer workflows and phased build sequence.
+- [Phase 1 and Phase 2 architecture brief](reports/xelor-phase-1-phase-2-technology-architecture.html) — a five-page plain-English explanation of the shared stack, Phase 1 ERP foundation, Phase 2 fulfilment layer, hosting position and current implementation boundaries.
 
 ## Business and revenue model
 

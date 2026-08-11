@@ -7,6 +7,7 @@ import { DataTable, type Column } from "@spine/data/data-table";
 import { Empty } from "@spine/states";
 import { qty } from "@spine/format";
 import { PageHeader } from "@spine/shell/page-header";
+import { StagePanel } from "@spine/ui/stage-panel";
 import type { ScreenProps } from "@spine/registry/manifest";
 import type { StockRow } from "../api";
 import { inventoryApi } from "../api";
@@ -97,6 +98,10 @@ export default function StockScreen(_props: ScreenProps): React.JSX.Element {
             : []
         }
       />
+
+      {/* The mission lands here while it is netting the material requirement. Absent
+          otherwise — this is a stock list first and a demo surface second. */}
+      <StagePanel />
 
       <div className="relative max-w-sm">
         <Search

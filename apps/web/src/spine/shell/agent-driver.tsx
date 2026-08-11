@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import * as Icons from "lucide-react";
 import { api } from "../api/client";
-import { cn } from "../ui/cn";
+import { AppError } from "../api/errors";
+import { arcTotal, loadMissionMeta, stepCounter, type Chapter } from "../ui/mission-arc";
+import { PipelineRail, readPipeline } from "../ui/pipeline";
 
 /**
  * THE AGENT, DRIVING YOUR ACTUAL ERP.
@@ -33,11 +35,23 @@ import { cn } from "../ui/cn";
 
 const KEY = "xelor.activeMission";
 
+/**
+ * Fired by whoever advanced the mission, so this bar re-reads it.
+ *
+ * The bar does not own the mission — Mission Control runs steps too, and used to do so
+ * silently. This event, plus the poll below, is what keeps the two from disagreeing.
+ */
+const REFRESH_EVENT = "xelor:mission-refresh";
+
+/** Slow. The event above is what makes it prompt; this only catches what the event missed. */
+const POLL_MS = 4_000;
+
 interface Step {
   seq: number;
   stepKey: string;
   title: string;
   agentKey: string;
+  chapter: string;
   plain: string;
   flow: { from: string; did: string; to: string };
   status: string;
@@ -59,15 +73,68 @@ const AGENT_ROLE: Record<string, string> = {
   AXLE: "Planning", KILN: "Shop floor", MICA: "Sales", RASP: "Finance",
 };
 
+/**
+ * The mission the tour is on, and the mission this tab last looked at.
+ *
+ * Two keys, because they answer two different questions. `KEY` is "is a tour running" — the
+ * bar is on screen exactly while it is set, and leaving the tour clears it. `LAST_KEY` is
+ * "which mission was this tab working on", which outlives the tour by design: the bar's own
+ * "See the summary" button ends the tour and sends the person to Mission Control, and
+ * without a second key that screen has no idea which mission it is meant to be summarising.
+ * It would show the order picker, and the outcome — the whole point of the last act — would
+ * be unreachable from the button that promises it.
+ */
+const LAST_KEY = "xelor.lastMission";
+
 /** Start the tour. Called by Mission Control when a mission is opened. */
 export function beginMissionTour(missionId: string): void {
   sessionStorage.setItem(KEY, missionId);
+  sessionStorage.setItem(LAST_KEY, missionId);
   window.dispatchEvent(new CustomEvent("xelor:mission-tour"));
+}
+
+/**
+ * The mission Mission Control should reopen when somebody arrives on it, or null.
+ *
+ * Tolerates a browser that refuses session storage, and it is the CALLER's job to cope with
+ * an id the server no longer knows — a demo reset deletes missions, and a screen that
+ * exploded on a stale id would be a worse bug than the one this fixes.
+ */
+export function resumableMissionId(): string | null {
+  try {
+    return sessionStorage.getItem(KEY) ?? sessionStorage.getItem(LAST_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Forget the mission entirely: the person has gone back to the list, or reset the demo. */
+export function forgetMission(): void {
+  try {
+    sessionStorage.removeItem(LAST_KEY);
+  } catch {
+    // No storage, nothing to forget.
+  }
+  endMissionTour();
 }
 
 export function endMissionTour(): void {
   sessionStorage.removeItem(KEY);
   window.dispatchEvent(new CustomEvent("xelor:mission-tour"));
+}
+
+/**
+ * "I moved the mission on — go and look again."
+ *
+ * Called by Mission Control after every step and every decision. Without it the bar reloads
+ * the mission exactly once, when the tour starts, and the very first navigation of the tour
+ * is lost: `POST /fulfilment/missions` answers with `steps: []`, so the bar's first read sees
+ * no current step, has no `where` to go to, and never navigates to Sales. Mission Control
+ * then runs step 1 and the bar never hears about it. The person is left on Mission Control
+ * being told the agent is in Sales.
+ */
+export function refreshMissionTour(): void {
+  window.dispatchEvent(new CustomEvent(REFRESH_EVENT));
 }
 
 export function AgentDriver(): React.JSX.Element | null {
@@ -78,6 +145,9 @@ export function AgentDriver(): React.JSX.Element | null {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [minimised, setMinimised] = useState(false);
+  /** The six acts and, when the service says so, how many steps a whole mission runs to. */
+  const [chapters, setChapters] = useState<readonly Chapter[]>([]);
+  const [metaTotal, setMetaTotal] = useState<number | null>(null);
 
   // Pick the mission up from session storage, and react when Mission Control starts one.
   useEffect(() => {
@@ -96,13 +166,64 @@ export function AgentDriver(): React.JSX.Element | null {
       // A mission that has been cleared away is not an error worth shouting about — the
       // presenter pressed reset. Leave the tour quietly rather than parking a red bar
       // across the bottom of every screen.
-      endMissionTour();
-      setMissionId(null);
-      setMission(null);
+      //
+      // ONLY on a definitive refusal, though. This used to end the tour on ANY failure,
+      // which was survivable when the mission was read once and is not now that it is also
+      // polled: one dropped request in a plant office would have torn the agent bar off the
+      // screen mid-demo and left the person with no way back to it. A 404 or a 403 means the
+      // mission is genuinely gone or genuinely not ours; a timeout means try again in four
+      // seconds.
+      const status = e instanceof AppError ? e.httpStatus : 0;
+      if (status === 404 || status === 403) {
+        forgetMission();
+        setMissionId(null);
+        setMission(null);
+      }
     }
   }, []);
 
   useEffect(() => { if (missionId) void load(missionId); }, [missionId, load]);
+
+  /**
+   * Stay in step with whoever else is moving the mission.
+   *
+   * Two mechanisms because they fail differently. The EVENT is immediate and covers the
+   * common case — Mission Control ran a step and said so. The POLL is the backstop for the
+   * cases the event cannot reach: a step advanced in another tab, a mission that finished
+   * its own waiting period server-side, or a browser that lost the event during a full page
+   * load. It stops while the tab is hidden, and stops entirely once the mission has settled,
+   * so a demo left open on a second monitor is not quietly asking every four seconds all
+   * afternoon about a mission that finished before lunch. The event listener stays either
+   * way — a demo reset still has to be able to clear the bar.
+   */
+  const settled = mission?.status === "completed" || mission?.status === "failed";
+  useEffect(() => {
+    if (!missionId) return;
+    const again = (): void => { void load(missionId); };
+    window.addEventListener(REFRESH_EVENT, again);
+    const timer = settled
+      ? null
+      : window.setInterval(() => {
+          if (document.visibilityState === "visible") again();
+        }, POLL_MS);
+    return () => {
+      window.removeEventListener(REFRESH_EVENT, again);
+      if (timer !== null) window.clearInterval(timer);
+    };
+  }, [missionId, load, settled]);
+
+  // The chapter vocabulary, once per tab and shared with the stage panel. Costs the progress
+  // rail's labels if it fails, and nothing else.
+  useEffect(() => {
+    if (!missionId) return;
+    let live = true;
+    void loadMissionMeta().then((m) => {
+      if (!live) return;
+      setChapters(m.chapters);
+      setMetaTotal(m.totalSteps);
+    });
+    return () => { live = false; };
+  }, [missionId]);
 
   const current = mission?.steps[mission.steps.length - 1] ?? null;
 
@@ -140,8 +261,18 @@ export function AgentDriver(): React.JSX.Element | null {
 
   if (!missionId || !mission) return null;
 
-  const finished = mission.status === "completed" || mission.status === "failed";
+  // Same fact the poll above uses, under the name the render already knew it by.
+  const finished = settled;
   const waiting = Boolean(mission.pendingApproval);
+  /**
+   * The denominator, from the server or from the mission — never from this file.
+   *
+   * It was the literal `13`, three times over, and the arc's length lives in
+   * `mission.service.ts`. See `spine/ui/mission-arc.ts` for what that costs the day somebody
+   * adds a fourteenth step or a rejected plan pushes a mission past thirteen.
+   */
+  const total = arcTotal(metaTotal, mission.steps);
+  const stages = readPipeline(current);
 
   if (minimised) {
     return (
@@ -149,10 +280,10 @@ export function AgentDriver(): React.JSX.Element | null {
         type="button"
         onClick={() => setMinimised(false)}
         className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold text-white shadow-lg"
-        style={{ background: waiting ? "var(--warn-fg)" : "var(--brand)" }}
+        style={{ background: waiting ? "var(--warn-fill)" : "var(--brand)" }}
       >
         <Icons.Bot className="h-4 w-4" aria-hidden />
-        {waiting ? "Needs you" : `Step ${current?.seq ?? 0} of 13`}
+        {waiting ? "Needs you" : current ? stepCounter(current.seq, total) : "Mission running"}
       </button>
     );
   }
@@ -172,7 +303,7 @@ export function AgentDriver(): React.JSX.Element | null {
           </span>
           {current ? (
             <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              Step {current.seq} of 13 · {AGENT_ROLE[current.agentKey] ?? current.agentKey}
+              {stepCounter(current.seq, total)} · {AGENT_ROLE[current.agentKey] ?? current.agentKey}
               {current.where ? ` · in ${current.where.module} → ${current.where.screen}` : ""}
             </span>
           ) : null}
@@ -187,13 +318,29 @@ export function AgentDriver(): React.JSX.Element | null {
           </span>
         </div>
 
-        {/* progress */}
-        <div className="flex gap-0.5" aria-hidden>
-          {Array.from({ length: 13 }, (_, i) => (
-            <div key={i} className="h-1 flex-1 rounded-full"
-                 style={{ background: i < (current?.seq ?? 0) ? "var(--good-fg)" : "var(--border)" }} />
-          ))}
-        </div>
+        {/* Progress, drawn from what the server serves rather than from a count in this file.
+            The six acts when the chapter list arrived — which is the better rail anyway,
+            because "Find out what is true" means something and "segment 4 of 13" does not —
+            and the served step total as a fallback when it did not. */}
+        {chapters.length ? (
+          <div className="flex gap-0.5" aria-hidden>
+            {chapters.map((c) => {
+              const reached = mission.steps.some((s) => s.chapter === c.key);
+              const here = current?.chapter === c.key;
+              return (
+                <div key={c.key} className="h-1 flex-1 rounded-full" title={c.name}
+                     style={{ background: here ? "var(--brand)" : reached ? "var(--good-fg)" : "var(--border)" }} />
+              );
+            })}
+          </div>
+        ) : total ? (
+          <div className="flex gap-0.5" aria-hidden>
+            {Array.from({ length: total }, (_, i) => (
+              <div key={i} className="h-1 flex-1 rounded-full"
+                   style={{ background: i < (current?.seq ?? 0) ? "var(--good-fg)" : "var(--border)" }} />
+            ))}
+          </div>
+        ) : null}
 
         {/* what it just did, in plain words */}
         {current ? (
@@ -201,6 +348,15 @@ export function AgentDriver(): React.JSX.Element | null {
             {current.plain}
           </p>
         ) : null}
+
+        {/* HOW it did it, phase by phase.
+            This bar is the only surface that is present on every screen the tour visits —
+            the stage panel is mounted on four module screens and the tour walks through
+            eight. So the answer to "do not show me only a spinner and a result" has to live
+            here: which system was read, what was found, whether a person was asked, what was
+            written, and whether the write was confirmed afterwards. Renders nothing at all
+            when the engine sent no pipeline, which leaves the bar exactly as it was. */}
+        <PipelineRail key={current?.seq ?? 0} stages={stages} />
 
         {error ? (
           <p className="text-xs" style={{ color: "var(--bad-fg)" }}>{error}</p>
@@ -218,7 +374,7 @@ export function AgentDriver(): React.JSX.Element | null {
             <div className="mt-2 flex flex-wrap gap-2">
               <button type="button" onClick={() => void decide("approved")} disabled={busy}
                 className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-                style={{ background: "var(--good-fg)" }}>Yes, do it</button>
+                style={{ background: "var(--good-fill)" }}>Yes, do it</button>
               <button type="button" onClick={() => void decide("try_another")} disabled={busy}
                 className="rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
                 style={{ borderColor: "var(--brand)", color: "var(--brand)" }}>Find another way</button>

@@ -56,6 +56,48 @@ export const SEEDED_SOURCING: Record<string, SeededSupplierTerms[]> = {
   "RAW-BLT-M8": [
     { vendorCode: "V-BHR-01", vendorName: "Bharat Fasteners & Hardware", unitPrice: 18, leadTimeDays: 4, reliability: 0.96, capacityUnits: 20_000, qualified: true },
   ],
+
+  // ---------------------------------------------------------------------------
+  // THE CP-50 TREE — same numbers as `defaultTermsFor`, a vendor that EXISTS.
+  // ---------------------------------------------------------------------------
+  //
+  // These four rows are here for one reason, and it is worth stating because the numbers in
+  // them look lazy: they are deliberately identical to what `defaultTermsFor` was already
+  // returning for these components — ₹500, 14 days, 85% on-time, one qualified source, no
+  // sourcing choice to make. Nothing about any CP-50 plan changes: same cost, same date,
+  // same margin, same premium, same decision. The ONLY thing that changes is `vendorCode`.
+  //
+  // It has to change because the mission now raises a real purchase order. `defaultTermsFor`
+  // names "General Supplies Co" (V-GEN), which is a placeholder that exists in this file and
+  // in no vendor master anywhere — and a purchase order cannot be raised on a vendor that
+  // does not exist. Before the execute steps wrote documents that did not matter; the
+  // placeholder was harmless. Now it is the difference between the BlueOrbit order
+  // completing and the mission stopping at `procure` with an unresolvable vendor, which is
+  // the correct behaviour for a genuine data fault and the wrong outcome for a demo path
+  // that has always worked.
+  //
+  // Two rules were followed picking the suppliers, both of which matter:
+  //   · a supplier whose actual trade fits the part (castings from a metals house, seals
+  //     from the seal house), because a presenter reads these names out loud;
+  //   · NOT V-SUN-01, which is the vendor `SEEDED_DISRUPTION` delays. Attaching the CP-50
+  //     casing to Sundaram would make the supplier-delay event bite an order that has only
+  //     one qualified source, turning a demonstration of replanning into a demonstration of
+  //     an infeasible plan. The delay must keep landing on the PX-400 story, where there is
+  //     a second supplier to move to.
+  //
+  // When a sourcing module lands, all of this is read from it and this file is deleted.
+  "CMP-CAS50": [
+    { vendorCode: "V-MER-01", vendorName: "Meridian Metals & Alloys", unitPrice: 500, leadTimeDays: 14, reliability: 0.85, capacityUnits: 10_000, qualified: true },
+  ],
+  "CMP-IMP6": [
+    { vendorCode: "V-MER-01", vendorName: "Meridian Metals & Alloys", unitPrice: 500, leadTimeDays: 14, reliability: 0.85, capacityUnits: 10_000, qualified: true },
+  ],
+  "CMP-SFT20": [
+    { vendorCode: "V-ATL-01", vendorName: "Atlas Alloys India", unitPrice: 500, leadTimeDays: 14, reliability: 0.85, capacityUnits: 10_000, qualified: true },
+  ],
+  "CMP-SEAL20": [
+    { vendorCode: "V-DEC-01", vendorName: "Deccan Seals & Gaskets", unitPrice: 500, leadTimeDays: 14, reliability: 0.85, capacityUnits: 10_000, qualified: true },
+  ],
 };
 
 /**
@@ -65,6 +107,15 @@ export const SEEDED_SOURCING: Record<string, SeededSupplierTerms[]> = {
  * from crashing the planner, and it produces NO sourcing choice — so an item that wandered
  * into the demo without terms is visible as a component with nothing to decide, rather than
  * silently inventing a second supplier that does not exist.
+ *
+ * V-GEN IS NOT IN ANY VENDOR MASTER, AND SINCE THE MISSION RAISES REAL PURCHASE ORDERS THAT
+ * IS NOW LOAD-BEARING. `stepProcure` resolves every vendor code against the `vendor` table
+ * and refuses the whole step when one will not resolve, so a component that lands on these
+ * default terms stops the mission with "no vendor master row matches General Supplies Co"
+ * rather than quietly going unordered. That is the correct answer to a real data gap — an
+ * item nobody has sourced genuinely cannot be bought — but it means falling through to here
+ * is a FAULT to fix in the sourcing data, not a soft landing. Add the item to
+ * `SEEDED_SOURCING` above, against a vendor that exists.
  */
 export function defaultTermsFor(itemCode: string): SeededSupplierTerms[] {
   return [

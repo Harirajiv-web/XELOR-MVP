@@ -1,12 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import * as Icons from "lucide-react";
 import type { ScreenProps } from "@spine/registry/manifest";
 import { api } from "@spine/api/client";
 import { ErrorState, Loading } from "@spine/states";
 import { cn } from "@spine/ui/cn";
-import { beginMissionTour } from "@spine/shell/agent-driver";
+import { inr } from "@spine/format";
+import { useSession } from "@spine/auth/session";
+import {
+  beginMissionTour,
+  forgetMission,
+  refreshMissionTour,
+  resumableMissionId,
+} from "@spine/shell/agent-driver";
+import { arcTotal, parseMeta, stepCounter } from "@spine/ui/mission-arc";
+import {
+  LayerChip,
+  LayerLegend,
+  PipelineRail,
+  readPipeline,
+  type Layer,
+  type PipelineStage,
+} from "@spine/ui/pipeline";
+import { ScenarioPicker } from "../scenario-picker";
+import { fetchScenarios, startScenario, type Scenario } from "../scenarios";
 
 /**
  * MISSION CONTROL — walked one step at a time, by a person.
@@ -34,6 +53,26 @@ import { beginMissionTour } from "@spine/shell/agent-driver";
  *     being denied it; it simply is not the first thing on the card.
  *   · A progress rail across the top, so "where are we and how much is left" never has to
  *     be asked out loud.
+ *
+ * WHAT THE PHASE-2 PASS ADDED, and why each earns its space:
+ *
+ *   THE TWO LAYERS ARE NEVER DRAWN THE SAME WAY. Phase 1 is the ERP and the system of
+ *   record; Phase 2 is this layer, sitting on top, reading it. A person who cannot tell "your
+ *   stock ledger says 1,183" from "the engine worked out you are 776 short" will eventually
+ *   act on the second thinking it was the first. `spine/ui/pipeline.tsx` holds the one
+ *   visual language for that distinction and every surface here uses it — the legend, the
+ *   pipeline, the evidence rows and the list of documents that landed.
+ *
+ *   THE PIPELINE REPLACES THE THREE BOXES WHEN THE SERVER SENDS ONE. The three-box flow says
+ *   what went in and what came out. The pipeline says which system each phase touched, what
+ *   it found, whether a person was asked and whether the write was confirmed afterwards —
+ *   which is the difference between a claim and a receipt. Where a step has no pipeline the
+ *   boxes are still drawn, so a build where that field has not landed yet looks exactly as
+ *   it did before rather than showing an empty frame.
+ *
+ *   EVERY STEP STAYS OPENABLE. It used to be that only the newest step could be read; the
+ *   twelve you had already agreed to collapsed to one line each and their evidence was gone.
+ *   That is precisely backwards for a screen whose whole argument is "check my work".
  */
 
 /* --------------------------------------------------------------------- types -- */
@@ -61,6 +100,30 @@ interface Step {
   evidence: EvidenceItem[] | null;
   narration: string | null;
   confidence: string | null;
+  /**
+   * The phases this step actually passed through. Optional and stays optional: it is served
+   * by the mission engine, and a build without it must degrade to the three-box flow rather
+   * than to an error. Read through `readPipeline`, which drops anything malformed.
+   */
+  pipeline?: PipelineStage[];
+}
+
+/**
+ * A `fulfilment_action` row, exactly as the mission view returns it.
+ *
+ * The only place in the payload that carries a REAL Phase 1 document number and a server
+ * verdict on whether the write survived a re-read. That is what makes the "what landed"
+ * section below a receipt rather than a summary of intentions.
+ */
+interface MissionAction {
+  targetDomain: string;
+  actionType: string;
+  title: string;
+  status: string;
+  executedAt: string | null;
+  verified: boolean | null;
+  resultRef: string | null;
+  failureReason: string | null;
 }
 
 interface Candidate {
@@ -94,6 +157,7 @@ interface Mission {
   waitingReason: string | null;
   outcome: Record<string, number | string> | null;
   steps: Step[];
+  actions?: MissionAction[];
   plan: { versionNo: number; candidates: Candidate[]; chosen: Candidate } | null;
   pendingApproval: { id: string; approvalNo: string; brief: Brief } | null;
 }
@@ -107,14 +171,6 @@ interface Chapter { key: ChapterKey; name: string; lands: string }
 
 /* ------------------------------------------------------------------- helpers -- */
 
-/** Indian digit grouping. 74,34,000 — not 7,434,000. */
-const inr = (n: number | string): string => {
-  const v = Math.round(Number(n) || 0).toString();
-  const last3 = v.slice(-3);
-  const rest = v.slice(0, -3);
-  return rest ? `${rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${last3}` : last3;
-};
-
 const AGENT_TOKEN: Record<string, string> = {
   ONYX: "var(--dept-onyx)", HEXA: "var(--dept-hexa)", SPAR: "var(--dept-spar)",
   AXLE: "var(--dept-axle)", KILN: "var(--dept-kiln)", MICA: "var(--dept-mica)",
@@ -127,25 +183,40 @@ const AGENT_ROLE: Record<string, string> = {
   AXLE: "Planning", KILN: "Shop floor", MICA: "Sales", RASP: "Finance",
 };
 
-function Provenance({ p }: { p: EvidenceItem["provenance"] }) {
-  const tone = p === "live" ? { bg: "var(--good-bg)", fg: "var(--good-fg)" }
-    : p === "derived" ? { bg: "var(--info-bg)", fg: "var(--info-fg)" }
-      : { bg: "var(--warn-bg)", fg: "var(--warn-fg)" };
-  const words = p === "live" ? "your records" : p === "derived" ? "worked out" : "demo data";
-  return (
-    <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold"
-          style={{ background: tone.bg, color: tone.fg }}>
-      {words}
-    </span>
-  );
-}
+/**
+ * The evidence trail's three provenances, in the shared layer language.
+ *
+ * These words predate the Phase 1 / Phase 2 vocabulary and mean exactly the same three
+ * things: `live` is a row out of the ERP, `derived` is something this layer worked out, and
+ * `seeded` is a stand-in for a system that is not connected. Mapping them here rather than
+ * inventing a fourth badge is what keeps one visual language across the whole screen.
+ */
+const EVIDENCE_LAYER: Record<EvidenceItem["provenance"], Layer> = {
+  live: "phase1",
+  derived: "phase2",
+  seeded: "external",
+};
+
+/** Which Phase 1 desk an executed action landed on. Named for the modules people know. */
+const DOMAIN_MODULE: Record<string, string> = {
+  inventory: "Inventory · Stock",
+  purchase: "Purchase · Orders",
+  production: "Production · Work orders",
+  sales: "Sales · Orders",
+  quality: "Quality",
+  accounts: "Accounts",
+};
 
 /* -------------------------------------------------------------------- screen -- */
 
 export default function MissionControl(_props: ScreenProps) {
+  const { user } = useSession();
   const [orders, setOrders] = useState<Startable[] | null>(null);
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  /** The arc length as the SERVER states it, or null. Never a literal — see `mission-arc.ts`. */
+  const [metaTotal, setMetaTotal] = useState<number | null>(null);
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [mission, setMission] = useState<Mission | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [thinking, setThinking] = useState(false);
@@ -157,6 +228,12 @@ export default function MissionControl(_props: ScreenProps) {
   /** Off by default: walking it is the point. On, it runs to the next gate by itself. */
   const [autoRun, setAutoRun] = useState(false);
   const [done, setDone] = useState(false);
+  /**
+   * Which step is on screen. Null means "the newest", which is the normal state and the one
+   * a running mission keeps snapping back to. Set only by clicking a step in the list of
+   * ones already agreed to.
+   */
+  const [viewSeq, setViewSeq] = useState<number | null>(null);
   const stopRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -166,31 +243,76 @@ export default function MissionControl(_props: ScreenProps) {
         api.get<{ data: { autonomyTiers: Tier[]; chapters: Chapter[] } }>("/fulfilment/meta"),
       ]);
       setOrders(o.data); setTiers(m.data.autonomyTiers); setChapters(m.data.chapters);
+      // Same response, no second request: `parseMeta` picks the arc length out of it when the
+      // service carries one and returns null when it does not.
+      setMetaTotal(parseMeta(m.data).totalSteps);
     } catch (e) {
       setError(e instanceof Error ? e.message : "could not reach the mission service");
       setOrders([]);
     }
+    // The scenario list is a separate concern and a separate failure: an engine that cannot
+    // stage scenarios still runs missions perfectly well, so this never touches `error`.
+    setScenarios(await fetchScenarios());
   }, []);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => () => { stopRef.current = true; }, []);
 
+  /**
+   * Reopen the mission this tab was already on.
+   *
+   * The tour walks the person out of this screen and through eight modules, and the agent
+   * bar's "See the summary" brings them back here at the end. Without this, "back here" was
+   * the order picker: the mission state lived only in this component and died the moment it
+   * unmounted, so the outcome — the act the whole arc builds to — was unreachable from the
+   * button that offers it, and pressing the order again started a SECOND mission.
+   *
+   * A stale id is expected rather than exceptional: the demo reset deletes missions. It
+   * fails quietly to the picker, which is the correct screen in that case anyway.
+   */
+  useEffect(() => {
+    const id = resumableMissionId();
+    if (!id) return;
+    let live = true;
+    void api
+      .get<{ data: Mission }>(`/fulfilment/missions/${id}`)
+      .then((r) => {
+        if (!live) return;
+        setMission(r.data);
+        setSteps(r.data.steps ?? []);
+      })
+      .catch(() => undefined);
+    return () => { live = false; };
+  }, []);
+
+  /**
+   * Re-read the mission, and let the agent bar know.
+   *
+   * The bar in the shell holds the same mission and has no way of hearing about a step this
+   * screen ran — it broadcasts only when a tour starts or ends. Telling it explicitly is
+   * what stops the bar sitting a step behind the card, which is what used to lose the very
+   * first navigation of the tour entirely.
+   */
   const refresh = useCallback(async (id: string) => {
     const r = await api.get<{ data: Mission }>(`/fulfilment/missions/${id}`);
     setMission(r.data);
+    // ONE source of truth for the step list. It used to be accumulated locally from each
+    // advance response AND replaced wholesale on a decision, which meant two lists that had
+    // to be kept in step by hand. The mission view already returns every step in order.
+    setSteps(r.data.steps ?? []);
+    refreshMissionTour();
     return r.data;
   }, []);
 
   /** Run exactly ONE step and stop. The person decides whether there is another. */
   const oneStep = useCallback(async (id: string): Promise<string> => {
-    setThinking(true); setShowEvidence(false);
+    setThinking(true); setShowEvidence(false); setViewSeq(null);
     try {
       const r = await api.post<{ data: { step: Step | null; status: string } }>(
         `/fulfilment/missions/${id}/advance`,
       );
       const { step, status } = r.data;
-      if (step) setSteps((prev) => (prev.some((s) => s.seq === step.seq) ? prev : [...prev, step]));
-      else setDone(true);
+      if (!step) setDone(true);
       await refresh(id);
       return status;
     } catch (e) {
@@ -199,18 +321,32 @@ export default function MissionControl(_props: ScreenProps) {
     } finally { setThinking(false); }
   }, [refresh]);
 
-  /** Only used by the optional "run it for me" toggle. Stops at every gate. */
+  /**
+   * Only used by the optional "run it for me" toggle. Stops at every gate.
+   *
+   * `autoRun` used to be set true by the button and never set back, so the button was dead
+   * for the rest of the session after one press — the loop finished, the mission sat at a
+   * gate, and the only way to get it back was a reload. It is now owned entirely by this
+   * function: true while the loop is running, false the moment it is not, on every exit path
+   * including a thrown one.
+   */
   const runToGate = useCallback(async (id: string) => {
-    for (let i = 0; i < 20; i++) {
-      if (stopRef.current) break;
-      const status = await oneStep(id);
-      if (["awaiting_approval", "failed", "completed", "error"].includes(status)) break;
-      await new Promise((r) => setTimeout(r, 700));
+    stopRef.current = false;
+    setAutoRun(true);
+    try {
+      for (let i = 0; i < 20; i++) {
+        if (stopRef.current) break;
+        const status = await oneStep(id);
+        if (["awaiting_approval", "failed", "completed", "error"].includes(status)) break;
+        await new Promise((r) => setTimeout(r, 700));
+      }
+    } finally {
+      setAutoRun(false);
     }
   }, [oneStep]);
 
   const start = useCallback(async (salesOrderId: string) => {
-    setError(null); setSteps([]); setDone(false); setBusy(salesOrderId); stopRef.current = false;
+    setError(null); setSteps([]); setDone(false); setViewSeq(null); setBusy(salesOrderId); stopRef.current = false;
     try {
       const r = await api.post<{ data: Mission }>("/fulfilment/missions", { salesOrderId, tier: startTier });
       setMission(r.data);
@@ -226,16 +362,38 @@ export default function MissionControl(_props: ScreenProps) {
     }
   }, [startTier, oneStep]);
 
+  /**
+   * Start a named scenario instead of picking an order.
+   *
+   * The engine chooses the order and stages whatever condition the scenario is about, so the
+   * only thing this has to get right is picking up the mission it produced. A scenario that
+   * has already run some steps is refreshed rather than advanced; one that has not is given
+   * its first step, exactly like a hand-started mission.
+   */
+  const runScenario = useCallback(async (key: string) => {
+    setError(null); setSteps([]); setDone(false); setViewSeq(null); setBusy(`scenario:${key}`); stopRef.current = false;
+    try {
+      const id = await startScenario(key);
+      if (!id) throw new Error("the scenario did not return a mission");
+      beginMissionTour(id);
+      const m = await refresh(id);
+      setBusy(null);
+      if ((m.steps ?? []).length === 0) await oneStep(id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "that scenario could not be started");
+      setBusy(null);
+    }
+  }, [refresh, oneStep]);
+
   const decide = useCallback(async (decision: "approved" | "rejected" | "try_another") => {
     if (!mission?.pendingApproval) return;
-    setBusy("decide"); setError(null);
+    setBusy("decide"); setError(null); setViewSeq(null);
     try {
       await api.post(`/fulfilment/approvals/${mission.pendingApproval.id}/decide`, {
         decision,
         note: note.trim() || (decision === "approved" ? "Approved." : decision === "try_another" ? "Find another way." : "Stopped."),
       });
       const m = await refresh(mission.id);
-      setSteps(m.steps ?? []);
       if (decision !== "rejected") await oneStep(m.id);
       setNote("");
     } catch (e) {
@@ -243,11 +401,22 @@ export default function MissionControl(_props: ScreenProps) {
     } finally { setBusy(null); }
   }, [mission, note, refresh, oneStep]);
 
+  /** Leave the mission — and take the agent bar with you. */
+  const leave = useCallback(() => {
+    // Without this, the bottom bar stayed pinned across every screen in the application
+    // after the person had plainly finished with the mission — it only ever heard about a
+    // tour ending from its own "leave" link, which is not the one most people press.
+    forgetMission();
+    setMission(null); setSteps([]); setViewSeq(null); setDone(false);
+    void load();
+  }, [load]);
+
   const reset = useCallback(async () => {
     setBusy("reset");
     try {
       await api.post("/fulfilment/demo/reset");
-      setMission(null); setSteps([]); setDone(false); setError(null);
+      forgetMission();
+      setMission(null); setSteps([]); setViewSeq(null); setDone(false); setError(null);
       await load();
     } finally { setBusy(null); }
   }, [load]);
@@ -268,6 +437,12 @@ export default function MissionControl(_props: ScreenProps) {
             I will show you every step and wait for you to agree before I do the next one.
           </p>
         </div>
+
+        <ScenarioPicker
+          scenarios={scenarios}
+          busyKey={busy}
+          onRun={(k) => void runScenario(k)}
+        />
 
         <div className="rounded-xl border p-3" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
           <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>
@@ -296,7 +471,7 @@ export default function MissionControl(_props: ScreenProps) {
               <span className="min-w-0">
                 <span className="block text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{o.customerName}</span>
                 <span className="block text-xs" style={{ color: "var(--text-muted)" }}>
-                  {o.soNo} · ₹{inr(o.grandTotal)}{o.mission ? ` · already started (${o.mission.status})` : ""}
+                  {o.soNo} · {inr(o.grandTotal)}{o.mission ? ` · already started (${o.mission.status})` : ""}
                 </span>
               </span>
               <span className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--brand)" }}>
@@ -305,6 +480,14 @@ export default function MissionControl(_props: ScreenProps) {
             </button>
           ))}
         </div>
+
+        {/* Where the layer sits, and on what. One line, one link — the argument that this is
+            an intelligence layer rather than an ERP is worth making, and the shelf is the
+            place it can be made without a single misleading badge. */}
+        <Link href="/fulfilment/connectors"
+          className="self-center text-xs underline" style={{ color: "var(--text-muted)" }}>
+          What else can this sit on? See the connectors
+        </Link>
 
         {(orders ?? []).some((o) => o.mission) ? (
           <button type="button" onClick={() => void reset()} disabled={busy === "reset"}
@@ -317,10 +500,14 @@ export default function MissionControl(_props: ScreenProps) {
   }
 
   /* ------------------------------------------------------------------ the walk */
-  const current = steps[steps.length - 1];
-  const total = 13;
+  const latest = steps[steps.length - 1] ?? null;
+  const current = (viewSeq !== null ? steps.find((s) => s.seq === viewSeq) : null) ?? latest;
+  const lookingBack = Boolean(current && latest && current.seq !== latest.seq);
+  const total = arcTotal(metaTotal, steps);
   const waiting = Boolean(mission.pendingApproval);
   const finished = mission.status === "completed" || mission.status === "failed";
+  const stages = readPipeline(current);
+  const landed = (mission.actions ?? []).filter((a) => a.executedAt || a.resultRef);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
@@ -332,7 +519,7 @@ export default function MissionControl(_props: ScreenProps) {
           <h1 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
             {mission.customerName} · {mission.objective?.orderQty ?? "—"} units
           </h1>
-          <button type="button" onClick={() => { setMission(null); setSteps([]); void load(); }}
+          <button type="button" onClick={leave}
             className="text-xs underline" style={{ color: "var(--text-muted)" }}>Back</button>
         </div>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -358,35 +545,64 @@ export default function MissionControl(_props: ScreenProps) {
         </ol>
       </header>
 
+      {/* The key to the two layers. Always on, never behind a link — it is the one thing a
+          person must not have to hunt for while deciding whether to believe a number. */}
+      <LayerLegend />
+
       {/* -------- THE CARD: one step, one decision -------- */}
       {current ? (
         <section className="rounded-2xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
               style={{ background: AGENT_TOKEN[current.agentKey] ?? "var(--brand)" }}>
               {AGENT_ROLE[current.agentKey] ?? current.agentKey}
             </span>
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Step {current.seq} of {total}
+              {stepCounter(current.seq, total)}
             </span>
+            {/* The engine's own score, labelled as the engine's. Never "the model thinks" —
+                there is no model here, and saying so is the whole basis for trusting the
+                rest of the card. */}
+            {current.confidence ? (
+              <LayerChip layer="phase2" system={`confidence ${current.confidence}`} />
+            ) : null}
             {current.status === "failed" ? (
               <span className="ml-auto text-xs font-semibold" style={{ color: "var(--bad-fg)" }}>stopped here</span>
             ) : null}
           </div>
+
+          {lookingBack ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg px-2.5 py-1.5"
+              style={{ background: "var(--surface-sunken)" }}>
+              <Icons.History className="h-3.5 w-3.5" style={{ color: "var(--text-muted)" }} aria-hidden />
+              <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                Looking back at a step you already agreed to.
+              </span>
+              <button type="button" onClick={() => setViewSeq(null)}
+                className="ml-auto text-[11px] underline" style={{ color: "var(--brand)" }}>
+                Back to {stepCounter(latest?.seq ?? 0, total).toLowerCase()}
+              </button>
+            </div>
+          ) : null}
 
           {/* The one sentence that matters. Deliberately the biggest thing on the card. */}
           <p className="mt-3 text-lg leading-snug" style={{ color: "var(--text-primary)" }}>
             {current.plain}
           </p>
 
-          {/* what went in → what I did → what came out */}
-          <div className="mt-4 flex items-stretch gap-2">
-            <FlowBox label={current.flow.from} />
-            <Arrow />
-            <FlowBox label={current.flow.did} accent />
-            <Arrow />
-            <FlowBox label={current.flow.to} />
-          </div>
+          {/* The pipeline when the engine sent one; the three boxes when it did not. Never
+              both — they answer the same question and two answers is clutter. */}
+          {stages.length ? (
+            <PipelineRail key={current.seq} stages={stages} className="mt-4" />
+          ) : (
+            <div className="mt-4 flex items-stretch gap-2">
+              <FlowBox label={current.flow.from} />
+              <Arrow />
+              <FlowBox label={current.flow.did} accent />
+              <Arrow />
+              <FlowBox label={current.flow.to} />
+            </div>
+          )}
 
           <button type="button" onClick={() => setShowEvidence((v) => !v)}
             className="mt-4 flex items-center gap-1 text-xs underline" style={{ color: "var(--text-muted)" }}>
@@ -401,7 +617,7 @@ export default function MissionControl(_props: ScreenProps) {
                 <ul className="mt-2 flex flex-col gap-1">
                   {current.evidence.map((e, i) => (
                     <li key={i} className="flex flex-wrap items-baseline gap-1.5 text-[11px]">
-                      <Provenance p={e.provenance} />
+                      <LayerChip layer={EVIDENCE_LAYER[e.provenance] ?? "phase2"} />
                       <span style={{ color: "var(--text-primary)" }}>{e.ref}</span>
                       <span style={{ color: "var(--text-muted)" }}>{e.detail}</span>
                     </li>
@@ -415,20 +631,28 @@ export default function MissionControl(_props: ScreenProps) {
           {/* -------- the decision -------- */}
           {!waiting && !finished ? (
             <div className="mt-5 flex flex-wrap items-center gap-2 border-t pt-4" style={{ borderColor: "var(--border-subtle)" }}>
-              <button type="button" onClick={() => void oneStep(mission.id)} disabled={thinking}
+              <button type="button" onClick={() => void oneStep(mission.id)} disabled={thinking || autoRun}
                 className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 style={{ background: "var(--brand)" }}>
                 {thinking ? "Working…" : "Looks right — carry on"}
               </button>
-              <button type="button"
-                onClick={() => { setAutoRun(true); void runToGate(mission.id); }}
-                disabled={thinking || autoRun}
-                className="rounded-lg border px-3 py-2 text-xs disabled:opacity-50"
-                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
-                Run the rest for me
-              </button>
+              {autoRun ? (
+                <button type="button" onClick={() => { stopRef.current = true; }}
+                  className="rounded-lg border px-3 py-2 text-xs"
+                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+                  Stop after this step
+                </button>
+              ) : (
+                <button type="button"
+                  onClick={() => { void runToGate(mission.id); }}
+                  disabled={thinking}
+                  className="rounded-lg border px-3 py-2 text-xs disabled:opacity-50"
+                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+                  Run the rest for me
+                </button>
+              )}
               <span className="ml-auto text-[11px]" style={{ color: "var(--text-muted)" }}>
-                nothing happens until you press it
+                {autoRun ? "running to the next point where it needs you" : "nothing happens until you press it"}
               </span>
             </div>
           ) : null}
@@ -442,11 +666,15 @@ export default function MissionControl(_props: ScreenProps) {
       {/* -------- THE MOMENT: the one thing only a person can settle -------- */}
       {mission.pendingApproval ? (
         <section className="rounded-2xl border-2 p-5" style={{ borderColor: "var(--warn-fg)", background: "var(--surface)" }}>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Icons.Hand className="h-4 w-4" style={{ color: "var(--warn-fg)" }} aria-hidden />
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
               This one is yours to decide
             </h2>
+            {/* A human decision, attributed. The note and the decision are written against the
+                signed-in user by the API; saying whose name that is BEFORE the button is
+                pressed is the difference between a signature and a click. */}
+            <LayerChip layer="human" system={user?.displayName ?? "signed-in user"} className="ml-auto" />
           </div>
           <p className="mt-2 text-base leading-snug" style={{ color: "var(--text-primary)" }}>
             {mission.pendingApproval.brief.recommendation}
@@ -480,6 +708,43 @@ export default function MissionControl(_props: ScreenProps) {
         </section>
       ) : null}
 
+      {/* -------- what actually landed in Phase 1 -------- */}
+      {landed.length ? (
+        <section className="rounded-2xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+              What landed in your ERP
+            </h2>
+            <LayerChip layer="phase1" className="ml-auto" />
+          </div>
+          <p className="mt-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+            Real documents, with their numbers. Open the module and you will find them there.
+          </p>
+          <ul className="mt-2 flex flex-col gap-1.5">
+            {landed.map((a, i) => (
+              <li key={`${a.targetDomain}-${i}`} className="flex flex-wrap items-baseline gap-2 text-[11.5px]">
+                <span className="chip chip-grey">{DOMAIN_MODULE[a.targetDomain] ?? a.targetDomain}</span>
+                <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {a.resultRef ?? a.title}
+                </span>
+                <span style={{ color: "var(--text-muted)" }}>{a.title}</span>
+                {/* "It was written" and "we went back and found it" are different claims, and
+                    only the second is worth anything. Never merged into one tick. */}
+                <span className={cn("chip ml-auto", a.failureReason ? "chip-bad" : a.verified === true ? "chip-ok" : a.verified === false ? "chip-warn" : "chip-grey")}>
+                  {a.failureReason
+                    ? "failed"
+                    : a.verified === true
+                      ? "re-read and confirmed"
+                      : a.verified === false
+                        ? "NOT confirmed on re-read"
+                        : "not checked yet"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {/* -------- the end -------- */}
       {mission.outcome ? (
         <section className="rounded-2xl border p-5" style={{ borderColor: "var(--good-fg)", background: "var(--surface)" }}>
@@ -507,17 +772,33 @@ export default function MissionControl(_props: ScreenProps) {
       {steps.length > 1 ? (
         <details className="rounded-xl border px-3 py-2" style={{ borderColor: "var(--border-subtle)" }}>
           <summary className="cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
-            The {steps.length - 1} step{steps.length === 2 ? "" : "s"} you have already agreed to
+            The {steps.length - 1} step{steps.length === 2 ? "" : "s"} you have already agreed to — open any of them again
           </summary>
-          <ol className="mt-2 flex flex-col gap-1.5">
-            {steps.slice(0, -1).map((s) => (
-              <li key={s.seq} className="flex items-baseline gap-2 text-xs">
-                <Icons.Check className="h-3 w-3 shrink-0" style={{ color: "var(--good-fg)" }} aria-hidden />
-                <span style={{ color: "var(--text-secondary)" }}>{s.plain}</span>
-              </li>
-            ))}
+          <ol className="mt-2 flex flex-col gap-0.5">
+            {steps.map((s) => {
+              const shown = s.seq === current?.seq;
+              return (
+                <li key={s.seq}>
+                  {/* Every step stays openable, with its evidence, its narration and its
+                      pipeline. A screen whose argument is "check my work" cannot make the
+                      work unreachable the moment the next step starts. */}
+                  <button type="button" onClick={() => setViewSeq(s.seq === latest?.seq ? null : s.seq)}
+                    className="flex w-full items-baseline gap-2 rounded px-1.5 py-1 text-left text-xs hover:bg-[var(--surface-sunken)]"
+                    style={{ background: shown ? "var(--surface-sunken)" : "transparent" }}>
+                    <Icons.Check className="h-3 w-3 shrink-0" style={{ color: "var(--good-fg)" }} aria-hidden />
+                    <span style={{ color: shown ? "var(--text-primary)" : "var(--text-secondary)" }}>{s.plain}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ol>
         </details>
+      ) : null}
+
+      {done && !finished ? (
+        <p className="text-center text-[11px]" style={{ color: "var(--text-muted)" }}>
+          There is nothing further to run on this mission.
+        </p>
       ) : null}
     </div>
   );
@@ -565,7 +846,7 @@ function Options({ plan }: { plan: NonNullable<Mission["plan"]> }) {
               <span style={{ color: "var(--text-muted)" }}>
                 <b style={{ color: "var(--text-primary)" }}>{c.name}</b>
                 {c.feasible
-                  ? ` — ready ${c.completionDate}, ₹${inr(c.totalCost)}${(c.policyBreaches ?? []).length ? `, ${c.policyBreaches.join("; ")}` : ""}`
+                  ? ` — ready ${c.completionDate}, ${inr(c.totalCost)}${(c.policyBreaches ?? []).length ? `, ${c.policyBreaches.join("; ")}` : ""}`
                   : ` — ${c.violations.join("; ")}`}
               </span>
             </li>

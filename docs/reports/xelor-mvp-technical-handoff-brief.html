@@ -109,8 +109,8 @@
     <div class="kpi">
       <div><b>99 / 99</b>live acceptance checks</div>
       <div><b>32</b>browser tests defined</div>
-      <div><b>783 / 783</b>unit and service tests pass</div>
-      <div><b>22</b>registered web modules</div>
+      <div><b>991</b>unit and service tests pass; 1 integration test is environment-skipped</div>
+      <div><b>24</b>registered web modules</div>
     </div>
     <div class="grid2">
       <div class="card"><h3>The product claim now demonstrated</h3><p>XELOR can connect one operating decision across departmental records, calculate deterministic facts, show the evidence, require a named human decision and retain an attributable audit trail.</p></div>
@@ -336,7 +336,7 @@
     <table>
       <thead><tr><th>Component</th><th>Responsibility</th><th>Important implementation boundary</th></tr></thead>
       <tbody>
-        <tr><td><code>apps/web</code></td><td>Product shell, 22 modules, presenter guide, ONYX, RELAY and ACHILES surfaces and authentication callback.</td><td>UI permission checks improve usability; API guards remain authoritative.</td></tr>
+        <tr><td><code>apps/web</code></td><td>Product shell, 24 modules, presenter guide, ONYX, RELAY and ACHILES surfaces and authentication callback.</td><td>UI permission checks improve usability; API guards remain authoritative.</td></tr>
         <tr><td><code>apps/api</code></td><td>Domain services, controllers, Agent OS, audit, validation and worker entrypoint.</td><td>Ledger and workflow writes remain inside tenant-scoped transactions.</td></tr>
         <tr><td><code>apps/edge</code></td><td>Standalone factory adapter contract, process-local duplicate suppression, expiry checks, closed capabilities and an explicit simulator.</td><td>It is not wired to the Factory Connect API and has no durable edge journal or claim/acknowledgement transport. No physical controller connection ships in the MVP; local safety control remains final authority.</td></tr>
         <tr><td><code>packages/platform</code></td><td>Permissions, error types, deterministic business rules, Agent OS contracts.</td><td>No browser or database coupling; pure rules remain unit-testable.</td></tr>
@@ -544,7 +544,7 @@
       <li>The permission catalogue covers two seeded tenants with no uncatalogued grants.</li>
       <li>233 tenant-scoped tables pass the FORCE RLS/policy check.</li>
       <li>The stores persona is explicitly denied the administration role registry.</li>
-      <li>UI navigation contains 163 permission references and fails validation if a module invents an undefined permission.</li>
+      <li>UI navigation contains 169 permission references and fails validation if a module invents an undefined permission.</li>
     </ul>
     <h3>Human and audit controls</h3>
     <ul>
@@ -590,7 +590,7 @@
     <h2>11. Deterministic seed and rebuild process</h2>
     <p>The demo database can be rebuilt from source rather than repaired manually before each meeting.</p>
     <div class="flow">
-      <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>90 migration files<br>through 0091</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
+      <div>Guarded demo reset<br>drop/recreate schema</div><div class="arrow">→</div><div>96 migration files<br>through 0097</div><div class="arrow">→</div><div>Base world<br>54 successful steps</div>
     </div>
     <div class="flow">
       <div>Northstar story<br>99 verified checks</div><div class="arrow">→</div><div>Worker drains<br>transactional outbox</div><div class="arrow">→</div><div>99-check matrix<br>must pass</div>
@@ -644,17 +644,17 @@ pnpm demo:verify</pre>
     </ul>
     <h3>Static and policy gates</h3>
     <div class="kpi">
-      <div><b>712</b>platform tests</div>
-      <div><b>4</b>database tests</div>
-      <div><b>56</b>API tests</div>
-      <div><b>11</b>edge + web tests</div>
+      <div><b>821</b>platform tests</div>
+      <div><b>5</b>database tests</div>
+      <div><b>101</b>passing API tests</div>
+      <div><b>64</b>edge + web tests</div>
     </div>
     <ul>
       <li>Lint passes with zero warnings.</li>
       <li>TypeScript checks pass in web, API, platform, database and edge packages.</li>
       <li>Production Next.js and NestJS builds succeed.</li>
       <li>Database naming check passes across 243 tables.</li>
-      <li>All 22 module manifests and 163 navigation permission references pass validation.</li>
+      <li>All 24 module manifests and 169 navigation permission references pass validation.</li>
     </ul>
   </section>
 

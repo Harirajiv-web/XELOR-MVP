@@ -18,6 +18,7 @@ import { workingCapitalManifest } from "./working-capital/manifest";
 import { aiopsManifest } from "./aiops/manifest";
 import { administrationManifest } from "./administration/manifest";
 import { integrationManifest } from "./integration/manifest";
+import { dataImportManifest } from "./dataimport/manifest";
 import { agentosManifest } from "./agentos/manifest";
 import { fulfilmentManifest } from "./fulfilment/manifest";
 import { aiControlManifest } from "./aicontrol/manifest";
@@ -42,9 +43,9 @@ import { platformHealthManifest } from "./platform-health/manifest";
  * licence decides whether the company bought it, and permissions decide whether this
  * person may open it. Three independent gates, three different people who can change them.
  *
- * Twenty-three installed modules span the departmental systems of record plus the shared
- * intelligence, service-assurance and platform-health surfaces. The array below is the
- * executable inventory; keep this explanation deliberately free of a second hand-written
+ * Twenty-four installed modules span the departmental systems of record plus the shared
+ * intelligence, service-assurance, platform-health and data-import surfaces. The array below
+ * is the executable inventory; keep this explanation deliberately free of a second hand-written
  * module list so adding a module cannot make the architecture comment lie again.
  *
  * Listed in sidebar order for readability only; `orderedModules()` is what actually sorts.
@@ -73,6 +74,7 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   platformHealthManifest,
   administrationManifest,
   integrationManifest,
+  dataImportManifest,
 ];
 
 /** Sidebar order, then alphabetical — so adding a module never shuffles the others. */

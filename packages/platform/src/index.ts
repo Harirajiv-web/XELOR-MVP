@@ -63,6 +63,10 @@ export * from "./integration/webhook.js";
 export * from "./integration/einvoice.js";
 export * from "./integration/dlq.js";
 export * from "./integration/mapping.js";
+// Spreadsheet import — the pure half (target specs, header inference, column mapping, row
+// validation, row grouping). Barrelled from its own index because it is five files that are
+// only ever used together, exactly as `./ai/index.js` is.
+export * from "./dataimport/index.js";
 export * from "./aiops/pii.js";
 export * from "./aiops/guardrails.js";
 export * from "./aiops/prompt.js";
@@ -99,3 +103,6 @@ export {
   type TradeOffWeights,
 } from "./fulfilment/planner.js";
 export * from "./fulfilment/narrate.js";
+// Phase 2's intelligence layer: where the facts come from, the canonical shapes they land
+// in, the engine seam, and the thirteen-phase pipeline the mission emits for every step.
+export * from "./intelligence/index.js";
