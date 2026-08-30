@@ -1374,7 +1374,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
           aria-label="Human approval waiting"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[var(--warn)] text-white">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[var(--warn)] text-[var(--text-on-accent)]">
               <Icons.UserRoundCheck className="h-4.5 w-4.5" aria-hidden />
             </span>
             <div>
@@ -1392,7 +1392,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
           </div>
           <Link
             href="/agentos/approvals"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--warn)] px-4 text-[11px] font-extrabold text-white shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--warn)] px-4 text-[11px] font-extrabold text-[var(--text-on-accent)] shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
           >
             Review and decide
             <Icons.ArrowRight className="h-3.5 w-3.5" aria-hidden />

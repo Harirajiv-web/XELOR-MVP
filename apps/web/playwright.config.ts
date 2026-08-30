@@ -9,7 +9,10 @@ export default defineConfig({
   workers: 1,
   reporter: "line",
   use: {
-    baseURL: process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001",
+    // Phase 2's web app is on :3101. :3001 is PHASE-1, inherited when this config was
+    // forked — and pointing Phase 2's suite at Phase 1 tests the wrong product, loudly for
+    // the fulfilment specs and quietly for anything both phases happen to share.
+    baseURL: process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3101",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     ...devices["Desktop Chrome"],

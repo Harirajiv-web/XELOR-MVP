@@ -137,7 +137,7 @@ export const WRITES_INTO: Record<string, string> = {
 };
 
 /** What the mission's own record is called, so it reads as a system rather than a blank. */
-export const MISSION_RECORD = "XELOR mission record";
+export const MISSION_RECORD = "ONYX mission record";
 
 /**
  * Where the data came from and where it went, for one step.

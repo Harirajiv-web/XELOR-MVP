@@ -1,19 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import * as Icons from "lucide-react";
 import { api } from "../api/client";
 import { AppError } from "../api/errors";
-import { arcTotal, loadMissionMeta, stepCounter, type Chapter } from "../ui/mission-arc";
-import { PipelineRail, readPipeline } from "../ui/pipeline";
+import { announceApplicationDataChanged } from "../data/use-query";
+import { arcTotal, loadMissionMeta, stepCounter } from "../ui/mission-arc";
 
 /**
  * THE AGENT, DRIVING YOUR ACTUAL ERP.
  *
- * A bar pinned to the bottom of every screen while a mission is running. It says what it is
- * about to do, takes you to the module where that work belongs, and waits for you to press
- * a button before doing the next thing.
+ * A compact decision box centred over the live screen while a mission is running. It says
+ * what ONYX concluded, why, and exactly where the result belongs in the application. The
+ * live module stays visible around it, so an investor can connect the explanation to the
+ * system being changed without reading a second technical panel.
  *
  * WHY IT LIVES IN THE SHELL and not on the Mission Control screen. The whole point is that
  * the agent walks you THROUGH the product — Sales, then Inventory, then Planning, then
@@ -36,6 +38,28 @@ import { PipelineRail, readPipeline } from "../ui/pipeline";
 const KEY = "xelor.activeMission";
 
 /**
+ * Mission Control's own route — the one screen this bar must NOT draw itself on.
+ *
+ * The bar exists to follow the mission onto the OTHER modules: Sales, Engineering,
+ * Inventory, Planning, Purchase, Production. On those screens it is the only surface that
+ * knows a mission is running, and it earns every pixel.
+ *
+ * On Mission Control it earned none. Measured on a live screen, the bar repeated — directly
+ * underneath the identical content — the step sentence, the pipeline strip, the
+ * recommendation and a SECOND set of decision buttons, so a person deciding on ₹3,37,658 was
+ * reading the brief in the page and clicking the buttons in the bar. Mission Control owns
+ * the full presentation of its own mission; the bar owns the away-from-home case. Splitting
+ * it that way is what removed the duplication, and removing the duplication was most of the
+ * work.
+ *
+ * NOTE THAT ONLY THE RENDER IS SUPPRESSED. Every hook above still runs — the poll, the
+ * refresh listener and, critically, the navigation effect that walks the person out of this
+ * screen and into the module where the next step belongs. Hiding the bar must not stop the
+ * tour; it only stops the tour narrating itself twice.
+ */
+const MISSION_HOME = "/fulfilment/control";
+
+/**
  * Fired by whoever advanced the mission, so this bar re-reads it.
  *
  * The bar does not own the mission — Mission Control runs steps too, and used to do so
@@ -45,6 +69,22 @@ const REFRESH_EVENT = "xelor:mission-refresh";
 
 /** Slow. The event above is what makes it prompt; this only catches what the event missed. */
 const POLL_MS = 4_000;
+
+/** Keep a movable decision card reachable rather than letting it disappear off-screen. */
+const DIALOG_EDGE_GAP = 12;
+const DIALOG_KEYBOARD_STEP = 24;
+
+interface DialogOffset {
+  x: number;
+  y: number;
+}
+
+interface DialogDrag {
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startOffset: DialogOffset;
+}
 
 interface Step {
   seq: number;
@@ -65,13 +105,16 @@ interface Mission {
   status: string;
   waitingReason: string | null;
   steps: Step[];
-  pendingApproval: { id: string; brief: { recommendation: string; why: string; ifRejected: string } } | null;
+  pendingApproval: {
+    id: string;
+    brief: {
+      recommendation: string;
+      why: string;
+      ifRejected: string;
+      applicationTargets?: Array<{ module: string; screen: string }>;
+    };
+  } | null;
 }
-
-const AGENT_ROLE: Record<string, string> = {
-  ONYX: "Coordinator", HEXA: "Checker", SPAR: "Stores & buying",
-  AXLE: "Planning", KILN: "Shop floor", MICA: "Sales", RASP: "Finance",
-};
 
 /**
  * The mission the tour is on, and the mission this tab last looked at.
@@ -142,12 +185,160 @@ export function AgentDriver(): React.JSX.Element | null {
   const pathname = usePathname();
   const [missionId, setMissionId] = useState<string | null>(null);
   const [mission, setMission] = useState<Mission | null>(null);
+  const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [screenRevealActive, setScreenRevealActive] = useState(false);
+  const [dialogOffset, setDialogOffset] = useState<DialogOffset>({ x: 0, y: 0 });
+  const [dialogDragging, setDialogDragging] = useState(false);
+  const dialogPositioner = useRef<HTMLDivElement | null>(null);
+  const dialogDrag = useRef<DialogDrag | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [minimised, setMinimised] = useState(false);
-  /** The six acts and, when the service says so, how many steps a whole mission runs to. */
-  const [chapters, setChapters] = useState<readonly Chapter[]>([]);
+  /** The mission length, served by the API rather than guessed by the presentation. */
   const [metaTotal, setMetaTotal] = useState<number | null>(null);
+
+  // The workspace is a named View Transition surface inside an isolated stacking context.
+  // A fixed child inside that context can still be painted under the browser's transition
+  // snapshot (most visibly as sticky table cells crossing the card). Portalling the decision
+  // layer to body gives it the same top-level stacking boundary as the application's modals.
+  useEffect(() => { setPortalHost(document.body); }, []);
+
+  const clampDialogOffset = useCallback((candidate: DialogOffset): DialogOffset => {
+    const element = dialogPositioner.current;
+    if (!element) return candidate;
+    const rect = element.getBoundingClientRect();
+    const maxX = Math.max(0, (window.innerWidth - rect.width) / 2 - DIALOG_EDGE_GAP);
+    const maxY = Math.max(0, (window.innerHeight - rect.height) / 2 - DIALOG_EDGE_GAP);
+    return {
+      x: Math.round(Math.max(-maxX, Math.min(maxX, candidate.x))),
+      y: Math.round(Math.max(-maxY, Math.min(maxY, candidate.y))),
+    };
+  }, []);
+
+  const startDialogDrag = useCallback((event: React.PointerEvent<HTMLElement>): void => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dialogDrag.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startOffset: dialogOffset,
+    };
+    setDialogDragging(true);
+  }, [dialogOffset]);
+
+  const startDialogDragFromHeader = useCallback((event: React.PointerEvent<HTMLElement>): void => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("button, a, input, select, textarea")) return;
+    startDialogDrag(event);
+  }, [startDialogDrag]);
+
+  const startDialogDragFromHandle = useCallback((event: React.PointerEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    startDialogDrag(event);
+  }, [startDialogDrag]);
+
+  const moveDialog = useCallback((event: React.PointerEvent<HTMLElement>): void => {
+    const drag = dialogDrag.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    setDialogOffset(clampDialogOffset({
+      x: drag.startOffset.x + event.clientX - drag.startClientX,
+      y: drag.startOffset.y + event.clientY - drag.startClientY,
+    }));
+  }, [clampDialogOffset]);
+
+  const finishDialogDrag = useCallback((event: React.PointerEvent<HTMLElement>): void => {
+    if (dialogDrag.current?.pointerId !== event.pointerId) return;
+    dialogDrag.current = null;
+    setDialogDragging(false);
+  }, []);
+
+  const moveDialogWithKeyboard = useCallback((event: React.KeyboardEvent<HTMLButtonElement>): void => {
+    if (event.key === "Home") {
+      event.preventDefault();
+      setDialogOffset({ x: 0, y: 0 });
+      return;
+    }
+    const step = event.shiftKey ? DIALOG_KEYBOARD_STEP * 2 : DIALOG_KEYBOARD_STEP;
+    const delta = event.key === "ArrowLeft"
+      ? { x: -step, y: 0 }
+      : event.key === "ArrowRight"
+        ? { x: step, y: 0 }
+        : event.key === "ArrowUp"
+          ? { x: 0, y: -step }
+          : event.key === "ArrowDown"
+            ? { x: 0, y: step }
+            : null;
+    if (!delta) return;
+    event.preventDefault();
+    setDialogOffset((current) => clampDialogOffset({
+      x: current.x + delta.x,
+      y: current.y + delta.y,
+    }));
+  }, [clampDialogOffset]);
+
+  /**
+   * Get the explanation out of the way and point at the work underneath it.
+   *
+   * This is presentation state only: it does not advance, approve, retry or reload the
+   * mission. The body attribute lets the active StagePanel receive the ring even if a route
+   * changes while the card is away; CSS falls back to the whole workspace on screens that
+   * do not have a StagePanel. Keeping the card mounted preserves every part of its state.
+   *
+   * It stays hidden until somebody asks for it back. A timer used to bring it back on its
+   * own, which is wrong for the job this button does: a presenter hides the card to talk
+   * over the live screen, and having it reappear mid-sentence interrupts exactly the
+   * explanation it was moved out of the way for. The "Show Copilot" control below is the
+   * only way back, so the card returns when the person speaking decides it should.
+   */
+  const hideCopilot = useCallback((): void => {
+    // The button is about to become aria-hidden with the rest of the card. Do not leave
+    // keyboard focus parked inside a hidden subtree while the real screen is available.
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    document.body.setAttribute("data-xelor-agent-screen-reveal", "true");
+    setScreenRevealActive(true);
+  }, []);
+
+  const showCopilot = useCallback((): void => {
+    document.body.removeAttribute("data-xelor-agent-screen-reveal");
+    setScreenRevealActive(false);
+  }, []);
+
+  useEffect(() => () => {
+    document.body.removeAttribute("data-xelor-agent-screen-reveal");
+  }, []);
+
+  // A reset or explicit end must never leave a presentation ring behind on the workspace,
+  // nor a "Show Copilot" button pointing at a mission that is no longer running.
+  useEffect(() => {
+    if (missionId || !screenRevealActive) return;
+    document.body.removeAttribute("data-xelor-agent-screen-reveal");
+    setScreenRevealActive(false);
+  }, [missionId, screenRevealActive]);
+
+  /**
+   * Stand down while one of the application's own modals is open.
+   *
+   * The decision layer is z-120 and the modal layer is z-50, so without this the card wins
+   * the stacking contest against a form the person deliberately opened. Measured on a live
+   * mission: opening "New sales order" on /sales/orders put the card over 40% of the dialog,
+   * and `elementFromPoint` at the dialog's centre returned the card — the middle of the form
+   * was not merely hidden, it was unclickable.
+   *
+   * Raising the modal above the card would only swap which one is wrong. `aria-modal="true"`
+   * already states the intent: while that dialog is open everything outside it is inert, and
+   * a floating card that ignores that is an accessibility defect as well as a visual one. So
+   * the card yields, and comes back when the dialog closes.
+   */
+  useEffect(() => {
+    const look = () => setDialogOpen(Boolean(document.querySelector('[role="dialog"][aria-modal="true"]')));
+    look();
+    const observer = new MutationObserver(look);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   // Pick the mission up from session storage, and react when Mission Control starts one.
   useEffect(() => {
@@ -196,7 +387,7 @@ export function AgentDriver(): React.JSX.Element | null {
    * afternoon about a mission that finished before lunch. The event listener stays either
    * way — a demo reset still has to be able to clear the bar.
    */
-  const settled = mission?.status === "completed" || mission?.status === "failed";
+  const settled = mission?.status === "completed" || mission?.status === "failed" || mission?.status === "cancelled";
   useEffect(() => {
     if (!missionId) return;
     const again = (): void => { void load(missionId); };
@@ -212,20 +403,41 @@ export function AgentDriver(): React.JSX.Element | null {
     };
   }, [missionId, load, settled]);
 
-  // The chapter vocabulary, once per tab and shared with the stage panel. Costs the progress
-  // rail's labels if it fails, and nothing else.
+  // The served mission length is useful context, but it is deliberately the only progress
+  // detail in the investor card. The six-act rail remains available in Mission Control.
   useEffect(() => {
     if (!missionId) return;
     let live = true;
     void loadMissionMeta().then((m) => {
       if (!live) return;
-      setChapters(m.chapters);
       setMetaTotal(m.totalSteps);
     });
     return () => { live = false; };
   }, [missionId]);
 
   const current = mission?.steps[mission.steps.length - 1] ?? null;
+
+  // Re-clamp after a viewport or content-size change. The card can become taller when an
+  // approval or failure appears, but its controls must remain reachable at every step.
+  useEffect(() => {
+    const keepOnScreen = (): void => {
+      setDialogOffset((currentOffset) => {
+        const next = clampDialogOffset(currentOffset);
+        return next.x === currentOffset.x && next.y === currentOffset.y ? currentOffset : next;
+      });
+    };
+    keepOnScreen();
+    window.addEventListener("resize", keepOnScreen);
+    const element = dialogPositioner.current;
+    const observer = element && typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(keepOnScreen)
+      : null;
+    if (element) observer?.observe(element);
+    return () => {
+      window.removeEventListener("resize", keepOnScreen);
+      observer?.disconnect();
+    };
+  }, [clampDialogOffset, current?.seq, mission?.pendingApproval?.id, mission?.status]);
 
   /** Take the person to where this step's work lives, if it lives anywhere. */
   const goTo = useCallback((step: Step | null) => {
@@ -241,6 +453,7 @@ export function AgentDriver(): React.JSX.Element | null {
     try {
       await api.post(`/fulfilment/missions/${missionId}/advance`);
       await load(missionId);
+      announceApplicationDataChanged();
     } catch (e) {
       setError(e instanceof Error ? e.message : "that step did not finish");
     } finally { setBusy(false); }
@@ -256,14 +469,42 @@ export function AgentDriver(): React.JSX.Element | null {
       await load(missionId);
       if (decision !== "rejected") await api.post(`/fulfilment/missions/${missionId}/advance`).catch(() => undefined);
       await load(missionId);
+      announceApplicationDataChanged();
     } finally { setBusy(false); }
   }, [mission, missionId, load]);
 
-  if (!missionId || !mission) return null;
+  /**
+   * Re-run the failed step without abandoning the guided flow.
+   *
+   * The API keeps the original failure in the event/audit trail and reuses the same
+   * idempotency keys, so this is a recovery action rather than a second purchase or work
+   * order. Keeping it here matters for the investor journey: a failure that can only be
+   * recovered after leaving the centred Copilot looks like a dead demo even when the
+   * backend recovery path is sound.
+   */
+  const retry = useCallback(async () => {
+    if (!missionId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.post(`/fulfilment/missions/${missionId}/retry`);
+      await load(missionId);
+      announceApplicationDataChanged();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "the failed action could not be retried");
+    } finally {
+      setBusy(false);
+    }
+  }, [missionId, load]);
+
+  if (!missionId || !mission || !portalHost) return null;
 
   // Same fact the poll above uses, under the name the render already knew it by.
   const finished = settled;
   const waiting = Boolean(mission.pendingApproval);
+  const monitoring = mission.status === "waiting" && !waiting;
+  const failed = mission.status === "failed";
+  const completed = mission.status === "completed";
   /**
    * The denominator, from the server or from the mission — never from this file.
    *
@@ -271,143 +512,308 @@ export function AgentDriver(): React.JSX.Element | null {
    * `mission.service.ts`. See `spine/ui/mission-arc.ts` for what that costs the day somebody
    * adds a fourteenth step or a rejected plan pushes a mission past thirteen.
    */
-  const total = arcTotal(metaTotal, mission.steps);
-  const stages = readPipeline(current);
+  // The denominator, and it is allowed to be unknown. `arcTotal` widens a SERVED total to
+  // cover a replanned mission; handed no served total it falls back to the highest step
+  // seen, which renders as "Step 8 of 8" on a thirteen-step arc — a confident lie. When the
+  // server has not stated a length there is no denominator and `stepCounter` says "Step 8".
+  const total = metaTotal === null ? null : arcTotal(metaTotal, mission.steps);
 
-  if (minimised) {
-    return (
-      <button
-        type="button"
-        onClick={() => setMinimised(false)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold text-white shadow-lg"
-        style={{ background: waiting ? "var(--warn-fill)" : "var(--brand)" }}
-      >
-        <Icons.Bot className="h-4 w-4" aria-hidden />
-        {waiting ? "Needs you" : current ? stepCounter(current.seq, total) : "Mission running"}
-      </button>
-    );
-  }
+  // See MISSION_HOME. The hooks above have all run; only the drawing stops here.
+  if (pathname === MISSION_HOME) return null;
+  // Likewise: the mission keeps running underneath an open dialog, it just stops drawing.
+  if (dialogOpen) return null;
 
-  return (
-    <aside
-      className="fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-8px_24px_rgba(0,0,0,0.10)]"
-      style={{ borderColor: waiting ? "var(--warn-fg)" : "var(--border)", background: "var(--surface)" }}
-      aria-label="XELOR agent"
+  const location = current?.where;
+  const approvalTargets = mission.pendingApproval?.brief.applicationTargets ?? [];
+  const locationLabel = waiting && approvalTargets.length > 0
+    ? approvalTargets.map((target) => `${target.module} → ${target.screen}`).join(" · ")
+    : location
+      ? `${location.module} → ${location.screen}`
+      : "Mission Control";
+  const locationLead = waiting
+    ? "If approved, this plan updates"
+    : monitoring
+      ? "Monitoring in"
+      : failed
+        ? "Action failed safely in"
+        : completed
+          ? "Outcome recorded in"
+          : finished
+            ? "Mission stopped in"
+            : "Working in";
+  const explanation = mission.pendingApproval?.brief.recommendation
+    ?? current?.plain
+    ?? "ONYX is preparing the next step.";
+  const reasoning = mission.pendingApproval?.brief.why
+    ?? (failed && mission.waitingReason
+      ? mission.waitingReason
+      : current
+        ? `ONYX used ${current.flow.from} to ${current.flow.did.toLowerCase()}.`
+        : "The mission is using the evidence already attached to this order.");
+
+  return createPortal(
+    <>
+    <div
+      className="x-agent-dialog-layer pointer-events-none fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6"
+      data-screen-reveal={screenRevealActive ? "true" : "false"}
+      aria-hidden={screenRevealActive}
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3">
-        {/* who, where, how far */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                style={{ background: "var(--brand)" }}>
-            <Icons.Bot className="h-3 w-3" aria-hidden /> XELOR
+      <div
+        ref={dialogPositioner}
+        className="x-agent-dialog-positioner pointer-events-none w-full max-w-[580px]"
+        style={{ transform: `translate3d(${dialogOffset.x}px, ${dialogOffset.y}px, 0)` }}
+        data-dragging={dialogDragging ? "true" : "false"}
+        data-testid="ai-copilot-positioner"
+      >
+        <aside
+          className="x-agent-dialog-card pointer-events-auto w-full overflow-hidden rounded-[22px] border bg-[var(--surface)] shadow-[0_28px_80px_rgba(10,24,48,0.28)]"
+          style={{ borderColor: failed ? "var(--bad-fg)" : waiting ? "var(--warn-fg)" : "var(--border)" }}
+          aria-label="ONYX AI Copilot"
+          aria-live="polite"
+          data-testid="ai-copilot-box"
+        >
+        <header
+          className="flex touch-none select-none items-center gap-3 border-b border-[var(--border-subtle)] px-5 py-4"
+          onPointerDown={startDialogDragFromHeader}
+          onPointerMove={moveDialog}
+          onPointerUp={finishDialogDrag}
+          onPointerCancel={finishDialogDrag}
+          onLostPointerCapture={() => { dialogDrag.current = null; setDialogDragging(false); }}
+          data-testid="ai-copilot-drag-surface"
+        >
+          <button
+            type="button"
+            onPointerDown={startDialogDragFromHandle}
+            onKeyDown={moveDialogWithKeyboard}
+            onDoubleClick={() => setDialogOffset({ x: 0, y: 0 })}
+            className="x-agent-dialog-drag-handle grid h-9 w-7 shrink-0 place-items-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-sunken)] hover:text-[var(--text-primary)]"
+            aria-label="Move ONYX AI Copilot. Use arrow keys to move and Home to centre."
+            title="Drag to move · double-click or press Home to centre"
+            data-testid="ai-copilot-drag-handle"
+          >
+            <Icons.GripVertical className="h-4 w-4" aria-hidden />
+          </button>
+          <span
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-[var(--text-on-brand)]"
+            aria-hidden
+          >
+            <Icons.Sparkles className="h-5 w-5" />
           </span>
-          {current ? (
-            <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              {stepCounter(current.seq, total)} · {AGENT_ROLE[current.agentKey] ?? current.agentKey}
-              {current.where ? ` · in ${current.where.module} → ${current.where.screen}` : ""}
-            </span>
-          ) : null}
-          <span className="ml-auto flex items-center gap-3">
-            <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              {mission.customerName} · {mission.soNo}
-            </span>
-            <button type="button" onClick={() => setMinimised(true)} aria-label="Minimise"
-                    className="text-[11px] underline" style={{ color: "var(--text-muted)" }}>hide</button>
-            <button type="button" onClick={() => { endMissionTour(); setMissionId(null); }} aria-label="Leave the tour"
-                    className="text-[11px] underline" style={{ color: "var(--text-muted)" }}>leave</button>
-          </span>
-        </div>
-
-        {/* Progress, drawn from what the server serves rather than from a count in this file.
-            The six acts when the chapter list arrived — which is the better rail anyway,
-            because "Find out what is true" means something and "segment 4 of 13" does not —
-            and the served step total as a fallback when it did not. */}
-        {chapters.length ? (
-          <div className="flex gap-0.5" aria-hidden>
-            {chapters.map((c) => {
-              const reached = mission.steps.some((s) => s.chapter === c.key);
-              const here = current?.chapter === c.key;
-              return (
-                <div key={c.key} className="h-1 flex-1 rounded-full" title={c.name}
-                     style={{ background: here ? "var(--brand)" : reached ? "var(--good-fg)" : "var(--border)" }} />
-              );
-            })}
-          </div>
-        ) : total ? (
-          <div className="flex gap-0.5" aria-hidden>
-            {Array.from({ length: total }, (_, i) => (
-              <div key={i} className="h-1 flex-1 rounded-full"
-                   style={{ background: i < (current?.seq ?? 0) ? "var(--good-fg)" : "var(--border)" }} />
-            ))}
-          </div>
-        ) : null}
-
-        {/* what it just did, in plain words */}
-        {current ? (
-          <p className="text-sm leading-snug" style={{ color: "var(--text-primary)" }}>
-            {current.plain}
-          </p>
-        ) : null}
-
-        {/* HOW it did it, phase by phase.
-            This bar is the only surface that is present on every screen the tour visits —
-            the stage panel is mounted on four module screens and the tour walks through
-            eight. So the answer to "do not show me only a spinner and a result" has to live
-            here: which system was read, what was found, whether a person was asked, what was
-            written, and whether the write was confirmed afterwards. Renders nothing at all
-            when the engine sent no pipeline, which leaves the bar exactly as it was. */}
-        <PipelineRail key={current?.seq ?? 0} stages={stages} />
-
-        {error ? (
-          <p className="text-xs" style={{ color: "var(--bad-fg)" }}>{error}</p>
-        ) : null}
-
-        {/* the decision */}
-        {waiting && mission.pendingApproval ? (
-          <div className="rounded-lg p-3" style={{ background: "var(--warn-bg)" }}>
-            <p className="text-sm font-semibold" style={{ color: "var(--warn-fg)" }}>
-              {mission.pendingApproval.brief.recommendation}
-            </p>
-            <p className="mt-0.5 text-[11px]" style={{ color: "var(--text-secondary)" }}>
-              {mission.pendingApproval.brief.ifRejected}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" onClick={() => void decide("approved")} disabled={busy}
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-                style={{ background: "var(--good-fill)" }}>Yes, do it</button>
-              <button type="button" onClick={() => void decide("try_another")} disabled={busy}
-                className="rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-                style={{ borderColor: "var(--brand)", color: "var(--brand)" }}>Find another way</button>
-              <button type="button" onClick={() => void decide("rejected")} disabled={busy}
-                className="rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-                style={{ borderColor: "var(--bad-fg)", color: "var(--bad-fg)" }}>Stop</button>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">ONYX AI Copilot</h2>
+              <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--brand)]">
+                {waiting
+                  ? "Confirmation needed"
+                  : monitoring
+                    ? "Monitoring live work"
+                    : failed
+                      ? "Action failed"
+                      : completed
+                        ? "Verified outcome"
+                        : finished
+                          ? "Mission stopped"
+                          : "Guided action"}
+              </span>
             </div>
+            <p className="mt-0.5 truncate text-[11px] text-[var(--text-muted)]">
+              {current ? `${stepCounter(current.seq, total)} · ` : ""}{mission.soNo} · {mission.customerName}
+            </p>
           </div>
-        ) : finished ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold"
-                  style={{ color: mission.status === "completed" ? "var(--good-fg)" : "var(--bad-fg)" }}>
-              {mission.status === "completed" ? "Finished — every action was checked." : (mission.waitingReason ?? "Stopped.")}
-            </span>
-            <button type="button" onClick={() => { endMissionTour(); setMissionId(null); router.push("/fulfilment/control"); }}
-              className="rounded-lg border px-3 py-1.5 text-xs font-semibold"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
-              See the summary
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={hideCopilot}
+              disabled={busy}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 text-[11px] font-semibold text-[var(--text-secondary)] transition hover:border-[var(--brand)] hover:bg-[var(--brand-soft-2)] hover:text-[var(--brand)] disabled:cursor-progress disabled:opacity-50"
+              aria-label="Hide Copilot and highlight this screen. It stays hidden until you press Show Copilot."
+              title="Hide Copilot and show where ONYX is working"
+              data-testid="ai-hide-and-highlight"
+            >
+              <Icons.Eye className="h-3.5 w-3.5" aria-hidden />
+              Hide
+            </button>
+            <button
+              type="button"
+              onClick={() => { endMissionTour(); setMissionId(null); }}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-[var(--text-muted)] transition hover:bg-[var(--surface-sunken)] hover:text-[var(--text-primary)]"
+              aria-label="End the ONYX walkthrough"
+            >
+              <Icons.X className="h-4 w-4" aria-hidden />
             </button>
           </div>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => void advance()} disabled={busy}
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: "var(--brand)" }}>
-              {busy ? "Working…" : "Looks right — carry on"}
-            </button>
-            <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              nothing happens until you press it
-            </span>
+        </header>
+
+        <div className="px-5 py-5">
+          <div
+            className="flex items-center gap-2 rounded-xl border px-3 py-2.5"
+            style={{ borderColor: "var(--brand-soft)", background: "var(--brand-soft-2)" }}
+            data-testid="ai-application-target"
+          >
+            <Icons.MapPin className="h-4 w-4 shrink-0 text-[var(--brand)]" aria-hidden />
+            <p className="min-w-0 text-[12px] leading-snug text-[var(--text-secondary)]">
+              <span className="font-medium">{locationLead}</span>{" "}
+              <strong className="text-[var(--text-primary)]">
+                {locationLabel}
+              </strong>
+            </p>
           </div>
-        )}
+
+          <section className="mt-4" aria-labelledby="ai-explanation-label">
+            <p id="ai-explanation-label" className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">
+              Explanation
+            </p>
+            <p className="mt-1 text-[17px] font-semibold leading-snug text-[var(--text-primary)]" data-testid="ai-explanation">
+              {explanation}
+            </p>
+          </section>
+
+          <section className="mt-4 rounded-xl bg-[var(--surface-sunken)] px-3.5 py-3" aria-labelledby="ai-reasoning-label">
+            <div className="flex items-start gap-2.5">
+              <Icons.BrainCircuit className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand)]" aria-hidden />
+              <div>
+                <p id="ai-reasoning-label" className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                  Reasoning
+                </p>
+                <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--text-secondary)]" data-testid="ai-reasoning">
+                  {reasoning}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {error ? (
+            <p className="mt-3 rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-xs text-[var(--bad-fg)]" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          {waiting && mission.pendingApproval ? (
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => void decide("approved")}
+                disabled={busy}
+                className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--good-fill)] px-5 text-[15px] font-bold text-[var(--text-on-fill)] transition hover:brightness-110 disabled:cursor-progress disabled:opacity-60"
+                data-testid="ai-confirm-action"
+              >
+                {busy ? <Icons.Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Icons.CircleCheckBig className="h-5 w-5" aria-hidden />}
+                {busy ? "Recording confirmation…" : "Confirm this action"}
+              </button>
+              <div className="mt-3 flex items-center justify-center gap-4 text-[11px]">
+                <button type="button" onClick={() => void decide("try_another")} disabled={busy}
+                  className="font-semibold text-[var(--brand)] underline-offset-4 hover:underline disabled:opacity-50">
+                  Try another plan
+                </button>
+                <button type="button" onClick={() => void decide("rejected")} disabled={busy}
+                  className="text-[var(--text-muted)] underline-offset-4 hover:underline disabled:opacity-50">
+                  Stop mission
+                </button>
+              </div>
+            </div>
+          ) : monitoring ? (
+            <div className="mt-5 flex flex-col items-center gap-3 text-center" data-testid="ai-monitoring-state">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand-soft-2)] text-[var(--brand)]">
+                <Icons.Radio className="h-5 w-5" aria-label="Monitoring" />
+              </span>
+              <div>
+                <p className="text-[13px] font-semibold text-[var(--text-primary)]">Monitoring is active</p>
+                <p className="mt-1 text-[11.5px] leading-relaxed text-[var(--text-secondary)]">
+                  ONYX will continue when the connected system reports the next inventory, production, quality, dispatch, or invoice event.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { endMissionTour(); setMissionId(null); router.push("/fulfilment/control"); }}
+                className="rounded-xl border border-[var(--border)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
+              >
+                Open Mission Control
+              </button>
+            </div>
+          ) : failed ? (
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
+              <Icons.CircleAlert className="h-9 w-9 text-[var(--bad-fg)]" aria-label="Action failed" />
+              <p className="text-[12.5px] font-semibold text-[var(--text-primary)]">
+                Nothing downstream was allowed to continue. The failed attempt remains in the audit trail.
+              </p>
+              <button
+                type="button"
+                onClick={() => void retry()}
+                disabled={busy}
+                className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-5 text-[15px] font-bold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] disabled:cursor-progress disabled:opacity-60"
+                data-testid="ai-retry-action"
+              >
+                {busy ? <Icons.Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Icons.RotateCcw className="h-5 w-5" aria-hidden />}
+                {busy ? "Retrying safely…" : "Retry failed action"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { endMissionTour(); setMissionId(null); router.push("/fulfilment/control"); }}
+                disabled={busy}
+                className="text-[11px] font-semibold text-[var(--text-muted)] underline-offset-4 hover:underline disabled:opacity-50"
+              >
+                Open mission summary
+              </button>
+            </div>
+          ) : finished ? (
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
+              {completed ? (
+                <Icons.CircleCheckBig className="h-9 w-9 text-[var(--good-fg)]" aria-label="Confirmed" />
+              ) : (
+                <Icons.CircleX className="h-9 w-9 text-[var(--bad-fg)]" aria-label="Stopped" />
+              )}
+              <p className="text-[12.5px] font-semibold text-[var(--text-primary)]">
+                {completed ? "Every action was re-read and confirmed." : (mission.waitingReason ?? "The mission stopped safely.")}
+              </p>
+              <button type="button" onClick={() => { endMissionTour(); setMissionId(null); router.push("/fulfilment/control"); }}
+                className="rounded-xl bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-[var(--text-on-brand)]">
+                Open mission summary
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void advance()}
+              disabled={busy}
+              className="mt-5 flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-5 text-[15px] font-bold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] disabled:cursor-progress disabled:opacity-60"
+              data-testid="ai-confirm-action"
+            >
+              {busy ? <Icons.Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Icons.CircleCheckBig className="h-5 w-5" aria-hidden />}
+              {busy ? "ONYX is working…" : "Confirm and continue"}
+            </button>
+          )}
+        </div>
+        </aside>
       </div>
-    </aside>
+    </div>
+
+    {/*
+      The only way back. It is a SIBLING of the layer above rather than a child, because
+      that layer carries aria-hidden while the card is away — a control nested inside it
+      would be announced to nobody and unreachable by keyboard, which is precisely the
+      person who most needs a way to undo a hide.
+
+      Bottom-right, small, and one rung above the layer's z-index so the card cannot cover
+      it on the way out. It sits clear of the highlighted work area rather than on top of
+      the record everyone is being asked to look at.
+    */}
+    {screenRevealActive ? (
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[121] flex justify-end p-4 sm:p-6">
+        <button
+          type="button"
+          onClick={showCopilot}
+          className="x-agent-show-button pointer-events-auto inline-flex h-11 items-center gap-2 rounded-full border px-4 text-[13px] font-bold text-[var(--text-on-brand)] shadow-[0_16px_40px_rgba(10,24,48,0.32)] transition hover:brightness-110"
+          style={{ background: "var(--brand)", borderColor: "var(--brand)" }}
+          aria-label="Show the ONYX AI Copilot again"
+          title="Bring the Copilot explanation back"
+          data-testid="ai-show-copilot"
+        >
+          <Icons.Sparkles className="h-4 w-4" aria-hidden />
+          Show Copilot
+        </button>
+      </div>
+    ) : null}
+    </>,
+    portalHost,
   );
 }

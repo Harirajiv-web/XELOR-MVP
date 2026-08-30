@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XELOR — Product Development Master Plan</title>
+  <style>
+    @page { size: A4; margin: 16mm 15mm 18mm; }
+    * { box-sizing: border-box; }
+    :root {
+      --ink:#14213d; --muted:#58657a; --blue:#1646d8; --cyan:#18a6c9;
+      --green:#138a63; --amber:#b26a00; --red:#b42318; --line:#d8e0eb;
+      --wash:#f4f7fb; --navy:#07142f;
+    }
+    body { margin:0; color:var(--ink); font:10.2pt/1.45 Arial, Helvetica, sans-serif; }
+    h1,h2,h3,h4 { margin:0 0 8px; line-height:1.16; page-break-after:avoid; }
+    h1 { font-size:30pt; letter-spacing:-1px; }
+    h2 { font-size:19pt; color:var(--navy); border-bottom:2px solid var(--blue); padding-bottom:5px; margin-top:8px; }
+    h3 { font-size:13pt; color:var(--blue); margin-top:14px; }
+    h4 { font-size:10.5pt; color:var(--navy); margin-top:10px; }
+    p { margin:5px 0 9px; }
+    ul,ol { margin:5px 0 10px 20px; padding:0; }
+    li { margin:3px 0; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:8.4pt; page-break-inside:auto; }
+    tr { page-break-inside:avoid; }
+    th { background:var(--navy); color:white; text-align:left; padding:6px; }
+    td { border:1px solid var(--line); padding:5px 6px; vertical-align:top; }
+    tr:nth-child(even) td { background:#f8fafd; }
+    code { font-family:"SFMono-Regular", Consolas, monospace; color:#173b79; font-size:0.92em; }
+    a { color:var(--blue); text-decoration:none; word-break:break-word; }
+    .cover { height:260mm; color:white; background:linear-gradient(145deg,#06132f 0%,#102e73 58%,#1686b4 100%); margin:-16mm -15mm -18mm; padding:30mm 22mm; position:relative; page-break-after:always; }
+    .cover .mark { display:inline-grid; place-items:center; width:52px; height:52px; border:1px solid #72d9ff; border-radius:12px; font-size:17pt; font-weight:800; }
+    .cover .eyebrow { margin-top:30mm; color:#8fe5ff; font-size:11pt; letter-spacing:2.5px; font-weight:700; }
+    .cover h1 { font-size:38pt; max-width:150mm; margin-top:8px; }
+    .cover .sub { font-size:15pt; color:#d8efff; max-width:150mm; margin-top:12px; }
+    .cover .meta { position:absolute; bottom:24mm; left:22mm; right:22mm; display:flex; justify-content:space-between; border-top:1px solid #70a5dc; padding-top:10px; color:#c9def5; font-size:9pt; }
+    .page { page-break-before:always; }
+    .no-break { page-break-inside:avoid; }
+    .lead { font-size:12pt; color:#34445d; }
+    .callout { border-left:4px solid var(--blue); background:#eef4ff; padding:9px 12px; margin:10px 0 14px; page-break-inside:avoid; }
+    .warning { border-left-color:var(--amber); background:#fff7e6; }
+    .good { border-left-color:var(--green); background:#eefaf6; }
+    .bad { border-left-color:var(--red); background:#fff1f0; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:8px 0 12px; }
+    .card { border:1px solid var(--line); border-radius:8px; padding:10px; background:white; page-break-inside:avoid; }
+    .card h3 { margin-top:0; }
+    .tag { display:inline-block; border-radius:9px; padding:1px 6px; font-size:7.8pt; font-weight:700; margin-right:4px; white-space:nowrap; }
+    .live { background:#daf3e8; color:#0f684c; }
+    .partial { background:#fff0c9; color:#815000; }
+    .gap { background:#ffe1de; color:#8c1d16; }
+    .na { background:#e9edf4; color:#4a5a72; }
+    .kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
+    .kpi div { background:var(--navy); color:white; padding:9px; border-radius:7px; }
+    .kpi b { display:block; font-size:16pt; color:#77d9ff; }
+    .kpi span { font-size:8pt; color:#c9def5; }
+    .small { font-size:8.5pt; color:var(--muted); }
+    .footer-note { border-top:1px solid var(--line); padding-top:6px; color:var(--muted); font-size:8pt; }
+    .sec-num { color:var(--cyan); font-weight:800; }
+    .verdict { font-size:8.6pt; }
+    .flow { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin:12px 0; }
+    .flow div { border:1px solid #9bb2d6; background:#f4f7fc; padding:7px 4px; border-radius:6px; text-align:center; font-size:7.4pt; font-weight:700; }
+  </style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="mark">XE</div>
+  <div class="eyebrow">XELOR &middot; PRODUCT DEVELOPMENT</div>
+  <h1>Product Development Master Plan</h1>
+  <div class="sub">The Product Development Master Guide applied, section by section, to what XELOR actually is today &mdash; what is built and proven, what is partial, and what has not been started.</div>
+  <div class="meta">
+    <span>Assessed against the running Phase&nbsp;1 and Phase&nbsp;2 stacks, the repository, the test suites and the CI pipeline</span>
+    <span>12 August 2026</span>
+  </div>
+</section>
+
+<section>
+  <h2>How to read this document</h2>
+  <p class="lead">The attached Master Guide is a checklist for planning a complex platform. This document is that checklist <b>answered</b> for XELOR: every one of its thirteen sections, with the real state of the product against each.</p>
+
+  <p>Three rules were followed throughout, because a plan that flatters itself is worth nothing:</p>
+  <ul>
+    <li><b>Every claim is evidence-backed.</b> Counts come from the repository and the running stacks, not from memory. Where a number is quoted it can be re-derived with the command in the Evidence appendix.</li>
+    <li><b>Gaps are stated as gaps.</b> An item the guide asks for that XELOR has not built is marked <span class="tag gap">GAP</span>, not softened into "planned".</li>
+    <li><b>Not-applicable is a real answer.</b> Some of the guide targets consumer-scale SaaS. Where an item does not apply to an India-first manufacturing ERP at MVP stage, it is marked <span class="tag na">N/A</span> with the reason.</li>
+  </ul>
+
+  <h3>The product, in one paragraph</h3>
+  <p>XELOR is an India-first, AI-native manufacturing ERP for MSMEs, built as a boundary-enforced modular monolith. It ships in two layers. <b>Phase&nbsp;1</b> is the ERP and system of record &mdash; Sales, Inventory, Purchase, Production, Engineering, Planning, Quality, Accounts. <b>Phase&nbsp;2</b> is an intelligence and automation layer that sits on top: it reads Phase&nbsp;1, works out what should happen, explains its reasoning, asks a human for authority where the decision commits money, and then writes real documents back through Phase&nbsp;1's own service ports. Both layers run today.</p>
+
+  <div class="kpi">
+    <div><b>988</b><span>unit &amp; service tests passing</span></div>
+    <div><b>450</b><span>API endpoints across 33 controllers</span></div>
+    <div><b>251</b><span>tables over 96 migrations</span></div>
+    <div><b>24</b><span>installed product modules</span></div>
+  </div>
+
+  <div class="callout good">
+    <b>The headline verdict.</b> XELOR is unusually strong on the guide's sections 2, 4, 6 and 8 &mdash; architecture, backend, security and testing. It is materially incomplete on sections 5, 9 and 10 &mdash; infrastructure/DevOps, observability, and release/incident operations &mdash; which is the normal shape for a product at investor-MVP stage but is exactly what must close before a paying pilot runs unattended.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">1.</span> Strategy &amp; Requirements</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists in XELOR</th></tr>
+    <tr><td>Vision / problem statement</td><td><span class="tag live">LIVE</span></td><td>"Turn disconnected factory data into trusted operational decisions in minutes &mdash; with evidence, under human control." Expressed as Connect &rarr; Retrieve &rarr; Reason &rarr; Act.</td></tr>
+    <tr><td>Target personas</td><td><span class="tag live">LIVE</span></td><td>Indian MSME manufacturers. Two product forms: factories with no ERP (buy Phase&nbsp;1), factories already running SAP/Tally/Odoo (buy Phase&nbsp;2 alone). Five seeded personas drive the RBAC proof suite.</td></tr>
+    <tr><td>Market / competitor research</td><td><span class="tag live">LIVE</span></td><td>Competitive set mapped across three axes &mdash; coordinated agents, sits-on-top, India-first MSME &mdash; with the gap being the overlap. Documented in the investor deck.</td></tr>
+    <tr><td>Success metrics (KPIs/OKRs)</td><td><span class="tag partial">PARTIAL</span></td><td>Value metrics are quantified (recovery of ~2% of turnover; 1,262 engineer-hours; ~&#8377;42&nbsp;L/yr on a &#8377;20&nbsp;cr plant). <b>Product</b> KPIs &mdash; activation, time-to-first-value, retention &mdash; are not instrumented.</td></tr>
+    <tr><td>Pricing / monetisation</td><td><span class="tag gap">GAP</span></td><td>Explicitly an open item in the binding decisions register (&sect;6c). No price band is committed, which is why the ROI analysis states a recovery ceiling rather than a payback period.</td></tr>
+    <tr><td>Roadmap with phased milestones</td><td><span class="tag live">LIVE</span></td><td>Phase&nbsp;1 frozen and tagged; Phase&nbsp;2 built on top with its own database and ports. Both run side by side, which is itself the roadmap made testable.</td></tr>
+    <tr><td>Go-to-market plan</td><td><span class="tag live">LIVE</span></td><td>Peenya (Bengaluru) industrial cluster first &mdash; ~13,000 units in one geography &mdash; then Coimbatore. 3&ndash;4 pilots identified.</td></tr>
+    <tr><td>Functional requirements</td><td><span class="tag live">LIVE</span></td><td>Twenty-section module blueprints per department, each with acceptance criteria.</td></tr>
+    <tr><td>Non-functional requirements</td><td><span class="tag partial">PARTIAL</span></td><td>Security and correctness NFRs are specified and enforced. <b>Performance</b> NFRs exist as one rule (RLS overhead &gt;15&ndash;20% triggers design review) but there are no latency, throughput or concurrency targets.</td></tr>
+    <tr><td>Acceptance criteria per feature</td><td><span class="tag live">LIVE</span></td><td>A 99-check investor acceptance matrix runs in CI against a database rebuilt from empty.</td></tr>
+    <tr><td>Wireframes / design system</td><td><span class="tag live">LIVE</span></td><td>Design system is enforced in code: every colour is a CSS custom property with a light and dark definition; a literal hex in a screen is treated as a defect.</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <b>Priority action.</b> Pricing (&sect;6c) is the highest-value open item in this section. It blocks the payback narrative that the ROI figures are built to support, and every pilot conversation eventually asks for it.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">2.</span> Architecture &amp; System Design</h2>
+
+  <h3>The core decision, and why</h3>
+  <p><b>Boundary-enforced modular monolith</b> &mdash; not microservices. For a five-engineer team shipping an ERP whose ledger writes must be transactional, microservices would buy independent deployability at the cost of distributed transactions across Sales, Inventory and Accounts. The boundaries are real but enforced in CI rather than over a network: no cross-module imports, no hard foreign key across a module edge, and cross-module access only through a declared service port or an outbox event. <code>module-check</code> fails the build on violation &mdash; it currently reports <b>24 modules, 169 nav permissions, no cross-module imports</b>.</p>
+
+  <h3>The two-layer architecture, which is the product's actual thesis</h3>
+  <div class="flow">
+    <div>Phase 1<br>ERP modules</div>
+    <div>&rarr;</div>
+    <div>Service ports<br>(adapters)</div>
+    <div>&rarr;</div>
+    <div>Phase 2<br>context &amp; planner</div>
+    <div>&rarr;</div>
+    <div>Human<br>approval gate</div>
+  </div>
+  <p>Phase&nbsp;2 may reach Phase&nbsp;1 <b>only</b> through ports. This is enforced by construction: the fulfilment module does not import the Purchase or Production modules at all &mdash; it resolves <code>PURCHASE_ORDER_WRITER</code> and <code>PRODUCTION_ORDER_WRITER</code> tokens and can therefore reach an interface but not a service class. The intelligence engine sits behind a single <code>IntelligenceEngine</code> interface with a deterministic implementation, so a real model can be substituted later without rewriting the orchestration.</p>
+
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Monolith vs microservices decision</td><td><span class="tag live">LIVE</span></td><td>Modular monolith, decided and enforced in CI. Rejected alternatives are recorded.</td></tr>
+    <tr><td>Tech stack</td><td><span class="tag live">LIVE</span></td><td>NestJS&nbsp;11 / Node&nbsp;22 &middot; Next.js&nbsp;15 / React&nbsp;19 &middot; PostgreSQL&nbsp;17 &middot; Drizzle ORM &middot; Valkey + BullMQ &middot; Keycloak&nbsp;26 &middot; pgvector &middot; Gotenberg &middot; AWS ap-south-1.</td></tr>
+    <tr><td>API style &amp; versioning</td><td><span class="tag live">LIVE</span></td><td>REST under a global <code>/api/v1</code> prefix. Events are versioned separately as <code>module.entity.verb.v1</code>.</td></tr>
+    <tr><td>Data model &amp; schema</td><td><span class="tag live">LIVE</span></td><td>251 tables, 96 hand-written SQL migrations. UUIDv7 keys, <code>tenant_id</code> on every tenant-scoped table, money as <code>NUMERIC(18,2)</code>, soft delete, no hard DELETE on financial or statutory rows.</td></tr>
+    <tr><td>Third-party integration points</td><td><span class="tag partial">PARTIAL</span></td><td>Spreadsheet import is genuinely built and writes through the domain APIs. Eight further connectors (SAP, Tally, Odoo, Dynamics&nbsp;365, MES/SCADA, REST, Database, Excel) are catalogued and <b>honestly marked not connected</b> &mdash; the type forbids flipping one to connected without an implementation.</td></tr>
+    <tr><td>Caching strategy</td><td><span class="tag partial">PARTIAL</span></td><td>Valkey is deployed and used by BullMQ. It is <b>not</b> used as a read cache; notably the permission guard queries the database on every guarded request with no cache.</td></tr>
+    <tr><td>Horizontal scaling</td><td><span class="tag partial">PARTIAL</span></td><td>Services are stateless and the tenant context is per-request, so horizontal scaling is architecturally available. It has never been exercised &mdash; no load balancer, no multi-instance run.</td></tr>
+    <tr><td>DB scaling (replicas, sharding)</td><td><span class="tag gap">GAP</span></td><td>Single primary. No read replica, no partitioning strategy for the append-only ledger tables that will grow fastest.</td></tr>
+    <tr><td>Rate limiting / throttling</td><td><span class="tag gap">GAP</span></td><td>Not implemented at the application or gateway layer.</td></tr>
+    <tr><td>Performance targets</td><td><span class="tag gap">GAP</span></td><td>No documented latency, throughput or concurrency targets, and therefore nothing to test against.</td></tr>
+  </table>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">3.</span> Frontend</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Framework &amp; state management</td><td><span class="tag live">LIVE</span></td><td>Next.js&nbsp;15 App Router, React&nbsp;19. State is deliberately hand-rolled <code>useState</code> plus React context &mdash; no Redux, no Zustand.</td></tr>
+    <tr><td>Component library / design system</td><td><span class="tag live">LIVE</span></td><td>A shared "spine": PageHeader, DataTable, StatusBadge, Modal, Can, plus a single pipeline/layer visual language that draws Phase&nbsp;1 and Phase&nbsp;2 differently on every screen.</td></tr>
+    <tr><td>CSS architecture</td><td><span class="tag live">LIVE</span></td><td>Every colour is a CSS custom property defined for light and dark. Ink tokens and fill tokens are separate, because a colour legible as text on a surface is not legible as white-on-fill.</td></tr>
+    <tr><td>Build tooling / code splitting</td><td><span class="tag live">LIVE</span></td><td>Next build with per-route chunking; module screens are dynamically imported from each module's manifest.</td></tr>
+    <tr><td>Accessibility</td><td><span class="tag partial">PARTIAL</span></td><td>Keyboard focus is visible, controls are native elements, decorative icons are <code>aria-hidden</code>, reduced-motion respected. <b>No WCAG audit has been run</b> and there is no automated a11y gate.</td></tr>
+    <tr><td>Responsive breakpoints</td><td><span class="tag partial">PARTIAL</span></td><td>Screens use container queries and reflow correctly on a laptop. <b>Mobile and offline-first is the single biggest declared gap</b> in the platform &mdash; and a factory floor is a mobile, intermittently-connected environment.</td></tr>
+    <tr><td>Core Web Vitals</td><td><span class="tag gap">GAP</span></td><td>Not measured. No LCP/CLS budget, no Lighthouse gate in CI.</td></tr>
+    <tr><td>Testing: unit / E2E</td><td><span class="tag live">LIVE</span></td><td>58 web unit tests; 12 Playwright specs covering the demo, agent OS, RBAC personas and the sign-in theme.</td></tr>
+    <tr><td>Visual regression</td><td><span class="tag gap">GAP</span></td><td>None. Every visual defect found this cycle &mdash; a collapsed table column, an invisible button, a low-contrast fill &mdash; was found by a human looking at a screenshot.</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <b>Priority action.</b> Mobile/offline-first is the biggest gap in the whole document, and it is not merely a frontend concern: it determines whether a supervisor can record output at the machine or must walk to an office PC. It is already recorded as a blocking gate in the binding decisions register (&sect;6a).
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">4.</span> Backend</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Controllers / services / repositories</td><td><span class="tag live">LIVE</span></td><td>33 controllers, 450 endpoints, 223 API source files. Domain logic lives in services; controllers validate and delegate.</td></tr>
+    <tr><td>Standardised error format</td><td><span class="tag live">LIVE</span></td><td>One canonical envelope: <code>{ error: { code, message, details[], traceId } }</code>. Field-level <code>details</code> survive all the way into the spreadsheet importer's per-row failure messages.</td></tr>
+    <tr><td>Input validation</td><td><span class="tag live">LIVE</span></td><td>Zod <code>safeParse</code> per endpoint. Deliberately not a global pipe &mdash; the trade-off is noted below.</td></tr>
+    <tr><td>Pagination</td><td><span class="tag live">LIVE</span></td><td>Cursor pagination only, capped at 100 rows. Offset pagination is prohibited.</td></tr>
+    <tr><td>Idempotency</td><td><span class="tag live">LIVE</span></td><td><code>Idempotency-Key</code> required on every mutating endpoint, backed by a ledger. Phase&nbsp;2 derives deterministic keys from mission + plan version + vendor, so a retried step cannot raise a second purchase order.</td></tr>
+    <tr><td>AuthN / AuthZ</td><td><span class="tag live">LIVE</span></td><td>Keycloak&nbsp;26 OIDC; 165 registered permissions with RBAC/ABAC. A dedicated Playwright suite proves five personas see only their own departments and that the API refuses on the same boundary.</td></tr>
+    <tr><td>Transactions</td><td><span class="tag live">LIVE</span></td><td>Ledger-critical writes stay synchronous in one transaction and never travel on the bus. Cross-module document creation is deliberately a separate transaction via a port &mdash; documented, because nesting them would deadlock the pool.</td></tr>
+    <tr><td>Job queues</td><td><span class="tag partial">PARTIAL</span></td><td>Valkey + BullMQ are deployed. Phase&nbsp;2 missions advance only when called &mdash; there is no background worker driving them.</td></tr>
+    <tr><td>Eventing</td><td><span class="tag partial">PARTIAL</span></td><td>Transactional outbox exists (at-least-once + idempotent consumer = exactly-once effect). Phase&nbsp;2 currently publishes one event; plan, approval and action events are not yet emitted.</td></tr>
+    <tr><td>File storage</td><td><span class="tag partial">PARTIAL</span></td><td>Import accepts base64 in a JSON body &mdash; a deliberate choice to inherit the existing authenticated pipeline rather than add an unguarded multipart route. The cost is a ~64&nbsp;KB ceiling. No object-storage client is wired.</td></tr>
+    <tr><td>N+1 / indexing</td><td><span class="tag live">LIVE</span></td><td>Composite indexes lead with <code>tenant_id</code>. Hot paths batch their reads &mdash; the procurement step loads the vendor and item masters in one query each rather than per line.</td></tr>
+  </table>
+
+  <div class="callout">
+    <b>An honest trade-off worth restating.</b> Validation is per-controller rather than a global pipe. The benefit is that each endpoint's contract is explicit and testable; the risk is that a new endpoint which forgets <code>safeParse</code> receives unvalidated input. That risk is currently mitigated by review alone. A lint rule asserting every <code>@Body()</code> is parsed would close it cheaply.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">5.</span> Infrastructure &amp; DevOps</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Cloud provider &amp; region</td><td><span class="tag live">LIVE</span></td><td>AWS ap-south-1 (Mumbai), chosen for data residency under India's DPDP Act rather than latency.</td></tr>
+    <tr><td>Infrastructure as Code</td><td><span class="tag partial">PARTIAL</span></td><td>OpenTofu is the decided tool. Deployment today is Docker Compose for local and a hosted demo stack.</td></tr>
+    <tr><td>Secrets management</td><td><span class="tag partial">PARTIAL</span></td><td><code>.env</code> is git-ignored and no secret is committed &mdash; verified by scanning every commit in this cycle; only variable <i>references</i> appear. There is no Vault or Secrets Manager integration and no rotation policy.</td></tr>
+    <tr><td>CI/CD pipeline</td><td><span class="tag live">LIVE</span></td><td>GitHub Actions, two jobs. <b>verify</b>: build, lint (module boundaries), typecheck, 988 tests, migrate, then RLS/permission/naming/manifest proofs against a real PG17. <b>investor-demo</b>: rebuilds the world from an empty database and runs the 99-check matrix.</td></tr>
+    <tr><td>Branching strategy</td><td><span class="tag partial">PARTIAL</span></td><td>Trunk-based on <code>main</code>. No protected-branch rule, no required review &mdash; which is how two commits reached the public repository this cycle without an approval step.</td></tr>
+    <tr><td>Containers</td><td><span class="tag live">LIVE</span></td><td>Docker Compose brings up Postgres, Valkey, Keycloak and Gotenberg. Production compose files exist.</td></tr>
+    <tr><td>Orchestration (Kubernetes)</td><td><span class="tag na">N/A</span></td><td>Correctly out of scope. A modular monolith serving MSME tenants does not need Kubernetes before it needs paying customers.</td></tr>
+    <tr><td>Deployment strategy</td><td><span class="tag gap">GAP</span></td><td>No blue-green, canary or rolling strategy defined. Deployment is restart-in-place.</td></tr>
+    <tr><td>Rollback automation</td><td><span class="tag gap">GAP</span></td><td>None. Migrations are forward-only by design &mdash; the migrator refuses to run if an applied file's hash changed &mdash; but there is no rollback path and no down migrations.</td></tr>
+    <tr><td>Container vulnerability scanning</td><td><span class="tag gap">GAP</span></td><td>Not configured.</td></tr>
+  </table>
+
+  <div class="callout bad">
+    <b>The most consequential finding in this document.</b> Two commits were made and pushed to a <b>public</b> repository during this development cycle without a review or approval step. The content was audited afterwards and is clean &mdash; no <code>.env</code> is tracked, no literal credential appears, and the only password-shaped strings are variable references. But the control that should have prevented an unreviewed push to a public repository does not exist. <b>Enable branch protection on <code>main</code> with a required review before the next change lands.</b>
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">6.</span> Security &amp; Compliance</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Multi-tenant isolation</td><td><span class="tag live">LIVE</span></td><td><b>PostgreSQL FORCE ROW LEVEL SECURITY on 65 tables</b>, enforced for the schema owner too. A two-tenant leak probe runs in CI. This is the strongest control in the platform.</td></tr>
+    <tr><td>Password hashing / MFA</td><td><span class="tag live">LIVE</span></td><td>Delegated to Keycloak&nbsp;26 &mdash; credentials never reach application code.</td></tr>
+    <tr><td>Parameterised queries (SQLi)</td><td><span class="tag live">LIVE</span></td><td>Drizzle ORM throughout; no string-built SQL in application paths.</td></tr>
+    <tr><td>Input validation / XSS</td><td><span class="tag live">LIVE</span></td><td>Zod at every mutating endpoint; React escapes by default and no <code>dangerouslySetInnerHTML</code> is used in product screens.</td></tr>
+    <tr><td>Audit logging</td><td><span class="tag live">LIVE</span></td><td><b>Hash-chained</b> audit trail. Fifty-four tables carry an append-only trigger that fires for the schema owner as well, so a row-level undo is impossible by construction &mdash; which is what the MCA eight-year retention requirement actually demands.</td></tr>
+    <tr><td>Data residency &amp; DPDP</td><td><span class="tag live">LIVE</span></td><td>ap-south-1 only. Compliance facts (DPDP, CERT-In, GST including the 1&nbsp;Aug&nbsp;2026 Ship-to-GSTIN rule, payroll deemed wages) are recorded as binding decisions, and every statutory number is configuration rather than a constant in code.</td></tr>
+    <tr><td>Encryption in transit / at rest</td><td><span class="tag partial">PARTIAL</span></td><td>TLS at the edge in the hosted deployment. No documented KMS strategy or at-rest encryption policy.</td></tr>
+    <tr><td>Dependency scanning</td><td><span class="tag partial">PARTIAL</span></td><td>The spreadsheet library is deliberately pinned to the vendor's patched distribution rather than the vulnerable registry build &mdash; a considered decision, documented in code. But there is <b>no automated Dependabot/Snyk gate</b>.</td></tr>
+    <tr><td>SAST / DAST</td><td><span class="tag gap">GAP</span></td><td>Not configured.</td></tr>
+    <tr><td>Penetration testing</td><td><span class="tag gap">GAP</span></td><td>Never performed.</td></tr>
+    <tr><td>Security headers / rate limiting</td><td><span class="tag gap">GAP</span></td><td>No CSP, HSTS or X-Frame-Options set by the app; no API rate limiting.</td></tr>
+    <tr><td>Incident response plan</td><td><span class="tag gap">GAP</span></td><td>Not written. CERT-In imposes a six-hour incident reporting obligation in India &mdash; this gap has a regulatory deadline attached to it.</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <b>The public-demo bypass.</b> A static header authenticates as a demo administrator without a token. It is gated on a runtime check that the database contains <i>only</i> the two seeded demo tenants and refuses otherwise. That is a good control, and it must never front real customer data.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">7.</span> Data Management &amp; Analytics</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Data collection / ingestion</td><td><span class="tag live">LIVE</span></td><td>Named ingestion layer with nine connected Phase&nbsp;1 sources, two honest stand-ins for facts Phase&nbsp;1 holds no table for, and spreadsheet upload.</td></tr>
+    <tr><td>Normalisation</td><td><span class="tag live">LIVE</span></td><td>Canonical internal models &mdash; Customer, Item, StockLine, Supplier, OrderLine &mdash; with explicit hand-written mappers. Deliberately concrete rather than a generic mapping engine.</td></tr>
+    <tr><td>ETL pipelines</td><td><span class="tag partial">PARTIAL</span></td><td>The import path is a real inspect &rarr; map &rarr; validate &rarr; commit pipeline with a persisted batch and per-row outcome, so a partial import is auditable and resumable. There is no scheduled or streaming ETL.</td></tr>
+    <tr><td>Data quality / governance</td><td><span class="tag live">LIVE</span></td><td>Row-level validation with field-level messages; duplicate detection that explains itself (matching on GSTIN and reporting name similarity); effective-dated statutory masters.</td></tr>
+    <tr><td>Retention / archival</td><td><span class="tag partial">PARTIAL</span></td><td>Eight-year retention is a stated compliance fact and append-only triggers enforce immutability. No archival or partitioning mechanism exists for when those tables get large.</td></tr>
+    <tr><td>Product event tracking</td><td><span class="tag gap">GAP</span></td><td>No user-behaviour analytics, no funnels. The system records what the <i>business</i> did in exhaustive detail and nothing about what the <i>user</i> did.</td></tr>
+    <tr><td>BI / dashboards</td><td><span class="tag partial">PARTIAL</span></td><td>Each module declares its own signals and alerts for a department dashboard. There is no cross-tenant BI or warehouse.</td></tr>
+    <tr><td>ML models</td><td><span class="tag na">N/A</span></td><td>Deliberately none. The planner is symbolic and deterministic &mdash; research-backed as <i>better</i> than an LLM for a closed manufacturing domain, because a model can hallucinate a part number and a planner cannot. The seam for a real model is a single interface.</td></tr>
+  </table>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">8.</span> Testing Strategy</h2>
+  <div class="kpi">
+    <div><b>821</b><span>platform unit tests</span></div>
+    <div><b>104</b><span>API tests</span></div>
+    <div><b>58</b><span>web tests</span></div>
+    <div><b>12</b><span>Playwright E2E specs</span></div>
+  </div>
+
+  <table>
+    <tr><th style="width:20%">Layer</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Unit</td><td><span class="tag live">LIVE</span></td><td>988 tests across four packages, 84 test files, Node's built-in runner. All passing; one deliberate environment-dependent skip.</td></tr>
+    <tr><td>Integration</td><td><span class="tag live">LIVE</span></td><td>DB-gated proofs run against a real PG17 in CI: RLS, permission coverage, naming conventions, module manifests, and a two-tenant leak probe.</td></tr>
+    <tr><td>E2E</td><td><span class="tag live">LIVE</span></td><td>12 Playwright specs. Skips are declared preconditions, not silent disappearances &mdash; the two auth-mode-specific suites call <code>test.skip</code> with a reason.</td></tr>
+    <tr><td>Acceptance</td><td><span class="tag live">LIVE</span></td><td>A 99-check matrix run against a world rebuilt from an <b>empty</b> database. This job is not redundant: a defect once passed every static check and all unit tests because the already-seeded database happened to hold the rows being asserted.</td></tr>
+    <tr><td>Invariant / stress</td><td><span class="tag live">LIVE</span></td><td>A 288-scenario harness asserts invariants rather than outputs &mdash; change one fact, prove the plan changes &mdash; which is what distinguishes a deterministic engine from a script.</td></tr>
+    <tr><td>Performance / load</td><td><span class="tag gap">GAP</span></td><td>No k6, JMeter or Locust. Nothing has ever been load tested. This is the largest single gap in the testing section.</td></tr>
+    <tr><td>Security testing</td><td><span class="tag gap">GAP</span></td><td>No OWASP scan, no ZAP/Burp.</td></tr>
+    <tr><td>UAT</td><td><span class="tag partial">PARTIAL</span></td><td>Pilots identified; no structured UAT has run with a real plant.</td></tr>
+    <tr><td>Coverage enforcement</td><td><span class="tag gap">GAP</span></td><td>Tests run in CI but no coverage threshold is enforced, so coverage can silently fall.</td></tr>
+  </table>
+
+  <div class="callout good">
+    <b>What is genuinely excellent here.</b> The rebuild-from-empty acceptance job and the invariant harness are both more rigorous than most products carry at this stage, and both exist because a real defect got through a weaker check.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">9.</span> Monitoring &amp; Observability</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>APM</td><td><span class="tag gap">GAP</span></td><td>OpenTelemetry, Grafana and Sentry are the <i>decided</i> stack. None is wired into the running application.</td></tr>
+    <tr><td>Centralised logging</td><td><span class="tag gap">GAP</span></td><td>Logs go to a local file per process. No aggregation, no structured JSON contract, no retention policy.</td></tr>
+    <tr><td>Error tracking</td><td><span class="tag partial">PARTIAL</span></td><td>Every error carries a <code>traceId</code> in the canonical envelope &mdash; the hard part is already done. Nothing collects them.</td></tr>
+    <tr><td>Uptime monitoring / status page</td><td><span class="tag partial">PARTIAL</span></td><td>A platform-health module runs five probes and a scheduled check. There is no external uptime monitor and no public status page.</td></tr>
+    <tr><td>Distributed tracing</td><td><span class="tag na">N/A</span></td><td>Correctly unnecessary for a modular monolith. The <code>traceId</code> already correlates a request end to end.</td></tr>
+    <tr><td>Alerting</td><td><span class="tag partial">PARTIAL</span></td><td>Business alerts are strong and deliberately rule-based &mdash; "an alert wrong in the reassuring direction is worse than no alert at all". Infrastructure alerting (error rate, latency, disk, memory) does not exist.</td></tr>
+    <tr><td>On-call rotation</td><td><span class="tag gap">GAP</span></td><td>None. No PagerDuty/Opsgenie, no escalation policy.</td></tr>
+    <tr><td>Runbooks</td><td><span class="tag partial">PARTIAL</span></td><td>Operational traps are documented well in-repo &mdash; the stale-build trap, the seeder auth trap, the demo-reset semantics. These are runbooks in substance but not organised as incident procedures.</td></tr>
+  </table>
+
+  <div class="callout bad">
+    <b>This is the weakest section of the entire assessment.</b> The product can currently tell a factory in forensic detail what happened to a purchase order, and cannot tell its own operators that the API is failing. Before any pilot runs unattended, three things must exist: Sentry wired for errors, an external uptime check, and one alert that reaches a human.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">10.</span> Release &amp; Operations</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Versioning</td><td><span class="tag partial">PARTIAL</span></td><td>API is versioned; events are versioned. The product itself carries no semantic version and releases are not tagged consistently.</td></tr>
+    <tr><td>Release notes</td><td><span class="tag partial">PARTIAL</span></td><td>Commit messages are unusually descriptive and explain intent. There is no changelog a customer could read.</td></tr>
+    <tr><td>Feature flags</td><td><span class="tag partial">PARTIAL</span></td><td>Environment flags exist (public-demo mode, autonomy tiers). No runtime flag service for gradual rollout.</td></tr>
+    <tr><td>Pre-deploy checklist</td><td><span class="tag partial">PARTIAL</span></td><td>CI enforces build, lint, typecheck, tests and the DB proofs. There is no explicit human gate or documented go/no-go.</td></tr>
+    <tr><td>Hotfix process</td><td><span class="tag gap">GAP</span></td><td>Undefined.</td></tr>
+    <tr><td>Severity levels / incident commander</td><td><span class="tag gap">GAP</span></td><td>Undefined.</td></tr>
+    <tr><td>Postmortems</td><td><span class="tag partial">PARTIAL</span></td><td>Not a formal practice &mdash; but the codebase does something rarer and arguably better: the <i>reason</i> a defect happened is written into the comment above the fix, so the lesson lives where the next engineer will read it.</td></tr>
+    <tr><td>Backups &amp; tested restore</td><td><span class="tag gap">GAP</span></td><td>No automated backup, and no restore has ever been tested.</td></tr>
+    <tr><td>RTO / RPO</td><td><span class="tag gap">GAP</span></td><td>Not defined.</td></tr>
+    <tr><td>Failover / geographic redundancy</td><td><span class="tag gap">GAP</span></td><td>None. Single region, single primary.</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <b>Untested backups are the classic way to lose a customer permanently.</b> For a system of record holding eight years of statutory data under an append-only guarantee, an automated backup with a <i>proven</i> restore is not optional past the first pilot. It is the cheapest item on this page and among the most consequential.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">11.</span> Team, Process &amp; Governance</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Team size vs stage</td><td><span class="tag live">LIVE</span></td><td>~5 engineers at MVP stage &mdash; within the guide's 5&ndash;8 band, though carrying an unusually large surface for that size.</td></tr>
+    <tr><td>Architecture Decision Records</td><td><span class="tag live">LIVE</span></td><td>A binding platform-decisions register that <b>wins on conflict</b> with any module blueprint, with a named reviewer for divergence. Rejected alternatives are recorded, and the stack survived an adversarial review with none of fourteen recommendations overturned.</td></tr>
+    <tr><td>Ownership model</td><td><span class="tag live">LIVE</span></td><td>Seven departments own defined systems of record, each with its own blueprint. Ownership is explicit rather than assumed.</td></tr>
+    <tr><td>Code review workflow</td><td><span class="tag gap">GAP</span></td><td>No enforced review. Directly demonstrated this cycle: two commits reached a public repository unreviewed.</td></tr>
+    <tr><td>Agile ceremony structure</td><td><span class="tag partial">PARTIAL</span></td><td>Phased milestones exist; no formal sprint cadence, standups or retros documented.</td></tr>
+    <tr><td>Risk register with owners</td><td><span class="tag partial">PARTIAL</span></td><td>Nine open items are enumerated with an accountable department. They are not scored by probability and impact, and have no dates.</td></tr>
+    <tr><td>Technical debt tracking</td><td><span class="tag partial">PARTIAL</span></td><td>Debt is unusually visible &mdash; written in comments at the point of compromise, with the reasoning. It is not aggregated anywhere a planner could prioritise it.</td></tr>
+  </table>
+
+  <h3>Risk register &mdash; scored</h3>
+  <table>
+    <tr><th style="width:34%">Risk</th><th style="width:12%">Probability</th><th style="width:12%">Impact</th><th style="width:14%">Rating</th><th>Mitigation</th></tr>
+    <tr><td>No backup / untested restore</td><td>Medium</td><td>High</td><td><span class="tag gap">CRITICAL</span></td><td>Automated nightly backup + a restore rehearsal before the first pilot.</td></tr>
+    <tr><td>No observability in production</td><td>High</td><td>High</td><td><span class="tag gap">CRITICAL</span></td><td>Wire Sentry; add an external uptime check and one paging alert.</td></tr>
+    <tr><td>Unreviewed pushes to a public repo</td><td>High</td><td>Medium</td><td><span class="tag gap">CRITICAL</span></td><td>Branch protection on <code>main</code> with a required review. Cost: minutes.</td></tr>
+    <tr><td>Mobile/offline absent on a factory floor</td><td>High</td><td>High</td><td><span class="tag gap">CRITICAL</span></td><td>Already a declared blocking gate. Decide the strategy before the UX freeze.</td></tr>
+    <tr><td>Never load tested</td><td>Medium</td><td>High</td><td><span class="tag gap">CRITICAL</span></td><td>Define latency/throughput targets, then a k6 baseline against the RLS query paths.</td></tr>
+    <tr><td>No incident response plan (CERT-In: 6&nbsp;hours)</td><td>Low</td><td>High</td><td><span class="tag partial">MITIGATE</span></td><td>Write the plan; it is a regulatory obligation in India, not a nice-to-have.</td></tr>
+    <tr><td>Pricing undecided</td><td>High</td><td>Medium</td><td><span class="tag partial">MITIGATE</span></td><td>Blocks the payback story the ROI work supports.</td></tr>
+    <tr><td>Permission guard hits the DB per request</td><td>High</td><td>Low</td><td><span class="tag partial">TRACK</span></td><td>Cache in Valkey when load testing shows it matters &mdash; not before.</td></tr>
+  </table>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">12.</span> Documentation</h2>
+  <table>
+    <tr><th style="width:26%">Guide asks for</th><th style="width:12%">State</th><th>What exists</th></tr>
+    <tr><td>Architecture documentation</td><td><span class="tag live">LIVE</span></td><td>Module blueprints per department on a common 20-section template, plus a rendered report set covering architecture, stack, agentic strategy and the Phase&nbsp;1/Phase&nbsp;2 split.</td></tr>
+    <tr><td>ADRs</td><td><span class="tag live">LIVE</span></td><td>The binding decisions register, with a divergence process.</td></tr>
+    <tr><td>API documentation</td><td><span class="tag gap">GAP</span></td><td><b>No OpenAPI/Swagger specification</b> for 450 endpoints. This is the clearest documentation gap and it directly obstructs any integration partner.</td></tr>
+    <tr><td>Schema documentation</td><td><span class="tag partial">PARTIAL</span></td><td>Migrations are hand-written and heavily commented; the Drizzle schema is typed. No generated ER diagram.</td></tr>
+    <tr><td>Runbooks</td><td><span class="tag partial">PARTIAL</span></td><td>Environment traps are documented candidly, including ones that cost real time. Not organised as incident procedures.</td></tr>
+    <tr><td>User-facing docs</td><td><span class="tag partial">PARTIAL</span></td><td>A presenter walkthrough, a capability-gaps note, and in-product "About this screen" descriptions that CI requires on every visible nav entry. No end-user manual.</td></tr>
+    <tr><td>Onboarding docs</td><td><span class="tag live">LIVE</span></td><td>Environment notes are unusually honest &mdash; including a section correcting the file's own earlier claims after they were measured and found wrong.</td></tr>
+  </table>
+
+  <div class="callout good">
+    <b>A documentation practice worth keeping.</b> This codebase writes the <i>why</i> above non-obvious decisions, including what was measured and what broke. That is why an outsider can reconstruct the reasoning behind a trade-off months later &mdash; and it is rare.
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="sec-num">13.</span> Launch Readiness</h2>
+  <p class="lead">The guide's launch checklist, answered honestly for a first paying pilot &mdash; not for an investor demo, which XELOR is already ready for.</p>
+
+  <table>
+    <tr><th style="width:44%">Checklist item</th><th style="width:12%">State</th><th>Note</th></tr>
+    <tr><td>Features complete for the pilot scope</td><td><span class="tag live">READY</span></td><td>Order to purchase order to work order runs end to end and creates real documents.</td></tr>
+    <tr><td>Critical bugs fixed</td><td><span class="tag live">READY</span></td><td>988 tests green; the defects found this cycle were fixed and covered by regression tests.</td></tr>
+    <tr><td>Security audit passed</td><td><span class="tag gap">NOT READY</span></td><td>No external audit or penetration test has been performed.</td></tr>
+    <tr><td>Load testing completed</td><td><span class="tag gap">NOT READY</span></td><td>Never run.</td></tr>
+    <tr><td>UAT completed</td><td><span class="tag gap">NOT READY</span></td><td>No structured UAT with a real plant.</td></tr>
+    <tr><td>Documentation finalised</td><td><span class="tag partial">PARTIAL</span></td><td>Strong internally; no OpenAPI and no end-user manual.</td></tr>
+    <tr><td>DB migrations tested</td><td><span class="tag live">READY</span></td><td>CI rebuilds from empty on every run &mdash; the strongest possible migration test.</td></tr>
+    <tr><td>Backups verified</td><td><span class="tag gap">NOT READY</span></td><td>No backup exists to verify.</td></tr>
+    <tr><td>Disaster recovery tested</td><td><span class="tag gap">NOT READY</span></td><td>No RTO/RPO defined.</td></tr>
+    <tr><td>Status page ready</td><td><span class="tag gap">NOT READY</span></td><td>Internal probes only.</td></tr>
+    <tr><td>Analytics tracking verified</td><td><span class="tag gap">NOT READY</span></td><td>No product analytics.</td></tr>
+    <tr><td>Monitoring watched live</td><td><span class="tag gap">NOT READY</span></td><td>Nothing to watch.</td></tr>
+    <tr><td>Rollback plan ready</td><td><span class="tag gap">NOT READY</span></td><td>Forward-only migrations, no rollback path.</td></tr>
+  </table>
+
+  <h3>The sequence that closes the gap</h3>
+  <table>
+    <tr><th style="width:8%">#</th><th style="width:36%">Action</th><th style="width:14%">Effort</th><th>Why this order</th></tr>
+    <tr><td>1</td><td>Branch protection + required review on <code>main</code></td><td>Minutes</td><td>Costs almost nothing and closes a control gap that has already been exercised once.</td></tr>
+    <tr><td>2</td><td>Automated backup with a rehearsed restore</td><td>1&ndash;2 days</td><td>The only item on this list whose absence can lose a customer permanently.</td></tr>
+    <tr><td>3</td><td>Sentry + uptime check + one paging alert</td><td>2&ndash;3 days</td><td>You cannot operate a pilot you cannot see. <code>traceId</code> already exists, so this is wiring, not design.</td></tr>
+    <tr><td>4</td><td>Decide the mobile/offline strategy</td><td>Design first</td><td>Already a declared blocking gate; it constrains UX decisions that are cheaper to make before the freeze than after.</td></tr>
+    <tr><td>5</td><td>Performance targets, then a k6 baseline</td><td>3&ndash;5 days</td><td>Targets must come first &mdash; a load test without a target produces numbers nobody can act on. Aim it at the RLS query paths.</td></tr>
+    <tr><td>6</td><td>Generate OpenAPI from the existing zod schemas</td><td>2&ndash;3 days</td><td>The contracts are already declared per endpoint; this is largely mechanical and unblocks integrators.</td></tr>
+    <tr><td>7</td><td>Incident response plan (CERT-In 6-hour duty)</td><td>1 day</td><td>A regulatory obligation in India, and cheap to write.</td></tr>
+    <tr><td>8</td><td>Dependency scanning + security headers</td><td>1 day</td><td>Both are configuration rather than engineering.</td></tr>
+    <tr><td>9</td><td>Structured UAT with the first Peenya pilot</td><td>Pilot-length</td><td>Everything above exists so that this can be survived.</td></tr>
+  </table>
+
+  <div class="callout good">
+    <b>The honest summary.</b> XELOR has built the hard, expensive things first &mdash; tenant isolation, an immutable audit trail, enforced module boundaries, evidence-grounded decisions under a human approval gate, and a test suite that rebuilds the world from nothing to prove itself. What remains is largely <i>operational</i>: backups, observability, load characteristics and release discipline. That is a far better position to be in than the reverse, because the operational layer can be bought and wired in weeks, whereas retrofitting tenant isolation or an audit trail into a live product cannot.
+  </div>
+</section>
+
+<section class="page">
+  <h2>Appendix &middot; Evidence</h2>
+  <p class="small">Every figure in this document is re-derivable. Run these from the Phase&nbsp;2 repository root.</p>
+  <table>
+    <tr><th style="width:38%">Claim</th><th>Command</th></tr>
+    <tr><td>988 tests passing</td><td><code>pnpm --filter @ind-core/platform test</code> &middot; <code>@ind-core/api</code> &middot; <code>@ind-core/web</code> &middot; <code>@ind-core/db</code></td></tr>
+    <tr><td>450 endpoints, 33 controllers</td><td><code>grep -rhoE '@(Get|Post|Patch|Put|Delete|Sse)\(' --include='*.ts' apps/api/src | wc -l</code></td></tr>
+    <tr><td>251 tables, 96 migrations</td><td><code>ls packages/db/migrations/*.sql | wc -l</code></td></tr>
+    <tr><td>FORCE RLS on 65 tables</td><td><code>grep -rho 'FORCE ROW LEVEL SECURITY' packages/db/migrations/*.sql | wc -l</code></td></tr>
+    <tr><td>24 modules, 169 nav permissions, no cross-module imports</td><td><code>pnpm --filter @ind-core/web module-check</code></td></tr>
+    <tr><td>165 registered permissions</td><td><code>packages/platform/src/access/permission-registry.ts</code></td></tr>
+    <tr><td>Real documents raised by Phase&nbsp;2</td><td><code>SELECT count(*) FROM purchase_order WHERE remarks LIKE '%MSN-%';</code></td></tr>
+    <tr><td>Both layers running</td><td>Phase&nbsp;1 <code>:3001</code> &middot; Phase&nbsp;2 <code>:3101</code>; Phase&nbsp;1 returns 404 for <code>/fulfilment</code> and <code>/dataimport</code></td></tr>
+  </table>
+
+  <p class="footer-note">Prepared by applying the Product Development Master Guide to the XELOR platform as it stood on 12 August 2026. Assessments were made against the running stacks and the repository, not against intent. Items marked GAP are not criticisms of the work done &mdash; they are the list of what a first paying pilot will require.</p>
+</section>
+
+</body>
+</html>

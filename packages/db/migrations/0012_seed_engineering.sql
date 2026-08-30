@@ -1,18 +1,18 @@
 -- =============================================================================
--- 0012_seed_engineering — demo items + one BOM for Trishul (§7 canonical universe).
+-- 0012_seed_engineering — demo items + one BOM for 3S (§7 canonical universe).
 -- A centrifugal pump (finished good) and its components, plus the pump's BOM. Runs as
 -- the superuser owner (bypasses RLS), so explicit tenant_id is honoured. Idempotent.
 -- =============================================================================
 
--- Trishul tenant + system actor
+-- 3S tenant + system actor
 -- tenant 0192a8c0-0000-7000-8000-000000000001 · actor 0192a8c0-0000-7000-8000-0000000000ff
 
 INSERT INTO item (id, tenant_id, created_by, updated_by, item_code, name, description, item_type, uom, hsn_code, item_group, is_purchasable, is_manufacturable, is_sellable, standard_cost) VALUES
- ('0192a8c0-0012-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','PMP-CP50','Centrifugal Pump CP-50','End-suction centrifugal pump, 50mm','finished_good','nos','8413','Pumps',false,true,true,8500.00),
- ('0192a8c0-0012-7000-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-CAS50','Cast Iron Casing CP-50','Volute casing for CP-50','component','nos','8413','Castings',true,false,false,1800.00),
- ('0192a8c0-0012-7000-8000-000000000003','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-IMP6','SS Impeller 6in','Stainless impeller, 6 inch','component','nos','8413','Impellers',true,false,false,1250.00),
- ('0192a8c0-0012-7000-8000-000000000004','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-SFT20','Pump Shaft 20mm','EN8 shaft, 20mm','component','nos','8483','Shafts',true,false,false,950.00),
- ('0192a8c0-0012-7000-8000-000000000005','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-SEAL20','Mechanical Seal 20mm','Carbon-ceramic seal, 20mm','component','nos','8484','Seals',true,false,false,420.00),
+ ('0192a8c0-0012-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','PMP-CP50','Pump Housing CP-50, machined','Finished machined pump housing, 50mm, supplied to pump OEMs','finished_good','nos','8413','Pumps',false,true,true,8500.00),
+ ('0192a8c0-0012-7000-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-CAS50','Machined Casing Body CP-50','Volute casing for CP-50','component','nos','8413','Castings',true,false,false,1800.00),
+ ('0192a8c0-0012-7000-8000-000000000003','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-IMP6','Machined Impeller Disc 6in','Stainless impeller, 6 inch','component','nos','8413','Impellers',true,false,false,1250.00),
+ ('0192a8c0-0012-7000-8000-000000000004','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-SFT20','Ground Shaft 20mm','EN8 shaft, 20mm','component','nos','8483','Shafts',true,false,false,950.00),
+ ('0192a8c0-0012-7000-8000-000000000005','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-SEAL20','Seal Ring 20mm','Carbon-ceramic seal, 20mm','component','nos','8484','Seals',true,false,false,420.00),
  ('0192a8c0-0012-7000-8000-000000000006','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','RAW-BLT-M8','M8 Hex Bolt SS304','Hex bolt M8x25, SS304','raw_material','nos','7318','Fasteners',true,false,false,4.50)
 ON CONFLICT (id) DO NOTHING;
 

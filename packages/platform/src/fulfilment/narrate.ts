@@ -157,6 +157,8 @@ export interface DecisionBrief {
   whatChanged: string;
   recommendation: string;
   why: string;
+  /** The real application surfaces this approval authorises the mission to update. */
+  applicationTargets: Array<{ module: string; screen: string }>;
   alternatives: Array<{ name: string; effect: string; feasible: boolean }>;
   ifRejected: string;
   ifDelayed: string;
@@ -191,6 +193,16 @@ export function buildDecisionBrief(
       `It is the only ${ranked.filter((c) => c.feasible).length > 1 ? "highest-scoring " : ""}feasible option: ` +
       `${chosen.confidence.toFixed(0)}% delivery confidence at ${chosen.marginPct.toFixed(1)}% margin, ` +
       `${chosen.slackDays >= 0 ? `${days(chosen.slackDays)} inside` : `${days(Math.abs(chosen.slackDays))} past`} the promise.`,
+    // THESE ARE SCREEN NAMES, and they have to be the ones printed on the screens.
+    // The line reads "if approved, this plan updates Purchase → …" and then the tour walks
+    // the person onto that very screen, whose heading is "Purchase orders", not "Orders".
+    // Naming a screen that does not exist is the one mistake this sentence cannot make, so
+    // these strings track the step registry's `where` labels in `mission.service.ts`.
+    applicationTargets: [
+      { module: "Sales", screen: "Orders" },
+      ...(chosen.sourcing.length > 0 ? [{ module: "Purchase", screen: "Purchase orders" }] : []),
+      ...(chosen.key !== "stock_only" ? [{ module: "Production", screen: "Work orders" }] : []),
+    ],
     alternatives: ranked
       .filter((c) => c.key !== chosen.key)
       .map((c) => ({

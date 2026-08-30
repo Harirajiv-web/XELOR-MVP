@@ -117,7 +117,7 @@ CREATE POLICY tenant_isolation ON stock_entry_line
   WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant', true), '')::uuid);
 REVOKE DELETE ON stock_entry_line FROM app_user;
 
--- ---- seed Trishul (Pune plant) warehouses ----
+-- ---- seed 3S (Pune plant) warehouses ----
 INSERT INTO warehouse (id, tenant_id, created_by, updated_by, code, name, warehouse_type) VALUES
  ('0192a8c0-0013-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','WH-ACC','Pune Stores (Accepted)','accepted'),
  ('0192a8c0-0013-7000-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','WH-QC','Pune Quarantine','quarantine'),
@@ -128,11 +128,11 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ---- permissions (stores staff post stock; admins do everything) ----
 INSERT INTO role_permission (id, tenant_id, created_by, updated_by, role_id, permission) VALUES
-  -- Trishul admin
+  -- 3S admin
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000001','inventory.warehouse.read'),
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000001','inventory.stock.read'),
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000001','inventory.stock.post'),
-  -- Trishul stores_incharge — stores clerks receive and issue stock
+  -- 3S stores_incharge — stores clerks receive and issue stock
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000002','inventory.warehouse.read'),
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000002','inventory.stock.read'),
   (gen_random_uuid(),'0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0003-7000-8000-000000000002','inventory.stock.post'),

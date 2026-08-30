@@ -129,7 +129,7 @@ export default function InspectionsScreen(_props: ScreenProps): React.JSX.Elemen
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter the loaded inspections…"
           aria-label="Filter inspections"
-          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
         />
       </div>
 

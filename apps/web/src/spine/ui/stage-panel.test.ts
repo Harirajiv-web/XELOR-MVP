@@ -158,7 +158,7 @@ test("every status in the vocabulary has a tone, and no tone is orphaned", () =>
 test("an observe step READS the named module and writes only to the mission", () => {
   const { source, destination, verb } = systemsFor(step({ kind: "observe" }));
   assert.equal(source, "Inventory → Stock");
-  assert.equal(destination, "XELOR mission record");
+  assert.equal(destination, "ONYX mission record");
   assert.equal(verb, "fetched");
 });
 
@@ -171,7 +171,7 @@ test("an act step WRITES to the named module — the opposite direction", () => 
     where: { href: "/purchase/orders", module: "Purchase", screen: "Purchase orders" },
   });
   const { source, destination, verb } = systemsFor(s);
-  assert.equal(source, "XELOR mission record · plan");
+  assert.equal(source, "ONYX mission record · plan");
   assert.equal(destination, "Purchase → Purchase orders");
   assert.equal(verb, "created");
 });
@@ -185,8 +185,8 @@ test("a step with nowhere to point still names a source", () => {
   // `whereOf` returns null for the three steps whose work is the mission's own. An empty
   // cell would read as a bug; naming the mission is the honest answer.
   const { source, destination } = systemsFor(step({ kind: "critique", where: null }));
-  assert.equal(source, "XELOR mission record · plan");
-  assert.equal(destination, "XELOR mission record");
+  assert.equal(source, "ONYX mission record · plan");
+  assert.equal(destination, "ONYX mission record");
 });
 
 /* ---------------------------------------------------------------- timestamps -- */

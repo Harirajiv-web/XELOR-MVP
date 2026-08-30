@@ -135,7 +135,7 @@ export default function PmScreen(_props: ScreenProps): React.JSX.Element {
             onChange={(e) => setPmsCode(e.target.value)}
             placeholder="Schedule code, exactly"
             aria-label="Schedule code"
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -145,7 +145,7 @@ export default function PmScreen(_props: ScreenProps): React.JSX.Element {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
           >
             <option value="">Every status</option>
             {STATUSES.map((s) => (

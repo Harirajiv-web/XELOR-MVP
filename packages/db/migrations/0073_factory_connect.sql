@@ -164,7 +164,7 @@ CROSS JOIN (VALUES
 ) AS c(code, name, protocol, direction, config_schema, capabilities)
 ON CONFLICT (tenant_id, code) DO NOTHING;
 
--- One explicit simulator world for the canonical Trishul demo tenant. Kaveri remains empty
+-- One explicit simulator world for the canonical 3S demo tenant. Kaveri remains empty
 -- so the existing cross-tenant leak probe keeps a genuinely distinct dataset.
 INSERT INTO factory_edge_gateway (
   id, tenant_id, created_by, updated_by, code, name, site_code, zone_code,

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3101";
 
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");

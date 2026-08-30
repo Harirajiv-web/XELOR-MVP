@@ -204,6 +204,150 @@ const FACTORY_FLOW_RECOVERY: AgentGraphDefinition = {
   ],
 };
 
+/**
+ * The 3S Workroom-style POC is deliberately a second graph, not a new version of the
+ * existing Factory Flow simulator-command review. It explains ONYX evidence, pauses for a
+ * person, then creates one planning-review work item. It cannot publish a schedule or issue
+ * a physical command.
+ */
+const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
+  key: "factory.intelligence-recovery",
+  version: 1,
+  name: "3S factory intelligence recovery",
+  description:
+    "Recomputes and explains 3S OEE, validates ONYX at-risk work and its explicit alternate, then pauses before one governed ONYX planning-review request.",
+  maxSteps: 14,
+  timeoutSeconds: 300,
+  nodes: [
+    {
+      id: "onyx-intake",
+      name: "ONYX bounds the 3S recovery",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Frame the configured 3S mock scenario. ONYX Phase 1 remains the schedule source of truth; no machine or safety controller is in scope.",
+      dependsOn: [],
+    },
+    {
+      id: "kiln-factory-intelligence",
+      name: "KILN validates factory intelligence",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "production.factory-intelligence.analyse",
+      input: { scenarioKey: "3s-workroom-poc" },
+      maxAttempts: 2,
+      dependsOn: ["onyx-intake"],
+    },
+    {
+      id: "axle-recommendation",
+      name: "AXLE explains the bounded replan",
+      kind: "agent",
+      agentKey: "AXLE",
+      instruction:
+        "Explain ONYX's supplied at-risk jobs and explicit WC-LTH01 to WC-LTH02 alternate. Treat it as a recommendation that ONYX Planning must review, never as an applied schedule.",
+      dependsOn: ["kiln-factory-intelligence"],
+    },
+    {
+      id: "hexa-verification",
+      name: "HEXA verifies evidence and authority",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "factory-operations.v1 was read from the registered ONYX HTTP port with explicit mock provenance",
+        "OEE was recomputed deterministically from raw Availability, Performance and Quality inputs",
+        "the replan only validates ONYX's explicit alternate and does not create a second schedule source of truth",
+        "no physical-command, auto-publish or schedule-apply capability exists in this graph",
+      ],
+      dependsOn: ["axle-recommendation"],
+    },
+    {
+      id: "human-replan-approval",
+      name: "Production planner reviews the 3S recommendation",
+      kind: "approval",
+      title: "Approve the 3S alternate-work-centre review request",
+      risk: "medium",
+      proposedAction:
+        "Create one attributable ONYX Planning work item asking a planner to review the configured WC-LTH01 to WC-LTH02 alternate. This does not publish a schedule or contact a machine.",
+      dependsOn: ["hexa-verification"],
+    },
+    {
+      id: "kiln-post-approval-revalidation",
+      name: "KILN revalidates current ONYX evidence after approval",
+      kind: "capability",
+      agentKey: "KILN",
+      capabilityKey: "production.factory-intelligence.analyse",
+      input: { scenarioKey: "3s-workroom-poc" },
+      maxAttempts: 2,
+      dependsOn: ["human-replan-approval"],
+      condition: {
+        nodeId: "human-replan-approval",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+    {
+      id: "axle-dispatch-review",
+      name: "AXLE dispatches the approved ONYX review request",
+      kind: "capability",
+      agentKey: "AXLE",
+      capabilityKey: "agent.action.dispatch",
+      input: {
+        targetDomain: "onyx.planning",
+        actionType: "factory_replan_request",
+        title: "Review 3S WC-LTH01 to WC-LTH02 recovery in ONYX Planning",
+        risk: "medium",
+        payload: {
+          schemaVersion: "factory-replan-request.v1",
+          scenarioKey: "3s-workroom-poc",
+          customer: "3S Precision Parts",
+          jobId: "POC-REPLAY-MO-2627-00003-OP10",
+          orderRef: "MO-2627-00003",
+          itemCode: "CMP-PX4-SFT",
+          operationCode: "OP-10",
+          fromAsset: "AST-PNQ-TRN-01",
+          toAsset: "AST-PNQ-LTH-02",
+          fromWorkCenterCode: "WC-LTH01",
+          toWorkCenterCode: "WC-LTH02",
+          deterministicRule: "explicit_alternate_then_asset_code",
+          requestMode: "review_only",
+          autoPublish: false,
+          physicalCommand: false,
+          boundary:
+            "ONYX Planning must re-read evidence and decide whether to apply a schedule change. XELOR did not publish or execute one.",
+        },
+      },
+      maxAttempts: 2,
+      dependsOn: ["kiln-post-approval-revalidation"],
+      condition: {
+        nodeId: "human-replan-approval",
+        path: "decision.approved",
+        equals: true,
+      },
+    },
+    {
+      id: "hexa-outcome-verification",
+      name: "HEXA verifies the governed dispatch evidence",
+      kind: "verification",
+      agentKey: "HEXA",
+      checks: [
+        "exactly one approval-linked factory_replan_request work item was recorded",
+        "the work item targets onyx.planning in review_only mode",
+        "no schedule publication, controller acknowledgement or physical execution was claimed",
+      ],
+      dependsOn: ["axle-dispatch-review"],
+    },
+    {
+      id: "onyx-synthesis",
+      name: "ONYX records the governed recovery outcome",
+      kind: "agent",
+      agentKey: "ONYX",
+      instruction:
+        "Summarize the approved planning-review request and its immutable evidence. State that ONYX has not yet accepted or applied the recommendation and no physical action occurred.",
+      dependsOn: ["hexa-outcome-verification"],
+    },
+  ],
+};
+
 const FULL_COMMAND_REVIEW: AgentGraphDefinition = {
   key: "operations.full-command-review",
   version: 3,
@@ -1060,6 +1204,7 @@ export class GraphRegistryService {
   constructor() {
     for (const graph of [
       FACTORY_FLOW_RECOVERY,
+      FACTORY_INTELLIGENCE_RECOVERY,
       WORKING_CAPITAL_REVIEW,
       QMS_AUDIT_READINESS,
       MANAGED_SERVICE_ASSURANCE,

@@ -19,6 +19,7 @@ import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentActionService } from "./agent-action.service.js";
 import { PlatformHealthService } from "../modules/platform-health/platform-health.service.js";
 import { FactoryConnectService } from "../modules/integration/factory-connect.service.js";
+import { FactoryIntelligenceService } from "./factory-intelligence.service.js";
 
 export interface CapabilityDescriptor {
   key: string;
@@ -64,6 +65,7 @@ export class CapabilityRegistryService {
     private readonly quality: QualityService,
     private readonly platformHealth: PlatformHealthService,
     private readonly factoryConnect: FactoryConnectService,
+    private readonly factoryIntelligence: FactoryIntelligenceService,
     private readonly actions: AgentActionService,
   ) {
     const registered: RegisteredCapability[] = [
@@ -182,6 +184,27 @@ export class CapabilityRegistryService {
         approvalRequired: false,
         parse: (input: unknown) => z.object({}).parse(input),
         execute: async () => this.factoryConnect.productionView(),
+      },
+      {
+        key: "production.factory-intelligence.analyse",
+        name: "Analyse the configured 3S factory recovery",
+        description:
+          "Reads factory-operations.v1 through the ONYX HTTP port, recomputes explainable OEE and validates ONYX's supplied alternate-work-centre proposal without publishing a schedule or issuing a machine command.",
+        mode: "analyse",
+        requiredPermission: "production.factory-connect.read",
+        allowedAgents: ["KILN"],
+        executionBoundary: "domain_service",
+        sideEffecting: false,
+        approvalRequired: false,
+        parse: (input: unknown) =>
+          z
+            .object({
+              scenarioKey: z.literal("3s-workroom-poc").default("3s-workroom-poc"),
+            })
+            .strict()
+            .parse(input),
+        execute: async (input: Record<string, unknown>) =>
+          this.factoryIntelligence.actionableOverview(input.scenarioKey as string),
       },
       {
         key: "accounts.vouchers.read",

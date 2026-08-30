@@ -155,14 +155,25 @@ function navEntries(src) {
   return out;
 }
 
+function declaredPermissions(src) {
+  const scalar = [...src.matchAll(/permission:\s*"([a-z0-9_.-]+)"/g)].map(
+    (match) => match[1],
+  );
+  const grouped = [...src.matchAll(/permission:\s*\[([^\]]*)\]/g)].flatMap(
+    (match) =>
+      [...match[1].matchAll(/"([a-z0-9_.-]+)"/g)].map(
+        (permission) => permission[1],
+      ),
+  );
+  return [...new Set([...scalar, ...grouped])];
+}
+
 const manifestPerms = new Map();
 for (const moduleKey of folders) {
   const manifestPath = join(MODULES_DIR, moduleKey, "manifest.ts");
   if (!existsSync(manifestPath)) continue;
   const src = readFileSync(manifestPath, "utf8");
-  const perms = [...src.matchAll(/permission:\s*"([a-z0-9_.-]+)"/g)].map(
-    (m) => m[1],
-  );
+  const perms = declaredPermissions(src);
   manifestPerms.set(moduleKey, perms);
   if (!platformPermissions) continue;
   for (const p of perms) {

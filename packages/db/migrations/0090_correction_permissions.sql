@@ -28,7 +28,7 @@
 -- 1. Catalogue the 18 new permissions, for BOTH tenants.
 --
 -- A permission absent from a tenant's catalogue cannot be granted there at all — the 0045
--- trigger refuses it. Kaveri gets the same catalogue as Trishul for that reason: a
+-- trigger refuses it. Kaveri gets the same catalogue as 3S for that reason: a
 -- second tenant that cannot describe its own access is not a tenant.
 -- ---------------------------------------------------------------------------
 CREATE TEMP TABLE _new_perms (permission text, doc_type text, action text, description text, is_privileged boolean) ON COMMIT DROP;

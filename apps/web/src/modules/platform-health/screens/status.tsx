@@ -76,7 +76,7 @@ export default function PlatformStatusScreen(
       <section className="relative overflow-hidden rounded-[18px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-md)] lg:p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,color-mix(in_srgb,var(--dept-achiles)_20%,transparent),transparent_38%),radial-gradient(circle_at_100%_100%,var(--brand-soft),transparent_36%)]" aria-hidden />
         <div className="relative flex flex-wrap items-start gap-5">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--dept-achiles)] text-white shadow-[var(--shadow-md)]">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--dept-achiles)] text-[var(--text-on-accent)] shadow-[var(--shadow-md)]">
             <Icons.HeartPulse className="h-6 w-6" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">

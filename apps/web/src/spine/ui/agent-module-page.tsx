@@ -95,7 +95,7 @@ export function AgentModulePage({
   return (
     <div className="flex flex-col gap-5">
       {evidenceMode === "illustrative" ? (
-        <div role="note" className="flex items-start gap-2.5 rounded-[12px] border border-amber-500/25 bg-amber-500/10 px-3.5 py-3 text-amber-800 dark:text-amber-200">
+        <div role="note" className="flex items-start gap-2.5 rounded-[12px] border border-[var(--warn)]/30 bg-[var(--warn)]/10 px-3.5 py-3 text-[var(--warn-ink)]">
           <Icons.FlaskConical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[.08em]">Illustrative workspace</p>
@@ -134,7 +134,7 @@ export function AgentModulePage({
           <div className="rounded-[14px] border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--surface-raised)_88%,transparent)] p-4 backdrop-blur-xl">
             <div className="flex items-center gap-3">
               <span
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-white shadow-[var(--shadow-md)]"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-[var(--text-on-accent)] shadow-[var(--shadow-md)]"
                 style={{ background: agent.accent }}
               >
                 <AgentIcon className="h-5 w-5" aria-hidden />
@@ -249,7 +249,7 @@ export function AgentModulePage({
 
         <aside className="overflow-hidden rounded-[14px] border border-[color-mix(in_srgb,var(--violet)_26%,var(--border-subtle))] bg-[var(--violet-soft)]">
           <div className="flex items-center gap-2 border-b border-[color-mix(in_srgb,var(--violet)_20%,var(--border-subtle))] px-4 py-3.5">
-            <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--violet)] text-white">
+            <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--ai-fill)] text-[var(--text-on-fill)]">
               <Icons.Sparkles className="h-3.5 w-3.5" aria-hidden />
             </span>
             <div>
@@ -275,7 +275,7 @@ export function AgentModulePage({
             <div className="mt-3 grid gap-2">
               <Link
                 href="/agentos/approvals"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--violet)] px-3 text-[11px] font-bold text-white shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--ai-fill)] px-3 text-[11px] font-bold text-[var(--text-on-fill)] shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
               >
                 <Icons.UserRoundCheck className="h-3.5 w-3.5" aria-hidden />
                 Review human approvals

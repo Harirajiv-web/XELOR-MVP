@@ -27,8 +27,8 @@ function verdictFor(candidate: MasterRecord, existing: MasterRecord[]): DedupVer
 /* ----------------------------- the conclusion ----------------------------- */
 
 test("identical GSTIN concludes SAME", () => {
-  const v = verdictFor({ legalName: "Trishul Precision", gstin: G_MH }, [
-    { id: "e1", legalName: "Trishul Precision Pvt Ltd", gstin: G_MH },
+  const v = verdictFor({ legalName: "3S Precision", gstin: G_MH }, [
+    { id: "e1", legalName: "3S Precision Pvt Ltd", gstin: G_MH },
   ]);
   assert.equal(v.conclusion, "same");
   assert.match(v.action, /Merge/);
@@ -66,8 +66,8 @@ test("a matching GSTIN outranks unrelated names", () => {
 /* ------------------------------ the grounding ----------------------------- */
 
 const sameVerdict = (): DedupVerdict =>
-  verdictFor({ legalName: "Trishul Precision", gstin: G_MH }, [
-    { id: "e1", legalName: "Trishul Precision Pvt Ltd", gstin: G_MH },
+  verdictFor({ legalName: "3S Precision", gstin: G_MH }, [
+    { id: "e1", legalName: "3S Precision Pvt Ltd", gstin: G_MH },
   ]);
 
 const unprovenVerdict = (): DedupVerdict =>
@@ -113,7 +113,7 @@ test("a hedged claim of sameness still contradicts an UNPROVEN verdict", () => {
 
 test("text truncated mid-name is rejected", () => {
   const v = sameVerdict();
-  const r = checkGrounding('The names are 100% similar ("Trishul Precision" vs "Trishul Pvt.', v);
+  const r = checkGrounding('The names are 100% similar ("3S Precision" vs "3S Pvt.', v);
   assert.equal(r.ok, false);
   assert.equal(r.reason, "unbalanced_quotes");
 });

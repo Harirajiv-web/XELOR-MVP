@@ -165,7 +165,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close ONYX Copilot"
+          aria-label="Close the copilot"
           className={cn(
             "grid h-8 w-8 place-items-center rounded-[9px] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text-primary)]",
             turns.length === 0 && "ml-auto",
@@ -268,7 +268,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
                   ? `Ask ONYX about ${currentModule}…`
                   : "Ask about stock, orders, planning or the shop floor…"
               }
-              aria-label="Ask ONYX Copilot"
+              aria-label="Ask the copilot"
               className="block max-h-28 min-h-[48px] w-full resize-none bg-transparent px-1.5 py-1 text-[12.5px] leading-[1.5] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
             />
             <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] px-1 pt-2">
@@ -282,7 +282,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
               <button
                 type="submit"
                 disabled={busy || !text.trim()}
-                className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[var(--brand)] px-3 text-[10.5px] font-bold text-white transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-45"
+                className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[var(--brand)] px-3 text-[10.5px] font-bold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-45"
               >
                 <Icons.Send className="h-3 w-3" aria-hidden />
                 Ask
@@ -321,7 +321,7 @@ function ChatPanel({
         <div className="flex flex-col gap-3">
           <section className="overflow-hidden rounded-[16px] border border-[var(--brand-soft)] bg-[linear-gradient(145deg,var(--brand-soft-2),var(--surface))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[var(--brand)] text-white shadow-[0_10px_24px_-12px_var(--brand)]">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[0_10px_24px_-12px_var(--brand)]">
                 <Icons.Sparkles className="h-4 w-4" aria-hidden />
               </span>
               <div>
@@ -386,7 +386,7 @@ function ChatPanel({
         turn.kind === "asked" ? (
           <p
             key={index}
-            className="max-w-[92%] self-end rounded-[13px_13px_3px_13px] bg-[var(--brand)] px-3 py-2 text-[12.5px] font-medium leading-[1.55] text-white"
+            className="max-w-[92%] self-end rounded-[13px_13px_3px_13px] bg-[var(--brand)] px-3 py-2 text-[12.5px] font-medium leading-[1.55] text-[var(--text-on-brand)]"
           >
             {turn.text}
           </p>
@@ -475,16 +475,16 @@ function Answer({
 }): React.JSX.Element {
   if (!result.answered) {
     return (
-      <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--gold-line)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-2 border-b border-[var(--gold-line)] bg-[var(--gold-soft)] px-3 py-2">
-          <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--surface)] text-[var(--gold-ink)]">
+      <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--accent-line)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-2 border-b border-[var(--accent-line)] bg-[var(--accent-soft)] px-3 py-2">
+          <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--surface)] text-[var(--accent-ink)]">
             <Icons.ShieldAlert className="h-3.5 w-3.5" aria-hidden />
           </span>
           <span>
             <span className="block text-[10.5px] font-bold text-[var(--text-primary)]">
               Guardrail response
             </span>
-            <span className="block text-[8.5px] uppercase tracking-[0.09em] text-[var(--gold-ink)]">
+            <span className="block text-[8.5px] uppercase tracking-[0.09em] text-[var(--accent-ink)]">
               {result.refusal?.code?.replace(/_/g, " ") ?? "Needs clarification"}
             </span>
           </span>
@@ -526,7 +526,7 @@ function Answer({
   return (
     <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--border-subtle)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] bg-[linear-gradient(120deg,var(--brand-soft-2),var(--surface))] px-3 py-2.5">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[var(--brand)] text-white">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[var(--brand)] text-[var(--text-on-brand)]">
           <Icons.Sparkles className="h-3.5 w-3.5" aria-hidden />
         </span>
         <span>
@@ -640,7 +640,7 @@ function Answer({
               </code>
             ))}
             {result.citation.truncated ? (
-              <span className="chip chip-gold">Row cap applied</span>
+              <span className="chip chip-accent">Row cap applied</span>
             ) : null}
           </div>
           <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2 text-[8.5px] text-[var(--text-muted)]">

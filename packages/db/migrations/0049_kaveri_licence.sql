@@ -1,15 +1,15 @@
 -- =============================================================================
--- 0049 — Kaveri gets a licence, and a SMALLER one than Trishul.
+-- 0049 — Kaveri gets a licence, and a SMALLER one than 3S.
 --
 -- Found by building the first screen: `GET /me` reported `licence: none` for the second
--- tenant, because only Trishul was ever given a licence row. The web app treats a missing
+-- tenant, because only 3S was ever given a licence row. The web app treats a missing
 -- licence as an unrestricted install — correct for a developer machine or an on-premise
 -- deployment with no entitlement file, and exactly wrong here, where it meant Kaveri's
 -- administrator would have seen every module in the product including ones the tenant was
 -- never sold.
 --
 -- The fix is not just "add a row". Kaveri is deliberately given a NARROWER plan: general,
--- engineering, inventory, sales and administration — five, against Trishul's fourteen. No
+-- engineering, inventory, sales and administration — five, against 3S's fourteen. No
 -- manufacturing, no planning, no service portal, because Kaveri is an electro-fabrication
 -- shop in the §7 universe rather than a full precision-components plant.
 --
@@ -31,7 +31,7 @@ INSERT INTO licence_record (
   8,
   '["general","engineering","inventory","sales","administration"]'::jsonb,
   '2026-04-01', '2027-03-31',
-  -- Soft, like Trishul's. A plant does not stop because a licence lapsed on a Friday
+  -- Soft, like 3S's. A plant does not stop because a licence lapsed on a Friday
   -- evening; the console says so, loudly, and the work continues.
   'soft'
 )

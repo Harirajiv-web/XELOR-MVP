@@ -192,18 +192,18 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
         className={cn(
           "relative overflow-hidden rounded-[22px] border p-5 shadow-[var(--shadow-lg)] lg:p-7",
           stopped
-            ? "border-[#ff7070] bg-[#20090d] text-white"
-            : "border-[#5a1d27] bg-[linear-gradient(135deg,#16090d_0%,#281016_55%,#14070a_100%)] text-white",
+            ? "border-[var(--kill-line-hot)] bg-[var(--kill-bg-stopped)] text-white"
+            : "border-[var(--kill-line)] bg-[linear-gradient(135deg,var(--kill-bg)_0%,var(--kill-bg-mid)_55%,var(--kill-bg-end)_100%)] text-white",
         )}
       >
-        <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[#d9233f]/15 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[var(--kill-orb)]/15 blur-3xl" aria-hidden />
         <div className="relative grid gap-6 xl:grid-cols-[1fr_auto] xl:items-center">
           <div className="flex items-start gap-4">
-            <span className={cn("grid h-16 w-16 shrink-0 place-items-center rounded-[18px] border", stopped ? "border-white/25 bg-[#e42844]" : "border-[#ff6b7e]/30 bg-[#8f1529]") }>
+            <span className={cn("grid h-16 w-16 shrink-0 place-items-center rounded-[18px] border", stopped ? "border-white/25 bg-[var(--kill-mark-stopped)]" : "border-[var(--kill-line-hot)]/30 bg-[var(--kill-mark)]") }>
               <Power className="h-8 w-8" aria-hidden />
             </span>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ff9aaa]">Highest authority · tenant-wide</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--kill-eyebrow)]">Highest authority · tenant-wide</p>
               <h1 className="mt-1 text-[clamp(27px,4vw,44px)] font-black leading-none tracking-[-0.04em]">KILL SWITCH</h1>
               <p className="mt-3 max-w-[72ch] text-[12.5px] leading-5 text-white/72">
                 {stopped
@@ -211,7 +211,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
                   : "Stops every XELOR agent and AI feature at the backend chokepoint. Running missions are halted safely; no browser-only toggle can bypass it."}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-[10.5px] font-bold">
-                <span className={cn("rounded-full px-3 py-1.5", stopped ? "bg-white text-[#821225]" : "bg-[#46d39a]/15 text-[#8ef0c5]") }>
+                <span className={cn("rounded-full px-3 py-1.5", stopped ? "bg-white text-[var(--kill-ink)]" : "bg-[var(--kill-clear)]/15 text-[var(--kill-clear)]") }>
                   {stopped ? "AUTOMATION STOPPED" : "AUTOMATION ACTIVE"}
                 </span>
                 <span className="rounded-full bg-white/8 px-3 py-1.5 text-white/70">Manual ERP: available</span>
@@ -224,7 +224,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
             {!stopped ? (
               <>
                 <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/60" htmlFor="kill-reason">Reason recorded in audit</label>
-                <textarea id="kill-reason" value={killReason} onChange={(event) => setKillReason(event.target.value)} rows={2} className="mt-2 w-full rounded-[10px] border border-white/15 bg-white/8 px-3 py-2 text-[11.5px] leading-4 text-white outline-none placeholder:text-white/35 focus:border-[#ff8294]" />
+                <textarea id="kill-reason" value={killReason} onChange={(event) => setKillReason(event.target.value)} rows={2} className="mt-2 w-full rounded-[10px] border border-white/15 bg-white/8 px-3 py-2 text-[11.5px] leading-4 text-white outline-none placeholder:text-white/35 focus:border-[var(--kill-line-hot)]" />
                 <button
                   type="button"
                   disabled={!mayKill || busy !== null || killReason.trim().length < 5}
@@ -235,7 +235,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
                     }
                     void mutate("kill", () => aiControlApi.engageKillSwitch(killReason.trim())).then(() => setKillArmed(false));
                   }}
-                  className={cn("mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] px-4 text-[12px] font-black uppercase tracking-[0.08em] transition", killArmed ? "bg-[#ff3d58] text-white shadow-[0_0_0_4px_rgba(255,61,88,.18)]" : "bg-white text-[#8c1227] hover:bg-[#ffe8ec]", "disabled:cursor-not-allowed disabled:opacity-45")}
+                  className={cn("mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] px-4 text-[12px] font-black uppercase tracking-[0.08em] transition", killArmed ? "bg-[var(--kill-arm)] text-white shadow-[0_0_0_4px_color-mix(in_srgb,var(--kill-arm)_18%,transparent)]" : "bg-white text-[var(--kill-ink)] hover:bg-[var(--kill-ink-hover)]", "disabled:cursor-not-allowed disabled:opacity-45")}
                 >
                   {busy === "kill" ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden /> : <ShieldAlert className="h-4 w-4" aria-hidden />}
                   {killArmed ? "Confirm: stop all AI" : "Arm kill switch"}
@@ -246,7 +246,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
               <>
                 <p className="text-[11px] font-bold text-white">Manual operating mode is active</p>
                 <p className="mt-1 text-[10.5px] leading-4 text-white/58">Release removes the global block. Halted missions stay halted until you explicitly resume them.</p>
-                <button type="button" disabled={!mayKill || busy !== null} onClick={() => void mutate("release", () => aiControlApi.releaseKillSwitch())} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-white px-4 text-[11.5px] font-extrabold text-[#791225] disabled:opacity-45">
+                <button type="button" disabled={!mayKill || busy !== null} onClick={() => void mutate("release", () => aiControlApi.releaseKillSwitch())} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-white px-4 text-[11.5px] font-extrabold text-[var(--kill-ink)] disabled:opacity-45">
                   {busy === "release" ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden /> : <ShieldCheck className="h-4 w-4" aria-hidden />}
                   Release after safety review
                 </button>
@@ -291,7 +291,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
           />
         </div>
         <label htmlFor="mode-reason" className="mt-4 block text-[10px] font-bold text-[var(--text-muted)]">Reason recorded when the mode changes</label>
-        <input id="mode-reason" value={modeReason} onChange={(event) => setModeReason(event.target.value)} className="mt-1.5 w-full rounded-[10px] border border-[var(--border-input)] bg-[var(--surface)] px-3 py-2 text-[11.5px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]" />
+        <input id="mode-reason" value={modeReason} onChange={(event) => setModeReason(event.target.value)} className="mt-1.5 w-full rounded-[10px] border border-[var(--border-input)] bg-[var(--surface-data)] px-3 py-2 text-[11.5px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]" />
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Live automation summary">
@@ -369,7 +369,7 @@ function WorkflowDetail({ run, now, pendingGate, canProceed, busy, proceedNote, 
   const byId = new Map(run.nodes.map((node) => [node.nodeId, node]));
   return <div>
     <div className="flex flex-col justify-between gap-3 border-b border-[var(--border-subtle)] pb-4 md:flex-row md:items-start"><div><span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-bold", runStatus.className)}><RunIcon className={cn("h-3 w-3", run.status === "running" && "animate-pulse")} aria-hidden />{runStatus.label}</span><h2 className="mt-2 max-w-[70ch] text-[15px] font-extrabold leading-5 text-[var(--text-primary)]">{run.goal}</h2><p className="mt-1 text-[9.5px] text-[var(--text-muted)]">Started {when(run.startedAt ?? run.createdAt)} · elapsed {elapsed(run.startedAt ?? run.createdAt, run.completedAt, now)}</p></div><Link href="/agentos/command" className="btn btn-ghost btn-sm shrink-0"><Eye className="h-3.5 w-3.5" aria-hidden />Full mission evidence</Link></div>
-    {pendingGate ? <div className="mt-4 rounded-[13px] border border-[color-mix(in_srgb,var(--warn)_42%,var(--border-subtle))] bg-[var(--warn-soft)] p-4"><div className="flex items-start gap-3"><Hand className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warn-ink)]" aria-hidden /><div><p className="text-[12px] font-extrabold text-[var(--text-primary)]">Step {pendingGate.sequence} is ready and waiting for you</p><p className="mt-1 text-[10.5px] leading-4 text-[var(--text-secondary)]">Next: {pendingGate.nodeIds.map((id) => byId.get(id)?.nodeName ?? id).join(", ")}. Clicking Proceed authorises only this bounded wave—not the entire mission and not any later mandatory approval.</p></div></div><div className="mt-3 flex flex-col gap-2 md:flex-row"><input value={proceedNote} onChange={(event) => onProceedNote(event.target.value)} className="min-w-0 flex-1 rounded-[9px] border border-[var(--border-input)] bg-[var(--surface)] px-3 py-2 text-[10.5px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]" aria-label="Proceed note" /><button type="button" disabled={!canProceed || busy !== null || proceedNote.trim().length < 3} onClick={() => onProceed(pendingGate.id)} className="btn btn-primary btn-sm shrink-0"><Play className="h-3.5 w-3.5" aria-hidden />{busy === `proceed:${pendingGate.id}` ? "Proceeding…" : "Proceed with this step"}</button></div></div> : null}
+    {pendingGate ? <div className="mt-4 rounded-[13px] border border-[color-mix(in_srgb,var(--warn)_42%,var(--border-subtle))] bg-[var(--warn-soft)] p-4"><div className="flex items-start gap-3"><Hand className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warn-ink)]" aria-hidden /><div><p className="text-[12px] font-extrabold text-[var(--text-primary)]">Step {pendingGate.sequence} is ready and waiting for you</p><p className="mt-1 text-[10.5px] leading-4 text-[var(--text-secondary)]">Next: {pendingGate.nodeIds.map((id) => byId.get(id)?.nodeName ?? id).join(", ")}. Clicking Proceed authorises only this bounded wave—not the entire mission and not any later mandatory approval.</p></div></div><div className="mt-3 flex flex-col gap-2 md:flex-row"><input value={proceedNote} onChange={(event) => onProceedNote(event.target.value)} className="min-w-0 flex-1 rounded-[9px] border border-[var(--border-input)] bg-[var(--surface-data)] px-3 py-2 text-[10.5px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]" aria-label="Proceed note" /><button type="button" disabled={!canProceed || busy !== null || proceedNote.trim().length < 3} onClick={() => onProceed(pendingGate.id)} className="btn btn-primary btn-sm shrink-0"><Play className="h-3.5 w-3.5" aria-hidden />{busy === `proceed:${pendingGate.id}` ? "Proceeding…" : "Proceed with this step"}</button></div></div> : null}
     {run.approvals.some((approval) => approval.status === "pending") ? <div className="mt-4 flex items-start justify-between gap-3 rounded-[12px] border border-[color-mix(in_srgb,var(--violet)_30%,var(--border-subtle))] bg-[var(--violet-soft)] p-4"><div className="flex items-start gap-3"><UserRoundCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--violet)]" aria-hidden /><div><p className="text-[11px] font-bold text-[var(--text-primary)]">Mandatory business approval required</p><p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">This is separate from a Proceed gate and cannot be removed by choosing guarded autopilot.</p></div></div><Link href="/agentos/approvals" className="btn btn-ghost btn-sm shrink-0">Review approval<ArrowRight className="h-3 w-3" aria-hidden /></Link></div> : null}
     <div className="mt-5 flex items-center justify-between"><div><p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[var(--text-muted)]">Execution path</p><p className="mt-0.5 text-[9.5px] text-[var(--text-secondary)]">Operational trace only—never hidden chain-of-thought.</p></div><span className="text-[9.5px] tabular-nums text-[var(--text-muted)]">{run.nodes.filter((node) => ["succeeded", "skipped"].includes(node.status)).length}/{run.nodes.length} complete</span></div>
     <div className="mt-3 grid gap-2 md:grid-cols-2 2xl:grid-cols-3">{run.nodes.map((node, index) => { const status = meta(node.status); const Icon = status.icon; return <article key={node.id} className={cn("relative rounded-[11px] border p-3", node.status === "running" ? "border-[var(--brand)] bg-[var(--brand-soft)]" : node.status === "failed" ? "border-[color-mix(in_srgb,var(--bad)_35%,var(--border-subtle))] bg-[var(--bad-soft)]" : "border-[var(--border-subtle)] bg-[var(--surface)]")}><div className="flex items-start justify-between gap-2"><span className="text-[8.5px] font-black tabular-nums text-[var(--text-muted)]">{String(index + 1).padStart(2, "0")}</span><span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-[8px] font-bold", status.className)}><Icon className={cn("h-2.5 w-2.5", node.status === "running" && "animate-spin")} aria-hidden />{status.label}</span></div><p className="mt-2 text-[10.8px] font-bold leading-4 text-[var(--text-primary)]">{node.nodeName}</p><p className="mt-0.5 text-[9px] font-semibold text-[var(--ai-text)]">{node.agentKey ?? (node.nodeKind === "approval" ? "Human authority" : "ONYX runtime")}</p><p className="mt-2 text-[9.4px] leading-4 text-[var(--text-secondary)]">{nodeExplanation(run, node, byId)}</p><div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2 text-[8.5px] text-[var(--text-muted)]"><span>{node.nodeKind.replaceAll("_", " ")}</span><span className="tabular-nums">{elapsed(node.startedAt, node.completedAt, now)}</span></div></article>; })}</div>

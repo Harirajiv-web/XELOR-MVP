@@ -35,7 +35,7 @@ export interface BusinessCalendar {
 }
 
 export const DEFAULT_CALENDAR: BusinessCalendar = {
-  code: "TPC-MON-SAT",
+  code: "3S-MON-SAT",
   workingWeekdays: [1, 2, 3, 4, 5, 6],
   dayStartMinutes: 9 * 60,
   dayEndMinutes: 18 * 60,

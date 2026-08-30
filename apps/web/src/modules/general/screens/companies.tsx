@@ -17,7 +17,7 @@ import { generalApi, stateName } from "../api";
  *
  * The registrations column is the point of the screen. One legal entity holding several
  * GSTINs, one per state, is the ordinary shape of an Indian manufacturer and the thing a
- * foreign ERP models badly or not at all — Trishul is one company with a Maharashtra
+ * foreign ERP models badly or not at all — 3S is one company with a Maharashtra
  * registration at Pune-Chakan and a Tamil Nadu one at Coimbatore, and every invoice it
  * raises is filed against exactly one of them.
  *
@@ -138,7 +138,7 @@ export default function CompaniesScreen(_props: ScreenProps): React.JSX.Element 
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by name, CIN, GSTIN or place…"
           aria-label="Filter companies"
-          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
         />
       </div>
 

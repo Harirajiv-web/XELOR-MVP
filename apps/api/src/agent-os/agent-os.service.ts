@@ -337,7 +337,8 @@ export class AgentOsService {
     // Approval authority and execution authority are deliberately separable. Resume the
     // approved graph under its creator's CURRENT permissions; the outer approver context is
     // restored afterwards and still controls the response projection.
-    const state = result.approved
+    const terminalStatuses = new Set(["completed", "failed", "cancelled"]);
+    const state = result.approved && !terminalStatuses.has(decidedState.run.status)
       ? await runWithTenant(
           {
             tenantId,

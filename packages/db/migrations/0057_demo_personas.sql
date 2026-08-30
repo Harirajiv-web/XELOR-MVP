@@ -38,16 +38,16 @@
 -- inspection record. Those are two different permissions and the guard checks the second
 -- one when they click.
 --
--- All five personas belong to Trishul Precision Components (DECISIONS-V2 §7). Kaveri stays
+-- All five personas belong to 3S Precision Parts (DECISIONS-V2 §7). Kaveri stays
 -- as it is: it exists to prove tenant isolation, and adding demo staff to it would blunt
 -- the one thing it is for.
 -- =============================================================================
 
--- Trishul, and the system actor every seed writes as. Written out in full at each use
+-- 3S, and the system actor every seed writes as. Written out in full at each use
 -- rather than bound to a variable: the runner is node-postgres executing the file as one
 -- statement batch, so psql meta-commands like `\set` are not available here — they parse
 -- as SQL and fail. No other migration in this tree uses them either.
---   tenant 0192a8c0-0000-7000-8000-000000000001  Trishul Precision Components
+--   tenant 0192a8c0-0000-7000-8000-000000000001  3S Precision Parts
 --   actor  0192a8c0-0000-7000-8000-0000000000ff  the system/seed actor
 
 -- ---------------------------------------------------------------------------

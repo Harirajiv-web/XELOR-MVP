@@ -21,8 +21,21 @@ import { currentTenant, Errors, type PermissionKey } from "@ind-core/platform";
  * nothing failed until somebody clicked it.
  */
 export const PERMISSION_KEY = "required_permission";
-export const RequirePermission = (permission: PermissionKey): MethodDecorator =>
-  SetMetadata(PERMISSION_KEY, permission);
+
+/**
+ * Declare the permission — or permissions, ALL of which are required — a route needs.
+ *
+ * The variadic form exists because stacking two `@RequirePermission` decorators does NOT
+ * mean "both". `SetMetadata` writes one metadata key, so a second decorator overwrites the
+ * first and the route silently enforces only one of the two. That failure is invisible: the
+ * route works, the tests pass, and the permission nobody checked is the one that was
+ * supposed to stop somebody. A route that genuinely spans two capabilities — writing a
+ * sales order AND running an agent — must say so in a single call:
+ *
+ *     @RequirePermission("sales.order.create", "agentos.run.operate")
+ */
+export const RequirePermission = (...permissions: PermissionKey[]): MethodDecorator =>
+  SetMetadata(PERMISSION_KEY, permissions);
 
 const { role, userRole, rolePermission } = schema;
 
@@ -31,11 +44,14 @@ export class PermissionGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const required = this.reflector.getAllAndOverride<string | undefined>(PERMISSION_KEY, [
+    const declared = this.reflector.getAllAndOverride<string | string[] | undefined>(PERMISSION_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!required) return true; // unguarded route
+    // Tolerates the pre-variadic single-string shape so a stale compiled route cannot end
+    // up unguarded on the strength of a signature change.
+    const required = declared === undefined ? [] : Array.isArray(declared) ? declared : [declared];
+    if (required.length === 0) return true; // unguarded route
 
     // actorId (Keycloak subject) + tenant were established by TenantMiddleware from
     // the verified token; this guard runs inside that same tenant context.
@@ -58,7 +74,11 @@ export class PermissionGuard implements CanActivate {
       return new Set(rows.map((r) => r.permission));
     });
 
-    if (!perms.has(required)) throw Errors.forbidden(required);
+    // ALL of them. Reported one at a time, in declaration order, so the message names a
+    // permission an administrator can actually go and grant.
+    for (const permission of required) {
+      if (!perms.has(permission)) throw Errors.forbidden(permission);
+    }
     return true;
   }
 }

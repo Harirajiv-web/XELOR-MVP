@@ -27,7 +27,7 @@
 -- it came from is a number somebody will have to defend without help.
 -- =============================================================================
 
--- Trishul tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
+-- 3S tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
 -- system actor    0192a8c0-0000-7000-8000-0000000000ff
 -- employees (HRM): Rajesh …201 · Meera …202 · Priya …203 · Kavita …204 · Deepa …205
 --                  Arun …206 · Imran …207 · Sanjay …208

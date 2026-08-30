@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ONYX &amp; XELOR by AIKYANTRA — End-Product Production Architecture</title>
+<style>
+  :root{
+    --navy:#0b1a2e; --navy-2:#14263f; --navy-3:#1b4574;
+    --brand:#14508f; --brand-soft:#e1eaf7;
+    --gold:#d9a93c; --gold-line:#c9a24a; --gold-ink:#7a5b12;
+    --paper:#ffffff; --sunk:#f4f1ea; --sunk-2:#ede8dd;
+    --line:#c6bba4; --line-cool:#d4dce8;
+    --ink:#0b1a2e; --ink-2:#374b62; --ink-3:#5c6e82;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  @page{size:A4;margin:0}
+  html,body{margin:0;padding:0;background:#dfe4ec;color:var(--ink);
+    font-family:var(--sans);font-size:7.5pt;line-height:1.34;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  section.page{position:relative;width:210mm;height:297mm;margin:0 auto;
+    padding:10mm 13mm 8mm;overflow:hidden;background:var(--paper);
+    break-after:page;page-break-after:always;display:flex;flex-direction:column}
+  section.page:last-child{break-after:auto;page-break-after:auto}
+
+  h1,h2,h3,h4,p,ul,ol{margin:0}
+  .stack{display:flex;flex-direction:column;gap:2.95mm;flex:1}
+
+  /* ---------- masthead ---------- */
+  .mast{background:var(--navy);color:#f4f1ea;margin:-10mm -13mm 0;padding:7mm 13mm 5.4mm;
+    border-bottom:1.2mm solid var(--gold)}
+  .mast .eyebrow{color:var(--gold);font-size:7pt;font-weight:700;letter-spacing:1.9pt;
+    text-transform:uppercase;margin-bottom:3mm}
+  .mast h1{font-family:var(--serif);font-size:19pt;line-height:1.03;font-weight:600;
+    letter-spacing:-0.3pt;max-width:150mm}
+  .mast h1 em{font-style:normal;color:var(--gold)}
+  .mast .sub{margin-top:3mm;max-width:166mm;color:#c8d3e2;font-size:7.9pt;line-height:1.38}
+  .mast .meta{margin-top:3.6mm;padding-top:2.2mm;border-top:0.3mm solid rgba(244,241,234,.22);
+    display:flex;gap:9mm;font-family:var(--mono);font-size:6.9pt;color:#9fb0c6;
+    letter-spacing:.2pt;text-transform:uppercase}
+
+  /* ---------- headings ---------- */
+  h2{font-family:var(--serif);font-size:11pt;font-weight:600;letter-spacing:-0.1pt;
+    color:var(--navy);display:flex;align-items:baseline;gap:3mm}
+  h2::after{content:"";flex:1;height:0.35mm;background:var(--gold-line)}
+  h2 .n{font-family:var(--mono);font-size:7.4pt;color:var(--gold-ink);font-weight:700;
+    letter-spacing:.6pt}
+  h2+.lede{margin-top:1.3mm;color:var(--ink-2);max-width:172mm}
+  h3{font-size:8.2pt;font-weight:700;color:var(--brand);letter-spacing:.5pt;
+    text-transform:uppercase}
+  .blk{margin-top:1.2mm}
+
+  code,.m{font-family:var(--mono);font-size:.9em;color:var(--gold-ink);
+    background:var(--sunk);padding:0 .5mm;border-radius:.6mm}
+  .k{font-weight:700;color:var(--navy)}
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:7pt}
+  th{text-align:left;font-size:6.5pt;letter-spacing:.9pt;text-transform:uppercase;
+    color:var(--ink-3);font-weight:700;padding:0 2mm 1.3mm 0;border-bottom:.4mm solid var(--navy)}
+  td{padding:.72mm 2mm .72mm 0;border-bottom:.2mm solid var(--line-cool);
+    vertical-align:top;line-height:1.18}
+  tr:last-child td{border-bottom:none}
+  td.key{font-family:var(--mono);font-size:6.9pt;color:var(--navy);font-weight:700;
+    white-space:nowrap}
+  td.tech{font-family:var(--mono);font-size:6.9pt;color:var(--brand)}
+
+  /* ---------- panels ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2.6mm}
+  .panel{background:var(--sunk);border-left:.8mm solid var(--gold);padding:2.1mm 2.5mm}
+  .panel.cool{background:var(--brand-soft);border-left-color:var(--brand)}
+  .panel h4{font-size:7.1pt;text-transform:uppercase;letter-spacing:.8pt;
+    color:var(--navy);margin-bottom:1.4mm}
+  .panel p{color:var(--ink-2);font-size:6.9pt;line-height:1.32}
+
+  ul{padding-left:4mm;list-style:none}
+  ul li{position:relative;margin-bottom:1.1mm;color:var(--ink-2);line-height:1.34}
+  ul li::before{content:"";position:absolute;left:-3.2mm;top:1.5mm;width:1.2mm;height:1.2mm;
+    background:var(--gold-line)}
+  ul.tight li{margin-bottom:.7mm}
+
+  /* ---------- flow diagram ---------- */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:1.8mm}
+  .step{flex:1;background:var(--sunk);border-top:.7mm solid var(--brand);
+    padding:1.7mm 1.9mm;position:relative}
+  .step+.step{margin-left:2.6mm}
+  .step+.step::before{content:"›";position:absolute;left:-2.4mm;top:50%;
+    transform:translate(-.2mm,-55%);color:var(--gold);font-size:11pt;font-weight:700}
+  .step .lbl{font-family:var(--mono);font-size:6.4pt;color:var(--gold-ink);
+    letter-spacing:.5pt;margin-bottom:.9mm}
+  .step .t{font-size:7.3pt;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:.9mm}
+  .step .d{font-size:6.4pt;color:var(--ink-3);line-height:1.3}
+  .step.gate{border-top-color:var(--gold);background:#fbf3e0}
+  .step.term{border-top-color:var(--navy);background:var(--sunk-2)}
+
+  /* ---------- loop diagram ---------- */
+  .loop{margin-top:1.5mm;border:.3mm solid var(--line);background:var(--sunk);
+    padding:1.7mm 2.1mm;position:relative}
+  .loop .row{display:flex;gap:2.4mm;align-items:center}
+  .node{flex:1;text-align:center;background:#fff;border:.3mm solid var(--line-cool);
+    border-top:.6mm solid var(--brand);padding:1.1mm .9mm}
+  .node.appr{border-top-color:var(--gold);background:#fbf3e0}
+  .node.end{border-top-color:var(--navy)}
+  .node .t{font-size:7pt;font-weight:700;color:var(--navy);line-height:1.15}
+  .node .d{font-size:6pt;color:var(--ink-3);margin-top:.45mm;line-height:1.16}
+  .arrow{color:var(--gold);font-weight:700;font-size:10pt;flex:0 0 auto}
+  .back{margin-top:1.2mm;padding-top:1mm;border-top:.3mm dashed var(--gold-line);
+    font-size:6.8pt;color:var(--gold-ink);font-family:var(--mono);letter-spacing:.2pt}
+
+  /* ---------- callout ---------- */
+  .rule{background:var(--navy);color:#e7ecf4;padding:2.2mm 2.8mm;font-size:7.3pt;
+    line-height:1.35;border-left:1mm solid var(--gold)}
+  .rule b{color:var(--gold)}
+
+  /* ---------- footer ---------- */
+  .foot{margin-top:auto;padding-top:2.2mm;border-top:.3mm solid var(--line);
+    display:flex;justify-content:space-between;font-family:var(--mono);
+    font-size:6.5pt;color:var(--ink-3);letter-spacing:.4pt;text-transform:uppercase}
+  .foot .pg{color:var(--gold-ink);font-weight:700}
+</style>
+<style>
+  .mast .sub b{color:#f0e2c2}
+  .src{margin-top:2.2mm;padding-top:1.6mm;border-top:.3mm solid var(--line);
+    font-size:6.4pt;color:var(--ink-3);line-height:1.32}
+  .src b{color:var(--gold-ink);font-weight:700}
+  td.now{color:var(--ink-3)}
+  td.then{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
+<section class="page">
+  <div class="mast">
+    <div class="eyebrow">AIKYANTRA · Document 2 of 2 · The end product</div>
+    <h1>ONYX &amp; XELOR<br /><em>End product — the production architecture</em></h1>
+    <div class="sub">What the MVP becomes when it carries real factories: the managed service that replaces each
+      development container, how a release ships without downtime, how the data and AI platforms are fed — and
+      what we take, and deliberately do <b>not</b> take, from the platforms Agoda and MakeMyTrip actually run.</div>
+    <div class="meta"><span>Target: AWS ap-south-1</span><span>Patterned on Agoda · MakeMyTrip</span><span>20 Aug 2026</span></div>
+  </div>
+
+  <div class="stack">
+
+    <div class="blk">
+      <h2><span class="n">01</span> From MVP to production, layer by layer</h2>
+      <p class="lede">Nothing in the application changes shape. Every row below swaps a single development container
+        for the managed service that carries the same contract under load, with a blast radius and a recovery story.</p>
+      <table style="margin-top:1.6mm">
+        <tr><th style="width:26mm">Layer</th><th style="width:60mm">MVP today</th><th>End product</th></tr>
+        <tr><td class="key">Compute</td><td class="now">One Node process per app, started by hand</td><td class="then">EKS across three availability zones — a deployment each for <span class="m">onyx-api</span>, <span class="m">xelor-api</span>, <span class="m">web</span> and the workers, autoscaled on request rate and queue depth.</td></tr>
+        <tr><td class="key">Database</td><td class="now">One Postgres 17 container, one volume</td><td class="then">Aurora PostgreSQL 17 — writer plus two readers across AZs, point-in-time recovery to 35 days. Shared schema and FORCE RLS are unchanged.</td></tr>
+        <tr><td class="key">Cache &amp; jobs</td><td class="now">One Valkey container serving both</td><td class="then">ElastiCache for Valkey in cluster mode, split endpoints so a cache flush can never drop a queued job.</td></tr>
+        <tr><td class="key">Event spine</td><td class="now">Outbox → BullMQ, in-process consumers</td><td class="then">Outbox → BullMQ for work that must run; MSK (Kafka) for the fan-out that others read — integrations, analytics, telemetry, ML.</td></tr>
+        <tr><td class="key">Identity</td><td class="now">One Keycloak container, file realm</td><td class="then">Keycloak cluster on its own Aurora database, one realm per environment, sessions replicated.</td></tr>
+        <tr><td class="key">Files &amp; PDFs</td><td class="now">Local volume, one Gotenberg</td><td class="then">S3 with versioning and SSE-KMS behind CloudFront; Gotenberg as an autoscaled render pool.</td></tr>
+        <tr><td class="key">Retrieval</td><td class="now">pgvector inside the app database</td><td class="then">pgvector on its own instance class, moving to OpenSearch only when the copilot corpus outgrows it.</td></tr>
+        <tr><td class="key">Models</td><td class="now">Offline stub, or Ollama on a laptop</td><td class="then">Router with provider failover, plus self-hosted vLLM on GPU nodes for anything that touches personal data.</td></tr>
+        <tr><td class="key">Observability</td><td class="now">Console logs</td><td class="then">OpenTelemetry SDK → Collector → Prometheus and Grafana for metrics, Loki for logs, Tempo for traces, Sentry for errors.</td></tr>
+        <tr><td class="key">Delivery</td><td class="now">Build and restart</td><td class="then">GitOps with Argo CD, immutable images, canary by tenant cohort, automatic rollback on business metrics.</td></tr>
+        <tr><td class="key">Service mesh</td><td class="now">Direct HTTP between two processes</td><td class="then">Istio — mTLS between every service, retries and timeouts as policy rather than code, and the traffic shifting a canary needs.</td></tr>
+        <tr><td class="key">Secrets</td><td class="now"><span class="m">.env</span> files on the machine</td><td class="then">Secrets Manager with KMS keys and scheduled rotation; nothing sensitive in an image, a repository or a log line.</td></tr>
+        <tr><td class="key">Environments</td><td class="now">One laptop, one world</td><td class="then">Development, staging and production as separate AWS accounts, so a mistake in one cannot reach the data in another.</td></tr>
+        <tr><td class="key">Plant edge</td><td class="now">In-process simulator</td><td class="then">A per-plant edge agent over mTLS with store-and-forward and a durable command journal, so a dropped link delays work rather than losing it.</td></tr>
+      </table>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">02</span> What we copy from them, and what we refuse to</h2>
+      <div class="grid3" style="margin-top:1.8mm">
+        <div class="panel"><h4>Copy · canary on business metrics</h4><p>Agoda ships to one cluster first and watches booking rate, latency and exceptions before it goes to every datacentre. Our equivalent watches order-confirm rate, mission-approval latency and RLS denials on one tenant cohort — a release that moves any of them rolls itself back.</p></div>
+        <div class="panel"><h4>Copy · one event spine, many readers</h4><p>Agoda runs ~2,000 Kafka topics; MakeMyTrip pairs Kafka with Avro and RabbitMQ. The pattern we need is theirs: producers write once, and analytics, integrations and ML each read at their own pace. We feed it from the outbox we already have.</p></div>
+        <div class="panel"><h4>Refuse · a private cloud</h4><p>Agoda built Fleet, Buckbeak and its own DBaaS over ~1,200 database instances and 2,500 services. That is an answer written by a thousand engineers. Five engineers buy the managed equivalents — EKS, Aurora, MSK, ElastiCache — and spend the saved years on the factory.</p></div>
+      </div>
+      <div class="rule" style="margin-top:2.6mm">
+        <b>Sized for the right problem.</b> Agoda moves 1.8–2 trillion events a day; MakeMyTrip serves 120k orders and
+        800k notifications a day at 44 ms p50. A manufacturing ERP for Indian MSMEs is a different shape of load —
+        hundreds of plants, thousands of transactions each, every one of which must be correct, tenant-isolated and
+        auditable eight years later. We take their <em>patterns</em> for delivery, eventing and observability, and we
+        size the hardware for correctness rather than for consumer volume.
+      </div>
+      <div class="src"><b>Researched from:</b> Agoda Engineering on Kafka at 1.8T events/day and on moving 3M CI jobs to
+        Kubernetes · The Pragmatic Engineer, “Inside Agoda’s Private Cloud” (Fleet, Buckbeak on KubeVela, Istio, Ceph,
+        VAST, Iceberg, ~20PB, ~1,200 DB instances, ~2,500 services) · Databricks, “How MakeMyTrip achieved millisecond
+        personalization” (Spark Structured Streaming Real-Time Mode, 44 ms p50, Aerospike, Redis, Kafka).</div>
+    </div>
+
+  </div>
+  <div class="foot"><span>END PRODUCT · ONYX &amp; XELOR by AIKYANTRA — Production architecture</span><span class="pg">1 / 3</span></div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
+<section class="page">
+  <div class="stack">
+
+    <div class="blk" style="margin-top:1mm">
+      <h2><span class="n">03</span> The production topology</h2>
+      <p class="lede">One VPC in ap-south-1, three availability zones, two products that stay separate all the way down
+        to their databases — because XELOR runs migrations ONYX has never seen.</p>
+      <div class="flow">
+        <div class="step"><div class="lbl">EDGE</div><div class="t">Route 53 · WAF · CloudFront</div><div class="d">DNS, rate limits and rules at the border; static assets and PDFs served from cache.</div></div>
+        <div class="step"><div class="lbl">INGRESS</div><div class="t">ALB → EKS ingress</div><div class="d">TLS terminated once; host routing splits the two products.</div></div>
+        <div class="step"><div class="lbl">RUNTIME</div><div class="t">EKS, three AZs</div><div class="d">onyx-api · xelor-api · web · workers · outbox-relay · Gotenberg pool, each scaled on its own signal.</div></div>
+        <div class="step term"><div class="lbl">STATE</div><div class="t">Managed data plane</div><div class="d">Aurora PG (writer + 2 readers) · ElastiCache · MSK · S3 · Keycloak cluster.</div></div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel cool"><h4>Tenancy does not change on the way up</h4><p>Shared schema with <span class="m">FORCE ROW LEVEL SECURITY</span> survives into production exactly as written; pods hold per-tenant pooled connections and set <span class="m">app.current_tenant</span> per transaction. The RLS proof that runs in CI runs again in production as a synthetic probe, on a schedule, against a canary tenant — an isolation regression is an alert, not a discovery.</p></div>
+        <div class="panel cool"><h4>Two products, two deployments, two databases</h4><p>ONYX and XELOR scale independently and are released independently. XELOR still reads ONYX's records and writes back only through ONYX's own endpoints, now over the mesh with mTLS and its own service identity — so the write path a person uses and the write path an agent uses stay the same path.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">04</span> How a release ships</h2>
+      <div class="flow">
+        <div class="step"><div class="lbl">01</div><div class="t">Pull request</div><div class="d">Branch protection; no direct push to main.</div></div>
+        <div class="step gate"><div class="lbl">02</div><div class="t">The gates we already run</div><div class="d">Build, boundary lint, typecheck, migrate, tests, AI eval and grounding, RLS, permission, naming and manifest proofs.</div></div>
+        <div class="step"><div class="lbl">03</div><div class="t">Immutable image</div><div class="d">Scanned, signed, SBOM attached, tagged by commit.</div></div>
+        <div class="step"><div class="lbl">04</div><div class="t">Staging on the seeded world</div><div class="d">The same 157-step demo world, so numbers are comparable release to release.</div></div>
+        <div class="step gate"><div class="lbl">05</div><div class="t">Canary cohort</div><div class="d">One tenant cohort, watched on business metrics — not just on CPU.</div></div>
+        <div class="step term"><div class="lbl">06</div><div class="t">Roll forward or back</div><div class="d">Progressive rollout, or automatic rollback with the flag flipped off.</div></div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel"><h4>Schema changes are expand-then-contract</h4><p>Every migration is additive first and destructive only a release later, so the previous image can always still run. Agoda tests every query and index in CI against a snapshot of production shape; we do the same against the seeded world, and no release contains both halves of a rename.</p></div>
+        <div class="panel"><h4>Flags decide, deploys do not</h4><p>Code ships dark. A feature is enabled per tenant, per plant or per role, which is also how a pilot factory gets something a week before anyone else — and how it is taken away in seconds without a deploy. The AI kill switch is the same mechanism at a coarser grain.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">05</span> The data platform</h2>
+      <p class="lede">One direction of flow, and no analytics query ever touching the transactional database.</p>
+      <div class="loop">
+        <div class="row">
+          <div class="node"><div class="t">Aurora PG</div><div class="d">the system of record</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Debezium CDC</div><div class="d">row changes, not batch dumps</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">MSK · Kafka</div><div class="d">the one spine, per-tenant keys</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Iceberg on S3</div><div class="d">open table format, time travel</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Spark · Trino</div><div class="d">transforms and ad-hoc SQL</div></div><span class="arrow">›</span>
+          <div class="node end"><div class="t">Grafana · Metabase</div><div class="d">plant and board dashboards</div></div>
+        </div>
+        <div class="back">↺ &nbsp;plant telemetry joins the same spine at the Kafka step — edge agent → MSK → stream processing → the factory-intelligence tables the agents read, so what an agent cites and what a dashboard shows come from one lineage</div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel"><h4>Nothing analytical touches the writer</h4><p>Reporting reads replicas; anything heavier reads Iceberg. The transactional database is left to do the one job it cannot delegate — being right about stock, ledgers and commitments under concurrency — which is also why an RLS overhead past 15–20% stays a design-review trigger rather than a footnote.</p></div>
+        <div class="panel"><h4>Retention is a legal input, not a storage setting</h4><p>Statutory records are kept eight years under the MCA rule, on the hash chain that proves they were not edited; personal data carries a DPDP erasure path that must not break that chain. The two are reconciled by erasing the person and keeping the transaction, and the split is decided per table, in code, once.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">06</span> The integration surface</h2>
+      <p class="lede">A production ERP is judged by what it connects to. Three surfaces, each with a named owner and
+        a failure mode that is visible rather than silent.</p>
+      <div class="grid3" style="margin-top:1.8mm">
+        <div class="panel"><h4>What the plant already runs</h4><p>XELOR's connectors read SAP, Tally, Odoo, Dynamics and MES/SCADA — change data capture where the system offers it, scheduled extracts where it does not. They are <b>read-only by construction</b>: nothing is ever written back into a customer's existing ERP, and anything XELOR proposes is written through ONYX.</p></div>
+        <div class="panel"><h4>The statutory rails</h4><p>GST e-invoicing and IRN through a licensed GSP, e-way bills on the same channel, TDS and payroll filings on theirs. Every rate, threshold and window is effective-dated configuration, so a Budget-night change is a data change — never a release.</p></div>
+        <div class="panel"><h4>People and money</h4><p>WhatsApp through a licensed BSP for approvals and dispatch updates, transactional email and SMS through one provider with delivery receipts, and bank statement import for reconciliation. Every outbound message is logged against the record that caused it.</p></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot"><span>END PRODUCT · Topology · delivery · data · integrations</span><span class="pg">2 / 3</span></div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 3 ═══════════════════════════ -->
+<section class="page">
+  <div class="stack">
+
+    <div class="blk" style="margin-top:1mm">
+      <h2><span class="n">07</span> The AI platform in production</h2>
+      <p class="lede">The router the MVP already has becomes the control plane: the same four steps, now with money,
+        residency and failure in them.</p>
+      <div class="flow">
+        <div class="step gate"><div class="lbl">01</div><div class="t">Registry &amp; policy</div><div class="d">Closed feature registry, per-tenant opt-out, per-feature risk tier.</div></div>
+        <div class="step gate"><div class="lbl">02</div><div class="t">Budget &amp; residency</div><div class="d">Per-tenant token budget checked before spend; PII-bound features pinned to in-country inference.</div></div>
+        <div class="step"><div class="lbl">03</div><div class="t">Route with failover</div><div class="d">Primary provider, secondary provider, self-hosted vLLM — and the deterministic degraded mode if all three refuse.</div></div>
+        <div class="step"><div class="lbl">04</div><div class="t">Ground &amp; verify</div><div class="d">Every claim checked against the rows it cites before a human ever sees it.</div></div>
+        <div class="step term"><div class="lbl">05</div><div class="t">Log &amp; bill</div><div class="d">Hash-chained action log plus a cost ledger a tenant can be shown.</div></div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel"><h4>Evaluation does not stop at the merge</h4><p>The golden-set and grounding gates keep blocking CI. Production adds shadow evaluation — a candidate model answers the same questions as the live one without reaching a user — plus drift alarms on refusal rate, grounding failures and cost per decision. A provider is promoted on evidence, not on a release note.</p></div>
+        <div class="panel"><h4>Personal data does not leave the country</h4><p>DPDP is a routing rule, not a policy document: features that can carry personal data are pinned to self-hosted inference inside ap-south-1, and the router refuses to send them anywhere else. Egress is enforced where the call is made, so no module can opt out of it.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">08</span> The agents at scale</h2>
+      <div class="grid3" style="margin-top:1.8mm">
+        <div class="panel"><h4>Durable, not merely retried</h4><p>Node claims, heartbeats and bounded attempts already exist. Production runs them on a dedicated worker pool with per-tenant concurrency caps, so one plant's mission storm cannot starve another's, and any run can be replayed from its journal.</p></div>
+        <div class="panel"><h4>Approvals have a clock</h4><p>A run waiting on a person is a run costing money. Approvals carry an SLA, escalate up the role chain, and reach the approver where they are — push, email, and WhatsApp through a licensed BSP.</p></div>
+        <div class="panel"><h4>Three kill switches</h4><p>Per feature, per tenant, and global. Each one drops the affected feature to its declared degraded mode rather than to an error, so the factory keeps running while the model is off.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">09</span> Reliability, security, and what the law requires</h2>
+      <table style="margin-top:1.6mm">
+        <tr><th style="width:34mm">Commitment</th><th style="width:52mm">Target</th><th>How it is held</th></tr>
+        <tr><td class="key">Availability</td><td class="tech">99.9% monthly, per product</td><td>Multi-AZ everywhere, PodDisruptionBudgets, error budgets that stop feature work when spent.</td></tr>
+        <tr><td class="key">Latency</td><td class="tech">p95 read &lt; 300 ms · p95 write &lt; 800 ms</td><td>Read replicas for reporting, cursor pagination everywhere, no analytics on the writer.</td></tr>
+        <tr><td class="key">Recovery</td><td class="tech">RPO 5 min · RTO 60 min</td><td>PITR to 35 days, cross-region backup copy, and a restore drill each quarter that is timed and recorded.</td></tr>
+        <tr><td class="key">Secrets &amp; keys</td><td class="tech">KMS · Secrets Manager · mTLS in mesh</td><td>No secret in an image or a repository; rotation scheduled, image scanning and SBOM on every build.</td></tr>
+        <tr><td class="key">Tenant isolation</td><td class="tech">Proven, not asserted</td><td>The RLS and permission proofs run in CI and again as scheduled production probes against a canary tenant.</td></tr>
+        <tr><td class="key">Indian statute</td><td class="tech">DPDP · CERT-In · MCA · GST</td><td>Data resident in ap-south-1, incident reporting inside the six-hour window, eight-year immutable audit retention on the hash chain, statutory rates as effective-dated config.</td></tr>
+        <tr><td class="key">Assurance</td><td class="tech">SOC 2 Type II · ISO 27001 path</td><td>Controls mapped to the gates that already exist; annual third-party penetration test.</td></tr>
+      </table>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">10</span> Capacity, cost and how it grows</h2>
+      <div class="grid3" style="margin-top:1.8mm">
+        <div class="panel"><h4>The unit that scales</h4><p>Tenants share one cluster and one database until a plant's volume or its contract says otherwise; then it moves to its own Aurora instance without changing a line, because every query is already tenant-scoped. Nothing in the code knows which arrangement it is in.</p></div>
+        <div class="panel"><h4>Where the money goes</h4><p>Aurora and MSK dominate the bill long before compute does, and GPU inference dominates both if it is used carelessly — which is why the token budget sits in the router and the cost per decision is a monitored metric rather than a month-end surprise.</p></div>
+        <div class="panel"><h4>What triggers the next step</h4><p>Three signals, each with a number: RLS overhead past 20%, replica lag past the reporting SLA, or a single tenant past a quarter of cluster throughput. Any one of them opens a design review — the same rule the platform already applies in development.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">11</span> Running it, and putting a plant on it</h2>
+      <div class="grid2" style="margin-top:1.8mm">
+        <div class="panel cool"><h4>Operations</h4><p>A severity ladder with a named on-call rota, a runbook per alert that has fired at least once, a public status page, and a blameless review inside five working days of any Sev-1. Support tiers are contractual: response times by plan, and a named engineer for pilot accounts.</p></div>
+        <div class="panel cool"><h4>Putting a plant live</h4><p>Tenant and plant provisioned from a template, masters imported from Tally or spreadsheets through the data-import module with a dry run before commit, roles mapped to the people who actually sign, then a fortnight running in parallel with the paper before cutover — and the AI features switched on last, one at a time.</p></div>
+      </div>
+    </div>
+
+      <div class="rule" style="margin-top:0">
+        <b>One thing does not scale away.</b> Every service above is replaceable — the model, the queue, the cloud.
+        The invariant is not: <b>AI explains, it never decides.</b> Nothing reaches a customer, a supplier, a ledger or
+        a machine without a person approving it, and every approval stays reconstructable — the cited rows, the model
+        call, the permission held, and the hash chain proving none of it was edited since.
+      </div>
+  </div>
+  <div class="foot"><span>END PRODUCT · AI · agents · reliability · operations</span><span class="pg">3 / 3</span></div>
+</section>
+
+</body>
+</html>

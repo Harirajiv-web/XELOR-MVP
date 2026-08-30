@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0053_seed_opening_balance_2026_27 — Trishul's opening position at 01-Apr-2026.
+-- 0053_seed_opening_balance_2026_27 — 3S's opening position at 01-Apr-2026.
 --
 -- Accounts' primary screen was rendering empty on the demo date, because the seeded
 -- universe contained a chart of accounts and no balances. "Correctly empty" is not a
@@ -32,7 +32,7 @@
 --   · plant and machinery at written-down value — Rs 3.50 crore;
 --   · the bank balance — Rs 42.00 lakh;
 --   · issued share capital — Rs 1.00 crore.
--- These are sized for what Trishul demonstrably is: two plants, thirteen people on roll in
+-- These are sized for what 3S demonstrably is: two plants, thirteen people on roll in
 -- the seeded employee master, a payroll of roughly Rs 1.1 crore a year, and a precision
 -- pump-component line. A manufacturer of that shape turns over somewhere around Rs 12 crore
 -- and carries plant of a few crore. They are plausible, they are internally consistent, and
@@ -54,7 +54,7 @@
 -- today's stock balances — deriving it from those would restate July's movements as if they
 -- had been on hand in April, which is exactly the double-count to avoid.
 --
--- Trishul only. Kaveri ElectroFab stays minimal: it exists to prove tenant isolation leaks
+-- 3S only. Kaveri ElectroFab stays minimal: it exists to prove tenant isolation leaks
 -- nothing, and giving it a balance sheet dilutes the only job it has.
 -- =============================================================================
 

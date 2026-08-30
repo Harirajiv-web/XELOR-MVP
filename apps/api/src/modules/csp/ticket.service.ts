@@ -741,7 +741,7 @@ export class TicketService {
         thread: comments
           .filter((c) => isCustomerVisible({ visibility: c.visibility as "public" | "internal", authorType: c.authorType as never }))
           .map((c) => ({
-            from: c.authorType === "portal" ? "you" : "Trishul service desk",
+            from: c.authorType === "portal" ? "you" : "3S service desk",
             body: c.body,
             at: (c.sentAt ?? c.createdAt).toISOString(),
           })),

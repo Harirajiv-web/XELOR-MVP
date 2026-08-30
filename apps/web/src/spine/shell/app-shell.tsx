@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       >
         <div className="flex min-h-[var(--top)] items-center gap-2.5 border-b border-[var(--border-subtle)] px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="x-brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#12294f,var(--brand))] text-[11px] font-extrabold tracking-[0.02em] text-white">
+            <span className="x-brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,var(--chrome-raised),var(--accent))] text-[11px] font-extrabold tracking-[0.02em] text-[var(--chrome)]">
               XE
             </span>
             {!collapsed ? (
@@ -341,7 +341,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           </button>
 
           <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] py-[5px] pl-[6px] pr-2.5 shadow-[var(--shadow-sm)]">
-            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--brand),#3f7de8)] text-[10.5px] font-bold text-white">
+            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--chrome-hover),var(--chrome-deep))] text-[10.5px] font-bold text-[var(--chrome-ink)]">
               {initials}
             </span>
             <span className="hidden sm:block">
@@ -418,7 +418,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           </nav>
         ) : null}
         <div className="x-workspace-scroll min-h-0 flex-1 overflow-y-auto">
-          <div key={pathname} className="x-workspace-page px-6 py-5">
+          <div key={pathname} className="x-workspace-page px-6 py-5" data-xelor-workspace="true">
             {children}
           </div>
         </div>

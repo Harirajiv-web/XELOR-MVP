@@ -30,8 +30,14 @@ import { ACCOUNTS_POSTER, type AccountsPoster } from "../../ports/accounts.port.
 import { ITEM_PROVIDER, type ItemProvider } from "../../ports/item.port.js";
 
 import type { DemandSource, OpenDemandLine } from "../../ports/planning-inputs.port.js";
+import type {
+  CreateFulfilmentCustomerOrderInput,
+  CreatedCustomerOrder,
+  CustomerOrderWriter,
+} from "../../ports/fulfilment-docs.port.js";
 
 const { customer, salesOrder, salesOrderLine, dispatch, dispatchLine, outboxEvent } = schema;
+const { gstRegistration, warehouse, item: itemTable } = schema;
 
 /**
  * A correction to a sales order. Every field is optional: absent means "leave it alone",
@@ -267,7 +273,7 @@ const numOf = (v: string | null | undefined): number => (v == null ? 0 : Number(
  *    which understated every customer who already owed money.
  */
 @Injectable()
-export class SalesService implements DemandSource {
+export class SalesService implements DemandSource, CustomerOrderWriter {
   constructor(
     private readonly audit: AuditLogService,
     private readonly edits: DocumentEditService,
@@ -1509,5 +1515,191 @@ export class SalesService implements DemandSource {
         };
       }),
     };
+  }
+
+  // =========================================================================
+  // CUSTOMER_ORDER_WRITER — taking an order so a mission has something to be about.
+  // =========================================================================
+  // See `ports/fulfilment-docs.port.ts` for why this is a port and not a service handle.
+  // Everything below is ordinary Sales behaviour reached through the ordinary Sales
+  // methods: this adapter's whole job is to answer "the usual terms for this part" and
+  // then call `createOrder` + `confirmOrder` exactly as the HTTP path does.
+
+  /**
+   * The terms this item was last actually sold on.
+   *
+   * There is no rate card and no HSN master in the MVP — price and tax treatment live on
+   * the line — so "the usual terms" can only mean "what the last confirmed line said". A
+   * derived answer with a real provenance beats a default, and beats a constant in code by
+   * more: a GST rate hard-coded here is precisely what the platform rules forbid.
+   */
+  private async lastSoldTerms(tx: Tx, itemId: string, customerId: string | null): Promise<
+    { rate: number; hsn: string; gstRatePct: number } | null
+  > {
+    // Prefer what THIS customer last paid — two customers legitimately hold different
+    // prices for the same part, and quietly charging one of them the other's price is a
+    // commercial error the demo would carry into a real conversation.
+    // With no customer in hand (the catalogue list is drawn before one is chosen) there is
+    // no customer-scoped pass to make — and passing an empty string into a uuid comparison
+    // is a 500, not an empty result.
+    for (const scoped of customerId ? [true, false] : [false]) {
+      const rows = await tx.select({
+        rate: salesOrderLine.rate, hsn: salesOrderLine.hsn, gst: salesOrderLine.gstRatePct,
+        orderDate: salesOrder.orderDate, createdAt: salesOrderLine.createdAt,
+      })
+        .from(salesOrderLine)
+        .innerJoin(salesOrder, eq(salesOrder.id, salesOrderLine.orderId))
+        .where(and(
+          eq(salesOrderLine.itemId, itemId),
+          ne(salesOrder.status, "draft"),
+          ne(salesOrder.status, "cancelled"),
+          ...(scoped && customerId ? [eq(salesOrder.customerId, customerId)] : []),
+        ))
+        .orderBy(sql`${salesOrder.orderDate} desc, ${salesOrderLine.createdAt} desc`)
+        .limit(1);
+      const hit = rows[0];
+      if (hit) return { rate: Number(hit.rate), hsn: String(hit.hsn), gstRatePct: Number(hit.gst) };
+    }
+    return null;
+  }
+
+  /**
+   * Which of the tenant's registrations is selling.
+   *
+   * Taken from the most recent order rather than from a config flag, because the tenant has
+   * two GSTINs and the one that has been selling is a fact already in the data. Falls back
+   * to the first registration for a tenant that has never sold anything.
+   */
+  private async sellingGstin(tx: Tx): Promise<string> {
+    const recent = await tx.select({ gstin: salesOrder.supplierGstin })
+      .from(salesOrder).orderBy(sql`${salesOrder.orderDate} desc`).limit(1);
+    if (recent[0]?.gstin) return String(recent[0].gstin);
+    const reg = await tx.select({ gstin: gstRegistration.gstin })
+      .from(gstRegistration).orderBy(asc(gstRegistration.gstin)).limit(1);
+    if (!reg[0]) {
+      throw new AppError("NO_GST_REGISTRATION", 409,
+        "This company has no GST registration, so it cannot raise a sales order.");
+    }
+    return String(reg[0].gstin);
+  }
+
+  /** The warehouse a dispatch would come out of. An order with no source cannot ship. */
+  private async finishedGoodsWarehouse(tx: Tx): Promise<string | undefined> {
+    const recent = await tx.select({ id: salesOrder.fgWarehouseId })
+      .from(salesOrder)
+      .where(sql`${salesOrder.fgWarehouseId} is not null`)
+      .orderBy(sql`${salesOrder.orderDate} desc`).limit(1);
+    if (recent[0]?.id) return String(recent[0].id);
+    const wh = await tx.select({ id: warehouse.id })
+      .from(warehouse).where(eq(warehouse.code, "WH-FG")).limit(1);
+    return wh[0]?.id ? String(wh[0].id) : undefined;
+  }
+
+  async createConfirmedOrder(
+    input: CreateFulfilmentCustomerOrderInput,
+    idempotencyKey: string,
+  ): Promise<CreatedCustomerOrder> {
+    if (input.lines.length === 0) {
+      throw Errors.validation([{ field: "lines", message: "an order needs at least one line" }]);
+    }
+
+    // READ first, in one transaction, and finish with it before calling createOrder — which
+    // opens its own. See the transaction note on the port.
+    const resolved = await withTenant(async (tx) => {
+      const gstin = await this.sellingGstin(tx);
+      const fgWarehouseId = await this.finishedGoodsWarehouse(tx);
+      const lines = [];
+      for (const line of input.lines) {
+        const spec = await this.items.getItem(line.itemId);
+        if (!spec) {
+          throw new AppError("ITEM_NOT_FOUND", 404, `No item ${line.itemId} in the master.`);
+        }
+        const supplied = line.rate !== undefined && line.hsn !== undefined && line.gstRatePct !== undefined;
+        const terms = supplied
+          ? { rate: line.rate as number, hsn: line.hsn as string, gstRatePct: line.gstRatePct as number }
+          : await this.lastSoldTerms(tx, line.itemId, input.customerId);
+        if (!terms) {
+          throw new AppError("NO_TERMS_FOR_ITEM", 422,
+            `${spec.itemCode} has never been sold, so there is no price or GST rate to carry forward. `
+            + "Supply a rate, an HSN code and a GST rate on the line.");
+        }
+        lines.push({
+          itemId: line.itemId,
+          qty: line.qty,
+          rate: terms.rate,
+          hsn: terms.hsn,
+          gstRatePct: terms.gstRatePct,
+          uom: spec.uom,
+          requestedDeliveryDate: line.requestedDeliveryDate,
+        });
+      }
+      return { gstin, fgWarehouseId, lines };
+    });
+
+    const order = await this.createOrder({
+      customerId: input.customerId,
+      custPoNo: input.custPoNo,
+      supplierGstin: resolved.gstin,
+      fgWarehouseId: resolved.fgWarehouseId,
+      lines: resolved.lines,
+    }, `${idempotencyKey}-create`);
+
+    // The credit gate is real and is allowed to stop this. Report where the order actually
+    // landed rather than asserting a confirmation that did not happen.
+    let status = order.status;
+    try {
+      const confirmed = await this.confirmOrder(order.id, `${idempotencyKey}-confirm`);
+      status = confirmed.status;
+    } catch (err) {
+      if (!(err instanceof AppError)) throw err;
+      status = order.status;
+    }
+
+    return {
+      id: order.id,
+      soNo: order.soNo,
+      status,
+      lines: resolved.lines.map((l) => ({
+        itemId: l.itemId, qty: l.qty, rate: l.rate, hsn: l.hsn, gstRatePct: l.gstRatePct,
+      })),
+      grandTotal: Number(order.grandTotal),
+    };
+  }
+
+  async listOrderableCustomers(): Promise<Array<{ id: string; code: string; name: string }>> {
+    return withTenant(async (tx) => {
+      const rows = await tx.select({ id: customer.id, code: customer.code, name: customer.name })
+        .from(customer).where(eq(customer.isActive, true)).orderBy(asc(customer.name));
+      return rows.map((r) => ({ id: String(r.id), code: String(r.code), name: String(r.name) }));
+    });
+  }
+
+  async listSellableItems(): Promise<Array<{
+    id: string; itemCode: string; name: string; uom: string;
+    lastRate: number | null; lastHsn: string | null; lastGstRatePct: number | null;
+  }>> {
+    return withTenant(async (tx) => {
+      const rows = await tx.select({
+        id: itemTable.id, itemCode: itemTable.itemCode, name: itemTable.name, uom: itemTable.uom,
+      })
+        .from(itemTable)
+        .where(and(eq(itemTable.isSellable, true), eq(itemTable.isActive, true)))
+        .orderBy(asc(itemTable.itemCode));
+
+      const out = [];
+      for (const r of rows) {
+        // Scoped to nobody in particular: this list is drawn before a customer is chosen,
+        // so it shows the last price ANY customer paid. The order itself re-derives per
+        // customer, and may therefore land on a different figure — which is correct.
+        const terms = await this.lastSoldTerms(tx, String(r.id), null);
+        out.push({
+          id: String(r.id), itemCode: String(r.itemCode), name: String(r.name), uom: String(r.uom),
+          lastRate: terms?.rate ?? null,
+          lastHsn: terms?.hsn ?? null,
+          lastGstRatePct: terms?.gstRatePct ?? null,
+        });
+      }
+      return out;
+    });
   }
 }

@@ -73,7 +73,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A non-technical viewer sees the same order move from sales to planning, purchasing, stock, production, quality, approval, delivery and after-sales care.",
     icon: "PackageCheck",
-    accent: "#2563eb",
+    accent: "#123a72",
     kind: "business-story",
     scale: "full",
     evidenceMode: "live",
@@ -214,7 +214,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "The least disruptive plan with cost and customer impact made visible.",
     icon: "Truck",
-    accent: "#7c3aed",
+    accent: "#5b4a9e",
     demoRecord: {
       reference: "DEMO-PO-2087",
       subject: "Koyo Bearings · delayed critical supply",
@@ -296,7 +296,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A controlled recovery plan with downtime, delivery and margin impact understood.",
     icon: "Wrench",
-    accent: "#ea580c",
+    accent: "#a8461c",
     demoRecord: {
       reference: "DEMO-DT-CNC07",
       subject: "CNC-07 · unplanned spindle stoppage",
@@ -376,7 +376,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "Traceable containment, root-cause ownership and an audit-ready evidence pack.",
     icon: "ShieldCheck",
-    accent: "#dc2626",
+    accent: "#a82530",
     demoRecord: {
       reference: "DEMO-NCR-0317",
       subject: "Batch STL-24-0719 · hardness failure",
@@ -457,7 +457,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A explainable cash plan with focused actions and finance approval.",
     icon: "IndianRupee",
-    accent: "#059669",
+    accent: "#146b58",
     demoRecord: {
       reference: "DEMO-CASH-W32",
       subject: "Week 32 · projected cash buffer breach",
@@ -537,7 +537,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A feasible plan with shortages, spend and working-capital impact exposed.",
     icon: "ChartNoAxesCombined",
-    accent: "#0891b2",
+    accent: "#17609e",
     demoRecord: {
       reference: "DEMO-DEM-AUG",
       subject: "PX-400 family · August demand increase",
@@ -620,7 +620,7 @@ const focusedDemoScenarios: DemoScenario[] = [
       "Close critical gaps and assemble a trustworthy evidence package.",
     outcome: "A prioritized readiness plan and traceable audit pack.",
     icon: "ClipboardCheck",
-    accent: "#4f46e5",
+    accent: "#3f3a86",
     demoRecord: {
       reference: "DEMO-AUD-0826",
       subject: "Apex Mobility · process and quality audit",
@@ -699,7 +699,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "Fast customer communication and a defensible root-cause workflow.",
     icon: "MessagesSquare",
-    accent: "#db2777",
+    accent: "#963063",
     demoRecord: {
       reference: "DEMO-CPL-0144",
       subject: "Apex Mobility · leaking PX-400 assembly",
@@ -785,7 +785,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A reconciled chain of movement with controlled financial correction.",
     icon: "ScanSearch",
-    accent: "#0f766e",
+    accent: "#0e6a6b",
     demoRecord: {
       reference: "DEMO-IV-0092",
       subject: "BRG-6205 · warehouse count mismatch",
@@ -867,7 +867,7 @@ const focusedDemoScenarios: DemoScenario[] = [
     outcome:
       "A reversible response, verified recovery and complete audit trail.",
     icon: "ShieldAlert",
-    accent: "#b91c1c",
+    accent: "#8c1620",
     demoRecord: {
       reference: "DEMO-SEC-0731",
       subject: "Warehouse integration · unusual credential activity",
@@ -952,7 +952,7 @@ const agentOverviewScenario: DemoScenario = {
   outcome:
     "The viewer understands all nine agents, their boundaries and how they connect without needing to understand ERP terminology.",
   icon: "Network",
-  accent: "#0f766e",
+  accent: "#0e6a6b",
   scale: "full",
   kind: "agent-tour",
   evidenceMode: "structural",

@@ -142,7 +142,7 @@ export default function MaintenanceRequestsScreen(_props: ScreenProps): React.JS
         value={state}
         onChange={(e) => setState(e.target.value === "all" ? "all" : "untriaged")}
         aria-label="Which requests to show"
-        className="h-9 w-fit rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+        className="h-9 w-fit rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
       >
         <option value="untriaged">Waiting to be triaged</option>
         <option value="all">Every request, decided or not</option>

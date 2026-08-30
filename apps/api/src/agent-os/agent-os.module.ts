@@ -25,6 +25,12 @@ import { DecisionIntelligenceService } from "./decision-intelligence.service.js"
 import { MvpReadinessService } from "./mvp-readiness.service.js";
 import { AgentControlService } from "./agent-control.service.js";
 import { AgentRecoveryService } from "./agent-recovery.service.js";
+import {
+  ONYX_FACTORY_INTELLIGENCE,
+} from "../ports/onyx-factory-intelligence.port.js";
+import { FactoryIntelligenceController } from "./factory-intelligence.controller.js";
+import { FactoryIntelligenceService } from "./factory-intelligence.service.js";
+import { OnyxFactoryIntelligenceHttpAdapter } from "./onyx-factory-intelligence.http-adapter.js";
 
 @Module({
   imports: [
@@ -40,8 +46,13 @@ import { AgentRecoveryService } from "./agent-recovery.service.js";
     AiOpsModule,
     PlatformHealthModule,
   ],
-  controllers: [AgentOsController],
+  controllers: [AgentOsController, FactoryIntelligenceController],
   providers: [
+    {
+      provide: ONYX_FACTORY_INTELLIGENCE,
+      useClass: OnyxFactoryIntelligenceHttpAdapter,
+    },
+    FactoryIntelligenceService,
     AgentRegistryService,
     GraphRegistryService,
     AgentActionService,

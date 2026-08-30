@@ -66,7 +66,7 @@ const PUBLIC_DEMO_USER: SessionUser = {
   email: null,
   groups: ["trishul", "public-demo"],
   tenantKey: "trishul",
-  tenantLabel: TENANT_LABELS.trishul ?? "Trishul Precision Components",
+  tenantLabel: TENANT_LABELS.trishul ?? "3S Precision Parts",
 };
 
 /**

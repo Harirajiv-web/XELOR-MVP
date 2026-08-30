@@ -23,6 +23,14 @@ import type { Scenario } from "./scenarios";
  * the precise record that is missing, and that answer is worth more than a silently shorter
  * list: it says the scenarios are probed against real data rather than staged. It cannot be
  * started, it says why, and it still opens so somebody can read what it would have shown.
+ *
+ * WHAT THE LAYOUT PASS CHANGED. This was the FIRST thing on the screen and nine cards of
+ * equal weight, each carrying a full sentence of engineer prose — so the first thing a
+ * factory person met was a document rather than a choice. It now sits second, beside the
+ * order list rather than above it, and a collapsed row is one line: number, human title, and
+ * whether it can run here. The sentence is clamped to that line and unclamps on open, along
+ * with everything else. Nothing was removed; it is scannable at a glance and complete at a
+ * click, which is the order those two things belong in.
  */
 export function ScenarioPicker({
   scenarios,
@@ -39,13 +47,21 @@ export function ScenarioPicker({
   // "degrade gracefully if the endpoint is absent" behaviour: no list, no section.
   if (scenarios.length === 0) return null;
 
+  const runnable = scenarios.filter((s) => s.available).length;
+
   return (
     <section className="rounded-xl border p-3" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-      <div className="flex flex-wrap items-baseline gap-2">
-        <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
           Or show me a situation
         </p>
+        {/* Said as a count rather than as a promise: the engine probes this tenant's own
+            records, and how many of the nine it can actually stage today is a fact about the
+            data, not about the product. */}
         <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+          {runnable} of {scenarios.length} can run against your records
+        </p>
+        <p className="w-full text-[11px]" style={{ color: "var(--text-muted)" }}>
           the same engine, against the order in your own records that actually has the problem
         </p>
       </div>
@@ -71,8 +87,16 @@ export function ScenarioPicker({
                   <span className="block text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
                     {s.name}
                   </span>
+                  {/* One line while closed. The whole sentence is still here — it simply
+                      does not cost nine paragraphs of height before anybody has chosen. */}
                   {s.demonstrates ? (
-                    <span className="mt-0.5 block text-[11px] leading-snug" style={{ color: "var(--text-muted)" }}>
+                    <span
+                      className={cn(
+                        "mt-0.5 block text-[11px] leading-snug",
+                        shown ? null : "line-clamp-1",
+                      )}
+                      style={{ color: "var(--text-muted)" }}
+                    >
                       {s.demonstrates}
                     </span>
                   ) : null}
@@ -144,8 +168,8 @@ export function ScenarioPicker({
 
                   {s.available ? (
                     <button type="button" onClick={() => onRun(s.key)} disabled={running}
-                      className="self-start rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-                      style={{ background: "var(--brand)" }}>
+                      className="self-start rounded-lg px-3 py-1.5 text-xs font-semibold text-[var(--action-ink)] disabled:opacity-50"
+                      style={{ background: "var(--action)" }}>
                       {running ? "Starting…" : "Start this one"}
                     </button>
                   ) : (

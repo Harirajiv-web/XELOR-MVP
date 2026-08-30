@@ -18,7 +18,7 @@ export default function NotFound(): React.JSX.Element {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6">
       <div className="flex max-w-md flex-col items-center gap-3 text-center">
-        <span className="grid h-9 w-9 place-items-center rounded-[8px] bg-[var(--brand)] text-[15px] font-bold text-white">
+        <span className="grid h-9 w-9 place-items-center rounded-[8px] bg-[var(--brand)] text-[15px] font-bold text-[var(--text-on-brand)]">
           A
         </span>
         <FileQuestion className="h-8 w-8 text-[var(--text-muted)]" aria-hidden />
@@ -31,7 +31,7 @@ export default function NotFound(): React.JSX.Element {
         </p>
         <Link
           href="/"
-          className="mt-1 rounded-[var(--radius-control)] bg-[var(--brand)] px-3.5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--brand-hover)]"
+          className="mt-1 rounded-[var(--radius-control)] bg-[var(--brand)] px-3.5 py-2 text-[13px] font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)]"
         >
           Go to the first screen you can open
         </Link>

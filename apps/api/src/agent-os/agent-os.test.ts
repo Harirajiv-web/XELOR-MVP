@@ -9,7 +9,10 @@ import {
 } from "@ind-core/platform";
 import { AgentRegistryService } from "./agent-registry.service.js";
 import { AgentGraphEngine } from "./agent-graph.engine.js";
-import type { AgentRunRepository } from "./agent-run.repository.js";
+import {
+  approvalDecisionIsExactReplay,
+  type AgentRunRepository,
+} from "./agent-run.repository.js";
 import { CapabilityRegistryService } from "./capability-registry.service.js";
 import { DeterministicAgentReasoner } from "./agent-reasoner.service.js";
 import { GraphRegistryService } from "./graph-registry.service.js";
@@ -24,6 +27,39 @@ test("registers every named departmental agent", () => {
   assert.deepEqual(
     registry.list().map((agent) => agent.key),
     AGENT_KEYS,
+  );
+});
+
+test("approval retries replay only the same actor, decision and note", () => {
+  const existing = {
+    status: "approved",
+    decisionNote: "Current ONYX evidence reviewed",
+    decidedBy: "planner-1",
+    isActive: true,
+  };
+  assert.equal(
+    approvalDecisionIsExactReplay(existing, {
+      decision: "approved",
+      note: "Current ONYX evidence reviewed",
+      actorId: "planner-1",
+    }),
+    true,
+  );
+  assert.equal(
+    approvalDecisionIsExactReplay(existing, {
+      decision: "rejected",
+      note: "Current ONYX evidence reviewed",
+      actorId: "planner-1",
+    }),
+    false,
+  );
+  assert.equal(
+    approvalDecisionIsExactReplay(existing, {
+      decision: "approved",
+      note: "Different request",
+      actorId: "planner-1",
+    }),
+    false,
   );
 });
 
@@ -89,6 +125,12 @@ test("finance and quality capabilities stay separate from the approval-bound act
   const factoryConnect = {
     overview: async () => ({ gateways: [], assets: [], dwell: [], commands: [] }),
   };
+  const factoryIntelligence = {
+    actionableOverview: async () => ({
+      scenario: { key: "3s-workroom-poc" },
+      boundary: { scheduleMutationPerformed: false, physicalCommandIssued: false },
+    }),
+  };
   const actions = { dispatch: async () => ({ status: "dispatched" }) };
   const capabilities = new CapabilityRegistryService(
     authorization as never,
@@ -102,6 +144,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
     quality as never,
     platformHealth as never,
     factoryConnect as never,
+    factoryIntelligence as never,
     actions as never,
   );
   const listed = capabilities.list();
@@ -116,6 +159,7 @@ test("finance and quality capabilities stay separate from the approval-bound act
   assert.equal(keys.has("managed-services.service-assurance.read"), true);
   assert.equal(keys.has("platform-health.status.read"), true);
   assert.equal(keys.has("production.factory-connect.read"), true);
+  assert.equal(keys.has("production.factory-intelligence.analyse"), true);
   assert.equal(
     listed.filter((capability) => capability.sideEffecting).length,
     1,
@@ -142,6 +186,79 @@ test("Factory flow recovery is evidence-backed, cross-functional and stops at a 
       (node) => node.kind === "capability" && node.capabilityKey === "agent.action.dispatch",
     ),
     false,
+  );
+});
+
+test("Factory Intelligence is a separate approval-gated ONYX planning review with one bounded dispatch", () => {
+  const registry = new GraphRegistryService();
+  const original = registry.get("factory.flow-recovery");
+  const graph = registry.get("factory.intelligence-recovery");
+
+  assert.equal(original.version, 2);
+  assert.equal(validateAgentGraph(graph).valid, true);
+  assert.equal(graph.version, 1);
+  const analyses = graph.nodes.filter(
+    (node) =>
+      node.kind === "capability" &&
+      node.capabilityKey === "production.factory-intelligence.analyse",
+  );
+  assert.equal(analyses.length, 2);
+  const postApprovalRevalidation = analyses.find(
+    (node) => node.id === "kiln-post-approval-revalidation",
+  );
+  assert.ok(postApprovalRevalidation?.kind === "capability");
+  assert.deepEqual(postApprovalRevalidation.dependsOn, ["human-replan-approval"]);
+  assert.deepEqual(postApprovalRevalidation.condition, {
+    nodeId: "human-replan-approval",
+    path: "decision.approved",
+    equals: true,
+  });
+  assert.equal(graph.maxSteps, 14);
+
+  const dispatches = graph.nodes.filter(
+    (node) =>
+      node.kind === "capability" &&
+      node.capabilityKey === "agent.action.dispatch",
+  );
+  assert.equal(dispatches.length, 1);
+  const dispatch = dispatches[0];
+  assert.ok(dispatch?.kind === "capability");
+  assert.deepEqual(dispatch.dependsOn, ["kiln-post-approval-revalidation"]);
+  assert.deepEqual(dispatch.condition, {
+    nodeId: "human-replan-approval",
+    path: "decision.approved",
+    equals: true,
+  });
+  assert.equal(dispatch.input?.targetDomain, "onyx.planning");
+  assert.equal(dispatch.input?.actionType, "factory_replan_request");
+  assert.deepEqual(
+    (dispatch.input?.payload as Record<string, unknown> | undefined)?.autoPublish,
+    false,
+  );
+  assert.deepEqual(
+    (dispatch.input?.payload as Record<string, unknown> | undefined)?.physicalCommand,
+    false,
+  );
+  const payload = dispatch.input?.payload as Record<string, unknown> | undefined;
+  assert.deepEqual(
+    {
+      jobId: payload?.jobId,
+      orderRef: payload?.orderRef,
+      itemCode: payload?.itemCode,
+      operationCode: payload?.operationCode,
+      fromAsset: payload?.fromAsset,
+      toAsset: payload?.toAsset,
+      deterministicRule: payload?.deterministicRule,
+    },
+    {
+      jobId: "POC-REPLAY-MO-2627-00003-OP10",
+      orderRef: "MO-2627-00003",
+      itemCode: "CMP-PX4-SFT",
+      operationCode: "OP-10",
+      fromAsset: "AST-PNQ-TRN-01",
+      toAsset: "AST-PNQ-LTH-02",
+      deterministicRule: "explicit_alternate_then_asset_code",
+    },
   );
 });
 

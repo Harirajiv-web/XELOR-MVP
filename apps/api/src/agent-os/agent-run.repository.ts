@@ -44,6 +44,27 @@ export interface AgentRunState {
   checkpoints: Array<typeof agentCheckpoint.$inferSelect>;
 }
 
+export function approvalDecisionIsExactReplay(
+  existing: {
+    status: string;
+    decisionNote: string | null;
+    decidedBy: string | null;
+    isActive: boolean;
+  },
+  requested: {
+    decision: "approved" | "rejected";
+    note: string;
+    actorId: string;
+  },
+): boolean {
+  return (
+    existing.isActive &&
+    existing.status === requested.decision &&
+    existing.decisionNote === requested.note &&
+    existing.decidedBy === requested.actorId
+  );
+}
+
 @Injectable()
 export class AgentRunRepository {
   constructor(private readonly audit: AuditLogService) {}
@@ -960,11 +981,32 @@ export class AgentRunRepository {
         .returning();
       if (!approval) {
         const [existing] = await tx
-          .select({ id: agentApproval.id })
+          .select({
+            id: agentApproval.id,
+            runId: agentApproval.runId,
+            nodeId: agentApproval.nodeId,
+            status: agentApproval.status,
+            decisionNote: agentApproval.decisionNote,
+            decidedBy: agentApproval.decidedBy,
+            isActive: agentApproval.isActive,
+          })
           .from(agentApproval)
           .where(eq(agentApproval.id, approvalId))
           .limit(1);
         if (!existing) throw Errors.notFound(`agent approval ${approvalId}`);
+        if (
+          approvalDecisionIsExactReplay(existing, {
+            decision,
+            note,
+            actorId,
+          })
+        ) {
+          return {
+            runId: existing.runId,
+            nodeId: existing.nodeId,
+            approved: decision === "approved",
+          };
+        }
         throw new AppError(
           "APPROVAL_ALREADY_DECIDED",
           409,

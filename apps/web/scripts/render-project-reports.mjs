@@ -9,6 +9,16 @@ const root = resolve(here, "../../..");
 const proofDir = resolve(root, "apps/web/test-results/project-report-proofs");
 const reports = [
   {
+    id: "master-plan",
+    source: "docs/reports/xelor-product-development-master-plan.html",
+    output: "docs/05-deliverables/project-reports/XELOR_PRODUCT_DEVELOPMENT_MASTER_PLAN.pdf",
+  },
+  {
+    id: "dossier",
+    source: "docs/reports/xelor-platform-architecture-and-verification-dossier.html",
+    output: "docs/05-deliverables/project-reports/XELOR_PLATFORM_ARCHITECTURE_AND_VERIFICATION_DOSSIER.pdf",
+  },
+  {
     id: "handoff",
     source: "docs/reports/xelor-mvp-technical-handoff-brief.html",
     output: "docs/05-deliverables/project-reports/XELOR_MVP_TECHNICAL_HANDOFF_BRIEF.pdf",
@@ -40,6 +50,18 @@ const reports = [
     id: "architecture-playbook",
     source: "docs/reports/xelor-architecture-implementation-playbook.html",
     output: "docs/05-deliverables/project-reports/XELOR_ARCHITECTURE_AND_IMPLEMENTATION_PLAYBOOK.pdf",
+  },
+  {
+    id: "tech-architecture",
+    source: "docs/reports/aikyantra-onyx-and-xelor-technology-and-architecture.html",
+    output: "docs/05-deliverables/project-reports/AIKYANTRA_ONYX_AND_XELOR_TECHNOLOGY_AND_ARCHITECTURE.pdf",
+    fullBleed: true,
+  },
+  {
+    id: "end-product-architecture",
+    source: "docs/reports/aikyantra-onyx-and-xelor-end-product-architecture.html",
+    output: "docs/05-deliverables/project-reports/AIKYANTRA_ONYX_AND_XELOR_END_PRODUCT_ARCHITECTURE.pdf",
+    fullBleed: true,
   },
   {
     id: "business-revenue",

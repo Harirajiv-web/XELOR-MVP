@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ONYX &amp; XELOR by AIKYANTRA — MVP Technology and Architecture</title>
+<style>
+  :root{
+    --navy:#0b1a2e; --navy-2:#14263f; --navy-3:#1b4574;
+    --brand:#14508f; --brand-soft:#e1eaf7;
+    --gold:#d9a93c; --gold-line:#c9a24a; --gold-ink:#7a5b12;
+    --paper:#ffffff; --sunk:#f4f1ea; --sunk-2:#ede8dd;
+    --line:#c6bba4; --line-cool:#d4dce8;
+    --ink:#0b1a2e; --ink-2:#374b62; --ink-3:#5c6e82;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  @page{size:A4;margin:0}
+  html,body{margin:0;padding:0;background:#dfe4ec;color:var(--ink);
+    font-family:var(--sans);font-size:7.5pt;line-height:1.34;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  section.page{position:relative;width:210mm;height:297mm;margin:0 auto;
+    padding:10mm 13mm 8mm;overflow:hidden;background:var(--paper);
+    break-after:page;page-break-after:always;display:flex;flex-direction:column}
+  section.page:last-child{break-after:auto;page-break-after:auto}
+
+  h1,h2,h3,h4,p,ul,ol{margin:0}
+  .stack{display:flex;flex-direction:column;gap:3.1mm;flex:1}
+
+  /* ---------- masthead ---------- */
+  .mast{background:var(--navy);color:#f4f1ea;margin:-10mm -13mm 0;padding:7mm 13mm 5.4mm;
+    border-bottom:1.2mm solid var(--gold)}
+  .mast .eyebrow{color:var(--gold);font-size:7pt;font-weight:700;letter-spacing:1.9pt;
+    text-transform:uppercase;margin-bottom:3mm}
+  .mast h1{font-family:var(--serif);font-size:19pt;line-height:1.03;font-weight:600;
+    letter-spacing:-0.3pt;max-width:150mm}
+  .mast h1 em{font-style:normal;color:var(--gold)}
+  .mast .sub{margin-top:3mm;max-width:166mm;color:#c8d3e2;font-size:7.9pt;line-height:1.38}
+  .mast .meta{margin-top:3.6mm;padding-top:2.2mm;border-top:0.3mm solid rgba(244,241,234,.22);
+    display:flex;gap:9mm;font-family:var(--mono);font-size:6.9pt;color:#9fb0c6;
+    letter-spacing:.2pt;text-transform:uppercase}
+
+  /* ---------- headings ---------- */
+  h2{font-family:var(--serif);font-size:11pt;font-weight:600;letter-spacing:-0.1pt;
+    color:var(--navy);display:flex;align-items:baseline;gap:3mm}
+  h2::after{content:"";flex:1;height:0.35mm;background:var(--gold-line)}
+  h2 .n{font-family:var(--mono);font-size:7.4pt;color:var(--gold-ink);font-weight:700;
+    letter-spacing:.6pt}
+  h2+.lede{margin-top:1.3mm;color:var(--ink-2);max-width:172mm}
+  h3{font-size:8.2pt;font-weight:700;color:var(--brand);letter-spacing:.5pt;
+    text-transform:uppercase}
+  .blk{margin-top:1.2mm}
+
+  code,.m{font-family:var(--mono);font-size:.9em;color:var(--gold-ink);
+    background:var(--sunk);padding:0 .5mm;border-radius:.6mm}
+  .k{font-weight:700;color:var(--navy)}
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:7pt}
+  th{text-align:left;font-size:6.5pt;letter-spacing:.9pt;text-transform:uppercase;
+    color:var(--ink-3);font-weight:700;padding:0 2mm 1.3mm 0;border-bottom:.4mm solid var(--navy)}
+  td{padding:.72mm 2mm .72mm 0;border-bottom:.2mm solid var(--line-cool);
+    vertical-align:top;line-height:1.18}
+  tr:last-child td{border-bottom:none}
+  td.key{font-family:var(--mono);font-size:6.9pt;color:var(--navy);font-weight:700;
+    white-space:nowrap}
+  td.tech{font-family:var(--mono);font-size:6.9pt;color:var(--brand)}
+
+  /* ---------- panels ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2.6mm}
+  .panel{background:var(--sunk);border-left:.8mm solid var(--gold);padding:2.1mm 2.5mm}
+  .panel.cool{background:var(--brand-soft);border-left-color:var(--brand)}
+  .panel h4{font-size:7.1pt;text-transform:uppercase;letter-spacing:.8pt;
+    color:var(--navy);margin-bottom:1.4mm}
+  .panel p{color:var(--ink-2);font-size:6.9pt;line-height:1.32}
+
+  ul{padding-left:4mm;list-style:none}
+  ul li{position:relative;margin-bottom:1.1mm;color:var(--ink-2);line-height:1.34}
+  ul li::before{content:"";position:absolute;left:-3.2mm;top:1.5mm;width:1.2mm;height:1.2mm;
+    background:var(--gold-line)}
+  ul.tight li{margin-bottom:.7mm}
+
+  /* ---------- flow diagram ---------- */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:1.8mm}
+  .step{flex:1;background:var(--sunk);border-top:.7mm solid var(--brand);
+    padding:1.7mm 1.9mm;position:relative}
+  .step+.step{margin-left:2.6mm}
+  .step+.step::before{content:"›";position:absolute;left:-2.4mm;top:50%;
+    transform:translate(-.2mm,-55%);color:var(--gold);font-size:11pt;font-weight:700}
+  .step .lbl{font-family:var(--mono);font-size:6.4pt;color:var(--gold-ink);
+    letter-spacing:.5pt;margin-bottom:.9mm}
+  .step .t{font-size:7.3pt;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:.9mm}
+  .step .d{font-size:6.4pt;color:var(--ink-3);line-height:1.3}
+  .step.gate{border-top-color:var(--gold);background:#fbf3e0}
+  .step.term{border-top-color:var(--navy);background:var(--sunk-2)}
+
+  /* ---------- loop diagram ---------- */
+  .loop{margin-top:1.5mm;border:.3mm solid var(--line);background:var(--sunk);
+    padding:1.7mm 2.1mm;position:relative}
+  .loop .row{display:flex;gap:2.4mm;align-items:center}
+  .node{flex:1;text-align:center;background:#fff;border:.3mm solid var(--line-cool);
+    border-top:.6mm solid var(--brand);padding:1.1mm .9mm}
+  .node.appr{border-top-color:var(--gold);background:#fbf3e0}
+  .node.end{border-top-color:var(--navy)}
+  .node .t{font-size:7pt;font-weight:700;color:var(--navy);line-height:1.15}
+  .node .d{font-size:6pt;color:var(--ink-3);margin-top:.45mm;line-height:1.16}
+  .arrow{color:var(--gold);font-weight:700;font-size:10pt;flex:0 0 auto}
+  .back{margin-top:1.2mm;padding-top:1mm;border-top:.3mm dashed var(--gold-line);
+    font-size:6.8pt;color:var(--gold-ink);font-family:var(--mono);letter-spacing:.2pt}
+
+  /* ---------- callout ---------- */
+  .rule{background:var(--navy);color:#e7ecf4;padding:2.2mm 2.8mm;font-size:7.3pt;
+    line-height:1.35;border-left:1mm solid var(--gold)}
+  .rule b{color:var(--gold)}
+
+  /* ---------- footer ---------- */
+  .foot{margin-top:auto;padding-top:2.2mm;border-top:.3mm solid var(--line);
+    display:flex;justify-content:space-between;font-family:var(--mono);
+    font-size:6.5pt;color:var(--ink-3);letter-spacing:.4pt;text-transform:uppercase}
+  .foot .pg{color:var(--gold-ink);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
+<section class="page">
+  <div class="mast">
+    <div class="eyebrow">AIKYANTRA · Document 1 of 2 · The MVP</div>
+    <h1>ONYX &amp; XELOR<br /><em>MVP — technology and architecture</em></h1>
+    <div class="sub">What the two products are built from <b>today</b>, how a request travels through them, how the AI is
+      wired in, and how the nine agents are connected into graphs that run, pause for a human, and close with evidence.
+      The companion document sets out what this becomes as a production product.</div>
+    <div class="meta"><span>ONYX — Phase 1 · the ERP</span><span>XELOR — Phase 2 · the intelligence layer</span><span>20 Aug 2026</span></div>
+  </div>
+
+  <div class="stack">
+
+    <div class="blk">
+      <h2><span class="n">01</span> One codebase, two products</h2>
+      <p class="lede">XELOR is not a fork of ONYX and does not replace it. It reads ONYX's records and
+        writes back through ONYX's own endpoints, so the two run side by side on separate ports and
+        separate databases from a shared pnpm workspace.</p>
+      <table style="margin-top:1.6mm">
+        <tr><th style="width:26mm"></th><th>ONYX by AIKYANTRA — Phase 1</th><th>XELOR by AIKYANTRA — Phase 2</th></tr>
+        <tr><td class="key">Role</td><td>The system of record: sales, purchase, inventory, production, quality, maintenance, people, accounts.</td><td>The intelligence layer: fulfilment missions, the nine agents, the copilot, the AI control centre.</td></tr>
+        <tr><td class="key">Runs on</td><td class="tech">api :3000 · web :3001 · db indcore</td><td class="tech">api :3100 · web :3101 · db indcore_p2</td></tr>
+        <tr><td class="key">API modules</td><td>21 (accounts … workflow)</td><td>22 — adds <span class="m">dataimport</span>, plus the top-level <span class="m">fulfilment</span> module</td></tr>
+        <tr><td class="key">Shared domain</td><td colspan="2"><span class="m">packages/platform</span> — framework-free contracts and rules. XELOR adds <span class="m">fulfilment</span>, <span class="m">factory-intelligence</span>, <span class="m">intelligence</span>, <span class="m">dataimport</span>; ONYX carries <span class="m">factory-operations</span> instead.</td></tr>
+        <tr><td class="key">Migrations</td><td>92 SQL files</td><td>96 SQL files — a superset, which is why the databases are never shared</td></tr>
+        <tr><td class="key">Shared services</td><td colspan="2">Keycloak (one realm, one sign-in theme), Valkey and Gotenberg — none hold phase-specific state.</td></tr>
+      </table>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">02</span> The stack, by layer</h2>
+      <table style="margin-top:2.4mm">
+        <tr><th style="width:30mm">Layer</th><th style="width:62mm">Technology</th><th>What it does here</th></tr>
+        <tr><td class="key">Runtime</td><td class="tech">Node 22 · TypeScript 5.7 · pnpm workspace</td><td>ESM throughout; one lockfile, three apps, two shared packages.</td></tr>
+        <tr><td class="key">API</td><td class="tech">NestJS 11 · Express 5 · Zod 3</td><td>Modular monolith behind the prefix <span class="m">api/v1</span>. Zod validates every request body and AI response.</td></tr>
+        <tr><td class="key">Web</td><td class="tech">Next.js 15 · React 19 · Tailwind 4 · shadcn/ui on Radix · lucide-react · three.js</td><td>App Router with server components; three.js draws the factory floor only.</td></tr>
+        <tr><td class="key">Database</td><td class="tech">PostgreSQL 17 (pgvector/pgvector:pg17) · Drizzle ORM 0.36</td><td>One shared schema, multi-tenant by <span class="m">FORCE ROW LEVEL SECURITY</span>; pgvector backs retrieval.</td></tr>
+        <tr><td class="key">Identity</td><td class="tech">Keycloak 26 · OIDC · jose (JWT verify)</td><td>One realm for both products; the API verifies audience and issuer, then resolves tenant and permissions.</td></tr>
+        <tr><td class="key">Async</td><td class="tech">Valkey 8 · BullMQ 5 · ioredis</td><td>Outbox → relay → queue → idempotent consumer. Never carries ledger-critical writes.</td></tr>
+        <tr><td class="key">AI</td><td class="tech">Provider-agnostic router · Ollama (local) · offline stub · pgvector</td><td>One doorway, a closed feature registry, a hash-chained call log. No business module imports a provider SDK.</td></tr>
+        <tr><td class="key">Documents</td><td class="tech">Gotenberg 8 · Playwright/Chromium · SheetJS (xlsx)</td><td>Invoices and packs as PDF; spreadsheets through the data-import module.</td></tr>
+        <tr><td class="key">Machines</td><td class="tech">apps/edge — simulator · OPC UA · MQTT · ROS 2 · vendor adapters</td><td>A runtime beside the line: reads state, executes one named, time-boxed capability at a time.</td></tr>
+        <tr><td class="key">Infra</td><td class="tech">Docker Compose · Caddy · Railway (demo) · AWS ap-south-1 (target)</td><td>Four containers locally: Postgres, Valkey, Keycloak, Gotenberg.</td></tr>
+        <tr><td class="key">Proof</td><td class="tech">node:test · Playwright e2e · ESLint boundary rules · GitHub Actions</td><td>Every merge must pass build, boundary lint, typecheck, migrations, unit tests, the AI eval and grounding gates, and the RLS, permission, naming and module-manifest proofs.</td></tr>
+      </table>
+    </div>
+
+        <div class="blk">
+      <h2><span class="n">03</span> Repository shape</h2>
+      <div class="grid3" style="margin-top:2.4mm">
+        <div class="panel"><h4>apps/api</h4><p><span class="m">modules/</span> one folder per business domain · <span class="m">agent-os/</span> the agent runtime · <span class="m">ai/</span> router and features · <span class="m">bus/</span> outbox relay and queues · <span class="m">ports/</span> the only legal cross-module doorways · <span class="m">fulfilment/</span> missions, XELOR only.</p></div>
+        <div class="panel"><h4>apps/web</h4><p><span class="m">modules/</span> mirrors the API one-for-one, assembled by a single <span class="m">registry.ts</span> · <span class="m">spine/</span> shell, navigation and copilot driver · <span class="m">scripts/</span> the PDF render pipeline.</p></div>
+        <div class="panel"><h4>packages/</h4><p><span class="m">platform</span> — domain logic with no NestJS and no database: registries, graph validation, hash chains, tax, planning, confidence. <span class="m">db</span> — Drizzle schema, migrations, tenant-scoped connections.</p></div>
+      </div>
+      <div class="rule" style="margin-top:3.4mm">
+        <b>Module boundaries are a lint rule, not a convention</b> — <span class="m">eslint-plugin-boundaries</span> fails CI. No module imports another's service and
+        no foreign key crosses a boundary. Everything goes through a typed port — <span class="m">STOCK</span>,
+        <span class="m">BOM</span>, <span class="m">WORKFLOW</span>, <span class="m">CUSTOMER_ORDER_WRITER</span> —
+        or a versioned event. Production may never write stock: the single write path
+        <span class="m">POST /api/v1/stock/entries</span> belongs to Inventory alone.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot"><span>MVP · ONYX &amp; XELOR by AIKYANTRA — Technology and architecture</span><span class="pg">1 / 3</span></div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
+<section class="page">
+  <div class="stack">
+
+    <div class="blk" style="margin-top:1mm">
+      <h2><span class="n">04</span> How one request moves</h2>
+      <p class="lede">Every write in both products follows the same eight steps. Nothing skips a step,
+        including anything an agent initiates — an agent is just another authenticated caller.</p>
+      <div class="flow">
+        <div class="step"><div class="lbl">01 · WEB</div><div class="t">Next.js</div><div class="d">Server component or client action calls <span class="m">api/v1</span> with the user's bearer token.</div></div>
+        <div class="step gate"><div class="lbl">02 · GUARD</div><div class="t">Identity</div><div class="d">jose verifies the Keycloak JWT — issuer, audience, expiry.</div></div>
+        <div class="step gate"><div class="lbl">03 · GUARD</div><div class="t">Tenant &amp; RBAC</div><div class="d">Middleware binds the tenant; the permission guard requires <em>all</em> declared permissions.</div></div>
+        <div class="step"><div class="lbl">04 · DATA</div><div class="t">RLS transaction</div><div class="d">Drizzle runs under <span class="m">SET LOCAL app.current_tenant</span>; Postgres enforces the row filter.</div></div>
+      </div>
+      <div class="flow" style="margin-top:2.4mm">
+        <div class="step"><div class="lbl">05 · WRITE</div><div class="t">Domain + outbox</div><div class="d">The business rows and the event row are written in one transaction, so neither can exist alone.</div></div>
+        <div class="step"><div class="lbl">06 · AUDIT</div><div class="t">Hash chain</div><div class="d">A field-level change set is hashed onto the previous entry, per tenant. Any edit breaks the chain.</div></div>
+        <div class="step"><div class="lbl">07 · RELAY</div><div class="t">Outbox → BullMQ</div><div class="d">A relay claims batches with <span class="m">FOR UPDATE SKIP LOCKED</span> and enqueues by event id.</div></div>
+        <div class="step term"><div class="lbl">08 · CONSUME</div><div class="t">Idempotent worker</div><div class="d">At-least-once delivery plus idempotent handlers gives exactly-once <em>effect</em>.</div></div>
+      </div>
+      <div class="grid2" style="margin-top:3mm">
+        <div class="panel cool"><h4>The write contract</h4><p>UUIDv7 primary keys · <span class="m">tenant_id</span> on every tenant-scoped table with composite indexes leading on it · <span class="m">created_at/by</span>, <span class="m">updated_at/by</span>, <span class="m">is_active</span> soft delete · no hard delete on master, financial or statutory rows · money as <span class="m">NUMERIC(18,2)</span> · effective-dated rate masters · one canonical error envelope · cursor pagination only · <span class="m">Idempotency-Key</span> on every mutating endpoint.</p></div>
+        <div class="panel cool"><h4>The event contract</h4><p>Versioned names — <span class="m">module.entity.verb.v1</span> — published only through the transactional outbox. The relay drains per tenant under that tenant's RLS context, so the bus never becomes a way around the row filter. <b>Ledger-critical writes never travel on the bus:</b> they stay synchronous inside the one transaction that produced them.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">05</span> How the AI is connected</h2>
+      <p class="lede">No business module ever talks to a model. Every call passes through one router,
+        which does exactly four things before and after the provider — and contains no business logic.</p>
+      <div class="flow">
+        <div class="step gate"><div class="lbl">STEP 1</div><div class="t">Reject the unregistered</div><div class="d">The feature key must be in the closed registry — nine routable features plus one explicit "no AI here" entry. Anything else throws.</div></div>
+        <div class="step gate"><div class="lbl">STEP 2</div><div class="t">Ask governance</div><div class="d">Kill switch, tenant opt-out and budget are checked <em>before a token is spent</em>. A refusal is itself logged, then fails closed.</div></div>
+        <div class="step"><div class="lbl">STEP 3</div><div class="t">Route to a provider</div><div class="d">Offline stub in development, a local Ollama model on a workstation, a hosted model in production. Swapping one changes no caller.</div></div>
+        <div class="step term"><div class="lbl">STEP 4</div><div class="t">Log it, chained</div><div class="d">Input, output, model, tier and token usage append to the hash-chained <span class="m">ai_action_log</span>. Refusals included.</div></div>
+      </div>
+      <div class="grid2" style="margin-top:3mm">
+        <div class="panel"><h4>The closed registry</h4><p>Each entry carries a risk tier and a <b>degraded mode</b> the feature drops to when AI is off or refused: receipt extraction and duplicate-receipt detection, master-data dedup, HSN/SAC suggestion, ticket triage and reply drafting, payslip and segregation-of-duties explainers, copilot retrieval QA. Degraded modes are real paths — <span class="m">manual_entry</span>, <span class="m">deterministic_substitute</span>, <span class="m">template_output</span>, <span class="m">feature_hidden</span> — not error screens.</p></div>
+        <div class="panel"><h4>Two gates before a model ships</h4><p><span class="k">The eval gate</span> grades the detector against a golden set — <span class="m">pnpm eval general.master_dedup</span> must clear its F1 threshold. <span class="k">The grounding gate</span> grades the <em>explanation</em>: every conclusion must match the code-decided verdict, no sentence may contain a value absent from the evidence, and no note may contradict its own headline. Both exit non-zero, so CI blocks a provider that is not safe to ship.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">06</span> The nine agents</h2>
+      <p class="lede">Registered in code, not configured at runtime: each may invoke only capabilities matching a prefix it owns.</p>
+      <table style="margin-top:2.2mm">
+        <tr><th style="width:20mm">Agent</th><th style="width:44mm">Department</th><th>Owns</th><th style="width:40mm">Capability prefixes</th></tr>
+        <tr><td class="key">ONYX</td><td>Mission Control</td><td>Accepts the goal, coordinates specialists, synthesises the outcome — the only agent that delegates.</td><td class="tech">agent. workflow. general.</td></tr>
+        <tr><td class="key">HEXA</td><td>Platform &amp; Governance</td><td>Policy, authorization, budgets, approvals, auditability; verifies boundaries.</td><td class="tech">governance. agent. workflow. general.</td></tr>
+        <tr><td class="key">MICA</td><td>Sales &amp; Product Care</td><td>Customers, quotations, orders, delivery commitments, complaints, warranty.</td><td class="tech">sales. customer. agent.</td></tr>
+        <tr><td class="key">SPAR</td><td>Inventory &amp; Procurement</td><td>Stock, shortages, suppliers, procurement options.</td><td class="tech">inventory. purchase. supplier. agent.</td></tr>
+        <tr><td class="key">AXLE</td><td>Engineering &amp; Planning</td><td>BOMs, routings, material plans, capacity, schedules.</td><td class="tech">engineering. planning. agent.</td></tr>
+        <tr><td class="key">KILN</td><td>Production, Quality &amp; Maintenance</td><td>Execution, quality evidence, audit readiness, CAPA, shop-floor risk.</td><td class="tech">production. quality. maintenance. agent.</td></tr>
+        <tr><td class="key">RASP</td><td>Finance &amp; People</td><td>Cash, collections, margin, controls, workforce and payroll.</td><td class="tech">accounts. finance. expenditure. hrm. agent.</td></tr>
+        <tr><td class="key">RELAY</td><td>Managed Services</td><td>Service lifecycle, event triage, incidents, service levels, customer updates.</td><td class="tech">managed-services. agent.</td></tr>
+        <tr><td class="key">ACHILES</td><td>Platform Health</td><td>The platform's own health and boundary — it watches XELOR itself.</td><td class="tech">platform-health.</td></tr>
+      </table>
+    </div>
+
+  </div>
+  <div class="foot"><span>MVP · Request path · AI router · the nine agents</span><span class="pg">2 / 3</span></div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 3 ═══════════════════════════ -->
+<section class="page">
+  <div class="stack">
+
+    <div class="blk" style="margin-top:1mm">
+      <h2><span class="n">07</span> The copilot pipeline</h2>
+      <p class="lede">The copilot is retrieval-first and deterministic: the model is the last step, not the first, and it may rephrase — never compute.</p>
+      <div class="flow">
+        <div class="step"><div class="lbl">01</div><div class="t">Route</div><div class="d">The question is matched to a registered intent with typed parameters.</div></div>
+        <div class="step gate"><div class="lbl">02</div><div class="t">Authorise</div><div class="d">The asker must hold that intent's own permission. The copilot never shows what their access would not.</div></div>
+        <div class="step"><div class="lbl">03</div><div class="t">Retrieve</div><div class="d">A registered SQL query runs under RLS with a row cap — not generated SQL.</div></div>
+        <div class="step"><div class="lbl">04</div><div class="t">Render</div><div class="d">Rows, sources and an as-of timestamp are formatted deterministically.</div></div>
+        <div class="step term"><div class="lbl">05</div><div class="t">Narrate, then check</div><div class="d">Optional prose is verified against the rows and discarded if it drifts.</div></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">08</span> The graph, and the loop that walks it</h2>
+      <p class="lede">A graph is an auditable execution plan, not a prompt. Eight are registered — foundation mission, factory flow and factory intelligence recovery, full command review, controlled action, working-capital review, QMS audit readiness, managed-service assurance. A model may supply a node's structured output; it can never invent a node, an edge, a permission or a side effect.</p>
+      <div class="grid2" style="margin-top:2.4mm">
+        <div class="panel"><h4>Six node kinds</h4><p><span class="k">agent</span> reasons · <span class="k">capability</span> calls one of 20 registered tools · <span class="k">transform</span> joins evidence · <span class="k">branch</span> chooses on a condition · <span class="k">approval</span> stops for a person · <span class="k">verification</span> re-checks the boundary. Every capability is graded <span class="m">read</span>, <span class="m">analyse</span>, <span class="m">simulate</span>, <span class="m">draft</span> or <span class="m">execute</span>.</p></div>
+        <div class="panel"><h4>Validated before it runs</h4><p><span class="m">validateAgentGraph</span> rejects a cycle, a dangling dependency, a branch with no source, or a node asking for more than five attempts. Each node carries its own status — pending, running, waiting_approval, succeeded, failed, skipped, cancelled — so a run is inspectable at any moment.</p></div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel"><h4>A capability is a contract, not a call</h4><p>Each of the 20 declares the permission it needs, the agents allowed to hold it, a Zod parser for its input, whether it has side effects, whether it needs approval, and an execution boundary of <span class="m">domain_service</span> — so it reaches data through the very same module service a person's request would, never through SQL of its own.</p></div>
+        <div class="panel"><h4>An agent runs as the person who launched it</h4><p>Internal tool calls skip the controller guard, so the RBAC check is repeated inside the runtime against the operator's own roles, under their tenant's RLS context. <b>An agent can narrow a user's authority; it can never widen it.</b></p></div>
+      </div>
+      <div class="loop">
+        <div class="row">
+          <div class="node"><div class="t">Ready set</div><div class="d">nodes whose dependencies all succeeded</div></div>
+          <span class="arrow">›</span>
+          <div class="node"><div class="t">Claim</div><div class="d">one executor per node, heartbeat every few seconds</div></div>
+          <span class="arrow">›</span>
+          <div class="node"><div class="t">Execute</div><div class="d">reasoner, or a capability the agent is permitted to call</div></div>
+          <span class="arrow">›</span>
+          <div class="node appr"><div class="t">Approval</div><div class="d">run halts; the person decides</div></div>
+          <span class="arrow">›</span>
+          <div class="node"><div class="t">Verify</div><div class="d">HEXA re-checks the boundary after the fact</div></div>
+          <span class="arrow">›</span>
+          <div class="node end"><div class="t">Synthesise</div><div class="d">ONYX publishes the brief with its evidence</div></div>
+        </div>
+        <div class="back">↺ &nbsp;the loop closes here — the ready set is recomputed after every node, so a resumed approval, a
+          retried failure or a recovered timeout re-enters at the same place rather than restarting the run</div>
+      </div>
+      <div class="grid2" style="margin-top:2.6mm">
+        <div class="panel cool"><h4>Two refusals, two behaviours</h4><p>An operator lacking a permission (<span class="m">AGENT_TOOL_FORBIDDEN</span>) only skips that node — people legitimately see different things. A graph naming a capability its agent may <em>never</em> hold (<span class="m">AGENT_CAPABILITY_FORBIDDEN</span>) fails the run loudly: a static misconfiguration, identical for everyone.</p></div>
+        <div class="panel cool"><h4>Confidence rates evidence, not odds</h4><p>Every decision carries a deterministic score across evidence coverage, freshness, completeness and learning history, with its strengths and gaps named. It never claims a probability that the proposed action will work.</p></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h2><span class="n">09</span> The fulfilment mission arc, and the reach to the machine</h2>
+      <div class="loop" style="margin-top:2.2mm">
+        <div class="row">
+          <div class="node"><div class="t">Intake</div><div class="d">an order, new or existing</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Strategy</div><div class="d">options scored on weighted trade-offs</div></div><span class="arrow">›</span>
+          <div class="node appr"><div class="t">Approval</div><div class="d">approve · try another · stop</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Execution</div><div class="d">writes through ONYX's own endpoints</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Monitoring</div><div class="d">watches the commitment it made</div></div><span class="arrow">›</span>
+          <div class="node"><div class="t">Evidence</div><div class="d">every row it cited, kept</div></div><span class="arrow">›</span>
+          <div class="node end"><div class="t">Closed</div><div class="d">brief published, evidence intact</div></div>
+        </div>
+        <div class="back">↺ &nbsp;<b>replan</b> — "try another" and a missed commitment both route back to strategy with what was learned, which is the loop that makes the mission autonomous rather than a one-shot plan</div>
+      </div>
+      <div class="grid2" style="margin-top:2.8mm">
+        <div class="panel"><h4>Down to the line</h4><p><span class="m">apps/edge</span> runs beside the machines behind adapters for simulator, OPC UA, MQTT, ROS 2 and vendor controllers. It reads state — running, idle, blocked, faulted, protective stop, offline — and executes exactly six capabilities: enqueue a robot job, select an approved program, pause after cycle, dispatch an AMR route, quarantine output, request an inspection.</p></div>
+        <div class="panel"><h4>Bounded by clocks, not by trust</h4><p>Commands are fingerprinted with SHA-256 and single-flighted, so a duplicate key cannot fire twice. A command expires in 15 minutes, telemetry older than 2 minutes is stale, and an approval older than 15 minutes authorises nothing. Safety is asked of the local adapter immediately before execution, never inferred.</p></div>
+      </div>
+      <div class="rule" style="margin-top:3mm">
+        <b>The rule the whole architecture exists to keep: AI explains, it never decides.</b> Nothing reaches a customer,
+        a supplier, a ledger or a machine without a person approving it, and every approval is reconstructable afterwards —
+        the cited rows, the model call, the permission held, and the hash chain proving none of it was edited since.
+      </div>
+    </div>
+
+  </div>
+  <div class="foot"><span>MVP · Copilot · graphs · missions · machines</span><span class="pg">3 / 3</span></div>
+</section>
+
+</body>
+</html>

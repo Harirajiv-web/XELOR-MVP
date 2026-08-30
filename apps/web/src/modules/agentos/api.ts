@@ -5,6 +5,10 @@ import type {
   FactoryOverview,
   MachineCommandRequest,
 } from "@ind-core/platform/factory-connect/contracts";
+import type {
+  BreakdownReplanAnalysis,
+  OeeAnalysis,
+} from "@ind-core/platform";
 
 export type AgentKey =
   "ONYX" | "HEXA" | "MICA" | "SPAR" | "AXLE" | "KILN" | "RASP" | "RELAY" | "ACHILES";
@@ -388,7 +392,150 @@ export interface FactoryCommandEvidenceEnvelope {
   command: (FactoryCommandResult & { capability: string; createdAt: string }) | null;
 }
 
+export interface FactoryIntelligenceView {
+  schemaVersion: "xelor-factory-intelligence.v1";
+  scenario: {
+    key: "3s-workroom-poc";
+    label: string;
+    mockOnly: true;
+  };
+  customer: { code: string; name: string };
+  source: {
+    system: "ONYX Factory Connect";
+    transport: "versioned_http_projection";
+    upstreamSchemaVersion: "factory-operations.v1";
+    evidenceMode: "simulator" | "edge" | "mixed" | "none";
+    mockOnly: true;
+    endpointPath: string;
+  };
+  freshness: {
+    generatedAt: string;
+    freshestObservedAt: string;
+    oldestObservedAt: string;
+    ageSeconds: number;
+    oldestAgeSeconds: number;
+    maxAgeSeconds: number;
+    staleMachineCount: number;
+    status: "fresh" | "mixed" | "stale";
+  };
+  summary: {
+    machineCount: number;
+    constrainedMachineCount: number;
+    assignedJobCount: number;
+    atRiskJobCount: number;
+    proposedAlternateCount: number;
+    recomputedAverageOeePct: number | null;
+  };
+  constraints: readonly {
+    assetCode: string;
+    workCenterCode: string | null;
+    state: string;
+    severity: "critical" | "high";
+    reason: string;
+    evidenceRef: string;
+  }[];
+  oee: readonly {
+    assetCode: string;
+    assetName: string;
+    workCenterCode: string;
+    state: string;
+    shift: { code: string; label: string; source: string };
+    observedAt: string;
+    evidenceStale: boolean;
+    actualCycleSeconds: number | null;
+    upstream: {
+      status: "complete" | "incomplete" | "invalid";
+      availabilityPct: number | null;
+      performancePct: number | null;
+      qualityPct: number | null;
+      oeePct: number | null;
+      warnings: readonly string[];
+    };
+    analysis: OeeAnalysis;
+  }[];
+  assignments: readonly {
+    assignmentId: string;
+    assetCode: string;
+    workCenterCode: string | null;
+    machineState: string;
+    job: {
+      jobId: string;
+      orderRef: string;
+      itemCode: string;
+      operationCode: string;
+      operationName: string;
+      quantity: number;
+      dueAt: string;
+      priority: number;
+    };
+    operator: {
+      employeeCode: string;
+      name: string;
+      skill: string;
+      shiftCode: string;
+      availability: string;
+      basis: string;
+    };
+  }[];
+  atRiskWork: readonly {
+    jobId: string;
+    orderRef: string;
+    itemCode: string;
+    operationCode: string;
+    operationName: string;
+    assetCode: string;
+    state: string;
+    reason: string;
+    operatorCode: string | null;
+    dueAt: string;
+  }[];
+  replan: {
+    suppliedProposals: readonly {
+      proposalId: string;
+      jobId: string;
+      orderRef: string;
+      fromAssetCode: string;
+      fromWorkCenterCode: string | null;
+      toAssetCode: string | null;
+      toWorkCenterCode: string | null;
+      status: "proposed" | "blocked";
+      reason: string;
+      deterministicRule: "explicit_alternate_then_asset_code";
+      requiresHumanApproval: true;
+      autoPublished: false;
+    }[];
+    validation: BreakdownReplanAnalysis;
+    recommendation: {
+      jobId: string;
+      orderRef: string;
+      fromAssetCode: string;
+      toAssetCode: string;
+      fromWorkCenterCode: string;
+      toWorkCenterCode: string;
+      deterministicRule: "explicit_alternate_then_asset_code";
+      reason: string;
+      status: "proposed";
+    } | null;
+    statement: string;
+  };
+  mission: {
+    graphKey: "factory.intelligence-recovery";
+    graphVersion: 1;
+    goal: string;
+    approvalBoundary: string;
+  };
+  boundary: {
+    analysisOnly: true;
+    onyxRemainsScheduleSourceOfTruth: true;
+    scheduleMutationPerformed: false;
+    autoPublished: false;
+    physicalCommandIssued: false;
+    statement: string;
+  };
+}
+
 export const FACTORY_PRODUCTION_VIEW_PATH = "/integration/factory/views/production";
+export const FACTORY_INTELLIGENCE_PATH = "/agent-os/factory-intelligence";
 export const factoryCommandEvidencePath = (approvalRef: string): string =>
   `/integration/factory/commands/by-approval/${encodeURIComponent(approvalRef)}`;
 
@@ -560,6 +707,12 @@ export const agentOsApi = {
   },
   factoryOverview: async (): Promise<FactoryProductionView> =>
     api.get<FactoryProductionView>(FACTORY_PRODUCTION_VIEW_PATH),
+  factoryIntelligence: async (): Promise<FactoryIntelligenceView> =>
+    (
+      await api.get<DataEnvelope<FactoryIntelligenceView>>(
+        FACTORY_INTELLIGENCE_PATH,
+      )
+    ).data,
   submitFactoryCommand: async (
     request: MachineCommandRequest,
   ): Promise<FactoryCommandResult> =>

@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0027_seed_maintenance — the Trishul asset register, the rate book, the PM plan.
+-- 0027_seed_maintenance — the 3S asset register, the rate book, the PM plan.
 --
 -- Everything here is CONFIGURATION or MASTER DATA. Not one transaction is seeded: the
 -- requests, work orders, downtime intervals and PM occurrences of §20.4-§20.6 are created
@@ -12,7 +12,7 @@
 -- the failure taxonomy. Both live as effective-dated rows, never as constants in code.
 -- =============================================================================
 
--- Trishul tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
+-- 3S tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
 -- system actor    0192a8c0-0000-7000-8000-0000000000ff
 
 -- ---------------------------------------------------------------------------
@@ -28,9 +28,9 @@ INSERT INTO employee (id, tenant_id, created_by, updated_by, emp_code, first_nam
                       employment_type, fixed_term_end_date, date_of_joining, status,
                       pt_state, pt_municipality, epf_ceiling_policy, location_ref,
                       department, designation, cost_centre, default_shift_id, pii_notice_version) VALUES
- ('0192a8c0-0027-7000-8000-000000000211','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','TPC-0011','Balaji','Gaikwad','male','permanent',NULL,DATE '2018-11-05','active','MH',NULL,'capped_at_15000','0192a8c0-0002-7000-8000-000000000001','Maintenance','Maintenance Technician (Fitter)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0'),
- ('0192a8c0-0027-7000-8000-000000000212','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','TPC-0012','Nitin','Jadhav','male','permanent',NULL,DATE '2019-03-18','active','MH',NULL,'capped_at_15000','0192a8c0-0002-7000-8000-000000000001','Maintenance','Maintenance Technician (Electrician)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0'),
- ('0192a8c0-0027-7000-8000-000000000213','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','TPC-0013','Sundar','Raman','male','permanent',NULL,DATE '2020-07-20','active','TN','Coimbatore','capped_at_15000','0192a8c0-0002-7000-8000-000000000002','Maintenance','Maintenance Technician (Fitter)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0')
+ ('0192a8c0-0027-7000-8000-000000000211','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','3S-0011','Balaji','Gaikwad','male','permanent',NULL,DATE '2018-11-05','active','MH',NULL,'capped_at_15000','0192a8c0-0002-7000-8000-000000000001','Maintenance','Maintenance Technician (Fitter)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0'),
+ ('0192a8c0-0027-7000-8000-000000000212','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','3S-0012','Nitin','Jadhav','male','permanent',NULL,DATE '2019-03-18','active','MH',NULL,'capped_at_15000','0192a8c0-0002-7000-8000-000000000001','Maintenance','Maintenance Technician (Electrician)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0'),
+ ('0192a8c0-0027-7000-8000-000000000213','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','3S-0013','Sundar','Raman','male','permanent',NULL,DATE '2020-07-20','active','TN','Coimbatore','capped_at_15000','0192a8c0-0002-7000-8000-000000000002','Maintenance','Maintenance Technician (Fitter)','CC-MNT','0192a8c0-0025-7000-8000-000000000100','v1.0')
 ON CONFLICT (id) DO NOTHING;
 
 -- The maintenance-side profile: trade, grade, plant, competent-person flag. No name, no
@@ -39,7 +39,7 @@ INSERT INTO maintenance_technician (id, tenant_id, created_by, updated_by, emplo
  ('0192a8c0-0027-7000-8000-000000000301','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0027-7000-8000-000000000211','fitter','T2','0192a8c0-0002-7000-8000-000000000001',false,NULL),
  ('0192a8c0-0027-7000-8000-000000000302','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0027-7000-8000-000000000212','electrician','T2','0192a8c0-0002-7000-8000-000000000001',false,NULL),
  ('0192a8c0-0027-7000-8000-000000000303','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0027-7000-8000-000000000213','fitter','T1','0192a8c0-0002-7000-8000-000000000002',false,NULL),
- -- Imran (TPC-0007) is the maintenance manager and the registered competent person for the
+ -- Imran (3S-0007) is the maintenance manager and the registered competent person for the
  -- s.29 twelve-monthly examination of lifting machines, chains, ropes and tackle.
  ('0192a8c0-0027-7000-8000-000000000304','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0025-7000-8000-000000000207','technician','T3','0192a8c0-0002-7000-8000-000000000001',true,'Competent person for Factories Act s.29 examinations; certificate on file')
 ON CONFLICT (id) DO NOTHING;

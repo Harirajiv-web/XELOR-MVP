@@ -35,7 +35,7 @@ import pg from "pg";
  * ---------------------------------------------------------------------------
  * A name check is worth very little — production is one `DATABASE_OWNER_URL` away from being
  * called `indcore` too. This refuses on a property of the CONTENTS instead: the `tenant`
- * table must contain nothing except the two §7 demo tenants (Trishul and Kaveri). One real
+ * table must contain nothing except the two §7 demo tenants (3S and Kaveri). One real
  * customer in that table and the reset stops without touching anything. An empty or
  * not-yet-migrated database passes, because there is nothing there to lose.
  *
@@ -47,7 +47,7 @@ const initSqlPath = join(here, "..", "..", "..", "infra", "postgres", "init", "0
 
 /** DECISIONS-V2 §7. Nothing else may be present for this to be a demo database. */
 const DEMO_TENANTS = new Set([
-  "0192a8c0-0000-7000-8000-000000000001", // Trishul Precision Components Pvt Ltd
+  "0192a8c0-0000-7000-8000-000000000001", // 3S Precision Parts Pvt Ltd
   "0192a8c0-0000-7000-8000-000000000002", // Kaveri ElectroFab Industries
 ]);
 

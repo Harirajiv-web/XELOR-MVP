@@ -6,7 +6,12 @@ import { useAccess } from "@spine/access/permissions";
 import { Forbidden, Loading, NotLicensed } from "@spine/states";
 import { ScreenNote } from "@spine/shell/screen-note";
 import { findModule } from "@modules/registry";
-import type { ScreenProps } from "@spine/registry/manifest";
+import {
+  canOpenNavEntry,
+  manifestPermissions,
+  navEntryPermissions,
+  type ScreenProps,
+} from "@spine/registry/manifest";
 
 /**
  * ONE ROUTE FOR EVERY MODULE SCREEN.
@@ -44,7 +49,7 @@ export default function ModuleScreenRoute({
 
   const entry = manifest?.nav.find((candidate) => candidate.path === screenKey);
   const firstPermittedEntry = manifest?.nav.find(
-    (candidate) => !candidate.hidden && can(candidate.permission),
+    (candidate) => !candidate.hidden && canOpenNavEntry(candidate, can),
   );
 
   const [Screen, setScreen] = useState<ComponentType<ScreenProps> | null>(null);
@@ -87,11 +92,16 @@ export default function ModuleScreenRoute({
     // can actually open. The redirect runs in an effect so navigation never mutates React
     // state during render.
     if (firstPermittedEntry) return <Loading />;
-    return <Forbidden what={manifest.name} needs={manifest.nav.map((n) => n.permission)} />;
+    return <Forbidden what={manifest.name} needs={manifestPermissions(manifest)} />;
   }
 
-  if (!can(entry.permission)) {
-    return <Forbidden what={`${manifest.name} — ${entry.label}`} needs={entry.permission} />;
+  if (!canOpenNavEntry(entry, can)) {
+    return (
+      <Forbidden
+        what={`${manifest.name} — ${entry.label}`}
+        needs={navEntryPermissions(entry)}
+      />
+    );
   }
 
   if (loadError) return <Forbidden what={entry.label} needs={[]} />;

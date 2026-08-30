@@ -3,6 +3,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
 
+const APPLICATION_DATA_CHANGED_EVENT = "xelor:application-data-changed";
+
+/**
+ * Tell the visible module that a governed mission write has landed.
+ *
+ * Mission steps run from the shell, outside the screen that owns the table. A route change
+ * naturally mounts a fresh screen, but a retry writes back into the route already open; in
+ * that case the list would otherwise keep showing its pre-retry snapshot while the Copilot
+ * names a document that really exists. Both query hooks listen to this one narrow event so
+ * the active screen re-reads its own API instead of the shell reaching into component state.
+ */
+export function announceApplicationDataChanged(): void {
+  window.dispatchEvent(new CustomEvent(APPLICATION_DATA_CHANGED_EVENT));
+}
+
 /**
  * Fetching, without a data-fetching library.
  *
@@ -35,6 +50,12 @@ export function useQuery<T>(
   const [nonce, setNonce] = useState(0);
 
   const queryKey = JSON.stringify(opts?.query ?? {});
+
+  useEffect(() => {
+    const reload = (): void => setNonce((n) => n + 1);
+    window.addEventListener(APPLICATION_DATA_CHANGED_EVENT, reload);
+    return () => window.removeEventListener(APPLICATION_DATA_CHANGED_EVENT, reload);
+  }, []);
 
   useEffect(() => {
     if (path === null) {
@@ -121,6 +142,12 @@ export function useCursorList<T>(
 
   const queryKey = JSON.stringify(opts?.query ?? {});
   const limit = opts?.limit ?? 50;
+
+  useEffect(() => {
+    const reload = (): void => setNonce((n) => n + 1);
+    window.addEventListener(APPLICATION_DATA_CHANGED_EVENT, reload);
+    return () => window.removeEventListener(APPLICATION_DATA_CHANGED_EVENT, reload);
+  }, []);
 
   const fetchPage = useCallback(
     async (afterCursor: string | null, replace: boolean) => {

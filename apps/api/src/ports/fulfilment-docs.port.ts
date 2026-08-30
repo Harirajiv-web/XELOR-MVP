@@ -145,3 +145,95 @@ export interface ProductionOrderWriter {
     idempotencyKey: string,
   ): Promise<CreatedProductionOrder>;
 }
+
+// ---------------------------------------------------------------------------
+// The customer's order — SALES
+// ---------------------------------------------------------------------------
+
+/**
+ * TAKING AN ORDER, so a mission has something to be about.
+ *
+ * The two ports above are the documents a mission PRODUCES. This is the one it starts from,
+ * and it exists because the demo used to begin by picking a pre-seeded order off a list —
+ * which answers "can it run?" but never "is this real, or is it a recording?". A presenter
+ * who types a customer's PO number in front of the room and watches ONYX pick it up has
+ * answered the second question in a way no seeded row can.
+ *
+ * Named for the ACT, like its neighbours: the mission does not create sales orders. It asks
+ * SALES to take an order, and SALES decides what that means — the numbering, the credit
+ * gate, the tax treatment, the confirmation. Given a direct `SalesService` handle the
+ * mission would eventually reach past this into amendments and dispatch, and every rule
+ * Sales enforces would have a second, unpoliced entrance.
+ *
+ * OPENS ITS OWN TRANSACTION — never call it inside `withTenant`. Same reasoning as the two
+ * ports above: a sales order is SALES' document, and it commits when SALES commits it.
+ */
+export const CUSTOMER_ORDER_WRITER = Symbol("CustomerOrderWriter");
+
+export interface FulfilmentCustomerOrderLineInput {
+  itemId: string;
+  qty: number;
+  /** What the customer was promised. This is what the whole plan is scheduled backwards from. */
+  requestedDeliveryDate?: string;
+  /**
+   * Commercial terms, OPTIONAL — and when omitted, SALES derives them from the last
+   * confirmed line for this item rather than defaulting.
+   *
+   * There is no rate card and no HSN master in the MVP: every existing order carries its
+   * price and its tax treatment on the line. So a caller that omits these is saying "the
+   * usual terms for this part", and SALES answers with the terms this part was actually
+   * last sold on. If it has never been sold, SALES REFUSES rather than inventing a number —
+   * a GST rate guessed in code is exactly the constant the platform rules forbid, and an
+   * invented selling price is worse than an error message.
+   */
+  rate?: number;
+  hsn?: string;
+  gstRatePct?: number;
+}
+
+export interface CreateFulfilmentCustomerOrderInput {
+  customerId: string;
+  /** The customer's own PO number — the piece of paper the commitment actually arrives on. */
+  custPoNo: string;
+  lines: FulfilmentCustomerOrderLineInput[];
+}
+
+export interface CreatedCustomerOrder {
+  id: string;
+  soNo: string;
+  /**
+   * Where the order stands after SALES has finished with it.
+   *
+   * Carried back because it is not always `confirmed`: the credit gate is real, and an
+   * order that trips it stays on hold. A mission cannot start on one, and the honest thing
+   * is to say which gate stopped it rather than to report a mission that does not exist.
+   */
+  status: string;
+  /** What SALES actually charged, per line, after deriving anything the caller omitted. */
+  lines: Array<{ itemId: string; qty: number; rate: number; hsn: string; gstRatePct: number }>;
+  grandTotal: number;
+}
+
+export interface CustomerOrderWriter {
+  /**
+   * Take an order and confirm it, in that order, through SALES' own rules.
+   *
+   * Confirmation is included rather than left to the caller because a draft is not a
+   * commitment: `MissionService.start` refuses a draft outright, so a port that returned one
+   * would only ever be half a step. If the credit gate holds the order, the returned status
+   * says so and no mission is opened.
+   */
+  createConfirmedOrder(
+    input: CreateFulfilmentCustomerOrderInput,
+    idempotencyKey: string,
+  ): Promise<CreatedCustomerOrder>;
+
+  /** Customers this tenant can raise an order against, for the form that calls the above. */
+  listOrderableCustomers(): Promise<Array<{ id: string; code: string; name: string }>>;
+
+  /** Items that can be sold, with the terms they were last sold on. Null = never sold. */
+  listSellableItems(): Promise<Array<{
+    id: string; itemCode: string; name: string; uom: string;
+    lastRate: number | null; lastHsn: string | null; lastGstRatePct: number | null;
+  }>>;
+}

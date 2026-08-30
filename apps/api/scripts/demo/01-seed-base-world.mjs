@@ -44,7 +44,7 @@ const created = { vendors: [], orders: [], pos: [], grns: [], mos: [], dispatche
 
 /* ------------------------------------------------------------------- the world */
 
-async function seedTrishul(call, stores) {
+async function seed3S(call, stores) {
   console.log("\nTRISHUL PRECISION COMPONENTS — Pune-Chakan, FY 2026-27, demo today 20-Jul-2026");
 
   // ---- reference data the thread hangs off ----------------------------------
@@ -796,8 +796,8 @@ async function main() {
   const kaveri = makeClient(await token("kaveri-admin"));
   console.log("  tokens: venkat@trishul (admin), poongodi@trishul (stores in-charge), kaveri-admin@kaveri (admin)");
 
-  await seedTrishul(trishul, storesInCharge);
-  // The platform console runs LAST for Trishul, so its chain verification covers every
+  await seed3S(trishul, storesInCharge);
+  // The platform console runs LAST for 3S, so its chain verification covers every
   // document the steps above created rather than attesting to a half-built world.
   await seedPlatform(trishul);
   await seedKaveri(kaveri);

@@ -8,70 +8,70 @@
       "source": "docs/reports/agent-guides/master.html",
       "sourceSha256": "95947a178b8f08bff27124e0f689a7da41c0c17055ab4e9b2bf1fd9a80828d20",
       "pdf": "docs/05-deliverables/agent-guides/00_XELOR_AGENT_SYSTEM_MASTER_GUIDE.pdf",
-      "pdfSha256": "14e746a2c8bc6ae6b358363a8e35ab5cbd5b04b068f23a15a12781aa4fc2bbb5"
+      "pdfSha256": "dedd615ffa689428b74bc913879fb000cbc86e44cab8cfc9f17c42108fc7b5fa"
     },
     {
       "id": "onyx",
       "source": "docs/reports/agent-guides/onyx.html",
       "sourceSha256": "13b1fdaafb0d51dafda4bf5ca90359094b100d71e1680614839bc94023af9f5d",
       "pdf": "docs/05-deliverables/agent-guides/01_ONYX_AGENT_GUIDE.pdf",
-      "pdfSha256": "146106d3fe4edc03ec0d51d0e36dece7be382c683b100fb8b38da6737089f98f"
+      "pdfSha256": "7a4b700fab06912e4666c2446a2e5d8aecd4cba56f27b7d1c84693a44865aa23"
     },
     {
       "id": "hexa",
       "source": "docs/reports/agent-guides/hexa.html",
       "sourceSha256": "9c1b924ec6580e770b59c5f369dd022b78fc4334a9d32c0db01a266a02db3f1e",
       "pdf": "docs/05-deliverables/agent-guides/02_HEXA_AGENT_GUIDE.pdf",
-      "pdfSha256": "b127468ed70750ee97b60059b85b6a0db46f106c20499763af090d4488794442"
+      "pdfSha256": "bec91322ebe5f2c4a3e514837c6947756a90ded5e18759d3f37dc5921f921cbd"
     },
     {
       "id": "mica",
       "source": "docs/reports/agent-guides/mica.html",
       "sourceSha256": "7ddc2ab9e5d0616770fdc042134de7330e17249c7ae4d96bff217cef31f7a228",
       "pdf": "docs/05-deliverables/agent-guides/03_MICA_AGENT_GUIDE.pdf",
-      "pdfSha256": "3ef52529dd013553ff6456274001d128db03338fc8824130fa070736b337bdc2"
+      "pdfSha256": "704e2e2dd04d6f51bb2095527c132fb01ebe7f81f923206840b6eee0f841bf33"
     },
     {
       "id": "spar",
       "source": "docs/reports/agent-guides/spar.html",
       "sourceSha256": "f062ddc8a17883093b1d8cfcde15bfaf8c7b98ec891fb8aa40e79e09d00b95b5",
       "pdf": "docs/05-deliverables/agent-guides/04_SPAR_AGENT_GUIDE.pdf",
-      "pdfSha256": "d1a7b8fe8102c21804689385d71c0121922f83257fb24e1251658d0892338ce8"
+      "pdfSha256": "685c584d79f75c85e3273792139fed1bee1e5df71b71a030548ea1f9cd3a9d70"
     },
     {
       "id": "axle",
       "source": "docs/reports/agent-guides/axle.html",
       "sourceSha256": "1f353883c46c8fd71a0381c3893c39a8d2d8d54e47ade7154f05496a87dfa981",
       "pdf": "docs/05-deliverables/agent-guides/05_AXLE_AGENT_GUIDE.pdf",
-      "pdfSha256": "37fb6035cc0907d8d8bf6aa19aa3cb95bcc8a9f88b2ff0a3d73db2f664b54960"
+      "pdfSha256": "7daf345d2894f8a9c57db73876b58d6b5b5be8d6639edd145e46e9721fad2c13"
     },
     {
       "id": "kiln",
       "source": "docs/reports/agent-guides/kiln.html",
       "sourceSha256": "55198836e5c9bbe88e2075284652d4fe4e975c66434142142e5bb5f768456409",
       "pdf": "docs/05-deliverables/agent-guides/06_KILN_AGENT_GUIDE.pdf",
-      "pdfSha256": "4c60159f9678f7f8cc8cd314164d0548dacc8a2f3f2531fe49d4615684559016"
+      "pdfSha256": "60375d3f52406d6aeee7b7ec14ab011f0252c58da6204e6f60e06e511d4e97fc"
     },
     {
       "id": "rasp",
       "source": "docs/reports/agent-guides/rasp.html",
       "sourceSha256": "aa0e71e390be7a09116b97ebaa8024f62964bd6d04a126e3b9ca97de3da194e2",
       "pdf": "docs/05-deliverables/agent-guides/07_RASP_AGENT_GUIDE.pdf",
-      "pdfSha256": "da38b268524d2c4e0a5a13c6d148a5bc92eb19372c9eaa673d4be1b61ea9fd0a"
+      "pdfSha256": "78cba719f8e3f1d89bfd3e4ef5c22d76e021fd282fb5b7dbd51202cd286f4f11"
     },
     {
       "id": "relay",
       "source": "docs/reports/agent-guides/relay.html",
       "sourceSha256": "de1abbb3a2e67548921c15374509aa68382db2e0e7a1b8027f24f1d9dba8484a",
       "pdf": "docs/05-deliverables/agent-guides/08_RELAY_AGENT_GUIDE.pdf",
-      "pdfSha256": "07233ea32fe225933108bdfebacbb2964950f073a2d1939a87ca0bcd6aa7cf1c"
+      "pdfSha256": "2016e1ad4ef05eb682f6ef34d85a5e575d0f68fd27add89d4b06761b19f6358a"
     },
     {
       "id": "achiles",
       "source": "docs/reports/agent-guides/achiles.html",
       "sourceSha256": "8b5d74c223662bbe9ea7cec58fa83fdf73bf62443293eeecac8d7e37a4aa29e4",
       "pdf": "docs/05-deliverables/agent-guides/09_ACHILES_AGENT_GUIDE.pdf",
-      "pdfSha256": "1c7b5f2bd8521126b26e7ad05c4ca2220803d9df864ab5307e5f93175b53bfb3"
+      "pdfSha256": "b3c27cefa1b42f25e9d671ada3933f86b6908f3aaf3d2c9e7115ec97307d5533"
     }
   ]
 }

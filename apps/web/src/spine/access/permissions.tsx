@@ -9,7 +9,11 @@ import { INSTALLED_MODULES } from "@modules/registry";
 const PUBLIC_DEMO_PERMISSIONS = [
   ...new Set(
     INSTALLED_MODULES.flatMap((module) => [
-      ...module.nav.map((entry) => entry.permission),
+      ...module.nav.flatMap((entry) =>
+        Array.isArray(entry.permission)
+          ? [...entry.permission]
+          : [entry.permission as string],
+      ),
       ...(module.signals ?? []).map((signal) => signal.permission),
       ...(module.alerts ?? []).map((alert) => alert.permission),
     ]),
@@ -53,7 +57,7 @@ const PUBLIC_DEMO_IDENTITY: Identity = {
     enforcement: "presentation_only",
     expired: false,
   },
-  organisation: { name: "Trishul Precision Components" },
+  organisation: { name: "3S Precision Parts" },
 };
 
 /**

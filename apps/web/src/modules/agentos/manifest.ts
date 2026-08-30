@@ -24,6 +24,14 @@ export const agentosManifest: ModuleManifest = {
         "See current cross-company risks, the evidence behind them, clear recovery choices and the human decision required next.",
     },
     {
+      label: "Factory intelligence",
+      path: "factory-intelligence",
+      permission: ["agentos.run.read", "production.factory-connect.read"],
+      icon: "Gauge",
+      description:
+        "Explain the configured 3S factory mock: recomputed OEE, operator and job assignments, constrained work and one approval-gated alternate-work-centre review request to ONYX Planning.",
+    },
+    {
       label: "Approvals",
       path: "approvals",
       permission: "agentos.approval.decide",
@@ -42,6 +50,7 @@ export const agentosManifest: ModuleManifest = {
   ],
   screens: {
     commander: () => import("./screens/commander"),
+    "factory-intelligence": () => import("./screens/factory-intelligence"),
     approvals: () => import("./screens/approvals"),
     command: () => import("./screens/command"),
   },

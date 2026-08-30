@@ -19,7 +19,7 @@ import {
 test("the baseline reads the words a shop-floor engineer actually types", () => {
   const r = keywordRuleClassifier({
     subject: "Oil leak at pump-shaft seal",
-    description: "Seal weeping on TPC-SFT-001 batch B-2627-114, line is down since morning",
+    description: "Seal weeping on 3S-SFT-001 batch B-2627-114, line is down since morning",
     hasSerial: true,
   });
   assert.equal(r.suggestedCategory, "product_defect");
@@ -31,7 +31,7 @@ test("the baseline reads the words a shop-floor engineer actually types", () => 
 
 test("a spares request is not a defect, even when it names a part", () => {
   const r = keywordRuleClassifier({
-    subject: "Spare needed: bearing housing TPC-BRG-HSG-004 x6",
+    subject: "Spare needed: bearing housing 3S-BRG-HSG-004 x6",
     description: "Please send 6 nos bearing housing for our Ahmedabad plant",
   });
   assert.equal(r.suggestedCategory, "spares_request");
@@ -91,7 +91,7 @@ test("the baseline's macro-F1 on the labelled set is a published, reproducible n
     { subject: "Crack found on flange", description: "part rejected at GRN", expected: "product_defect" },
     { subject: "Excess vibration on the drive", description: "abnormal noise since Monday", expected: "product_defect" },
     { subject: "Spare needed: bearing housing", description: "please send 6 nos", expected: "spares_request" },
-    { subject: "Order spare part TPC-FLG-010", description: "quantity 12 nos required", expected: "spares_request" },
+    { subject: "Order spare part 3S-FLG-010", description: "quantity 12 nos required", expected: "spares_request" },
     { subject: "Warranty check for serial SR-SFT-26-0452", description: "is this shaft still covered", expected: "warranty_query" },
     { subject: "Is this covered under AMC", description: "coverage query for our fixtures", expected: "warranty_query" },
     { subject: "Duplicate invoice needed", description: "please resend the GST invoice", expected: "billing_query" },

@@ -3,7 +3,7 @@
 --
 -- PLANNING §20 was written against its own demo universe (Kaveri Pumps, Coimbatore, demo
 -- "today" = Mon 13-Jul-2026 = W29). DECISIONS-V2 §7 is binding and wins on conflict: the
--- primary tenant is Trishul Precision Components and demo "today" is Mon 20-Jul-2026,
+-- primary tenant is 3S Precision Parts and demo "today" is Mon 20-Jul-2026,
 -- which is ISO week 2026-W30.
 --
 -- The reconciliation is a pure one-week SHIFT. Every quantity in the blueprint's
@@ -30,7 +30,7 @@
 -- ---------------------------------------------------------------------------
 
 INSERT INTO item (id, tenant_id, created_by, updated_by, item_code, name, description, item_type, uom, hsn_code, item_group, is_purchasable, is_manufacturable, is_sellable, standard_cost) VALUES
- ('0192a8c0-0012-7000-8000-000000000007','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CST-IMP6','Impeller Casting Blank 6in','Rough SS casting for CMP-IMP6; 5% loss at machining','raw_material','nos','7325','Castings',true,false,false,780.00),
+ ('0192a8c0-0012-7000-8000-000000000007','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CST-IMP6','Disc Casting Blank 6in','Rough SS casting for CMP-IMP6; 5% loss at machining','raw_material','nos','7325','Castings',true,false,false,780.00),
  ('0192a8c0-0012-7000-8000-000000000008','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CST-CAS50','Casing Casting Blank CP-50','Rough CI volute casting for CMP-CAS50; 3% loss at machining','raw_material','nos','7325','Castings',true,false,false,1450.00)
 ON CONFLICT (id) DO NOTHING;
 

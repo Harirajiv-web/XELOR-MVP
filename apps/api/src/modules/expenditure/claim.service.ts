@@ -635,7 +635,7 @@ export class ClaimService {
 
 }
 
-/** Trishul's Pune-Chakan registration — the §7 demo universe's primary GSTIN. In production
+/** 3S's Pune-Chakan registration — the §7 demo universe's primary GSTIN. In production
  *  this is resolved from the cost centre's place of supply, which is why it is one
  *  constant in one place rather than a literal scattered through the ITC calls. */
 export const COMPANY_GSTIN = "27AABCT1234F1Z5";

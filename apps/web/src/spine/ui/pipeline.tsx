@@ -79,7 +79,7 @@ export const LAYER: Record<
     chip: "chip-grey",
     icon: Database,
     means:
-      "A record read straight out of the XELOR ERP — the system of record. Phase 2 did not change it to read it.",
+      "A record read straight out of the ONYX ERP — the system of record. Phase 2 did not change it to read it.",
   },
   phase2: {
     name: "Phase 2 engine",
@@ -90,7 +90,7 @@ export const LAYER: Record<
   },
   human: {
     name: "Person",
-    chip: "chip-gold",
+    chip: "chip-accent",
     icon: UserCheck,
     means: "A person decided this. The decision is recorded against their name.",
   },
@@ -168,16 +168,38 @@ export function SourceChip({
  * standing instruction on this product is LESS on screen — but the one thing a person must
  * never have to hunt for is which of these numbers came from their own factory and which one
  * a machine worked out, so this row earns its height.
+ *
+ * `dense` is what lets it earn LESS of it. On Mission Control the legend used to take a full
+ * row of its own above any content, on a screen whose whole complaint was that the decision
+ * fell off the bottom. Dense drops the trailing sentence and prefixes a two-letter label, so
+ * the same five chips can ride on an existing heading row instead of costing a new one. The
+ * chips themselves are untouched — the distinction survives, only its packaging shrinks.
  */
-export function LayerLegend({ className }: { className?: string }): React.JSX.Element {
+export function LayerLegend({
+  className,
+  dense = false,
+}: {
+  className?: string;
+  dense?: boolean;
+}): React.JSX.Element {
   return (
     <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+      {dense ? (
+        <span
+          className="text-[10px] font-bold uppercase tracking-[0.08em]"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Key
+        </span>
+      ) : null}
       {LEGEND_ORDER.map((l) => (
         <LayerChip key={l} layer={l} />
       ))}
-      <span className="text-[10.5px]" style={{ color: "var(--text-muted)" }}>
-        every line below says which of these it is
-      </span>
+      {dense ? null : (
+        <span className="text-[10.5px]" style={{ color: "var(--text-muted)" }}>
+          every line below says which of these it is
+        </span>
+      )}
     </div>
   );
 }

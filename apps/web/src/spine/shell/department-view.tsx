@@ -77,8 +77,7 @@ function DepartmentRestricted({ code, name }: { code: string; name: string }): R
           Access restricted
         </h1>
         <p className="mt-2 text-[13px] leading-[1.65] text-[var(--text-secondary)]">
-          {code} — {name} is part of this factory, but it is not one of the departments your
-          role covers. Nothing here is hidden from you by accident; your administrator can
+          {name} is part of this factory, but it is not one of the areas your role covers. Nothing here is hidden from you by accident; your administrator can
           extend your access if you need it.
         </p>
         <Link
@@ -86,7 +85,7 @@ function DepartmentRestricted({ code, name }: { code: string; name: string }): R
           className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-[var(--brand)] px-4 py-2 text-[13px] font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)]"
         >
           <Icons.Sparkles className="h-4 w-4" aria-hidden />
-          Back to ONYX
+          Back to the map
         </Link>
       </div>
     </div>
@@ -213,22 +212,29 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
       <Reveal>
         <header className="flex flex-wrap items-start gap-4">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] text-white"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] text-[var(--text-on-accent)]"
             style={{ background: dept.accent }}
           >
             <Icon className="h-6 w-6" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="rounded-[6px] px-2 py-1 text-[11px] font-extrabold tracking-[0.12em] text-white"
-                style={{ background: dept.accent }}
-              >
-                {dept.code}
-              </span>
+            {/* THE JOB LEADS, THE CODENAME FOLLOWS.
+                This block used to put a coloured KILN badge before the words "Factory
+                Operations", which is the wrong way round for everyone who does not work
+                here: a four-letter code is how the engineering team refers to an owner,
+                and a plant supervisor has never heard it. The name they recognise is now
+                the heading, and the code is a quiet tag beside it for our own use. */}
+            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
               <h1 className="text-[19px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
                 {shownDepartmentName}
               </h1>
+              <span
+                className="rounded-[5px] border px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-[0.1em] text-[var(--text-muted)]"
+                style={{ borderColor: "var(--border)" }}
+                title="Our internal name for this area"
+              >
+                {dept.code}
+              </span>
             </div>
             <p className="mt-1.5 max-w-prose text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
               {plainDepartmentSummary(dept.code, dept.owns)}
@@ -279,7 +285,7 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
               ? DEPARTMENTS.filter((d) => d.code !== "ONYX").map(departmentNode)
               : modules.map((m, i) => moduleNode(m, dept, i, modules.length, can))
           }
-          mapTitle={dept.code === "ONYX" ? "Agent map" : `Inside ${dept.code}`}
+          mapTitle={dept.code === "ONYX" ? "How the areas connect" : `Inside ${plainDepartmentName(dept.code, dept.name)}`}
         />
       </Reveal>
 
@@ -327,14 +333,17 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
 function coreOf(dept: Department, moduleCount: number, _screenCount: number): BrainCore {
   return {
     id: dept.code,
-    name: dept.code,
+    // The node a reader clicks, and the heading of the panel it opens, both come from
+    // here. It used to be the four-letter code with the real name demoted to `kicker` —
+    // so the largest words on the screen were the ones only we understand.
+    name: plainDepartmentName(dept.code, dept.name),
     letter: dept.letter,
     role: dept.component ? "the brain" : "the department",
     sub: `${moduleCount} modules`,
     accent: dept.accent,
     angle: 0,
     icon: dept.icon,
-    kicker: plainDepartmentName(dept.code, dept.name),
+    kicker: dept.code,
     tagline: plainDepartmentSummary(dept.code, dept.tagline),
     blurb: dept.blurb,
     capabilities: dept.capabilities,
@@ -413,7 +422,9 @@ function moduleNode(
     // start at twelve, which is where a reader expects the first item to be.
     angle: (total === 2 ? 0 : -90) + (index / Math.max(1, total)) * 360,
     icon: m.icon,
-    kicker: `${dept.code} · ${dept.name}`,
+    // Was "KILN · Manufacturing Operations". The department a module belongs to is
+    // context, not identity — the module's own name is already the card's heading.
+    kicker: plainDepartmentName(dept.code, dept.name),
     tagline: m.summary,
     blurb:
       entries.length > 0
@@ -465,7 +476,7 @@ function ModuleCard({
     <article className="card flex h-full flex-col overflow-hidden">
       <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
         <span
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] text-white"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] text-[var(--text-on-accent)]"
           style={{ background: accent }}
         >
           <Icon className="h-3.5 w-3.5" aria-hidden />

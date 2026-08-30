@@ -40,26 +40,18 @@ test("department Factory views expose only their allowlisted evidence fields", (
 
 test("each department Factory route requires its own scoped permission", () => {
   const prototype = IntegrationController.prototype;
-  assert.equal(
-    Reflect.getMetadata(PERMISSION_KEY, prototype.integrationFactoryView),
-    "integration.factory-connect.read",
-  );
-  assert.equal(
-    Reflect.getMetadata(PERMISSION_KEY, prototype.productionFactoryView),
-    "production.factory-connect.read",
-  );
-  assert.equal(
-    Reflect.getMetadata(PERMISSION_KEY, prototype.planningFactoryView),
-    "planning.factory-flow.read",
-  );
-  assert.equal(
-    Reflect.getMetadata(PERMISSION_KEY, prototype.factoryOverview),
-    "factory.connect.read",
-  );
-  assert.equal(
-    Reflect.getMetadata(PERMISSION_KEY, prototype.factoryCommandEvidence),
-    "factory.command.execute",
-  );
+  // `RequirePermission` is variadic — a route may declare more than one, ALL required — so
+  // the metadata is a LIST. It was a bare string until a route needed two permissions; the
+  // shape changed there rather than here, and this asserts the shape as well as the values
+  // so a route quietly reverting to one-only is a failure and not a silent widening.
+  const required = (handler: unknown): unknown =>
+    Reflect.getMetadata(PERMISSION_KEY, handler as object);
+
+  assert.deepEqual(required(prototype.integrationFactoryView), ["integration.factory-connect.read"]);
+  assert.deepEqual(required(prototype.productionFactoryView), ["production.factory-connect.read"]);
+  assert.deepEqual(required(prototype.planningFactoryView), ["planning.factory-flow.read"]);
+  assert.deepEqual(required(prototype.factoryOverview), ["factory.connect.read"]);
+  assert.deepEqual(required(prototype.factoryCommandEvidence), ["factory.command.execute"]);
 });
 
 test("command reload evidence omits the approval identifier", () => {

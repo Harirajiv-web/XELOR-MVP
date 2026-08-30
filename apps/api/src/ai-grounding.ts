@@ -41,8 +41,8 @@ const CIN_A = "U29120TN2004PTC054321";
 const SCENARIOS: Scenario[] = [
   {
     id: "same-gstin-name-variant",
-    candidate: { legalName: "Trishul Precision Components", gstin: G_MH },
-    existing: [{ id: "e1", legalName: "Trishul Precision Components Pvt. Ltd.", gstin: G_MH }],
+    candidate: { legalName: "3S Precision Parts", gstin: G_MH },
+    existing: [{ id: "e1", legalName: "3S Precision Parts Pvt. Ltd.", gstin: G_MH }],
     expect: "same",
     why: "identical GSTIN — definitive",
   },

@@ -227,6 +227,8 @@ export function StagePanel({
     <section
       className={cn("card overflow-hidden", className)}
       aria-label="What the agent is doing on this screen"
+      data-xelor-agent-working-area="true"
+      data-testid="mission-working-area"
     >
       {/* The header carries the four things somebody glancing at it needs: that this is the
           agent, which act it is in, how far through, and whether it is stuck. */}
@@ -236,11 +238,19 @@ export function StagePanel({
           style={{ background: accent }}
           aria-hidden
         >
-          <Bot className="h-2.5 w-2.5 text-white" />
+          <Bot className="h-2.5 w-2.5 text-[var(--text-on-accent)]" />
         </span>
         <span className="text-[12px] font-semibold text-[var(--text-primary)]">{step.title}</span>
         <span className="text-[11px] text-[var(--text-muted)]">
-          {stepCounter(step.seq, arcTotal(metaTotal, mission.steps))} · {mission.soNo}
+          {/* The denominator only when the SERVER stated one. `arcTotal` widens a served
+              total to cover a replanned mission; handed none it falls back to the highest
+              step seen, which prints "Step 8 of 8" on a thirteen-step arc. An unknown total
+              is said plainly — "Step 8" — rather than filled in with a plausible lie. */}
+          {stepCounter(
+            step.seq,
+            metaTotal === null ? null : arcTotal(metaTotal, mission.steps),
+          )}{" "}
+          · {mission.soNo}
         </span>
         <span className="flex-1" />
         <span

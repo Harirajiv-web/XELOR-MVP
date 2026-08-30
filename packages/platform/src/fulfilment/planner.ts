@@ -422,9 +422,11 @@ export function applyAutonomy(candidates: Candidate[], ev: PlanningEvidence): Ca
     // Lowest authority: propose, never commit. Checked FIRST and independently of the
     // premium, because the cheapest plan's premium is zero by definition and `0 > 0` would
     // wave it straight through — which is exactly what happened before this existed.
-    if (ev.requireApprovalForAnyCommitment && c.sourcing.length > 0) {
+    if (ev.requireApprovalForAnyCommitment) {
       reasons.push(
-        `this mission is set to suggest only, and the plan commits ₹${fmtInr(c.totalCost)} of purchase`,
+        c.sourcing.length > 0
+          ? `this mission is set to suggest only, and the plan commits ₹${fmtInr(c.totalCost)} of purchase`
+          : "this mission is set to suggest only, and reserving stock for the order is an operational commitment",
       );
     }
 

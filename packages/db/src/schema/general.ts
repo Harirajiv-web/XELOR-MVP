@@ -10,7 +10,7 @@ import { tenantScopedColumns } from "./columns.js";
  * would be a bare uuid with NO FK.
  */
 
-// A legal/costing entity within a tenant. Trishul is one tenant with one company
+// A legal/costing entity within a tenant. 3S is one tenant with one company
 // carrying TWO GST registrations (Maharashtra + Tamil Nadu) — the multi-GSTIN case
 // that is a documented competitor dealbreaker (§7).
 export const company = pgTable(

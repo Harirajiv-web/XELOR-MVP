@@ -133,7 +133,7 @@ export default function LeaveScreen(_props: ScreenProps): React.JSX.Element {
               value={employeeId}
               onChange={(e) => setChosen(e.target.value)}
               aria-label="Employee"
-              className="h-9 max-w-[16rem] rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text-primary)]"
+              className="h-9 max-w-[16rem] rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[13px] text-[var(--text-primary)]"
             >
               {list.map((e) => (
                 <option key={e.id} value={e.id}>

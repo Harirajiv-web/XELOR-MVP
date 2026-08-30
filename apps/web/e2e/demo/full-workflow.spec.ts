@@ -8,7 +8,7 @@ interface RouteResult {
 }
 
 const LEGACY_BRAND = /\bIND[- ]?(?:CORE|AI|ERP|Copilot)\b/i;
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3101";
 
 async function signInThroughKeycloak(page: Page): Promise<void> {
   await page.goto("/");
@@ -150,7 +150,7 @@ test("an administrator can traverse the complete XELOR demo and use ONYX", async
   await page.goto("/inventory/stock");
   await page.getByRole("button", { name: "Show the copilot" }).click();
   await expect(page.getByText("inventory workspace", { exact: false })).toBeVisible();
-  await page.getByRole("textbox", { name: "Ask ONYX Copilot" }).fill("How much stock do we have?");
+  await page.getByRole("textbox", { name: "Ask the copilot" }).fill("How much stock do we have?");
   await page.locator("form").getByRole("button", { name: "Ask", exact: true }).click();
   await page.getByText("How this answer was found", { exact: true }).click();
   await expect(page.getByText("Evidence trail", { exact: true })).toBeVisible();

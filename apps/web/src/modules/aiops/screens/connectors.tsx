@@ -89,7 +89,7 @@ const MODULE_LOOK: Readonly<Record<string, { name: string; icon: string }>> = {
   csp: { name: "Customer service", icon: "Headset" },
   hrm: { name: "People", icon: "Users" },
   expenditure: { name: "Expenditure", icon: "Receipt" },
-  copilot: { name: "ONYX Copilot", icon: "MessageSquare" },
+  copilot: { name: "Copilot", icon: "MessageSquare" },
 };
 
 /**
@@ -644,7 +644,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
         <section className="card overflow-hidden">
           <div className="panel-h">
             <span className="flex items-center gap-2">
-              <Icons.GaugeCircle className="h-4 w-4 text-[var(--gold)]" aria-hidden />
+              <Icons.GaugeCircle className="h-4 w-4 text-[var(--accent)]" aria-hidden />
               Monitoring still to add
             </span>
             <span className="panel-h-sub">
@@ -719,9 +719,9 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
 const DEPARTMENT_ACCENT: Readonly<Record<string, string>> = {
   ONYX: "var(--violet)",
   HEXA: "var(--brand)",
-  AXLE: "#0f766e",
-  SPAR: "var(--gold)",
-  MICA: "#1d5fd1",
+  AXLE: "var(--dept-axle)",
+  SPAR: "var(--accent)",
+  MICA: "var(--dept-mica)",
   KILN: "var(--warn)",
   RASP: "var(--ok)",
 };

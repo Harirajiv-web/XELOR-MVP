@@ -26,12 +26,16 @@ import { NumberingService, fyCode } from "../common/numbering.service.js";
 import { BOM_PROVIDER, type BomProvider } from "../ports/bom.port.js";
 import { STOCK_READER, type StockReader } from "../ports/planning-inputs.port.js";
 import {
+  CUSTOMER_ORDER_WRITER,
   PURCHASE_ORDER_WRITER,
   PRODUCTION_ORDER_WRITER,
   type PurchaseOrderWriter,
   type ProductionOrderWriter,
+  type CustomerOrderWriter,
   type CreatedPurchaseOrder,
   type CreatedProductionOrder,
+  type CreatedCustomerOrder,
+  type CreateFulfilmentCustomerOrderInput,
 } from "../ports/fulfilment-docs.port.js";
 import {
   AUTONOMY_TIERS,
@@ -347,7 +351,7 @@ const UUID_LIKE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 
 /** The §7 demo universe. Copied from `tenant.middleware.ts`, which guards the same way. */
 const DEMO_TENANT_IDS: ReadonlySet<string> = new Set([
-  "0192a8c0-0000-7000-8000-000000000001", // Trishul Precision Components Pvt Ltd
+  "0192a8c0-0000-7000-8000-000000000001", // 3S Precision Parts Pvt Ltd
   "0192a8c0-0000-7000-8000-000000000002", // Kaveri ElectroFab Industries
 ]);
 
@@ -608,7 +612,72 @@ export class FulfilmentMissionService {
     // `createPurchaseOrder` into PO amendments or approvals even if a later step wanted to.
     @Inject(PURCHASE_ORDER_WRITER) private readonly purchaseWriter: PurchaseOrderWriter,
     @Inject(PRODUCTION_ORDER_WRITER) private readonly productionWriter: ProductionOrderWriter,
+    // The order the mission is ABOUT, rather than one it produces. Same reasoning as the
+    // two above: the mission asks SALES to take an order and never learns how Sales does it.
+    @Inject(CUSTOMER_ORDER_WRITER) private readonly orderWriter: CustomerOrderWriter,
   ) {}
+
+  /* ------------------------------------------------------- take a new order -- */
+
+  /**
+   * Take a customer's order and immediately open a mission on it.
+   *
+   * THIS IS THE DEMO'S FIRST STEP, and it exists to answer a question a seeded row cannot.
+   * Picking an order off a list proves the engine runs; typing a customer's PO number in
+   * front of the room and watching ONYX pick it up proves the engine is not a recording.
+   * Nothing after this changes — the same thirteen steps run on the order that was just
+   * created, because to the mission it is simply a confirmed order like any other.
+   *
+   * The two halves are deliberately NOT one transaction. SALES commits the order when SALES
+   * is ready, and only then is there something to open a mission on; wrapping both would put
+   * the mission in charge of when another module's document becomes durable (see the port).
+   * The visible consequence is honest: if the credit gate holds the order, the order exists
+   * and the mission does not, and the caller is told exactly that.
+   */
+  async startFromNewOrder(
+    input: CreateFulfilmentCustomerOrderInput,
+    tier: string = "A3",
+    idempotencyKey?: string,
+  ): Promise<{ order: CreatedCustomerOrder; mission: MissionView | null; heldReason?: string }> {
+    // Derived from the request, never from the clock: replaying the same order must return
+    // the first one rather than raise a second commitment against the same customer PO.
+    const key = idempotencyKey ?? `mission-new-order-${input.customerId}-${input.custPoNo}`;
+    const order = await this.orderWriter.createConfirmedOrder(input, key);
+
+    if (order.status === "draft" || order.status === "cancelled") {
+      return {
+        order,
+        mission: null,
+        heldReason:
+          `${order.soNo} was raised but is ${order.status}, so no mission was opened. `
+          + "A mission commits money against a promise, and this order is not one yet.",
+      };
+    }
+    return { order, mission: await this.start(order.id, tier) };
+  }
+
+  /**
+   * The customers and parts the "new order" form chooses between.
+   *
+   * Both lists come through the same port as the write, so the form can never offer a
+   * choice the write would then reject. `lastRate` is carried so the form can show what the
+   * part last sold for rather than asking a presenter to invent a price mid-demo — and so
+   * an item that has NEVER sold is visibly the one that needs terms typing in.
+   */
+  async orderableChoices(): Promise<{
+    customers: Array<{ id: string; code: string; name: string }>;
+    items: Array<{
+      id: string; itemCode: string; name: string; uom: string;
+      lastRate: number | null; lastHsn: string | null; lastGstRatePct: number | null;
+    }>;
+    tiers: typeof AUTONOMY_TIERS;
+  }> {
+    const [customers, items] = await Promise.all([
+      this.orderWriter.listOrderableCustomers(),
+      this.orderWriter.listSellableItems(),
+    ]);
+    return { customers, items, tiers: AUTONOMY_TIERS };
+  }
 
   /* ------------------------------------------------------------------ start -- */
 
@@ -2181,9 +2250,23 @@ export class FulfilmentMissionService {
         .where(sql`${salesOrder.status} IN ('confirmed','partially_dispatched')`)
         .orderBy(desc(salesOrder.orderDate)).limit(25);
 
-      const missions = await tx.select({ soId: fulfilmentMission.salesOrderId, no: fulfilmentMission.missionNo, status: fulfilmentMission.status })
-        .from(fulfilmentMission);
-      const byOrder = new Map(missions.map((x) => [x.soId, x]));
+      // The picker says "Open" for an existing mission, so it needs the mission's id — a
+      // business number and a status cannot reopen anything. Order newest-first and keep the
+      // first mission per sales order: completed/failed missions may coexist with a later
+      // rerun, and presenting an arbitrary older attempt is how an "Open" button used to
+      // restart at step one instead of restoring the state shown beside it.
+      const missions = await tx.select({
+        id: fulfilmentMission.id,
+        soId: fulfilmentMission.salesOrderId,
+        no: fulfilmentMission.missionNo,
+        status: fulfilmentMission.status,
+      })
+        .from(fulfilmentMission)
+        .orderBy(desc(fulfilmentMission.createdAt));
+      const byOrder = new Map<string, { id: string; soId: string; no: string; status: string }>();
+      for (const mission of missions) {
+        if (!byOrder.has(mission.soId)) byOrder.set(mission.soId, mission);
+      }
 
       const custIds = [...new Set(orders.map((o) => o.customerId))];
       const custs = custIds.length
@@ -3127,10 +3210,33 @@ export class FulfilmentMissionService {
       ? await tx.select({ id: item.id, code: item.itemCode, name: item.name }).from(item).where(inArray(item.id, itemIds))
       : [];
     const byId = new Map(items.map((i) => [i.id, i]));
+    /**
+     * THE DATE THE CUSTOMER WAS ACTUALLY PROMISED.
+     *
+     * This was hardcoded `null`, so `start` always fell through to `orderDate + 30` and
+     * every mission ever run planned backwards from a date nobody had agreed to. The lines
+     * carried the real promise the whole time — SALES has stored `requestedDeliveryDate`
+     * since the order form learned to ask for it — and nothing read it.
+     *
+     * It is not a cosmetic field. The promise is what the whole plan is scheduled backwards
+     * from: it decides whether a supplier's lead time fits, whether the work centre can
+     * absorb the batch, and whether the mission's verdict is feasible or infeasible. A
+     * mission planning to a guess can call an order comfortable that is in fact already late.
+     *
+     * EARLIEST across the lines, not latest: an order is promised by the date its soonest
+     * line is due, and planning to the last one silently misses every line before it. Null
+     * stays a real answer — some orders genuinely carry no promise — and `start` keeps its
+     * fallback for exactly those.
+     */
+    const promises = lines
+      .map((l) => l.requestedDeliveryDate)
+      .filter((d): d is string => typeof d === "string" && d.length > 0)
+      .sort();
+
     return {
       ...so,
       customerName: cust[0]?.name ?? "—",
-      promisedDate: null as string | null,
+      promisedDate: (promises[0] ?? null) as string | null,
       lines: lines.map((l) => ({ ...l, itemCode: byId.get(l.itemId)?.code ?? "?", itemName: byId.get(l.itemId)?.name ?? "?" })),
     };
   }
@@ -3404,9 +3510,15 @@ function plainOf(r: typeof fulfilmentStep.$inferSelect): string {
         : `I found ${n(f.optionCount)} supplier quote${n(f.optionCount) === 1 ? "" : "s"} for the parts you are short of. Some are cheaper, some are faster.`;
     case "strategy": {
       const ok = n(f.feasibleCount);
-      return ok === 0
-        ? `I compared ${n(f.candidateCount)} ways of doing this and none of them can hit your date. Somebody needs to decide what gives.`
-        : `I compared ${n(f.candidateCount)} ways of doing this. ${ok} can hit your date, and I have picked the best of them.`;
+      // "I compared 1 ways of doing this. 1 can hit your date, and I have picked the best of
+      // them." A demo is judged on sentences like that one. When there is exactly one option
+      // the plural is wrong twice over and "the best of them" is a claim about a set of one.
+      const tried = n(f.candidateCount);
+      const ways = `${tried} way${tried === 1 ? "" : "s"} of doing this`;
+      if (ok === 0) return `I compared ${ways} and none of them can hit your date. Somebody needs to decide what gives.`;
+      if (tried === 1) return `There is only one way to do this, and it can hit your date.`;
+      if (ok === 1) return `I compared ${ways}. Only one can hit your date, so that is the one I have picked.`;
+      return `I compared ${ways}. ${ok} can hit your date, and I have picked the best of them.`;
     }
     case "critique": {
       const c = f as { passed?: boolean; checks?: unknown[]; escalations?: string[] };

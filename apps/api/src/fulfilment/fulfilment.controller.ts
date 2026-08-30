@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Sse } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, Sse } from "@nestjs/common";
 import { z } from "zod";
 import { Observable } from "rxjs";
 import { Errors, SOURCE_CATALOGUE, currentTenant, runWithTenant } from "@ind-core/platform";
@@ -91,6 +91,52 @@ export class FulfilmentController {
   @RequirePermission("agentos.run.read")
   template() {
     return { data: this.missions.supplierTermsTemplate() };
+  }
+
+  /**
+   * Take a customer's order and open a mission on it in one move — the demo's first step.
+   *
+   * Two permissions, not one, and deliberately: this WRITES a sales order as well as
+   * starting a mission, so a presenter who may run missions but may not commit the company
+   * to a customer must not acquire that power through this door. Both are named in ONE
+   * decorator — stacking two would silently enforce only the last (see the guard).
+   */
+  @Post("orders")
+  @RequirePermission("sales.order.create", "agentos.run.operate")
+  async startFromNewOrder(@Body() body: unknown, @Headers("idempotency-key") key?: string) {
+    const parsed = z
+      .object({
+        customerId: z.string().uuid(),
+        custPoNo: z.string().trim().min(1).max(64),
+        tier: z.enum(["A2", "A3", "A4"]).default("A3"),
+        lines: z
+          .array(
+            z.object({
+              itemId: z.string().uuid(),
+              qty: z.number().positive(),
+              requestedDeliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+              // Present so an item that has never been sold can still be ordered. Absent is
+              // the normal case and means "the usual terms for this part" — see the port.
+              rate: z.number().nonnegative().optional(),
+              hsn: z.string().trim().min(1).max(12).optional(),
+              gstRatePct: z.number().min(0).max(100).optional(),
+            }),
+          )
+          .min(1),
+      })
+      .safeParse(body);
+    if (!parsed.success) {
+      throw Errors.validation(parsed.error.issues.map((i) => ({ field: i.path.join("."), message: i.message })));
+    }
+    const { tier, ...order } = parsed.data;
+    return { data: await this.missions.startFromNewOrder(order, tier, key) };
+  }
+
+  /** The customers and parts the form above can choose between. */
+  @Get("orderable")
+  @RequirePermission("sales.order.create")
+  async orderable() {
+    return { data: await this.missions.orderableChoices() };
   }
 
   /** Confirmed orders and whether each already has a mission. */

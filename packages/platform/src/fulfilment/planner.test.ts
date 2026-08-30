@@ -9,7 +9,7 @@ import {
   type PlanningEvidence,
   type ShortageLine,
 } from "./planner.js";
-import { narrateChoice, narrateShortages } from "./narrate.js";
+import { buildDecisionBrief, narrateChoice, narrateShortages } from "./narrate.js";
 
 /**
  * The claim under test is not "the planner returns a plan". It is:
@@ -195,10 +195,10 @@ test("SUGGEST-ONLY asks even when the premium is zero — a zero limit could not
   }
 });
 
-test("suggest-only does NOT ask when there is nothing to commit", () => {
-  // A plan that buys nothing commits nothing, so there is no authority question to raise.
-  // Asking anyway would train people to click through approvals that mean nothing, which
-  // is how a governance gate becomes a formality.
+test("suggest-only asks before reserving stock even when there is nothing to buy", () => {
+  // A stock-only plan buys nothing, but it still reserves inventory for this customer and
+  // changes what every other order can promise. At suggest-only authority that operational
+  // commitment belongs behind the same explicit confirmation as a purchase.
   const ev = BASE({
     shortages: [CASTING({ onHandQty: 200, shortQty: 0 })],
     expediteAutonomyLimit: 0,
@@ -206,7 +206,8 @@ test("suggest-only does NOT ask when there is nothing to commit", () => {
   });
   const ranked = applyAutonomy(generateCandidates(ev), ev);
   assert.equal(ranked[0]?.sourcing.length, 0);
-  assert.equal(ranked[0]?.requiresApproval, false);
+  assert.equal(ranked[0]?.requiresApproval, true);
+  assert.match(ranked[0]?.approvalReason ?? "", /reserving stock/i);
 });
 
 test("a margin under the floor always asks, whatever the premium", () => {
@@ -266,6 +267,29 @@ test("the comparison sentence names the runner-up — proof a choice was made", 
   const ev = BASE();
   const line = narrateChoice(generateCandidates(ev), ev);
   assert.match(line, /Against /, "the winning plan must be justified against an alternative");
+});
+
+test("the decision brief names the application surfaces the approved plan will update", () => {
+  const buyingEvidence = BASE();
+  const buyingPlans = generateCandidates(buyingEvidence);
+  const buyingBrief = buildDecisionBrief(
+    buyingPlans[0]!, buyingPlans, buyingEvidence, "SO-DEMO", "Demo customer",
+  );
+  // The names are asserted literally because they must equal what the step registry in
+  // `mission.service.ts` prints on those screens. A drift here is a card that promises to
+  // update a screen the product does not have.
+  assert.deepEqual(buyingBrief.applicationTargets, [
+    { module: "Sales", screen: "Orders" },
+    { module: "Purchase", screen: "Purchase orders" },
+    { module: "Production", screen: "Work orders" },
+  ]);
+
+  const stockEvidence = BASE({ shortages: [CASTING({ onHandQty: 200, shortQty: 0 })] });
+  const stockPlans = generateCandidates(stockEvidence);
+  const stockBrief = buildDecisionBrief(
+    stockPlans[0]!, stockPlans, stockEvidence, "SO-DEMO", "Demo customer",
+  );
+  assert.deepEqual(stockBrief.applicationTargets, [{ module: "Sales", screen: "Orders" }]);
 });
 
 /* ----------------------------------------------------- determinism, on purpose -- */

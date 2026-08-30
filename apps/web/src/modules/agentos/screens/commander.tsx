@@ -94,7 +94,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,var(--brand-soft),transparent_38%),radial-gradient(circle_at_100%_100%,var(--violet-soft),transparent_32%)]" aria-hidden />
         <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[linear-gradient(135deg,var(--brand),var(--violet))] text-white shadow-[var(--shadow-md)]">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[linear-gradient(135deg,var(--brand),var(--violet))] text-[var(--text-on-brand)] shadow-[var(--shadow-md)]">
               <Radar className="h-6 w-6" aria-hidden />
             </span>
             <div>
@@ -143,7 +143,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
           <nav className="flex gap-1 overflow-x-auto rounded-[12px] border border-[var(--border-subtle)] bg-[var(--surface)] p-1.5" aria-label="Risk filters">
             {filters.map((item) => {
               const count = item === "all" ? data.risks.length : data.risks.filter((risk) => risk.kind === item).length;
-              return <button key={item} type="button" onClick={() => { setFilter(item); setSelectedKey(null); }} className={cn("shrink-0 rounded-[9px] px-3 py-2 text-[10.5px] font-bold transition", filter === item ? "bg-[var(--brand)] text-white shadow-sm" : "text-[var(--text-secondary)] hover:bg-[var(--bg)]")}><span>{item === "all" ? "All decisions" : humanise(item)}</span><span className={cn("ml-1.5 rounded-full px-1.5 py-0.5 text-[9px]", filter === item ? "bg-white/18" : "bg-[var(--bg)] text-[var(--text-muted)]")}>{count}</span></button>;
+              return <button key={item} type="button" onClick={() => { setFilter(item); setSelectedKey(null); }} className={cn("shrink-0 rounded-[9px] px-3 py-2 text-[10.5px] font-bold transition", filter === item ? "bg-[var(--brand)] text-[var(--text-on-brand)] shadow-sm" : "text-[var(--text-secondary)] hover:bg-[var(--bg)]")}><span>{item === "all" ? "All decisions" : humanise(item)}</span><span className={cn("ml-1.5 rounded-full px-1.5 py-0.5 text-[9px]", filter === item ? "bg-white/18" : "bg-[var(--bg)] text-[var(--text-muted)]")}>{count}</span></button>;
             })}
           </nav>
 
@@ -311,10 +311,10 @@ function ReadinessCard({ icon: Icon, title, status, metrics, note }: { icon: typ
 
 function TrustChip({ label, tone }: { label: string; tone: "live" | "rule" | "safe" | "human" }): React.JSX.Element {
   const style = {
-    live: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    rule: "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-    safe: "border-violet-500/20 bg-violet-500/10 text-violet-700 dark:text-violet-300",
-    human: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    live: "border-[var(--ok)]/25 bg-[var(--ok)]/10 text-[var(--ok-ink)]",
+    rule: "border-[var(--info-fg)]/25 bg-[var(--info-fg)]/10 text-[var(--info-fg)]",
+    safe: "border-[var(--ai-accent)]/25 bg-[var(--ai-accent)]/10 text-[var(--ai-text)]",
+    human: "border-[var(--accent)]/30 bg-[var(--accent)]/12 text-[var(--accent-ink)]",
   }[tone];
   return <span className={cn("rounded-full border px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.065em]", style)}>{label}</span>;
 }

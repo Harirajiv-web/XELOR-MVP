@@ -39,7 +39,7 @@ export const STRONG_NAME_SIM = 0.85;
 export const POSSIBLE_NAME_SIM = 0.6;
 
 // Common Indian company legal-form tokens stripped before comparing names, so
-// "Trishul Precision Pvt Ltd" and "Trishul Precision Private Limited" match.
+// "3S Precision Pvt Ltd" and "3S Precision Private Limited" match.
 const LEGAL_TOKENS = new Set([
   "private",
   "pvt",

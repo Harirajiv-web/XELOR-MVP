@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3101";
 
 /**
  * THIS FILE TESTS THE KEYCLOAK SIGN-IN THEME, WHICH THE PUBLIC DEMO DELIBERATELY REMOVES.

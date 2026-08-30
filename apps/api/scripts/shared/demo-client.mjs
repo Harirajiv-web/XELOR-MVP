@@ -24,7 +24,18 @@
  * steps after the token exchange had succeeded against Keycloak on the same host.
  * `localhost` works from both sides of the boundary; the dotted quad works from one.
  */
-export const API = process.env.API_BASE ?? "http://localhost:3000";
+/**
+ * PHASE-2 runs its API on :3100. PHASE-1 runs on :3000.
+ *
+ * This default used to be :3000 in both checkouts, which meant that running
+ * `pnpm demo:rebuild` from PHASE-2 dropped PHASE-2's schema and then seeded PHASE-1
+ * through its API — reported as success, because every call really did succeed; just
+ * against the wrong database. The symptom was six "PO is already approved" failures,
+ * which were PHASE-1's existing documents refusing to be submitted a second time.
+ *
+ * Override with API_BASE when pointing a script at the other phase on purpose.
+ */
+export const API = process.env.API_BASE ?? "http://localhost:3100";
 export const KC = process.env.KEYCLOAK_URL ?? "http://localhost:8080";
 export const REALM = process.env.KEYCLOAK_REALM ?? "indcore";
 export const PUBLIC_DEMO = process.env.DEMO_PUBLIC_MODE === "true";

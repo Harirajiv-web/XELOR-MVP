@@ -16,7 +16,7 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     decision: "Show how XELOR digitises the business without losing human control or disrupting today's operations.",
     outcome: "One traceable digital journey from handwritten input to fulfilled order, collected cash and live management reporting.",
     icon: "Route",
-    accent: "#6d28d9",
+    accent: "#4a1f3f",
     scale: "full",
     demoRecord: {
       reference: "DEMO-JOURNEY-2407",
@@ -58,7 +58,7 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     decision: "Turn an unstructured request into a controlled product, feasible promise and profitable first delivery.",
     outcome: "A governed digital thread from drawing and BOM through sourcing, inspection, production, invoice and margin review.",
     icon: "DraftingCompass",
-    accent: "#0369a1",
+    accent: "#0e3a62",
     scale: "full",
     demoRecord: {
       reference: "DEMO-NPI-2000",
@@ -98,7 +98,7 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     decision: "Protect people, customer promises, margin and cash while restoring stable operations.",
     outcome: "A cross-functional recovery mission with evidence, controlled approvals, reversible actions and verified closure.",
     icon: "RadioTower",
-    accent: "#be123c",
+    accent: "#9b1d3f",
     scale: "full",
     demoRecord: {
       reference: "DEMO-CRISIS-0731",

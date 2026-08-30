@@ -34,8 +34,8 @@ export interface NavEntry {
   label: string;
   /** URL segment under the module: /inventory/<path>. */
   path: string;
-  /** The permission required to see AND open this entry. */
-  permission: string;
+  /** Every permission required to see AND open this entry. */
+  permission: string | readonly string[];
   /** Lucide icon name, resolved by the shell. */
   icon?: string;
   /** Hidden from the sidebar but still routable — for detail screens. */
@@ -233,7 +233,28 @@ export interface ModuleManifest {
 
 /** Every permission the manifest mentions — used by the consistency check. */
 export function manifestPermissions(m: ModuleManifest): readonly string[] {
-  return [...new Set(m.nav.map((n) => n.permission))];
+  return [
+    ...new Set(
+      m.nav.flatMap((entry) =>
+        Array.isArray(entry.permission)
+          ? [...entry.permission]
+          : [entry.permission as string],
+      ),
+    ),
+  ];
+}
+
+export function navEntryPermissions(entry: NavEntry): readonly string[] {
+  return Array.isArray(entry.permission)
+    ? entry.permission
+    : [entry.permission as string];
+}
+
+export function canOpenNavEntry(
+  entry: NavEntry,
+  can: (permission: string) => boolean,
+): boolean {
+  return navEntryPermissions(entry).every(can);
 }
 
 /** The nav entries this person can actually open. Hidden entries never appear. */
@@ -241,7 +262,7 @@ export function visibleNav(
   m: ModuleManifest,
   can: (permission: string) => boolean,
 ): readonly NavEntry[] {
-  return m.nav.filter((n) => !n.hidden && can(n.permission));
+  return m.nav.filter((entry) => !entry.hidden && canOpenNavEntry(entry, can));
 }
 
 /**
@@ -263,7 +284,7 @@ export function moduleAvailability(
   if (!opts.isLicensed(m.licenceKey)) {
     return { kind: "not_licensed", moduleName: m.name };
   }
-  const openable = m.nav.filter((n) => opts.can(n.permission));
+  const openable = m.nav.filter((entry) => canOpenNavEntry(entry, opts.can));
   if (openable.length === 0) {
     return { kind: "no_permission", moduleName: m.name, needs: manifestPermissions(m) };
   }

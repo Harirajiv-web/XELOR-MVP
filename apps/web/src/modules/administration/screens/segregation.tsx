@@ -183,7 +183,7 @@ export default function SegregationScreen(_props: ScreenProps): React.JSX.Elemen
             id="sod-status"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text-primary)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[13px] text-[var(--text-primary)]"
           >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>

@@ -232,7 +232,7 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
                 <button
                   type="submit"
                   disabled={asking || question.trim().length === 0}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--brand)] px-4 text-[12px] font-semibold text-white shadow-[var(--shadow-subtle)] transition-all hover:bg-[var(--brand-hover)] disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--brand)] px-4 text-[12px] font-semibold text-[var(--text-on-brand)] shadow-[var(--shadow-subtle)] transition-all hover:bg-[var(--brand-hover)] disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" aria-hidden />
                   {asking ? "Reading…" : "Ask ONYX"}
@@ -292,7 +292,7 @@ export default function AskScreen(_props: ScreenProps): React.JSX.Element {
               onChange={(e) => setCatalogueFilter(e.target.value)}
               placeholder="Find a question"
               aria-label="Filter available questions"
-              className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
+              className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
             />
           </label>
         </div>

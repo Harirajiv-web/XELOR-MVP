@@ -2,6 +2,7 @@ import { Global, Module } from "@nestjs/common";
 import { SalesController } from "./sales.controller.js";
 import { SalesService } from "./sales.service.js";
 import { DEMAND_SOURCE } from "../../ports/planning-inputs.port.js";
+import { CUSTOMER_ORDER_WRITER } from "../../ports/fulfilment-docs.port.js";
 
 /**
  * SMBD (MICA, Module 07) — customers, sales orders with GST, and dispatch.
@@ -15,13 +16,22 @@ import { DEMAND_SOURCE } from "../../ports/planning-inputs.port.js";
  * It provides DEMAND_SOURCE: Sales is the origin of independent demand for the whole
  * plant, and MRP nets against the confirmed, undelivered balance of every order — with
  * the date the customer actually asked for, or an honest null where none was promised.
+ *
+ * It also provides CUSTOMER_ORDER_WRITER, which is how a fulfilment mission gets an order
+ * to be about without reaching into Sales itself. The mission supplies the customer, their
+ * PO number, the part and the promise; Sales supplies the numbering, the price, the tax
+ * treatment and the credit gate. See `ports/fulfilment-docs.port.ts`.
  */
 @Global()
 @Module({
   controllers: [SalesController],
   // @Global since PLANNING arrived: Sales is the origin of independent demand for the
   // whole plant, and MRP reads it through DEMAND_SOURCE without importing this module.
-  providers: [SalesService, { provide: DEMAND_SOURCE, useExisting: SalesService }],
-  exports: [SalesService, DEMAND_SOURCE],
+  providers: [
+    SalesService,
+    { provide: DEMAND_SOURCE, useExisting: SalesService },
+    { provide: CUSTOMER_ORDER_WRITER, useExisting: SalesService },
+  ],
+  exports: [SalesService, DEMAND_SOURCE, CUSTOMER_ORDER_WRITER],
 })
 export class SalesModule {}
