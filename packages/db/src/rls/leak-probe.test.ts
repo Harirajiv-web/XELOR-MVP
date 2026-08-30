@@ -44,14 +44,14 @@ test("a tenant sees only its own companies", { skip: !url }, async () => {
   const trishul = await asTenant(TRISHUL, async () =>
     (await client.query("SELECT legal_name FROM company")).rows.map((r) => r.legal_name),
   );
-  assert.ok(trishul.some((n: string) => n.includes("Trishul")));
-  assert.ok(!trishul.some((n: string) => n.includes("Kaveri")), "Kaveri leaked into Trishul");
+  assert.ok(trishul.some((n: string) => n.includes("3S")));
+  assert.ok(!trishul.some((n: string) => n.includes("Kaveri")), "Kaveri leaked into 3S");
 
   const kaveri = await asTenant(KAVERI, async () =>
     (await client.query("SELECT legal_name FROM company")).rows.map((r) => r.legal_name),
   );
   assert.ok(kaveri.some((n: string) => n.includes("Kaveri")));
-  assert.ok(!kaveri.some((n: string) => n.includes("Trishul")), "Trishul leaked into Kaveri");
+  assert.ok(!kaveri.some((n: string) => n.includes("3S")), "3S leaked into Kaveri");
 });
 
 test("no tenant set => zero rows (fail closed)", { skip: !url }, async () => {
@@ -63,7 +63,7 @@ test("cannot INSERT a row for another tenant (WITH CHECK)", { skip: !url }, asyn
   await assert.rejects(
     () =>
       asTenant(TRISHUL, async () => {
-        // Attempt to write a Kaveri-tenant row while fenced to Trishul.
+        // Attempt to write a Kaveri-tenant row while fenced to 3S.
         await client.query(
           `INSERT INTO company (id, tenant_id, created_by, updated_by, legal_name)
            VALUES (gen_random_uuid(), $1, $2, $2, 'cross-tenant write')`,

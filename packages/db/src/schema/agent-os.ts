@@ -324,7 +324,7 @@ export const decisionEvidenceLink = pgTable(
 
 /**
  * A value claim is not a marketing number. It starts as a baseline/target, then records an
- * observed result and explicit verification state. Only verified rows count as value XELOR
+ * observed result and explicit verification state. Only verified rows count as value ONYX
  * can report to a customer.
  */
 export const decisionOutcomeMetric = pgTable(

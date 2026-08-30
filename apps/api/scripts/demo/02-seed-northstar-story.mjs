@@ -1018,8 +1018,8 @@ async function finalInspection(call, { byCode, wh }) {
 async function kilnMaintenance(call, { employees, wh }) {
   console.log("\nKILN / Maintenance — Furnace 02, the only annealing route there is");
 
-  const operator = employees.get("TPC-0008"); // Sanjay Patil, CNC operator
-  const fitter = employees.get("TPC-0011"); // Balaji Gaikwad, maintenance fitter
+  const operator = employees.get("3S-0008"); // Sanjay Patil, CNC operator
+  const fitter = employees.get("3S-0011"); // Balaji Gaikwad, maintenance fitter
   if (!operator || !fitter) {
     console.log("  --   the employee master is missing the operator or fitter — skipping the furnace story");
     return;
@@ -1232,7 +1232,7 @@ async function micaService(call, { byCode, employees }) {
   console.log("\nMICA / Service — Northstar rings about the pre-shipment sample");
 
   if (!created.customerId) return;
-  const engineer = employees.get("TPC-0004"); // Kavita Rao, quality engineer
+  const engineer = employees.get("3S-0004"); // Kavita Rao, quality engineer
 
   const ticket = await step("ticket raised by the customer, by email", async () => {
     const res = await call(
@@ -1360,7 +1360,7 @@ async function micaService(call, { byCode, employees }) {
 async function raspPeople(call, { employees }) {
   console.log("\nRASP — the people who built it, and what it cost");
 
-  const shopFloor = ["TPC-0008", "TPC-0009", "TPC-0010"].map((c) => employees.get(c)).filter(Boolean);
+  const shopFloor = ["3S-0008", "3S-0009", "3S-0010"].map((c) => employees.get(c)).filter(Boolean);
   if (shopFloor.length) {
     await step(`roster the shop floor for the build fortnight (${shopFloor.length} people, shift A)`, async () => {
       const res = await call(
@@ -1404,7 +1404,7 @@ async function raspPeople(call, { employees }) {
    * not mean to ask. Charging customer-facing travel to the sales cost centre is both what a
    * plant does and the only way to reach a budget line here. The split is in the gap report.
    */
-  const engineer = employees.get("TPC-0004"); // Kavita Rao — she also owns the Northstar ticket
+  const engineer = employees.get("3S-0004"); // Kavita Rao — she also owns the Northstar ticket
   if (engineer) {
     const claim = await step("expense claim — the witness test at Northstar's works", async () => {
       const res = await call(
@@ -1547,6 +1547,31 @@ async function micaDispatch(call) {
         totalValue: 1_734_600,
         aato: 150_000_000,
       });
+      /**
+       * THE 30-DAY CLIFF IS REAL, AND IT IS EVALUATED AGAINST THE REAL CLOCK.
+       *
+       * The demo world is pinned to 20 Jul 2026 (§7), so this invoice carries that date —
+       * correctly, because `docDate` on an IRP submission IS the invoice's own date and
+       * putting a different one there would be fabricating a statutory field. The window
+       * check in `statutory.service.ts` compares it against `new Date()`, which is also
+       * correct: the real portal does exactly that.
+       *
+       * The consequence is a demo that seeded green for thirty days and then began failing
+       * on day thirty-one, on nothing but the passage of time. Treated here the same way
+       * the credit gate is treated above — a legitimate outcome worth SHOWING rather than
+       * seeding around. A presenter who reaches this line gets the truth: the invoice is
+       * past the cliff and needs a credit note and a re-issue, which is a real thing this
+       * product models and an auditor would want to see it model.
+       *
+       * THE UNDERLYING FIX IS NOT HERE. It is that a demo universe pinned to a fixed date
+       * cannot host a rule that reads the wall clock. Either the pin moves with real time or
+       * the clock becomes injectable. Both are larger than this script.
+       */
+      if (irn.status === 422 && irn.body?.error?.code === "INT_IRN_WINDOW_CLOSED") {
+        return {
+          note: `past the 30-day IRP window (invoice dated ${TODAY}) — needs a credit note and re-issue`,
+        };
+      }
       const irnBody = expect(irn, [200, 201], "submit invoice to IRP");
 
       const shipmentRef = `SHP-NS-${String(created.dispatchNo ?? "0001").slice(-4)}`;

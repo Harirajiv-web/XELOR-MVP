@@ -34,7 +34,7 @@ export interface PlatformHealthResult {
 }
 
 /**
- * ACHILES is the private, deterministic availability watcher for XELOR.
+ * ACHILES is the private, deterministic availability watcher for ONYX.
  *
  * It does not use a model to decide whether the platform is healthy: every result comes
  * from an explicit probe with a timeout. It never writes an ERP business record, restarts
@@ -155,10 +155,10 @@ export class PlatformHealthService implements OnModuleInit, OnModuleDestroy {
     ).length;
     const summary =
       overallStatus === "healthy"
-        ? `XELOR is operational. ${passed} of ${configured} configured checks passed.`
+        ? `ONYX is operational. ${passed} of ${configured} configured checks passed.`
         : overallStatus === "degraded"
-          ? `XELOR is available, but ${checks.filter((check) => check.status === "failed").length} supporting check needs attention.`
-          : "XELOR has failed a required availability check and needs immediate technical attention.";
+          ? `ONYX is available, but ${checks.filter((check) => check.status === "failed").length} supporting check needs attention.`
+          : "ONYX has failed a required availability check and needs immediate technical attention.";
     const completedAt = new Date();
     const id = newId();
     const durationMs = Math.max(0, completedAt.getTime() - startedAt.getTime());

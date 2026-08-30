@@ -188,12 +188,12 @@ const FACTORY_FLOW_RECOVERY: AgentGraphDefinition = {
     },
     {
       id: "relay-coordination", name: "RELAY coordinates customer-visible service impact", kind: "agent", agentKey: "RELAY",
-      instruction: "Coordinate an update only if the XELOR service or managed-service commitment is affected; do not own factory maintenance.",
+      instruction: "Coordinate an update only if the ONYX service or managed-service commitment is affected; do not own factory maintenance.",
       dependsOn: ["human-approval"], condition: { nodeId: "human-approval", path: "decision.approved", equals: true },
     },
     {
       id: "achiles-boundary", name: "ACHILES preserves the platform boundary", kind: "agent", agentKey: "ACHILES",
-      instruction: "Report only XELOR platform health evidence. Do not assess or command the robot cell.",
+      instruction: "Report only ONYX platform health evidence. Do not assess or command the robot cell.",
       dependsOn: ["human-approval"], condition: { nodeId: "human-approval", path: "decision.approved", equals: true },
     },
     {

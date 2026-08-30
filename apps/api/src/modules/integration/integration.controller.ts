@@ -76,6 +76,10 @@ const factoryStateSchema = z.object({
   rejectCount: z.number().int().min(0).optional(), energyKwh: z.number().finite().min(0).optional(), alarmCode: factoryIdentifier.optional(),
   evidence: z.record(z.string(), z.unknown()).optional(),
 }).strict();
+const threeSWorkroomScenarioSchema = z.object({
+  action: z.enum(["breakdown", "recover"]),
+  idempotencyKey: z.string().trim().min(8).max(200),
+}).strict();
 const commandEnvelope = {
   assetCode: factoryIdentifier,
   requiredState: z.enum(MACHINE_STATES),
@@ -157,6 +161,12 @@ export class IntegrationController {
     return this.factory.productionView();
   }
 
+  @Get("factory/views/operations")
+  @RequirePermission("production.factory-connect.read")
+  async factoryOperationsView() {
+    return this.factory.operationsView();
+  }
+
   @Get("factory/views/planning")
   @RequirePermission("planning.factory-flow.read")
   async planningFactoryView() {
@@ -169,6 +179,22 @@ export class IntegrationController {
     const parsed = factoryStateSchema.safeParse(body);
     if (!parsed.success) badRequest(parsed.error.issues);
     return this.factory.ingestState(parsed.data);
+  }
+
+  @Post("factory/simulator/3s/workroom")
+  @RequirePermission("factory.scenario.execute")
+  async simulate3sWorkroom(
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Body() body: unknown,
+  ) {
+    const parsed = threeSWorkroomScenarioSchema.safeParse(body);
+    if (!parsed.success) badRequest(parsed.error.issues);
+    assertMatchingIdempotencyKey(
+      idempotencyKey,
+      parsed.data.idempotencyKey,
+      "body.idempotencyKey",
+    );
+    return this.factory.simulate3sWorkroom(parsed.data);
   }
 
   @Post("factory/commands")

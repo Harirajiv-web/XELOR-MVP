@@ -2,7 +2,7 @@
 -- 0050 — three modules exist in code but were never sold to anybody.
 --
 -- `licence_record.modules` is the list the web app reads to decide which modules exist for
--- a company. Trishul's list was written in 0037, before Integration, AI Operations and the
+-- a company. 3S's list was written in 0037, before Integration, AI Operations and the
 -- copilot were built, so all three shipped invisible: the code is installed, the person has
 -- the permissions, and the sidebar still shows nothing — because the third gate, "did this
 -- company buy it", was answering no.
@@ -10,7 +10,7 @@
 -- That is the gate working correctly. It is also exactly the drift this project has been
 -- bitten by before: a fact with more than one home, and nothing comparing the copies.
 --
--- Trishul (XELOR Plant) gets all three. Kaveri (XELOR Essentials) deliberately does
+-- 3S (XELOR Plant) gets all three. Kaveri (XELOR Essentials) deliberately does
 -- NOT — its five-module entitlement is what makes the licence gate demonstrable on screen
 -- rather than merely asserted in a slide.
 --

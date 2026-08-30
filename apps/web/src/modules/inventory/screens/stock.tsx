@@ -109,7 +109,7 @@ export default function StockScreen(_props: ScreenProps): React.JSX.Element {
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by item or warehouse…"
           aria-label="Filter stock"
-          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
         />
       </div>
 

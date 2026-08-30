@@ -32,7 +32,7 @@ const goldenSet: GoldenSet<DedupCase, boolean> = {
     // --- duplicates ONLY the fuzzy detector catches (name variants, no id) ---
     { id: "suffix-pvt-vs-private", input: { candidate: { legalName: "Zenith Metals Pvt Ltd" }, existing: [{ id: "e3", legalName: "Zenith Metals Private Limited" }] }, expected: true },
     { id: "spacing-electrofab", input: { candidate: { legalName: "Kaveri ElectroFab Industries" }, existing: [{ id: "e4", legalName: "Kaveri Electrofab Industries Ltd" }] }, expected: true },
-    { id: "punctuation-trishul", input: { candidate: { legalName: "Trishul Precision Components" }, existing: [{ id: "e5", legalName: "Trishul Precision Components Pvt. Ltd." }] }, expected: true },
+    { id: "punctuation-trishul", input: { candidate: { legalName: "3S Precision Parts" }, existing: [{ id: "e5", legalName: "3S Precision Parts Pvt. Ltd." }] }, expected: true },
     { id: "suffix-anand", input: { candidate: { legalName: "Anand Auto Parts" }, existing: [{ id: "e6", legalName: "Anand Auto Parts Private Limited" }] }, expected: true },
     { id: "spelling-bharat", input: { candidate: { legalName: "Bharat Forge Works" }, existing: [{ id: "e7", legalName: "Bharath Forge Works" }] }, expected: true },
     // --- clearly-distinct records BOTH must reject (precision) ---

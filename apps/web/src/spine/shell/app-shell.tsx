@@ -135,13 +135,13 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       >
         <div className="flex min-h-[var(--top)] items-center gap-2.5 border-b border-[var(--border-subtle)] px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="x-brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,#12294f,var(--brand))] text-[11px] font-extrabold tracking-[0.02em] text-white">
-              XE
+            <span className="x-brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[linear-gradient(135deg,var(--chrome-raised),var(--accent))] text-[11px] font-extrabold tracking-[0.02em] text-[var(--chrome)]">
+              ON
             </span>
             {!collapsed ? (
               <span className="min-w-0">
                 <b className="block truncate text-[14.5px] font-bold tracking-[0.02em] text-[var(--text-primary)]">
-                  XELOR
+                  ONYX
                 </b>
                 <span className="block text-[9.5px] tracking-[0.1em] text-[var(--text-muted)]">
                   BY AIKYANTRA
@@ -185,7 +185,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
                     )}
                   >
                     <span
-                      className="rounded-[5px] px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-white"
+                      className="rounded-[5px] px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.1em] text-[var(--text-on-accent)]"
                       style={{ background: g.department.accent }}
                     >
                       {g.department.code}
@@ -249,7 +249,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
         {!collapsed ? (
           <div className="border-t border-[var(--border-subtle)] px-4 py-2.5 text-[10px] leading-[1.5] text-[var(--text-muted)]">
-            <b className="text-[var(--text-secondary)]">XELOR · by AIKYANTRA</b>
+            <b className="text-[var(--text-secondary)]">ONYX · by AIKYANTRA</b>
             <br />
             {identity?.organisation?.name ?? "—"}
           </div>
@@ -295,7 +295,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
         <p className="hidden min-w-0 items-center text-[13px] text-[var(--text-muted)] lg:flex">
           <span className="min-w-0 truncate">
-            XELOR
+            ONYX
             {currentDept
               ? ` / ${plainDepartmentName(currentDept.department.code, currentDept.department.name)}`
               : ""}
@@ -348,7 +348,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
           </button>
 
           <span className="flex shrink-0 items-center gap-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] py-[5px] pl-[6px] pr-2.5 shadow-[var(--shadow-sm)]">
-            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--brand),#3f7de8)] text-[10.5px] font-bold text-white">
+            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--chrome-hover),var(--chrome-deep))] text-[10.5px] font-bold text-[var(--chrome-ink)]">
               {initials}
             </span>
             <span className="hidden sm:block">

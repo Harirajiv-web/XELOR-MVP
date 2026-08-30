@@ -339,7 +339,7 @@ export function FactoryCommandComposer({
           Simulator asset
           <select
             data-testid="factory-command-asset"
-            className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[11px] text-[var(--text-primary)]"
+            className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[11px] text-[var(--text-primary)]"
             value={asset.assetCode}
             onChange={(event) => {
               const next = assets.find((candidate) => candidate.assetCode === event.target.value);
@@ -354,7 +354,7 @@ export function FactoryCommandComposer({
           Allowlisted, state-compatible capability
           <select
             data-testid="factory-command-capability"
-            className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[11px] text-[var(--text-primary)]"
+            className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[11px] text-[var(--text-primary)]"
             value={draft.capability}
             onChange={(event) => {
               const capability = event.target.value as MachineCommandCapability;
@@ -374,7 +374,7 @@ export function FactoryCommandComposer({
             {field.label}{field.required ? " · required" : " · optional"}
             {field.kind === "inspection" ? (
               <select
-                className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[11px] text-[var(--text-primary)]"
+                className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[11px] text-[var(--text-primary)]"
                 value={draft.parameters[field.key] ?? "visual"}
                 onChange={(event) => onDraftChange({ ...draft, parameters: { ...draft.parameters, [field.key]: event.target.value } })}
               >
@@ -383,7 +383,7 @@ export function FactoryCommandComposer({
             ) : (
               <input
                 data-testid={`factory-command-parameter-${field.key}`}
-                className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[11px] text-[var(--text-primary)]"
+                className="mt-1 h-9 w-full rounded-[8px] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[11px] text-[var(--text-primary)]"
                 value={draft.parameters[field.key] ?? ""}
                 required={field.required}
                 maxLength={128}
@@ -404,7 +404,7 @@ export function FactoryCommandComposer({
             Approval expiry
             <select
               data-testid="factory-command-ttl"
-              className="mt-1 h-8 w-full rounded-[7px] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[11px] font-semibold normal-case tracking-normal text-[var(--text-primary)]"
+              className="mt-1 h-8 w-full rounded-[7px] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[11px] font-semibold normal-case tracking-normal text-[var(--text-primary)]"
               value={draft.ttlMinutes}
               onChange={(event) => onDraftChange({ ...draft, ttlMinutes: Number(event.target.value) as 5 | 10 | 14 })}
             >

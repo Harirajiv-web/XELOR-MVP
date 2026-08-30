@@ -45,7 +45,7 @@ const screenEvidence: Record<string, ScreenEvidence> = {
   "/inventory/warehouses": { area: "Material location", evidence: "Warehouse, bin and authorized movement traced", source: "location and movement records" },
   "/maintenance/assets": { area: "Asset history", evidence: "Prior faults, maintenance and safety context assembled", source: "the asset and work-order history" },
   "/maintenance/downtime": { area: "Downtime event", evidence: "Stop time, duration and affected machine confirmed", source: "the machine event record" },
-  "/managed-services/responsibilities": { area: "Service ownership", evidence: "Product care and XELOR managed-service work have different accountable owners", source: "the RELAY responsibility map" },
+  "/managed-services/responsibilities": { area: "Service ownership", evidence: "Product care and ONYX managed-service work have different accountable owners", source: "the RELAY responsibility map" },
   "/planning/demand": { area: "Demand signal", evidence: "Change exceeds the agreed planning tolerance", source: "the demand plan and customer forecast" },
   "/planning/exceptions": { area: "Planning exception", evidence: "Late dates and dependency chain recalculated", source: "the deterministic planning engine" },
   "/planning/mrp": { area: "Material plan", evidence: "Shortages, lead times and capacity gaps calculated", source: "BOM, stock, supply and capacity rules" },
@@ -106,7 +106,7 @@ export function buildPresenterSnapshot(
   return {
     area: screen.area,
     headline: screen.evidence,
-    explanation: `${step.agents[0] ?? "XELOR"} is using ${screen.source} for ${record.reference}. ${result}`,
+    explanation: `${step.agents[0] ?? "ONYX"} is using ${screen.source} for ${record.reference}. ${result}`,
     facts: [
       { label: "Demo case", value: record.reference },
       { label: storyFact.label, value: storyFact.value },

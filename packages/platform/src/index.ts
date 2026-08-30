@@ -2,6 +2,8 @@
 // These make the DECISIONS-V2 §5 conventions executable rather than aspirational.
 export * from "./ids/uuidv7.js";
 export * from "./factory-connect/contracts.js";
+export * from "./factory-operations/oee.js";
+export * from "./factory-operations/projection.js";
 export * from "./time/ist.js";
 export * from "./time/date.js";
 export * from "./errors/error-envelope.js";

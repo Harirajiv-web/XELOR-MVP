@@ -66,7 +66,7 @@ function Marker({ code }: { code: string }): React.JSX.Element {
   const accent = department(code)?.accent ?? "var(--text-muted)";
   return (
     <span
-      className="shrink-0 rounded-[5px] px-1.5 py-0.5 text-[9.5px] font-extrabold tracking-[0.1em] text-white"
+      className="shrink-0 rounded-[5px] px-1.5 py-0.5 text-[9.5px] font-extrabold tracking-[0.1em] text-[var(--text-on-accent)]"
       style={{ background: accent }}
     >
       {code}
@@ -247,7 +247,7 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
           <span className="sr-only">
             {t.from} {t.direction === "one-way" ? "to" : "and"} {t.to ?? "every department"}
           </span>
-          {t.mark ? <span className="chip chip-gold self-start">{t.mark}</span> : null}
+          {t.mark ? <span className="chip chip-accent self-start">{t.mark}</span> : null}
         </div>
       ),
     },
@@ -380,8 +380,8 @@ export default function DepartmentsScreen(_props: ScreenProps): React.JSX.Elemen
           </ol>
 
           {/* Not trivia. This is an engineering rule with a failure mode behind it. */}
-          <div className="rounded-[var(--radius-card)] border border-[var(--gold-line)] bg-[var(--gold-soft)] p-3.5">
-            <p className="flex items-center gap-2 text-[12.5px] font-bold text-[var(--gold-ink)]">
+          <div className="rounded-[var(--radius-card)] border border-[var(--accent-line)] bg-[var(--accent-soft)] p-3.5">
+            <p className="flex items-center gap-2 text-[12.5px] font-bold text-[var(--accent-ink)]">
               <Icons.TriangleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden />
               SPAR and RASP are anagrams
             </p>

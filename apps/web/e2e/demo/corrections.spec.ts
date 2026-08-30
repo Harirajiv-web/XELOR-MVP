@@ -41,7 +41,7 @@ async function signIn(page: Page): Promise<void> {
     page.getByRole("button", { name: "Enter the factory intelligence" }).waitFor({ state: "visible" }),
   ]);
   if (await page.locator("#username").isVisible()) {
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
 }

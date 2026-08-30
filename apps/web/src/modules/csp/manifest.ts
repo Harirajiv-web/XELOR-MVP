@@ -91,7 +91,7 @@ export const cspManifest: ModuleManifest = {
   key: "csp",
   name: "Customer Care & Warranty",
   summary:
-    "After-sales product cases, warranty and AMC cover, spare requests and customer feedback. XELOR platform incidents belong to RELAY.",
+    "After-sales product cases, warranty and AMC cover, spare requests and customer feedback. ONYX platform incidents belong to RELAY.",
   department: "MICA",
   icon: "Headset",
   licenceKey: "csp",
@@ -103,7 +103,7 @@ export const cspManifest: ModuleManifest = {
       permission: "csp.ticket.read",
       icon: "Ticket",
       description:
-        "Every after-sales case about a manufactured product, with the response target promised to the customer. XELOR application, integration and AI incidents are handled by RELAY instead.",
+        "Every after-sales case about a manufactured product, with the response target promised to the customer. ONYX application, integration and AI incidents are handled by RELAY instead.",
     },
     {
       label: "Product case",

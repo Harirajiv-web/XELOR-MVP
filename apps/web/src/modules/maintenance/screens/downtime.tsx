@@ -164,7 +164,7 @@ export default function DowntimeScreen(_props: ScreenProps): React.JSX.Element {
             type="date"
             value={window.from}
             onChange={(e) => setWindow((w) => ({ ...w, from: e.target.value }))}
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -175,7 +175,7 @@ export default function DowntimeScreen(_props: ScreenProps): React.JSX.Element {
             type="date"
             value={window.to}
             onChange={(e) => setWindow((w) => ({ ...w, to: e.target.value }))}
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -188,7 +188,7 @@ export default function DowntimeScreen(_props: ScreenProps): React.JSX.Element {
             onChange={(e) => setAssetCode(e.target.value)}
             placeholder="Asset code, exactly"
             aria-label="Asset code"
-            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </label>
         <label className="flex h-9 items-center gap-2 text-[13px] text-[var(--text-primary)]">

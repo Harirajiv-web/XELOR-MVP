@@ -11,7 +11,7 @@ import {
   type BusinessCalendar,
 } from "./business-time.js";
 
-/** Trishul's calendar: Mon–Sat, 09:00–18:00 IST, with two holidays in the demo window. */
+/** 3S's calendar: Mon–Sat, 09:00–18:00 IST, with two holidays in the demo window. */
 const CAL: BusinessCalendar = {
   ...DEFAULT_CALENDAR,
   holidays: ["2026-07-20", "2026-08-15"], // a Monday, and Independence Day (a Saturday)

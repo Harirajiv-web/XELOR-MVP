@@ -142,7 +142,7 @@ export const integrationManifest: ModuleManifest = {
       permission: "integration.factory-connect.read",
       icon: "RadioTower",
       description:
-        "The governed edge between XELOR and robots, AMRs, PLCs and factory sensors. It shows configured gateway and asset bindings, their latest reported heartbeat and evidence, each asset's explicit capability allowlist, and whether the binding is a simulator or an edge deployment. A configured binding or heartbeat is not proof of a physical controller connection; safety-rated control remains inside the controller and safety PLC.",
+        "The governed edge between ONYX and robots, AMRs, PLCs and factory sensors. It shows configured gateway and asset bindings, their latest reported heartbeat and evidence, each asset's explicit capability allowlist, and whether the binding is a simulator or an edge deployment. A configured binding or heartbeat is not proof of a physical controller connection; safety-rated control remains inside the controller and safety PLC.",
     },
   ],
   screens: {

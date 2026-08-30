@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.ONYX_E2E_BASE_URL ?? "http://localhost:3001";
 
 async function signIn(page: Page): Promise<void> {
   await page.goto("/");
@@ -10,7 +10,7 @@ async function signIn(page: Page): Promise<void> {
   if (await username.isVisible()) {
     await username.fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(brain).toBeVisible({ timeout: 30_000 });
 }
@@ -345,7 +345,7 @@ test("an approved Factory Flow mission records one simulator evaluation and no p
   await expect(page.getByRole("heading", { name: "Governed command ledger" })).toBeVisible();
   await expect(
     page.getByText(
-      "Read-only evidence recorded by XELOR's simulator policy evaluation. It does not represent an edge dispatch, controller acknowledgement or physical execution.",
+      "Read-only evidence recorded by ONYX's simulator policy evaluation. It does not represent an edge dispatch, controller acknowledgement or physical execution.",
       { exact: true },
     ),
   ).toBeVisible();

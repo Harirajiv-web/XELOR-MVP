@@ -105,7 +105,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[rgba(9,17,32,0.55)] p-4 sm:p-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--overlay-scrim)] p-4 sm:p-8"
       // Not `onClick={close}`. See the note above: a half-typed order does not get thrown
       // away by a stray click.
       aria-hidden={false}

@@ -50,14 +50,14 @@ import {
  * WHAT COUNTS AS A CONNECTOR
  * ───────────────────────────────────────────────────────────────────────────────────
  * A place the AI layer draws evidence FROM or drafts actions INTO. Two classes, and the
- * distinction is the whole XELOR intelligence-layer story:
+ * distinction is the whole ONYX intelligence-layer story:
  *
  *   INTERNAL — a module service in this build that calls a registered feature through an
  *   adapter. Derived by INVERTING `FEATURE_CONSUMERS`, which is itself transcribed from the
  *   real call sites in `apps/api/src/ai/`. Not a list somebody typed: add a call site and a
  *   connector appears here; delete the adapter and it leaves.
  *
- *   EXTERNAL — the systems XELOR is meant to read in a plant that already runs an ERP.
+ *   EXTERNAL — the systems ONYX is meant to read in a plant that already runs an ERP.
  *   None of them has an adapter in this repository, so every one is drawn as NOT CONNECTED
  *   with what it would take. Leaving them off the page would be tidier and would hide the
  *   single biggest gap between what is sold and what is built.
@@ -93,9 +93,9 @@ const MODULE_LOOK: Readonly<Record<string, { name: string; icon: string }>> = {
 };
 
 /**
- * The systems XELOR is meant to read in a factory that already runs an ERP.
+ * The systems ONYX is meant to read in a factory that already runs an ERP.
  *
- * Source: the product definition — XELOR is "a read-only intelligence layer on top of a
+ * Source: the product definition — ONYX is "a read-only intelligence layer on top of a
  * plant's existing systems (SAP, Tally, Odoo, Dynamics, MES/SCADA, documents)". The build
  * status of each is a fact about THIS REPOSITORY, checked by searching for an adapter:
  * there is no `apps/api/src/integrations/` connector for any of them, and DECISIONS-V2 §6
@@ -253,7 +253,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Connectors"
-        subtitle="See which parts of XELOR are using AI and whether anything needs attention."
+        subtitle="See which parts of ONYX are using AI and whether anything needs attention."
         meta={[
           { label: "Connected", value: `${wired.length} of ${connectors.length}` },
           { label: "Waiting for review", value: num(drafts.length) },
@@ -296,7 +296,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
 
       {/* ─────────────────────── the mesh, and what governs it ─────────────────── */}
       <Disclosure
-        title="See how AI connects across XELOR"
+        title="See how AI connects across ONYX"
         hint={`${wired.length} connected areas · ${num(totalCalls)} recent calls`}
       >
         <Reveal delay={140}>
@@ -372,7 +372,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
 
       {/* ───────────────────────────── the connectors ───────────────────────────── */}
       <Disclosure
-        title="Connected XELOR areas"
+        title="Connected ONYX areas"
         hint={`${connectors.length} areas · open to see individual status`}
       >
         <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fill,minmax(390px,1fr))]">
@@ -494,7 +494,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
           <div className="panel-h">
             <span className="flex items-center gap-2">
               <Icons.Unplug className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-              Systems XELOR can connect to
+              Systems ONYX can connect to
             </span>
             <span className="chip chip-warn">0 of {EXTERNAL_CONNECTORS.length} connected</span>
           </div>
@@ -644,7 +644,7 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
         <section className="card overflow-hidden">
           <div className="panel-h">
             <span className="flex items-center gap-2">
-              <Icons.GaugeCircle className="h-4 w-4 text-[var(--gold)]" aria-hidden />
+              <Icons.GaugeCircle className="h-4 w-4 text-[var(--accent)]" aria-hidden />
               Monitoring still to add
             </span>
             <span className="panel-h-sub">
@@ -719,9 +719,9 @@ export default function ConnectorsScreen(_props: ScreenProps): React.JSX.Element
 const DEPARTMENT_ACCENT: Readonly<Record<string, string>> = {
   ONYX: "var(--violet)",
   HEXA: "var(--brand)",
-  AXLE: "#0f766e",
-  SPAR: "var(--gold)",
-  MICA: "#1d5fd1",
+  AXLE: "var(--dept-axle)",
+  SPAR: "var(--accent)",
+  MICA: "var(--dept-mica)",
   KILN: "var(--warn)",
   RASP: "var(--ok)",
 };

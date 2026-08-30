@@ -6,10 +6,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "XELOR",
-    template: "%s · XELOR",
+    default: "ONYX",
+    template: "%s · ONYX",
   },
-  description: "XELOR manufacturing intelligence by AIKYANTRA.",
+  description: "ONYX manufacturing intelligence by AIKYANTRA.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): React.JSX.Element {

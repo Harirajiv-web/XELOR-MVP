@@ -5,7 +5,7 @@
  * ONYX MISSION CONTROL — the operational Agent OS surface, in five regions.
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Implements §9 of the XELOR UI/UX brief:
+ * Implements §9 of the ONYX UI/UX brief:
  *
  *   A  MISSION COMMAND BAR      what is running, for how long, how far through, on what
  *   B  ONYX STRATEGY RAIL       the supervisor: phase, decision, decomposition, guardrail
@@ -1302,7 +1302,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
             <ul className="agent-boundary" aria-label="Connection boundary">
               <li className="agent-status agent-status-ok">
                 <Icons.CircleCheck className="h-3 w-3" aria-hidden />
-                XELOR data and approvals connected
+                ONYX data and approvals connected
               </li>
               <li className="agent-status agent-status-idle">
                 <Icons.Cpu className="h-3 w-3" aria-hidden />
@@ -1374,7 +1374,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
           aria-label="Human approval waiting"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[var(--warn)] text-white">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[var(--warn)] text-[var(--text-on-accent)]">
               <Icons.UserRoundCheck className="h-4.5 w-4.5" aria-hidden />
             </span>
             <div>
@@ -1392,7 +1392,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
           </div>
           <Link
             href="/agentos/approvals"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--warn)] px-4 text-[11px] font-extrabold text-white shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--warn)] px-4 text-[11px] font-extrabold text-[var(--text-on-accent)] shadow-[var(--shadow-sm)] transition-[filter] hover:brightness-95"
           >
             Review and decide
             <Icons.ArrowRight className="h-3.5 w-3.5" aria-hidden />
@@ -1471,7 +1471,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
                     <p className="mt-1 text-[10px] text-[var(--text-secondary)]">Checking whether this approval already has simulator evidence…</p>
                   ) : factoryEvidenceQuery.error ? (
                     <div role="alert">
-                      <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">The command ledger could not be checked, so XELOR will not offer another submission.</p>
+                      <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">The command ledger could not be checked, so ONYX will not offer another submission.</p>
                       <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={factoryEvidenceQuery.reload}>Check again</button>
                     </div>
                   ) : factoryQuery.loading ? (

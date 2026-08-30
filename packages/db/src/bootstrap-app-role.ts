@@ -1,7 +1,7 @@
 import pg from "pg";
 
 /**
- * Creates the non-owner login expected by every XELOR migration.
+ * Creates the non-owner login expected by every ONYX migration.
  *
  * Docker Compose does this in `/docker-entrypoint-initdb.d`; managed Postgres
  * has no such hook, so deployment runs this once before the forward migrations.

@@ -45,10 +45,10 @@
 
   /* Left panel — a black-on-white schema. No colour anywhere in the identity. */
   --x-paper: #ffffff;
-  --x-ink: #0a0a0a; /* the title, the field borders, the button face */
-  --x-ink-soft: #52525b; /* AIKYANTRA, labels — the second shade that carries hierarchy */
-  --x-line: #18181b; /* fine outlines */
-  --x-line-quiet: #d4d4d8; /* dividers, disabled edges */
+  --x-ink: #0b1a2e; /* the title, the field borders, the button face */
+  --x-ink-soft: #5c6e82; /* AIKYANTRA, labels — the second shade that carries hierarchy */
+  --x-line: #374b62; /* fine outlines */
+  --x-line-quiet: #c6bba4; /* dividers, disabled edges */
 
   /*
    * ═══════════════════════════════════════════════════════════════════════════
@@ -74,10 +74,10 @@
    * Light is the default set here and dark is the override, matching how the product's own
    * tokens are arranged — one place to look for "what does this page do if nothing decided".
    */
-  --x-void: #edf4fa;
+  --x-void: #f4f1ea;
   --x-void-blend: multiply;
-  --x-void-ink: #12202e;
-  --x-void-ink-soft: #51606f;
+  --x-void-ink: #0b1a2e;
+  --x-void-ink-soft: #5c6e82;
 
   /*
    * WHERE THE SPLIT FALLS — and it now falls at zero.
@@ -100,11 +100,16 @@
   /* THE CARD. Glass rather than paper: it sits ON the scene, so it has to admit some of the
      scene through it or it reads as a rectangle pasted over a photograph. */
   --x-card: rgba(255, 255, 255, 0.955);
-  --x-card-line: rgba(15, 23, 42, 0.12);
-  --x-card-shadow: 0 32px 80px -24px rgba(15, 23, 42, 0.35), 0 2px 8px rgba(15, 23, 42, 0.06);
-  --x-field: rgba(255, 255, 255, 0.9);
-  --x-field-line: rgba(15, 23, 42, 0.18);
-  --x-accent: #0f766e;
+  --x-card-line: rgba(47, 65, 86, 0.16);
+  --x-card-shadow: 0 32px 80px -24px rgba(47, 65, 86, 0.35), 0 2px 8px rgba(47, 65, 86, 0.07);
+  --x-field: rgba(255, 255, 255, 0.92);
+  --x-field-line: rgba(47, 65, 86, 0.24);
+  /* THE ACCENT IS GOLD, AND IT IS THE SAME OBJECT AS `.btn-pri` BEHIND THIS PAGE.
+     It was a dark teal — a colour from nowhere in this identity. Gold under navy type is
+     7.08:1, and it is the pairing the whole product is built from, so the front door and
+     the first screen behind it now agree. */
+  --x-accent: #d9a93c;
+  --x-accent-hover: #c9a24a;
   /*
    * THE INK ON THE PRIMARY BUTTON, PER THEME, BECAUSE ONE VALUE CANNOT SERVE BOTH.
    *
@@ -113,27 +118,29 @@
    * accent, a dark teal, measures about 1.6:1. That is not a preference, it is a button whose
    * label cannot be read, and it shipped in the light theme.
    *
-   * Light: white on #0f766e ≈ 5.3:1.  Dark: #04140f on #3ddc97 ≈ 13:1. Both clear AA.
+   * It resolves the other way now, and to ONE value: the accent is gold in both themes, so
+   * navy is the ink in both, at 7.08:1. White on this gold would be 1.98:1.
    */
-  --x-accent-ink: #ffffff;
+  --x-accent-ink: #0b1a2e;
 }
 
 html[data-theme="dark"] {
-  --x-void: #030712;
+  --x-void: #0b1a2e;
   --x-void-blend: screen;
-  --x-void-ink: #e8f1f7;
-  --x-void-ink-soft: #8ea6ba;
+  --x-void-ink: #f4f1ea;
+  --x-void-ink-soft: #c6bba4;
 
   /* The card follows the light now. It could not before — it WAS the identity, a black
      wordmark on paper, and inverting it would have been a different brand. As a card on a
      scene the argument reverses: a white slab on a near-black room is a hole in the picture. */
-  --x-card: rgba(9, 15, 24, 0.965);
-  --x-card-line: rgba(148, 197, 224, 0.16);
-  --x-card-shadow: 0 40px 90px -28px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(148, 197, 224, 0.04);
-  --x-field: rgba(255, 255, 255, 0.05);
-  --x-field-line: rgba(148, 197, 224, 0.22);
-  --x-accent: #2dd4bf;
-  --x-accent-ink: #031713;
+  --x-card: rgba(20, 38, 63, 0.965);
+  --x-card-line: rgba(200, 217, 230, 0.22);
+  --x-card-shadow: 0 40px 90px -28px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(200, 217, 230, 0.11);
+  --x-field: rgba(244, 241, 234, 0.07);
+  --x-field-line: rgba(200, 217, 230, 0.3);
+  --x-accent: #d9a93c;
+  --x-accent-hover: #f2e8ce;
+  --x-accent-ink: #0b1a2e;
 }
 
 /* ─────────────────────────────── the page split ──────────────────────────────── */
@@ -220,7 +227,7 @@ body#keycloak-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 62% 42% at 50% 64%, rgba(15, 23, 42, 0.12), transparent 70%);
+  background: radial-gradient(ellipse 62% 42% at 50% 64%, rgba(47, 65, 86, 0.12), transparent 70%);
 }
 
 html[data-theme="dark"] #ind-backdrop::before {
@@ -611,7 +618,7 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
 }
 
 .pf-v5-c-form__label-required {
-  color: #b91c1c;
+  color: #a82530;
 }
 
 .pf-v5-c-form-control {
@@ -655,7 +662,7 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
 }
 
 .pf-v5-c-form-control > input::placeholder {
-  color: #a1a1aa;
+  color: #8e8878;
 }
 
 /*
@@ -669,7 +676,7 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
   border-color: var(--x-ink);
   box-shadow:
     0 0 0 1px var(--x-ink),
-    0 0 0 4px rgba(10, 10, 10, 0.14);
+    0 0 0 4px rgba(200, 217, 230, 0.55);
 }
 
 /*
@@ -715,24 +722,25 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
 }
 
 .pf-v5-c-button.pf-m-control:hover {
-  background: #f4f4f5;
+  background: #efe7d5;
   color: var(--x-ink);
 }
 
 /* ───────────────────────────── the primary action ────────────────────────── */
 
 /*
- * Solid black on white. The strongest contrast pair available (about 19:1), which is what
- * makes it read as the primary action without needing a colour, a gradient or a glow to
- * say so.
+ * GOLD UNDER NAVY TYPE — the same object as `.btn-pri` on every screen behind this page,
+ * and 7.08:1. It was solid black on white: the strongest pair available, and a pair that
+ * said nothing about whose sign-in this is. Gold is the one colour in this palette that can
+ * carry a filled control on its own, without an outline, a gradient or a glow to prop it up.
  */
 .pf-v5-c-button.pf-m-primary {
   box-sizing: border-box;
   min-height: 2.75rem;
-  background: var(--x-ink);
-  border: 1px solid var(--x-ink);
+  background: var(--x-accent);
+  border: 1px solid var(--x-accent);
   border-radius: 2px;
-  color: var(--x-paper);
+  color: var(--x-accent-ink);
   font-weight: 600;
   font-size: 0.86rem;
   letter-spacing: 0.08em;
@@ -743,7 +751,7 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
 }
 
 .pf-v5-c-button.pf-m-primary:hover {
-  background: #262626;
+  background: var(--x-accent-hover);
 }
 
 .pf-v5-c-button.pf-m-primary:active {
@@ -780,22 +788,22 @@ a:hover,
    the loudest treatment here, not the quietest — and it is the only place colour appears
    on the paper side, because "wrong" is the one thing black-on-white cannot say. */
 .pf-v5-c-alert {
-  background: #fef2f2;
-  border: 1px solid #dc2626;
+  background: #f8e0df;
+  border: 1px solid #a82530;
   border-radius: 2px;
-  color: #7f1d1d;
+  color: #8c1620;
 }
 
 .pf-v5-c-alert.pf-m-success {
-  background: #f0fdf4;
-  border-color: #16a34a;
-  color: #14532d;
+  background: #dfede2;
+  border-color: #2a7048;
+  color: #1b5e3a;
 }
 
 .pf-v5-c-alert.pf-m-warning {
-  background: #fffbeb;
-  border-color: #d97706;
-  color: #78350f;
+  background: #fae5d8;
+  border-color: #a84315;
+  color: #8e3311;
 }
 
 .pf-v5-c-alert__title,
@@ -805,7 +813,7 @@ a:hover,
 
 .pf-v5-c-helper-text__item-text.pf-m-error,
 .kc-feedback-text {
-  color: #b91c1c;
+  color: #8c1620;
   font-weight: 500;
 }
 
@@ -1092,8 +1100,8 @@ html.login-pf body .pf-v5-c-login__main-footer {
 /* An alert has to stay legible on glass in both themes, and PatternFly's own danger surface
    is a pale pink that vanishes on the dark card. */
 html.login-pf body .pf-v5-c-alert {
-  background: color-mix(in srgb, #dc2626 14%, transparent);
-  border: 1px solid color-mix(in srgb, #dc2626 40%, transparent);
+  background: color-mix(in srgb, #a82530 16%, transparent);
+  border: 1px solid color-mix(in srgb, #a82530 44%, transparent);
   border-radius: 10px;
   color: var(--x-void-ink);
 }
@@ -1189,32 +1197,32 @@ html.login-pf body .pf-v5-c-form-control > input:focus-visible {
 :root {
   --x-pointer-x: 50%;
   --x-pointer-y: 50%;
-  --x-card: rgba(246, 250, 255, 0.76);
-  --x-card-line: rgba(80, 112, 140, 0.24);
+  --x-card: rgba(255, 255, 255, 0.78);
+  --x-card-line: rgba(11, 26, 46, 0.22);
   --x-card-shadow:
-    0 45px 120px -48px rgba(18, 43, 72, 0.58),
-    0 18px 45px -28px rgba(18, 43, 72, 0.32),
+    0 45px 120px -48px rgba(11, 26, 46, 0.58),
+    0 18px 45px -28px rgba(11, 26, 46, 0.32),
     inset 0 1px rgba(255, 255, 255, 0.88);
-  --x-field: rgba(255, 255, 255, 0.58);
-  --x-field-line: rgba(53, 83, 111, 0.22);
-  --x-accent: #0f766e;
-  --x-aurora-a: rgba(20, 184, 166, 0.18);
-  --x-aurora-b: rgba(59, 130, 246, 0.17);
-  --x-aurora-c: rgba(99, 102, 241, 0.12);
+  --x-field: rgba(255, 255, 255, 0.62);
+  --x-field-line: rgba(11, 26, 46, 0.26);
+  --x-accent: #d9a93c;
+  --x-aurora-a: rgba(226, 232, 240, 0.2);
+  --x-aurora-b: rgba(242, 232, 206, 0.14);
+  --x-aurora-c: rgba(225, 234, 247, 0.1);
 }
 
 html[data-theme="dark"] {
-  --x-card: rgba(6, 13, 23, 0.7);
-  --x-card-line: rgba(150, 210, 235, 0.2);
+  --x-card: rgba(20, 38, 63, 0.72);
+  --x-card-line: rgba(217, 169, 60, 0.24);
   --x-card-shadow:
     0 52px 140px -54px rgba(0, 0, 0, 0.94),
-    0 0 0 1px rgba(113, 226, 204, 0.04),
+    0 0 0 1px rgba(217, 169, 60, 0.1),
     inset 0 1px rgba(255, 255, 255, 0.07);
-  --x-field: rgba(255, 255, 255, 0.065);
-  --x-field-line: rgba(160, 211, 233, 0.18);
-  --x-aurora-a: rgba(45, 212, 191, 0.16);
-  --x-aurora-b: rgba(56, 189, 248, 0.17);
-  --x-aurora-c: rgba(129, 140, 248, 0.13);
+  --x-field: rgba(244, 241, 234, 0.07);
+  --x-field-line: rgba(217, 169, 60, 0.26);
+  --x-aurora-a: rgba(15, 46, 82, 0.18);
+  --x-aurora-b: rgba(217, 169, 60, 0.1);
+  --x-aurora-c: rgba(27, 69, 116, 0.12);
 }
 
 html.login-pf,
@@ -1369,7 +1377,7 @@ html.login-pf body .pf-v5-c-button.pf-m-primary {
   min-height: 3rem;
   border-radius: 12px;
   background:
-    linear-gradient(110deg, color-mix(in srgb, var(--x-accent) 82%, #112fb8), var(--x-accent));
+    linear-gradient(110deg, color-mix(in srgb, var(--x-accent) 78%, #7a5b12), var(--x-accent));
   box-shadow:
     0 15px 34px -16px color-mix(in srgb, var(--x-accent) 86%, transparent),
     inset 0 1px rgba(255, 255, 255, 0.18);
@@ -1498,7 +1506,7 @@ html.ind-experience-ready #ind-stage-copy {
 
 #ind-stage-copy h1 em {
   color: transparent;
-  background: linear-gradient(90deg, var(--x-accent), color-mix(in srgb, var(--x-accent) 46%, #5876ff));
+  background: linear-gradient(90deg, var(--x-accent), color-mix(in srgb, var(--x-accent) 46%, #7a5b12));
   -webkit-background-clip: text;
   background-clip: text;
   font-style: normal;

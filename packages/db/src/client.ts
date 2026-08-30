@@ -10,9 +10,9 @@ import * as schema from "./schema/index.js";
  */
 const pool = new pg.Pool({
   // Marketplace integrations reserve DATABASE_URL for the managed owner. The
-  // Vercel demo supplies XELOR_DATABASE_URL for the restricted app_user so the
+  // Vercel demo supplies ONYX_DATABASE_URL for the restricted app_user so the
   // runtime never inherits schema-owner/BYPASSRLS authority.
-  connectionString: process.env.XELOR_DATABASE_URL ?? process.env.DATABASE_URL,
+  connectionString: process.env.ONYX_DATABASE_URL ?? process.env.DATABASE_URL,
   max: Number(process.env.DB_POOL_MAX ?? 10),
 });
 

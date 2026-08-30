@@ -140,7 +140,7 @@ export function AgentBrain({
                 }
               >
                 <span
-                  className="grid h-6 w-6 shrink-0 place-items-center rounded-[7px] text-[11px] font-extrabold text-white"
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-[7px] text-[11px] font-extrabold text-[var(--text-on-accent)]"
                   style={{ background: n.accent }}
                 >
                   {n.letter}
@@ -434,19 +434,19 @@ function BrainMap({
         <text
           y={-4}
           textAnchor="middle"
-          className="fill-white text-[22px] font-extrabold"
+          className="fill-[var(--text-on-accent)] text-[22px] font-extrabold"
         >
           {core.letter}
         </text>
         <text
           y={22}
           textAnchor="middle"
-          className="fill-white text-[15px] font-extrabold"
+          className="fill-[var(--text-on-accent)] text-[15px] font-extrabold"
           style={{ letterSpacing: "0.06em" }}
         >
           {core.name}
         </text>
-        <text y={38} textAnchor="middle" className="text-[9.5px] fill-white/70">
+        <text y={38} textAnchor="middle" className="text-[9.5px] fill-[var(--text-on-accent)]/70">
           {core.role}
         </text>
       </g>
@@ -477,7 +477,7 @@ function NodeCard({ node }: { node: BrainNode }): React.JSX.Element {
           }}
         >
           <span
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-white shadow-[var(--shadow-sm)]"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-[var(--text-on-accent)] shadow-[var(--shadow-sm)]"
             style={{ background: node.accent }}
           >
             <Icon className="h-5 w-5" aria-hidden />

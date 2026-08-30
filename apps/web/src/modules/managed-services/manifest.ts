@@ -5,7 +5,7 @@ export const managedServicesManifest: ModuleManifest = {
   key: "managed-services",
   name: "Managed Services",
   summary:
-    "RELAY's operating layer around XELOR: service catalogue, transition, monitoring, incidents, changes, service levels, customer updates and continual improvement.",
+    "RELAY's operating layer around ONYX: service catalogue, transition, monitoring, incidents, changes, service levels, customer updates and continual improvement.",
   department: "RELAY",
   icon: "Headset",
   // Bundled with the Agent OS entitlement in the MVP; a production commercial catalogue
@@ -19,7 +19,7 @@ export const managedServicesManifest: ModuleManifest = {
       permission: "managed_services.overview.read",
       icon: "PanelsTopLeft",
       description:
-        "The customer-facing operating view of XELOR itself: agreed services, current service health, active incidents, the next update and the people accountable for restoration. RELAY coordinates the service; the technical owner still fixes its own domain.",
+        "The customer-facing operating view of ONYX itself: agreed services, current service health, active incidents, the next update and the people accountable for restoration. RELAY coordinates the service; the technical owner still fixes its own domain.",
     },
     {
       label: "Incidents & escalation",
@@ -27,7 +27,7 @@ export const managedServicesManifest: ModuleManifest = {
       permission: "managed_services.overview.read",
       icon: "Siren",
       description:
-        "Operational incidents affecting the XELOR service, with severity, customer impact, response clock, technical owner, evidence and update cadence. Security incidents remain HEXA records and AI incidents remain AI Operations records; RELAY links their customer-facing impact instead of creating a second technical register.",
+        "Operational incidents affecting the ONYX service, with severity, customer impact, response clock, technical owner, evidence and update cadence. Security incidents remain HEXA records and AI incidents remain AI Operations records; RELAY links their customer-facing impact instead of creating a second technical register.",
     },
     {
       label: "Changes & releases",

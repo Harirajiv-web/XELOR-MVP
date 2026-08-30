@@ -1,7 +1,7 @@
 -- =============================================================================
 -- 0021_seed_sales — §7 demo customers, chosen to exercise place of supply.
 --
--- Trishul sells the CP-50 pump from its PUNE registration (27, Maharashtra):
+-- 3S sells the CP-50 pump from its PUNE registration (27, Maharashtra):
 --   * Bharat Auto Components, Pune (27)      -> INTRA-state -> CGST + SGST
 --   * BlueOrbit Pumps, Bengaluru (29)        -> INTER-state -> IGST
 --   * Sundaram Motors, Coimbatore (33)       -> INTER-state from Pune, but INTRA-state

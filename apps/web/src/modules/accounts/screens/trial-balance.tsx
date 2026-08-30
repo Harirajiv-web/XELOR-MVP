@@ -145,7 +145,7 @@ export default function TrialBalanceScreen(_props: ScreenProps): React.JSX.Eleme
               value={asOf}
               onChange={(e) => setAsOf(e.target.value || accountsApi.demoToday)}
               aria-label="Trial balance as-at date"
-              className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text-primary)]"
+              className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[13px] text-[var(--text-primary)]"
             />
           </label>
         }
@@ -202,7 +202,7 @@ export default function TrialBalanceScreen(_props: ScreenProps): React.JSX.Eleme
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by account code or name…"
           aria-label="Filter accounts"
-          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
         />
       </div>
 

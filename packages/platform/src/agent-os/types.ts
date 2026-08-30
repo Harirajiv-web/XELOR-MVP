@@ -58,7 +58,7 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
     name: "MICA Sales & Product Care",
     department: "Sales and Manufactured-Product Care",
     purpose:
-      "Analyse customers, quotations, orders, delivery commitments, product complaints, warranty and after-sales care. XELOR technology incidents belong to RELAY.",
+      "Analyse customers, quotations, orders, delivery commitments, product complaints, warranty and after-sales care. ONYX technology incidents belong to RELAY.",
     allowedCapabilityPrefixes: ["sales.", "customer.", "agent."],
     delegatesTo: [],
   },
@@ -117,7 +117,7 @@ export const AGENT_REGISTRY: readonly AgentDefinition[] = [
     name: "RELAY Managed Services",
     department: "Managed Service Operations",
     purpose:
-      "Own the service lifecycle, event triage, incident coordination, change calendar, service levels, customer updates and continual improvement around XELOR.",
+      "Own the service lifecycle, event triage, incident coordination, change calendar, service levels, customer updates and continual improvement around ONYX.",
     allowedCapabilityPrefixes: ["managed-services.", "agent."],
     delegatesTo: [],
   },

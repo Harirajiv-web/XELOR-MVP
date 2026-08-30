@@ -25,7 +25,7 @@
 --          Bharat Auto Components       (CUST-BAC) → stands in for "Deccan Agrotech"
 --      `customer_account_id` is that customer's id, which is exactly what it is for.
 --
---  (c) THE MACHINES ARE THE PUMP. §20 names TPC-SFT-001 / TPC-BRG-HSG-004 / TPC-FLG-010;
+--  (c) THE MACHINES ARE THE PUMP. §20 names 3S-SFT-001 / 3S-BRG-HSG-004 / 3S-FLG-010;
 --      this prototype's item master is the CP-50 centrifugal pump and its components.
 --      Serials are minted against the CP-50, and the spare requests are for the seal, the
 --      shaft and the impeller that actually exist in Engineering — because a spare request
@@ -33,7 +33,7 @@
 --      that only works if nobody presses the button.
 -- =============================================================================
 
--- Trishul tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
+-- 3S tenant 0192a8c0-0000-7000-8000-000000000001 · Kaveri …002
 -- system actor    0192a8c0-0000-7000-8000-0000000000ff
 -- customers (SMBD): CUST-BLO …0020-…0002 · CUST-SUN …0020-…0003 · CUST-BAC …0020-…0001
 -- employees (HRM):  Priya Deshmukh …0025-…203 · Meera Iyer …0025-…202 · Kavita Rao …0025-…204
@@ -53,7 +53,7 @@ INSERT INTO csp_business_calendar
    day_start_minutes, day_end_minutes, holidays, utc_offset_minutes) VALUES
  ('0192a8c0-0029-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001',
   '0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff',
-  'TPC-DESK','Trishul service desk (Mon–Sat, 09:00–18:00 IST)',
+  '3S-DESK','3S service desk (Mon–Sat, 09:00–18:00 IST)',
   '[1,2,3,4,5,6]'::jsonb, 540, 1080,
   '["2026-08-15","2026-10-02","2026-11-08"]'::jsonb, 330)
 ON CONFLICT (id) DO NOTHING;
@@ -273,7 +273,7 @@ INSERT INTO csp_kb_article
   E'A weeping mechanical seal on a CP-50 is most often a seating problem rather than a seal defect.\n\n**Seating**\n1. Check the shaft for score marks at the seal face. A visible score will weep whatever seal is fitted.\n2. Lubricate the elastomer with clean water or the pumped fluid — never with mineral oil, which swells EPDM.\n3. Seat the stationary face square. A face seated 0.05 mm out of square will weep under pressure and look exactly like a defective seal.\n\n**Torque**\n- Gland bolts: 12 Nm, diagonally, in two passes.\n- Do not over-torque to stop a weep. Over-torque distorts the stationary face and makes the weep permanent.\n\n**Run-in** — a light weep for the first 15 minutes is normal and should stop. A weep that persists past 30 minutes, or any weep with the pump stopped, should be raised as a request with a photograph of the shaft-to-seal area.',
   'Maintenance','["CMP-SEAL20","PMP-CP50"]'::jsonb,'public',2,'published',368,88,12, TIMESTAMPTZ '2026-05-02 10:30:00+05:30','0192a8c0-0025-7000-8000-000000000206'),
  ('0192a8c0-0029-7000-8000-000000000803','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff',
-  'KB-003','How to read your Trishul warranty certificate',
+  'KB-003','How to read your 3S warranty certificate',
   E'Your certificate carries four things that decide a claim.\n\n**Serial number** — the number stamped on the nameplate. Quote it on every request; it is how coverage is looked up.\n\n**Start date** — the date of dispatch, not the date of commissioning or of your purchase order. Standard cover runs twelve months from dispatch.\n\n**Coverage terms** — manufacturing defects in parts and labour. Wear parts, damage from misuse and unauthorised repair are outside cover; this is stated on the certificate itself.\n\n**Claims are judged on the DATE OF FAILURE**, not the date you report it. A failure that happened inside the cover period remains covered even if you raise the request afterwards — so record the date you first noticed it.\n\nIf you also hold an AMC, the AMC is checked first: a comprehensive contract is broader than the standard warranty.',
   'Warranty','[]'::jsonb,'public',1,'published',521,95,5, TIMESTAMPTZ '2026-04-02 09:00:00+05:30','0192a8c0-0025-7000-8000-000000000205'),
  ('0192a8c0-0029-7000-8000-000000000804','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff',
@@ -290,7 +290,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Kaveri ElectroFab: the cross-tenant leak-probe counterpart (§16.B).
 --
 -- One calendar, one policy, one series — the minimum a ticket needs to exist. The probe
--- creates a Kaveri ticket and then asserts that a Trishul session, and a Trishul portal
+-- creates a Kaveri ticket and then asserts that a 3S session, and a 3S portal
 -- session, both count zero.
 -- ---------------------------------------------------------------------------
 INSERT INTO csp_business_calendar

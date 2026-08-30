@@ -157,14 +157,14 @@ export default function MaintenanceWorkOrdersScreen(_props: ScreenProps): React.
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter by work order, machine or job…"
             aria-label="Filter maintenance work orders"
-            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           aria-label="Status"
-          className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+          className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
         >
           <option value="">Live work (closed and cancelled hidden)</option>
           {STATUSES.map((s) => (

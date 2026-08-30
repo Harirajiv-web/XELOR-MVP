@@ -3,7 +3,7 @@ import { NestFactory } from "@nestjs/core";
 import { ExpressAdapter } from "@nestjs/platform-express";
 import express, { type Request, type Response } from "express";
 import { AppModule } from "./app.module.js";
-import { configureXelorApp } from "./bootstrap.js";
+import { configureOnyxApp } from "./bootstrap.js";
 
 /**
  * Vercel Functions entrypoint.
@@ -19,7 +19,7 @@ async function initialize(): Promise<void> {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     bufferLogs: false,
   });
-  configureXelorApp(app);
+  configureOnyxApp(app);
   await app.init();
 }
 

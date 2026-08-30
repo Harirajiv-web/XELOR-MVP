@@ -10,7 +10,7 @@ async function signIn(page: Page): Promise<void> {
   if (await page.locator("#username").isVisible()) {
     await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
   await page.goto("/sales/orders");

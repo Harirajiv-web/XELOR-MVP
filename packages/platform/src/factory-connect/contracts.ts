@@ -1,3 +1,5 @@
+import type { FactoryOperationsProjection } from "../factory-operations/projection.js";
+
 export const MACHINE_COMMAND_CAPABILITIES = [
   "robot.job.enqueue",
   "robot.program.select_approved",
@@ -146,6 +148,8 @@ export interface FactoryAssetView {
   manufacturer: string | null;
   model: string | null;
   gatewayCode: string | null;
+  maintenanceAssetRef: string | null;
+  workCenterRef: string | null;
   adapterMode: string;
   commandMode: string;
   state: string;
@@ -196,6 +200,7 @@ export interface FactoryOverview {
     createdAt: string;
     result: unknown;
   }>;
+  operations: FactoryOperationsProjection | null;
   summary: { assets: number; constrained: number; exceededDwell: number; headline: string };
   mission: {
     graphKey: string;
@@ -416,7 +421,7 @@ export function machineCommandVerdict(input: {
   maxStateAgeMs?: number;
 }): MachineCommandVerdict {
   if (!(MACHINE_COMMAND_CAPABILITIES as readonly string[]).includes(input.capability)) {
-    return { allowed: false, reason: "Capability is not in XELOR's closed machine-command catalogue." };
+    return { allowed: false, reason: "Capability is not in ONYX's closed machine-command catalogue." };
   }
   if (input.policy.forbidden?.includes(input.capability)) {
     return { allowed: false, reason: "The asset policy explicitly forbids this capability." };
@@ -462,6 +467,6 @@ export function machineCommandVerdict(input: {
   }
   return {
     allowed: true,
-    reason: "XELOR policy gates passed; this verdict authorizes no physical action.",
+    reason: "ONYX policy gates passed; this verdict authorizes no physical action.",
   };
 }

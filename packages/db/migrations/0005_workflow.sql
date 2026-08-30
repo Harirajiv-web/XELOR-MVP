@@ -80,7 +80,7 @@ CREATE TRIGGER trg_wfaction_append_only
   FOR EACH ROW EXECUTE FUNCTION audit_log_append_only();
 REVOKE UPDATE, DELETE ON workflow_action FROM app_user;
 
--- ---- demo template: a 2-level purchase-order approval for Trishul ----
+-- ---- demo template: a 2-level purchase-order approval for 3S ----
 INSERT INTO workflow_definition (id, tenant_id, created_by, updated_by, code, version, name, subject_type, steps) VALUES
   ('0192a8c0-0005-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001',
    '0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff',

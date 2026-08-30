@@ -8,7 +8,7 @@ interface RouteResult {
 }
 
 const LEGACY_BRAND = /\bIND[- ]?(?:CORE|AI|ERP|Copilot)\b/i;
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.ONYX_E2E_BASE_URL ?? "http://localhost:3001";
 
 async function signInThroughKeycloak(page: Page): Promise<void> {
   await page.goto("/");
@@ -19,10 +19,10 @@ async function signInThroughKeycloak(page: Page): Promise<void> {
   if (await page.locator("#username").isVisible()) {
     await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   expect(new URL(page.url()).origin).toBe(baseUrl);
-  await expect(page.getByText("XELOR", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("ONYX", { exact: true }).first()).toBeVisible();
 }
 
 async function attachJson(testInfo: TestInfo, name: string, value: unknown): Promise<void> {
@@ -32,7 +32,7 @@ async function attachJson(testInfo: TestInfo, name: string, value: unknown): Pro
   });
 }
 
-test("an administrator can traverse the complete XELOR demo and use ONYX", async ({
+test("an administrator can traverse the complete ONYX demo and use ONYX", async ({
   page,
 }, testInfo) => {
   test.setTimeout(180_000);
@@ -152,8 +152,11 @@ test("an administrator can traverse the complete XELOR demo and use ONYX", async
   await expect(page.getByText("inventory workspace", { exact: false })).toBeVisible();
   await page.getByRole("textbox", { name: "Ask ONYX Copilot" }).fill("How much stock do we have?");
   await page.locator("form").getByRole("button", { name: "Ask", exact: true }).click();
-  await page.getByText("How this answer was found", { exact: true }).click();
-  await expect(page.getByText("Evidence trail", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("copilot-department-route")).toContainText("SPAR · Purchasing & Stock");
+  await expect(page.getByTestId("copilot-answer-table")).toBeVisible();
+  await expect(page.getByTestId("copilot-full-answer")).toHaveCount(0);
+  await expect(page.getByTestId("copilot-reasoning")).toHaveCount(0);
+  await expect(page.getByTestId("copilot-records")).toHaveCount(0);
 
   // The dedicated analyst workspace is independently usable, not merely a larger wrapper
   // around the rail. Exercise its keyboard-friendly composer and evidence result.
@@ -161,8 +164,11 @@ test("an administrator can traverse the complete XELOR demo and use ONYX", async
   await expect(page.getByText("ONYX analyst", { exact: true })).toBeVisible();
   await page.getByRole("textbox", { name: "Your question" }).fill("How much stock do we have?");
   await page.getByRole("button", { name: "Ask ONYX" }).click();
-  await page.getByText("How this answer was found", { exact: true }).first().click();
-  await expect(page.getByText("Evidence", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("copilot-department-route")).toContainText("SPAR · Purchasing & Stock");
+  await expect(page.getByTestId("copilot-answer-table")).toBeVisible();
+  await expect(page.getByTestId("copilot-full-answer")).toHaveCount(0);
+  await expect(page.getByTestId("copilot-reasoning")).toHaveCount(0);
+  await expect(page.getByTestId("copilot-records")).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath("03-onyx-analyst.png"), fullPage: true });
 
   // The wider experience is present and every simulated area states its provenance.

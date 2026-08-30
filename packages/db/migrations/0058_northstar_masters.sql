@@ -35,7 +35,7 @@
 -- longer to arrive than the order allows, and MRP has to say so in a way a person can act
 -- on. A demo where nothing is short has nothing for a planner to decide.
 --
--- Trishul tenant 0192a8c0-0000-7000-8000-000000000001, system actor …0000ff, as every
+-- 3S tenant 0192a8c0-0000-7000-8000-000000000001, system actor …0000ff, as every
 -- other seed migration in this tree. UUIDs carry the 0058 block so every row this file
 -- creates is identifiable at a glance.
 -- =============================================================================
@@ -43,16 +43,16 @@
 -- ---------------------------------------------------------------------------
 -- 1. The item master.
 --
--- Six items: the pump, the two parts Trishul machines itself, and the three it buys. The
+-- Six items: the pump, the two parts 3S machines itself, and the three it buys. The
 -- make/buy split is what gives MRP a multi-level explosion to walk rather than a flat list.
 -- ---------------------------------------------------------------------------
 INSERT INTO item (id, tenant_id, created_by, updated_by, item_code, name, description, item_type, uom, hsn_code, item_group, is_purchasable, is_manufacturable, is_sellable, standard_cost) VALUES
- ('0192a8c0-0058-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','PMP-PX400','PX-400 Precision Pump Assembly','316L process pump, 400 series, cartridge seal, 42 m head at duty','finished_good','nos','8413','Pumps',false,true,true,41500.00),
- ('0192a8c0-0058-7000-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-IMP','PX-400 Impeller 316L','Closed impeller, 316L, milled vanes','component','nos','8413','Impellers',false,true,false,6800.00),
- ('0192a8c0-0058-7000-8000-000000000003','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-SFT','PX-400 Shaft 32mm 316L','Ground shaft, 316L, 32 mm','component','nos','8483','Shafts',false,true,false,4200.00),
- ('0192a8c0-0058-7000-8000-000000000004','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CST-PX4-CAS','PX-400 Casing Casting Blank','Investment cast 316L volute blank, PX-400','raw_material','nos','7325','Castings',true,false,false,9600.00),
+ ('0192a8c0-0058-7000-8000-000000000001','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','PMP-PX400','PX-400 Valve Body, machined','Finished 316L valve body, 400 series, precision bored and lapped','finished_good','nos','8413','Pumps',false,true,true,41500.00),
+ ('0192a8c0-0058-7000-8000-000000000002','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-IMP','PX-400 Machined Disc 316L','Closed impeller, 316L, milled vanes','component','nos','8413','Impellers',false,true,false,6800.00),
+ ('0192a8c0-0058-7000-8000-000000000003','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-SFT','PX-400 Ground Shaft 32mm 316L','Ground shaft, 316L, 32 mm','component','nos','8483','Shafts',false,true,false,4200.00),
+ ('0192a8c0-0058-7000-8000-000000000004','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CST-PX4-CAS','PX-400 Body Casting Blank','Investment cast 316L volute blank, PX-400','raw_material','nos','7325','Castings',true,false,false,9600.00),
  ('0192a8c0-0058-7000-8000-000000000005','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','RAW-316L-B40','SS 316L Bright Bar 40mm','Stainless 316L bright bar, 40 mm dia, lot-traced','raw_material','kg','7222','Bar Stock',true,false,false,385.00),
- ('0192a8c0-0058-7000-8000-000000000006','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-SEAL','PX-400 Cartridge Seal 32mm','Cartridge mechanical seal, SiC/SiC, 32 mm','component','nos','8484','Seals',true,false,false,3150.00)
+ ('0192a8c0-0058-7000-8000-000000000006','0192a8c0-0000-7000-8000-000000000001','0192a8c0-0000-7000-8000-0000000000ff','0192a8c0-0000-7000-8000-0000000000ff','CMP-PX4-SEAL','PX-400 Seal Ring 32mm','Cartridge mechanical seal, SiC/SiC, 32 mm','component','nos','8484','Seals',true,false,false,3150.00)
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------

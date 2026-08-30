@@ -136,7 +136,7 @@ const RULES: readonly Rule[] = [
 ];
 
 /**
- * A NAMED PHYSICAL FAILURE of something Trishul supplied.
+ * A NAMED PHYSICAL FAILURE of something 3S supplied.
  *
  * This exists because almost every defect report arrives wrapped in other vocabulary. "The
  * casing has cracked — we wish to claim under warranty" carries three warranty words and

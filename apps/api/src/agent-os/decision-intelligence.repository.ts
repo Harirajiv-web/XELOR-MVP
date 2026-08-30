@@ -410,7 +410,7 @@ export class DecisionIntelligenceRepository {
           learned:
             verified.length > 0
               ? `A named reviewer verified ${verified.length} measured outcome${verified.length === 1 ? "" : "s"}.`
-              : "The result has not been verified yet; XELOR will not claim learned value.",
+              : "The result has not been verified yet; ONYX will not claim learned value.",
           startedAt: run.createdAt.toISOString(),
           completedAt: run.completedAt?.toISOString() ?? null,
           decidedAt: approval?.decidedAt?.toISOString() ?? null,

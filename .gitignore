@@ -32,3 +32,6 @@ apps/web/playwright-report/
 # Machine-local Codex/plugin skill packages are not application dependencies.
 .agents/
 skills-lock.json
+
+# Local run state: pids and logs from run-phase.sh. Never a build input.
+.run/

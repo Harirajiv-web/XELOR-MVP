@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
-const apiBaseUrl = process.env.XELOR_E2E_API_URL ?? "http://localhost:3000";
+const baseUrl = process.env.ONYX_E2E_BASE_URL ?? "http://localhost:3001";
+const apiBaseUrl = process.env.ONYX_E2E_API_URL ?? "http://localhost:3000";
 
 async function signIn(page: Page): Promise<void> {
   await page.goto(baseUrl);
@@ -11,7 +11,7 @@ async function signIn(page: Page): Promise<void> {
   if (await username.isVisible()) {
     await username.fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(brain).toBeVisible({ timeout: 30_000 });
 }
@@ -50,7 +50,7 @@ test("ACHILES privately checks the complete demo stack and preserves history", a
   await page.goto(`${baseUrl}/platform-health/status`);
 
   await expect(page.getByTestId("achiles-status-screen")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Is XELOR working?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Is ONYX working?" })).toBeVisible();
   await expect(page.getByText("Private", { exact: true })).toBeVisible();
   await expect(page.getByText("Hourly", { exact: true })).toBeVisible();
   await expect(page.getByText("Read-only", { exact: true })).toBeVisible();
@@ -65,7 +65,7 @@ test("ACHILES privately checks the complete demo stack and preserves history", a
   await completedRun;
 
   await expect(page.getByTestId("achiles-headline")).toContainText(
-    "XELOR is working",
+    "ONYX is working",
   );
   for (const key of ["api", "database", "event_bus", "web", "ai_runtime"]) {
     const card = page.getByTestId(`achiles-check-${key}`);
@@ -88,7 +88,7 @@ test("ACHILES remains understandable on a phone-sized screen", async ({ page }, 
   await page.goto(`${baseUrl}/platform-health/status`);
 
   await expect(page.getByTestId("achiles-status-screen")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Is XELOR working?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Is ONYX working?" })).toBeVisible();
   await expect(page.getByTestId("achiles-run-now")).toBeVisible();
   await expect(page.getByText("Private check history", { exact: true })).toBeVisible();
   await page.screenshot({

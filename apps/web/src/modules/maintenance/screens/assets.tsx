@@ -151,14 +151,14 @@ export default function AssetsScreen(_props: ScreenProps): React.JSX.Element {
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter by code, name or area…"
             aria-label="Filter assets"
-            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </div>
         <select
           value={criticality}
           onChange={(e) => setCriticality(e.target.value)}
           aria-label="Criticality"
-          className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+          className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
         >
           <option value="">All criticalities</option>
           {CRITICALITIES.map((c) => (

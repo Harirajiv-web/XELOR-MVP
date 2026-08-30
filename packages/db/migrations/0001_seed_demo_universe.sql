@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 0001_seed — the canonical demo universe (DECISIONS-V2 §7). Runs as OWNER.
--- Primary tenant Trishul Precision Components: ONE company, TWO GST registrations
+-- Primary tenant 3S Precision Parts: ONE company, TWO GST registrations
 -- (Maharashtra + Tamil Nadu) — exercises multi-GSTIN-per-tenant from day one.
 -- Kaveri ElectroFab is seeded minimally, solely for RLS leak-probe demos.
 -- Ids are fixed UUIDv7-shaped values shared with .env.example.
@@ -10,7 +10,7 @@
 -- 0192a8c0-0000-7000-8000-0000000000ff
 
 INSERT INTO tenant (id, legal_name, is_active) VALUES
-  ('0192a8c0-0000-7000-8000-000000000001', 'Trishul Precision Components Pvt Ltd', true),
+  ('0192a8c0-0000-7000-8000-000000000001', '3S Precision Parts Pvt Ltd', true),
   ('0192a8c0-0000-7000-8000-000000000002', 'Kaveri ElectroFab Industries', true)
 ON CONFLICT (id) DO NOTHING;
 
@@ -19,7 +19,7 @@ INSERT INTO company (id, tenant_id, created_by, updated_by, legal_name, cin) VAL
    '0192a8c0-0000-7000-8000-000000000001',
    '0192a8c0-0000-7000-8000-0000000000ff',
    '0192a8c0-0000-7000-8000-0000000000ff',
-   'Trishul Precision Components Pvt Ltd',
+   '3S Precision Parts Pvt Ltd',
    'U29299PN2016PTC000001')
 ON CONFLICT (id) DO NOTHING;
 

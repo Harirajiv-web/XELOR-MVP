@@ -45,7 +45,7 @@ export default function AppLayout({ children }: { children: ReactNode }): React.
   // have access to nothing", which is the single worst thing to tell someone during the
   // two hundred milliseconds before you find out what they do have.
   if (status === "loading" || !ready) {
-    return <Loading label={isPublicDemo ? "Opening XELOR…" : "Signing you in…"} />;
+    return <Loading label={isPublicDemo ? "Opening ONYX…" : "Signing you in…"} />;
   }
   if (status === "anonymous") return <Loading label="Redirecting to sign-in…" />;
 

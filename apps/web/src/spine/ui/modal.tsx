@@ -107,7 +107,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[rgba(16,24,40,0.45)] p-4 sm:p-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--overlay-scrim)] p-4 sm:p-8"
       onKeyDown={onKeyDown}
     >
       <div

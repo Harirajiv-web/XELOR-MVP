@@ -844,6 +844,13 @@ export const PERMISSION_REGISTRY = [
     privileged: true,
   },
   {
+    permission: "factory.scenario.execute",
+    docType: "factory_simulator_scenario",
+    description:
+      "Execute an explicitly configured mock-only factory scenario without generic telemetry or physical command authority.",
+    privileged: true,
+  },
+  {
     permission: "factory.command.execute",
     docType: "machine_command",
     description:

@@ -2,7 +2,7 @@
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * THE XELOR TYPE SYSTEM — one voice across the sign-in page, the Brain and the map.
+ * THE ONYX TYPE SYSTEM — one voice across the sign-in page, the Brain and the map.
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * The sign-in page is Keycloak's, so its typography is written in CSS
@@ -105,7 +105,7 @@ export function Wordmark(): React.JSX.Element {
         className="text-(--void-ink)"
         style={{ ...MARK, fontSize: "clamp(1.25rem, 1.8vw, 1.75rem)" }}
       >
-        XELOR
+        ONYX
       </div>
       {/* Cool grey rather than charcoal: on a near-black void a charcoal subtitle is not
           understated, it is invisible. This measures about 7:1 against the void. */}

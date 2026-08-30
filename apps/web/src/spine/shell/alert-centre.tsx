@@ -464,7 +464,7 @@ export function AlertCentre(): React.JSX.Element | null {
             // It pulses only when something is actually stopped — an animation that is always
             // running stops meaning anything within a day.
             className={cn(
-              "absolute -right-0.5 -top-0.5 grid min-w-[17px] place-items-center rounded-full px-[4px] text-[9.5px] font-extrabold leading-[16px] text-white",
+              "absolute -right-0.5 -top-0.5 grid min-w-[17px] place-items-center rounded-full px-[4px] text-[9.5px] font-extrabold leading-[16px] text-[var(--text-on-accent)]",
               worst === "critical" && "pulse",
             )}
             style={{ background: LOOK[worst ?? "attention"].dot }}
@@ -579,7 +579,7 @@ export function AlertCentre(): React.JSX.Element | null {
                           <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-[var(--text-muted)]">
                             {dept ? (
                               <span
-                                className="rounded-[4px] px-1.5 py-[1px] text-[8.5px] font-extrabold tracking-[0.1em] text-white"
+                                className="rounded-[4px] px-1.5 py-[1px] text-[8.5px] font-extrabold tracking-[0.1em] text-[var(--text-on-accent)]"
                                 style={{ background: dept.accent }}
                               >
                                 {dept.code}

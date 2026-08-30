@@ -32,6 +32,6 @@ export const endpoints = {
 
 /** Group name → the tenant it maps to, mirroring the API's TenantMiddleware. */
 export const TENANT_LABELS: Readonly<Record<string, string>> = {
-  trishul: "Trishul Precision Components",
+  trishul: "3S Precision Parts",
   kaveri: "Kaveri ElectroFab Industries",
 };

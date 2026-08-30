@@ -38,9 +38,9 @@ export default function VoidLayout({ children }: { children: ReactNode }): React
 
   if (status !== "authenticated") {
     return (
-      <div className="grid h-screen w-screen place-items-center bg-[#04060c]" style={{ colorScheme: "dark" }}>
-        <p className="text-[11px] tracking-[0.3em] text-[#48607a] uppercase">
-          {isPublicDemo ? "Opening XELOR" : status === "anonymous" ? "Signing you in" : "Waking"}
+      <div className="grid h-screen w-screen place-items-center bg-[var(--dock-bg)]" style={{ colorScheme: "dark" }}>
+        <p className="text-[11px] tracking-[0.3em] text-[var(--dock-ink-faint)] uppercase">
+          {isPublicDemo ? "Opening ONYX" : status === "anonymous" ? "Signing you in" : "Waking"}
         </p>
       </div>
     );

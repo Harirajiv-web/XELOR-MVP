@@ -1,5 +1,5 @@
 /**
- * RELAY MANAGED SERVICES — the operating contract around XELOR.
+ * RELAY MANAGED SERVICES — the operating contract around ONYX.
  *
  * RELAY owns the service clock, the customer communication and the proof that a service
  * outcome was restored. It does not take technical ownership away from the domain that
@@ -112,7 +112,7 @@ export const MANAGED_SERVICE_RESPONSIBILITIES: readonly ManagedServiceResponsibi
       key: "platform-health-detection",
       accountable: "ACHILES",
       responsibility:
-        "Privately check XELOR platform availability, latency and evidence freshness every hour and retain the tenant-isolated result history.",
+        "Privately check ONYX platform availability, latency and evidence freshness every hour and retain the tenant-isolated result history.",
       handoff:
         "Supplies failed-check evidence to RELAY for incident coordination and to the relevant technical owner for diagnosis and repair.",
       boundary:
@@ -204,7 +204,7 @@ export const MANAGED_SERVICE_RESPONSIBILITIES: readonly ManagedServiceResponsibi
       responsibility:
         "Own customer product tickets, warranty, AMC, complaints, spares and product-service communication.",
       handoff:
-        "RELAY owns only tickets about XELOR's managed technology service; product complaints remain MICA records.",
+        "RELAY owns only tickets about ONYX's managed technology service; product complaints remain MICA records.",
       boundary:
         "No duplicate ticket is created in Managed Services when the case concerns a manufactured product or installed base.",
     },
@@ -214,7 +214,7 @@ export const MANAGED_SERVICE_RESPONSIBILITIES: readonly ManagedServiceResponsibi
       responsibility:
         "Own factory assets, maintenance requests, maintenance work orders, downtime, PM and reliability measures.",
       handoff:
-        "RELAY may coordinate XELOR platform availability but never converts a machine breakdown into a platform incident.",
+        "RELAY may coordinate ONYX platform availability but never converts a machine breakdown into a platform incident.",
       boundary:
         "Physical equipment restoration and production handback remain KILN decisions.",
     },
@@ -343,7 +343,7 @@ export function managedServiceDemoSnapshot(): ManagedServiceDemoSnapshot {
     },
     serviceCatalogue: [
       {
-        service: "XELOR application",
+        service: "ONYX application",
         outcome: "Authorised users can complete core ERP journeys.",
         coverage: "P1 response 24×7 · standard requests business hours",
         owner: "RELAY + application engineering",

@@ -5,7 +5,7 @@ import { OutboxRelay } from "./bus/outbox-relay.js";
 import { startConsumer } from "./bus/event-consumer.js";
 
 /**
- * The XELOR worker process — the "mailman" and its subscribers. Deliberately a
+ * The ONYX worker process — the "mailman" and its subscribers. Deliberately a
  * SEPARATE process from the API (apps/api/src/main.ts): workers scale and restart
  * independently of request-serving, and a stuck consumer must never stall HTTP.
  *
@@ -24,7 +24,7 @@ async function main(): Promise<void> {
   );
 
   relay.start((e) => console.error("[relay] sweep error:", e));
-  console.log("XELOR worker up — outbox relay + demo consumer running.");
+  console.log("ONYX worker up — outbox relay + demo consumer running.");
 
   let shuttingDown = false;
   const shutdown = async (signal: string): Promise<void> => {

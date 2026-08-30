@@ -18,10 +18,10 @@ import { tenantScopedColumns } from "./columns.js";
 import { agentApproval } from "./agent-os.js";
 
 /**
- * FACTORY CONNECT — the governed boundary between XELOR and operational technology.
+ * FACTORY CONNECT — the governed boundary between ONYX and operational technology.
  *
  * These tables hold operational events and command evidence, never high-frequency motion
- * telemetry. Axis streams remain in the controller/historian; XELOR keeps the facts needed
+ * telemetry. Axis streams remain in the controller/historian; ONYX keeps the facts needed
  * to explain production, maintenance, quality and material-flow consequences.
  */
 export const factoryEdgeGateway = pgTable(

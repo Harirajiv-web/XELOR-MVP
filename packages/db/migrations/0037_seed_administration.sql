@@ -2,7 +2,7 @@
 -- 0037_seed_administration — the control plane, seeded against the §7 demo universe.
 --
 -- The interesting seed rows are the ones that are deliberately WRONG in a realistic way:
--- a demo tenant where every control is already green proves nothing. So Trishul ships with
+-- a demo tenant where every control is already green proves nothing. So 3S ships with
 -- a real segregation-of-duties conflict on a real person, an incident mid-way through its
 -- six-hour CERT-In clock, and an erasure request that must be refused because the
 -- Companies Act says the books stay for eight years.

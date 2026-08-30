@@ -331,7 +331,7 @@ export class AgentGraphEngine {
           } catch (error) {
             // A READ-ONLY evidence source that this operator is not entitled to must not
             // sink the mission. The graph is one shape for everyone, but authority is per
-            // person: ACHILES' platform health is XELOR-internal and a plant operations
+            // person: ACHILES' platform health is ONYX-internal and a plant operations
             // lead deliberately cannot read it (migration 0070 grants it to xelor_admin,
             // it_admin and demo_admin only). Failing the whole run there means the mission
             // never reaches its human approval gate — the decision a person was waiting to

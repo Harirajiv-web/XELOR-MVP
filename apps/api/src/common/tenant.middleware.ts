@@ -98,7 +98,7 @@ const PUBLIC_DEMO_PERSONAS: Readonly<Record<string, TenantContext>> = {
  * unverifiable auth bypass is not a bypass worth having.
  */
 const DEMO_TENANTS: ReadonlySet<string> = new Set([
-  "0192a8c0-0000-7000-8000-000000000001", // Trishul Precision Components Pvt Ltd
+  "0192a8c0-0000-7000-8000-000000000001", // 3S Precision Parts Pvt Ltd
   "0192a8c0-0000-7000-8000-000000000002", // Kaveri ElectroFab Industries
 ]);
 

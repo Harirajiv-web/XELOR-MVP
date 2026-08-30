@@ -166,7 +166,7 @@ export default function FactoryConnectScreen(_props: ScreenProps): React.JSX.Ele
       <section className="flex flex-col gap-3" aria-labelledby="factory-command-ledger">
         <div>
           <h2 id="factory-command-ledger" className="text-[14px] font-semibold text-[var(--text-primary)]">Governed command ledger</h2>
-          <p className="mt-1 text-[12px] leading-5 text-[var(--text-secondary)]">Read-only evidence recorded by XELOR's simulator policy evaluation. It does not represent an edge dispatch, controller acknowledgement or physical execution.</p>
+          <p className="mt-1 text-[12px] leading-5 text-[var(--text-secondary)]">Read-only evidence recorded by ONYX's simulator policy evaluation. It does not represent an edge dispatch, controller acknowledgement or physical execution.</p>
         </div>
         <DataTable
           rows={data.commands}
@@ -185,7 +185,7 @@ export default function FactoryConnectScreen(_props: ScreenProps): React.JSX.Ele
         {[
           ["Read first", "OPC UA, MQTT, REST/webhooks and vendor adapters begin with state, alarm, cycle and location evidence."],
           ["Govern narrowly", "Command requests are named capabilities with approval, expected state, idempotency and expiry. The shipped path evaluates them in the simulator only."],
-          ["Safety stays local", "Emergency stops, guards, raw motion, safety PLC changes and unverified program uploads are never XELOR capabilities."],
+          ["Safety stays local", "Emergency stops, guards, raw motion, safety PLC changes and unverified program uploads are never ONYX capabilities."],
         ].map(([title, body]) => (
           <article key={title} className="rounded-[12px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
             <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">{title}</h3>

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- 0019_seed_quality — the §7 demo universe for Inspection.
 --
--- Trishul inspects its CP-50 centrifugal pump on a FINAL inspection template with three
+-- 3S inspects its CP-50 centrifugal pump on a FINAL inspection template with three
 -- characteristics that mirror what a real pump shop measures: a bore diameter (variable,
 -- CRITICAL), a shaft runout (variable, major) and a pressure-leak test (attribute, critical).
 -- Sampling is an ISO 2859-1-style General Level II / AQL 1.0 table loaded as CONFIGURATION,

@@ -219,7 +219,7 @@ function mountExperienceChrome(): void {
 
   const stage = document.createElement("section");
   stage.id = "ind-stage-copy";
-  stage.setAttribute("aria-label", "XELOR manufacturing intelligence");
+  stage.setAttribute("aria-label", "ONYX manufacturing intelligence");
   stage.innerHTML = `
     <div class="ind-stage-eyebrow"><span></span> Manufacturing intelligence, alive</div>
     <h1>One factory.<br><em>Nine governed agents.</em></h1>
@@ -350,8 +350,8 @@ function mountDemoAccess(): void {
     else submit.textContent = label;
   };
   if (submit) {
-    setSubmitLabel("ENTER XELOR");
-    submit.setAttribute("aria-label", "Enter XELOR");
+    setSubmitLabel("ENTER ONYX");
+    submit.setAttribute("aria-label", "Enter ONYX");
     // Fill before the browser performs required-field validation. This makes the main
     // button a genuine one-action entry even if a password manager cleared either field.
     submit.addEventListener("click", prepareDemoCredentials, { capture: true });
@@ -389,7 +389,7 @@ function mountDemoAccess(): void {
     if (submit) {
       submit.disabled = true;
       submit.setAttribute("aria-busy", "true");
-      setSubmitLabel("ENTERING XELOR…");
+      setSubmitLabel("ENTERING ONYX…");
     }
   });
   form.prepend(hint);

@@ -59,10 +59,10 @@ export default function PlatformStatusScreen(
     : stale
       ? "Last result is stale"
       : latest.overallStatus === "healthy"
-        ? "XELOR is working"
+        ? "ONYX is working"
         : latest.overallStatus === "degraded"
-          ? "XELOR is working with a warning"
-          : "XELOR needs attention";
+          ? "ONYX is working with a warning"
+          : "ONYX needs attention";
   const headlineTone = !latest || stale
     ? "text-[var(--warn-ink)] bg-[var(--warn-soft)] border-[color-mix(in_srgb,var(--warn)_28%,var(--border-subtle))]"
     : latest.overallStatus === "healthy"
@@ -76,12 +76,12 @@ export default function PlatformStatusScreen(
       <section className="relative overflow-hidden rounded-[18px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-md)] lg:p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,color-mix(in_srgb,var(--dept-achiles)_20%,transparent),transparent_38%),radial-gradient(circle_at_100%_100%,var(--brand-soft),transparent_36%)]" aria-hidden />
         <div className="relative flex flex-wrap items-start gap-5">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--dept-achiles)] text-white shadow-[var(--shadow-md)]">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--dept-achiles)] text-[var(--text-on-accent)] shadow-[var(--shadow-md)]">
             <Icons.HeartPulse className="h-6 w-6" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[var(--dept-achiles)]">ACHILES · PRIVATE PLATFORM ASSURANCE</p>
-            <h1 className="mt-1.5 text-[25px] font-extrabold tracking-[-.025em] text-[var(--text-primary)]">Is XELOR working?</h1>
+            <h1 className="mt-1.5 text-[25px] font-extrabold tracking-[-.025em] text-[var(--text-primary)]">Is ONYX working?</h1>
             <p className="mt-2 max-w-[78ch] text-[12.5px] leading-6 text-[var(--text-secondary)]">A quiet internal check of the application, API, database and supporting runtime. It is invisible to ordinary customers and makes no ERP changes.</p>
           </div>
           {can("platform_health.run.execute") ? (
@@ -111,7 +111,7 @@ export default function PlatformStatusScreen(
 
       <section className="grid gap-3 md:grid-cols-3" aria-label="ACHILES operating boundaries">
         {[
-          [Icons.EyeOff, "Customer visibility", "Private", "Only authorised XELOR or IT operators receive this status."],
+          [Icons.EyeOff, "Customer visibility", "Private", "Only authorised ONYX or IT operators receive this status."],
           [Icons.TimerReset, "Normal cadence", "Hourly", data.schedule.mode],
           [Icons.ShieldCheck, "Automatic authority", "Read-only", "No ERP write, restart, repair or customer message."],
         ].map(([Icon, label, value, detail]) => {

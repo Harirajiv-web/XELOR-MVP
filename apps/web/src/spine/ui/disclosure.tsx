@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { cn } from "./cn";
 
 /**
- * One disclosure pattern for secondary information throughout XELOR.
+ * One disclosure pattern for secondary information throughout ONYX.
  *
  * The title tells people what they will reveal before they click. Native `<details>` keeps
  * it keyboard accessible, remembers no surprising global state and works without JavaScript.

@@ -188,7 +188,7 @@ export default function MusterScreen(_props: ScreenProps): React.JSX.Element {
               value={month}
               onChange={(e) => setMonth(e.target.value || hrmApi.demoMonth)}
               aria-label="Muster month"
-              className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text-primary)]"
+              className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2.5 text-[13px] text-[var(--text-primary)]"
             />
           </label>
         }

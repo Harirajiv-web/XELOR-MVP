@@ -25,13 +25,13 @@
 -- six-day week actually runs — not an oversight.
 --
 -- The story in the data, all of it visible on the muster:
---   · TPC-0004 Kavita Rao   — one day of approved Casual Leave (10 Jul), paid, reconciled
+--   · 3S-0004 Kavita Rao   — one day of approved Casual Leave (10 Jul), paid, reconciled
 --                             against the leave balance seeded in 0025.
---   · TPC-0009 Vikram Jadhav— one unexplained absence (14 Jul): one day of loss of pay.
---   · TPC-0008 Sanjay Patil — two late marks beyond Shift A's ten-minute grace, and three
+--   · 3S-0009 Vikram Jadhav— one unexplained absence (14 Jul): one day of loss of pay.
+--   · 3S-0008 Sanjay Patil — two late marks beyond Shift A's ten-minute grace, and three
 --                             days of overtime.
---   · TPC-0007 Imran Shaikh — one late mark on Shift B.
---   · TPC-0010 Lakshmi S.   — three shorter overtime days at the Coimbatore plant.
+--   · 3S-0007 Imran Shaikh — one late mark on Shift B.
+--   · 3S-0010 Lakshmi S.   — three shorter overtime days at the Coimbatore plant.
 -- Everybody else has a clean month, which is what a clean month should look like.
 -- =============================================================================
 
@@ -61,14 +61,14 @@ classified AS (
       -- ISODOW 7 is Sunday. The roster row below is what actually makes the day an off;
       -- this is only how the roster itself is generated.
       WHEN EXTRACT(ISODOW FROM c.att_date) = 7                                     THEN 'off'
-      WHEN e.emp_code = 'TPC-0004' AND c.att_date = DATE '2026-07-10'              THEN 'leave'
-      WHEN e.emp_code = 'TPC-0009' AND c.att_date = DATE '2026-07-14'              THEN 'absent'
-      WHEN e.emp_code = 'TPC-0008'
+      WHEN e.emp_code = '3S-0004' AND c.att_date = DATE '2026-07-10'              THEN 'leave'
+      WHEN e.emp_code = '3S-0009' AND c.att_date = DATE '2026-07-14'              THEN 'absent'
+      WHEN e.emp_code = '3S-0008'
        AND c.att_date IN (DATE '2026-07-08', DATE '2026-07-15')                    THEN 'late'
-      WHEN e.emp_code = 'TPC-0007' AND c.att_date = DATE '2026-07-09'              THEN 'late'
-      WHEN e.emp_code = 'TPC-0008'
+      WHEN e.emp_code = '3S-0007' AND c.att_date = DATE '2026-07-09'              THEN 'late'
+      WHEN e.emp_code = '3S-0008'
        AND c.att_date IN (DATE '2026-07-03', DATE '2026-07-10', DATE '2026-07-17') THEN 'ot_long'
-      WHEN e.emp_code = 'TPC-0010'
+      WHEN e.emp_code = '3S-0010'
        AND c.att_date IN (DATE '2026-07-02', DATE '2026-07-09', DATE '2026-07-16') THEN 'ot_short'
       ELSE 'present'
     END AS kind

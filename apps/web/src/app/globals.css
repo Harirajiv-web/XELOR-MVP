@@ -1,30 +1,67 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   AIKYANTRA DESIGN TOKENS
+   IND-CORE DESIGN TOKENS — the deck palette: PAPER / NAVY / BLUE / GOLD
    ============================================================================
 
-   Derived from the palette already shipping in MAINDECK.html — the brand blue
-   #1d5fd1 is kept deliberately, because re-choosing a colour that already works and
-   already appears in two decks buys nothing and costs recognition.
+   LIFTED VERBATIM FROM THE INVESTOR DECK. Every value in this file comes from that
+   stylesheet's own `:root`; nothing here was invented to fill a gap. The deck and the
+   software are one company, and the fastest way for that to stop being true is for one
+   of them to acquire a colour the other has never heard of.
 
-   Three things ARE changed, because they were measurably wrong:
+     PAPER   #F4F1EA  ·  #EDE8DD  ·  #E4DDCE   the canvas
+     LINE    #D8D0BF  ·  #E6E0D2  ·  #C6BBA4   rules and keylines
+     INK     #0B1A2E  ·  #14263F               type, and the deepest edge of the frame
+     TEXT    #374B62  ·  #5C6E82  ·  #8A98A6   the three steps under body ink
+     NAVY    #0F2E52  ·  #1B4574  ·  #E2E8F0   the frame, and the studio voice
+     BLUE    #1A5FBF  ·  #4285DA  ·  #14508F  ·  #E1EAF7   anything interactive
+     GOLD    #D9A93C  ·  #C9A24A  ·  #7A5B12  ·  #F2E8CE   the accent, lightened
+             (the deck's own #B8891F, one step brighter — see the note below)
+     STATUS  good #0C6B4F/#DCEDE4 · warn #8A5A0B/#F4E9CF · bad #A32B1E/#F6E0DB
 
-   1. The old muted grey (#8494a3) sits at 3.11:1 on white and fails WCAG AA for any
-      real text. It survives here only as `--text-disabled`, which the standard exempts.
-      A new `--text-muted` at 4.76:1 takes over everywhere text is actually read.
-   2. The old green and gold (#1f9d68, #b5891d) fail as label text at 3.45:1 and 3.20:1.
-      Darkened until they pass.
-   3. THE BIG ONE: the deck collapsed eight document states onto two chips — "on hold",
-      "pending approval", "in progress", "due soon" and three others all rendered the
-      same amber. A plant manager distinguishing "waiting for me" from "waiting for
-      someone else" from "already late" at a glance is the entire value of a status
-      column, so there are now eight, and each carries its own icon.
+   THE RULE THE DECK STATES IN ITS OWN COMMENTS, AND IT IS THE LOAD-BEARING ONE
+   ---------------------------------------------------------------------------
+   WHITE IS NEVER SET ON GOLD. Measured on the lightened gold: 2.17:1 — it fails, and it
+   fails in the place it would be least noticed, on the primary button. So `--action-ink` is
+   INK, at 8.07:1. Lightening the gold from the deck's #B8891F to #D9A93C made that pair
+   BETTER (it was 5.52:1) — the ink is the dark half, so a brighter fill helps it.
 
-   COLOUR IS NEVER THE ONLY SIGNAL. Every status ships an icon and, where two share a
-   hue, a different shape or fill treatment. Protanopia and deuteranopia collapse red,
-   amber and green toward each other whatever hex you pick — no palette solves that, so
-   the icon is the mechanism and the colour is the accelerator.
+   THE SAME FACT RUNS THE HOVER BACKWARDS. A gold fill under dark ink must go slightly
+   DARKER on hover, and only slightly: #7A5B12 dropped the label to 2.77:1 and
+   `palette-contrast.test.ts` caught it. #C9A24A holds 7.28:1 and still reads as a press.
+
+   WHAT THE LIGHTENING COST. Full-strength gold as a MARK on paper fell from 2.81:1 to
+   1.92:1. It was already under the 3:1 floor a non-text indicator has to clear, so this
+   token must stay a FILL, a wash or a keyline — never a standalone icon or dot on a light
+   card. `--accent-ink` (#7A5B12) is the one to reach for there.
+
+   BLUE IS THE THING YOU CLICK, GOLD IS THE THING YOU NOTICE. `--brand` is #14508F — the
+   deck's own text-weight blue, 7.23:1 on paper — because `--brand` is read as type at
+   sixty-odd call sites. Gold never has to be small text anywhere.
+
+   THE FRAME IS THE DECK'S NAVY RAMP, in the deck's own order: #1B4574 → #0F2E52 →
+   #14263F → #0B1A2E, deepening toward its outer edge against the paper canvas. Paper is
+   the ink on it (12.14:1) and #D9A93C is the active nav label (6.32:1), so paper, navy and
+   gold are all on screen from the moment the app opens.
+
+   TWO PLACES THE DECK COULD NOT ANSWER, AND WHAT WAS DONE INSTEAD
+   ---------------------------------------------------------------------------
+   The deck is light-only (`color-scheme:light`), so the DARK THEME is built by inverting
+   these same families rather than by introducing new ones: ink becomes the page, paper
+   becomes the type, and the pale status washes become the chip ink over their own
+   saturated grounds. The deck also carries no separate AI hue, so the AI surfaces take
+   the studio navy — the one family the status vocabulary never touches.
+
+   THE NINE DEPARTMENT MARKERS are drawn from the same list, which is a real narrowing:
+   the deck's palette does not contain nine well-separated hues, so several of them are now
+   blue-adjacent. They remain distinguishable, but by less than they were.
+
+   COLOUR IS NEVER THE ONLY SIGNAL. Every status ships an icon and, where two share a hue,
+   a different shape or fill treatment.
+
+   EVERY RATIO HERE IS COMPUTED, NOT ESTIMATED, and `palette-contrast.test.ts` fails the
+   build if one stops holding. This is the fourth palette this product has worn; that file
+   is why each move was a measurement rather than a hope.
    ============================================================================ */
 
 @theme {
@@ -37,141 +74,271 @@
 }
 
 :root {
-  /* ---- surfaces ---- */
-  --bg: #f7f8fa;
+  /* ---- surfaces ----
+     The page is the deck's PAPER. Gold at full strength is a 0.29-luminance field, and
+     17px of tabular data read off it all day is tiring in a way a screenshot never shows.
+     Gold is kept for the button and the keyline, the blue wash for the selected and the
+     highlighted — each a band rather than a room. */
+  --bg: #f4f1ea;
   --surface: #ffffff;
+  /* Raised is a COOL near-white, not #ffffff. Pure white everywhere is the default ground
+     nobody chooses, and it is the one thing that flattens a tinted palette: a pure-white
+     card on a paper page is a hole in the page. White is not banned — the deck draws its
+     own cards in it, and so does this. RESERVED,
+     and `--surface-data` below is where it went. */
   --surface-raised: #ffffff;
-  --surface-sunken: #f1f3f6;
+  --surface-sunken: #ede8dd;
+  /* THE ONE PLACE PURE WHITE EARNS ITS KEEP: the inside of a data-dense table and the
+     inside of an input. A tint is worth having behind prose and chrome; behind a
+     twelve-column stock ledger, or the field a person is typing a part number into,
+     maximum legibility beats it. Body ink is 16.65:1 here against 15.74:1 on the card,
+     and a white well under a paper table header is what makes the header read as a
+     header. Everything else on the page keeps its tint. */
+  --surface-data: #ffffff;
 
-  /* ---- borders ---- */
-  --border-subtle: #e4e9ef;
-  --border-input: #64748b;
-  --border-focus: #1d5fd1;
+  /* ---- borders ----
+     1.50:1 on the page. A hairline at 1.1:1 is a line you can only see on the designer's
+     monitor; a blue-grey rule at 1.5 is still quiet and is actually there on a
+     factory-office panel. */
+  --border-subtle: #c6bba4;
+  --border-input: #8a98a6;
+  /* Deep sky, not the raw accent. A focus ring is the one mark a keyboard user must never
+     miss, and full-strength sky on the pale page is 2.43:1 — under even the 3:1 floor for a
+     non-text indicator. The deepened sky is 5.91:1, nearly twice the floor. */
+  --border-focus: #0f2e52;
 
-  /* ---- text ---- */
-  --text-primary: #12202e;
-  --text-secondary: #51606f;
-  --text-muted: #64748b;
-  --text-disabled: #8494a3;
+  /* ---- text ----
+     A NAVY near-black rather than a neutral one: on a tinted page a grey-black reads as
+     dirty, and this keeps type inside the palette instead of beside it. It is deep enough
+     that the mid sky of `--brand` still reads as "this is an action" against it.
+     Body 14.74:1, secondary 8.51:1, muted 5.21:1 on the page. */
+  --text-primary: #0b1a2e;
+  --text-secondary: #374b62;
+  --text-muted: #5c6e82;
+  --text-disabled: #8a98a6;
+  /* Ink drawn ON a `--brand` fill: white on deep sky, 6.68:1. */
   --text-on-brand: #ffffff;
+  /* Ink drawn ON a `-fill` token. Those stay dark in BOTH themes, so this stays white in
+     both: 7.75 / 7.98 / 9.33 / 9.74 against good / warn / bad / ai fills. */
+  --text-on-fill: #ffffff;
+  /* Ink drawn ON an ACCENT fill — a department marker, a severity dot, `--ok` / `--warn` /
+     `--bad` / `--violet` used as a ground, `--text-primary` used as a ground. Those tokens
+     are DARK in light theme and LIGHT in dark theme, so this one has to flip with them and
+     `text-white` cannot serve: white on the dark theme's `--bad` is 2.4:1. Measured against
+     every accent fill in the product, the worst pair is 5.90:1 here and 5.38:1 in dark. */
+  --text-on-accent: #ffffff;
 
-  /* ---- brand ---- */
-  --brand: #1d5fd1;
-  --brand-hover: #174db0;
-  --brand-soft: #e9f0fc;
-  --brand-soft-2: #f3f7fe;
+  /* ---- brand ----
+     SKY, DEEPENED UNTIL IT SURVIVES AS TEXT. `--brand` is read as type at sixty-odd call
+     sites — 10.5px bold links, 14px icons, inline `<code>` keys — and as a fill at thirteen.
+     Raw sky (#4da3e0) is 2.43:1 on the page and cannot do the first job at all, so this is
+     the accent taken down until it clears (5.91:1 on the page, 6.31:1 on a card) while
+     staying unmistakably the same colour. The accent reaches the page at full strength
+     through `--brand-soft` and the keylines instead. */
+  --brand: #14508f;
+  --brand-hover: #0f2e52;
+  /* SKY AS A BAND. This token is the chip ground, the selected row and the active nav
+     item, and it is where the accent gets to be itself on a light page: brand ink on it is
+     5.12:1 and body ink 12.76:1. A screen with no buttons in view is still visibly blue
+     because of this token. */
+  --brand-soft: #e1eaf7;
+  --brand-soft-2: #e2e8f0;
 
   /* ---- the eight document states ---- */
-  --status-draft-text: #374151;
-  --status-draft-border: #94a3b8;
-  --status-draft-bg: #f4f5f7;
+  --status-draft-text: #374b62;
+  --status-draft-border: #8a98a6;
+  --status-draft-bg: #e2e8f0;
 
-  --status-pending-text: #92400e;
-  --status-pending-bg: #fbe9d9;
+  --status-pending-text: #8a5a0b;
+  --status-pending-bg: #f4e9cf;
 
-  --status-approved-text: #174db0;
-  --status-approved-bg: #dfe9f9;
+  --status-approved-text: #14508f;
+  --status-approved-bg: #e1eaf7;
 
-  --status-progress-text: #0d5f58;
-  --status-progress-bg: #dde9e8;
+  --status-progress-text: #0f2e52;
+  --status-progress-bg: #e2e8f0;
 
-  --status-done-text: #116932;
-  --status-done-bg: #deeae2;
+  --status-done-text: #0c6b4f;
+  --status-done-bg: #dcede4;
 
-  --status-hold-text: #374151;
-  --status-hold-bg: #e2e5e9;
+  --status-hold-text: #374b62;
+  --status-hold-bg: #ede8dd;
 
-  --status-rejected-text: #b91c1c;
-  --status-rejected-bg: #f5dfdf;
+  --status-rejected-text: #a32b1e;
+  --status-rejected-bg: #f6e0db;
 
-  --status-overdue-text: #991b1b;
-  --status-overdue-bg: #f1dfdf;
+  --status-overdue-text: #a32b1e;
+  --status-overdue-bg: #f6e0db;
 
   /* ---- AI / copilot ----
-     Violet is RESERVED for AI affordances and is never a document status. If violet also
-     meant "in progress", every violet badge would need a second look to decide which it
-     was — and the one thing this product cannot afford is ambiguity about whether a human
-     or a machine produced something. */
-  --ai-text: #6d3fc4;
-  --ai-accent: #7c5cd6;
-  --ai-bg: #ede8f9;
+     A warm MULBERRY, held deliberately OFF the blue family so the AI colour cannot be read as
+     fight them. It stays a colour of its own and is never a document status: if the AI hue
+     also meant "in progress", every badge in that colour would need a second look to decide
+     which it was — and the one thing this product cannot afford is ambiguity about whether a
+     human or a machine produced something. 8.79:1 as ink on the page. */
+  --ai-text: #0f2e52;
+  --ai-accent: #1b4574;
+  --ai-bg: #e2e8f0;
+  /* The ground under white text on an AI action — see `--good-fill` for why a `-fill` and an
+     ink cannot be the same token. 9.74:1, and 6.93:1 at the far end of the AI gradient. */
+  --ai-fill: #0f2e52;
+  --ai-fill-2: #1b4574;
 
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  /* Navy-tinted rather than neutral grey: a grey shadow over a tinted page reads as
+     dirt, a navy one reads as depth. */
+  --shadow-sm: 0 1px 2px rgba(11, 26, 46, 0.07);
   --shadow-md:
-    0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.07);
+    0 1px 2px rgba(11, 26, 46, 0.06), 0 6px 18px rgba(11, 26, 46, 0.08);
   --shadow-lg:
-    0 4px 10px rgba(16, 24, 40, 0.08), 0 20px 48px rgba(16, 24, 40, 0.16);
-  --shadow-bar: 0 -4px 12px rgba(16, 24, 40, 0.08);
+    0 4px 10px rgba(11, 26, 46, 0.1), 0 20px 48px rgba(11, 26, 46, 0.18);
+  --shadow-bar: 0 -4px 12px rgba(11, 26, 46, 0.09);
 
   /* ==========================================================================
-     MAINDECK.html, verbatim.
+     THE ACCENT SET — fills, strokes, dots and rule bars.
      ==========================================================================
-     The deck is the agreed look of this product, so its palette is carried across
-     unchanged rather than re-derived. These are the exact hexes from its `:root`,
-     under the deck's own names, so a value can be compared side by side without
-     translating between two vocabularies.
+     `--ok`, `--warn`, `--bad`, `--accent` and `--violet` are the marks: chip grounds,
+     sparkline strokes, the 3px edge on a decision cell, the 6px dot beside a status word.
 
-     `--ok`, `--warn`, `--bad`, `--gold` and `--violet` are FILLS AND ACCENTS — chip
-     backgrounds, rule bars, sparkline strokes, the 3px edge on a decision cell. Used
-     that way they carry the deck's look exactly.
+     They are DEEPER here than the palette they replace, and not for taste. Nine call sites
+     write `text-[var(--ok)]` and three write `text-[var(--warn)]`, so an accent is read as
+     small text whatever the intent was — the old #1f9d68 measured 3.45:1 and shipped
+     anyway. Every accent below clears 4.5:1 on all four light surfaces, so the call site
+     cannot be wrong. The `-ink` partners remain the darker, higher-contrast choice for a
+     label inside a tint.
 
-     Two of them fail WCAG AA as SMALL TEXT on white (--ok at 3.45:1, --gold at 3.20:1;
-     AA needs 4.5:1). Rather than change the deck's colours, there is a darkened text-only
-     partner for each. The chip looks identical; the label inside it is legible on a cheap
-     monitor in a factory office, which is where this will actually be read. */
-  --grid: #e9edf2;
-  --mut: #8494a3;
+     The accent is the exception and stays at full strength: it is the brand mark and it is never
+     text on this ground. Its text partner is `--accent-ink`. */
+  /* Lifted from #e7ddc4, which measured 1.10–1.35:1 against the surfaces it is drawn on —
+     a row divider and a progress track that were, in the literal sense, not there. 1.53:1
+     at worst now, across all five grounds including the white table interior. */
+  --grid: #c6bba4;
+  --mut: #5c6e82;
 
-  --ok: #1f9d68;
-  --ok-soft: #e4f4ec;
-  --ok-ink: #116932;
+  --ok: #0c6b4f;
+  --ok-soft: #dcede4;
+  --ok-ink: #0c6b4f;
 
-  --warn: #c2410c;
-  --warn-soft: #fceee4;
-  --warn-ink: #92400e;
+  --warn: #8a5a0b;
+  --warn-soft: #f4e9cf;
+  --warn-ink: #8a5a0b;
 
-  --bad: #b91c1c;
-  --bad-soft: #fae7e7;
-  --bad-ink: #991b1b;
+  --bad: #a32b1e;
+  --bad-soft: #f6e0db;
+  --bad-ink: #a32b1e;
 
+  --accent: #d9a93c;
+  --accent-soft: #f2e8ce;
+  --accent-line: #c9a24a;
+  --accent-ink: #7a5b12;
+  /* THE ACCENT, LIFTED FOR THE FRAME. The chrome renders the active nav label, the active
+     tab and the module icon in `--brand`, which inside that scope is the accent. The frame
+     and the accent are THE SAME HUE, so hue can do none of the work of separating them and
+     only lightness is left — raw sky on the frame is 3.83:1, which is a primary navigation
+     state below the floor. This is sky brightened until it clears: 6.76:1 on the frame and
+     7.40:1 on the active band, and still unmistakably sky rather than the near-white the
+     inactive labels use. Rules and keylines keep the mid-strength accent — they are not
+     text and answer to a lower floor. */
+  --accent-on-chrome: #d9a93c;
+
+  /* Gold is decorative only: a premium keyline and brand detail, never an action or state. */
   --gold: #b5891d;
   --gold-soft: #f8f1de;
-  --gold-line: #ecdcae;
+  --gold-line: #a07816;
   --gold-ink: #7d5e12;
+  --gold-on-chrome: #d9bc74;
+  --gold-mark-ink: #1c2735;
 
-  --violet: #7c5cd6;
-  --violet-soft: #efebfa;
+  --violet: #1b4574;
+  --violet-soft: #e2e8f0;
+
+  /* ==========================================================================
+     THE THREE JOBS THE ACCENT ACTUALLY DOES ON A LIGHT PAGE.
+     ==========================================================================
+     Raw sky is 2.43:1 on the page — it cannot be ink here, and the palette's own contrast
+     floor is what says so. So it reaches a light screen as three named things, and the
+     names are what stop it leaking anywhere else.
+
+     `--action` is the PRIMARY BUTTON: a deep-sky ground under white ink at 7.51:1, which is
+     the most confident object this palette can build. It is deliberately NOT `--brand`:
+     `--brand` is read as TEXT at sixty call sites, so the fill and the ink have to be
+     different tokens or one of the two is broken. Note its hover goes DARKER, not lighter —
+     on a pale page a lightened hover degrades the ink on the control the pointer is over.
+
+     `--figure` is THE NUMBER THAT MATTERS — a KPI value, the money on a decision. It is sky
+     pushed to a deep marine dark enough to be read (9.41:1 on a card) while staying in the
+     blue family, so it belongs without pretending to a floor it cannot meet.
+
+     `--focus-core` is the accent band inside the focus ring — see the ring rule for why the
+     ring is two colours rather than one. */
+  --action: #d9a93c;
+  --action-hover: #c9a24a;
+  --action-ink: #0b1a2e;
+  --figure: #7a5b12;
+  --focus-core: #d9a93c;
+
+  /* ==========================================================================
+     THE SEMANTIC ink-ON-tint PAIRS THIS APP ACTUALLY USES.
+     ==========================================================================
+     These are the names the agent surfaces reach for. They are ALIASES, not new colours:
+     `--bad-*` is the `--bad-ink` / `--bad-soft` pair. Only `--info-*` is its own — it was
+     the brand blue, and with the brand now navy it is lifted to a clearly lighter azure so
+     an information chip is never mistaken for a piece of brand furniture. Written as
+     literal hexes rather than `var(--bad-ink)` to match every other token in this file: the
+     point of the two blocks is that a reviewer can read the whole palette off them without
+     resolving indirection.
+
+     `-fg` MEANS INK, and that is the contract the callers depend on — a label drawn in
+     `-fg` on its paired `-bg`. Anything that needs a GROUND under white text takes a
+     `-fill` instead.
+
+     PHASE-2 also ships `--good-fg/-bg`, `--warn-fg/-bg`, `--warn-fill`, `--bad-fill` and
+     `--border` for its Mission Control surfaces. Nothing in PHASE-1 reads them, so they are
+     not declared here: a token no call site resolves is a colour nobody can trust. */
+  --bad-fg: #a32b1e;
+  --bad-bg: #f6e0db;
+
+  --info-fg: #14508f;
+  --info-bg: #e1eaf7;
+
+  /* SOLID BUTTON FILLS, which are a different job from the `-fg` inks above.
+     `-fg` is ink drawn ON its paired `-bg`, so it must be DARK in light theme and LIGHT in
+     dark theme. A filled button reverses that: the token becomes the ground and
+     `--text-on-fill` is drawn on it, so it must stay dark in BOTH themes. One token cannot
+     satisfy both contracts. These four exist so a filled control never has to borrow an ink. */
+  --good-fill: #0c6b4f;
 
   /* WHAT A CHART'S NEUTRAL RAMP FADES TOWARDS.
      Shades of the brand are how a chart draws categories that carry no judgement of their
-     own — warehouses, states, causes. On a white page that means fading toward white. On a
-     dark one it must NOT: brand faded toward white-on-dark is fine, but brand faded toward
-     the dark background is a slice that disappears, and a reader counts four causes where
-     there were five. The direction of the fade is therefore a token, so the ramp stays
-     visible on both surfaces without the chart knowing which one it is on. */
+     own — warehouses, states, causes. On a warm page that means fading toward the card, not
+     toward pure white, so the palest slice still sits ON something. On a dark one it must
+     NOT fade toward the background: a slice that reaches the ground disappears, and a
+     reader counts four causes where there were five. The direction of the fade is therefore
+     a token, so the ramp stays visible on both surfaces without the chart knowing which one
+     it is on. */
   --ramp-mix: #ffffff;
 
   /* ==========================================================================
      THE NINE AGENTS, IN DISTINCT OWNER COLOURS.
      ==========================================================================
-     Taken verbatim from the Agent Brain map in AIKYANTRA-Pitch-Deck_2.html. The product
-     previously coloured departments from the status palette, which had two faults the deck
-     does not: HEXA and MICA came out the same blue, so two of the seven were
-     indistinguishable on any chart; and RASP was drawn in the same green that means
-     "done" everywhere else in the product, so a department badge could be misread as a
-     document state.
+     Tuned as one family: deep, low-key, and each holding its own hue. Three rules govern
+     them. They must be distinguishable FROM EACH OTHER — HEXA and MICA were once the same
+     blue, so two of the nine were the same badge; they must be distinguishable from the
+     STATUS vocabulary, because a department badge that borrows the colour of "done" can be
+     read as an outcome; and they are DELIBERATELY NOT FOLDED INTO THE HOUSE PALETTE, because
+     nine markers in one hue identify nobody. That several of them are blue-adjacent is the
+     cost of nine distinguishable hues, not an attempt to match the brand.
 
-     These eight are chosen to be distinct from each other AND from the status vocabulary.
-     They are the colour of an OWNER, never of an outcome. */
-  --dept-onyx: #0c2340;
-  --dept-hexa: #1b4b8f;
-  --dept-mica: #2e7bc4;
-  --dept-spar: #1f8a70;
-  --dept-axle: #7c5cd6;
-  --dept-kiln: #c2410c;
-  --dept-rasp: #c8912a;
-  --dept-relay: #0f766e;
-  --dept-achiles: #86198f;
+     All nine clear 4.5:1 on every light surface, so a node, a badge and a chart key are
+     legible wherever they land. They are the colour of an OWNER, never of an outcome. */
+  --dept-onyx: #0f2e52;
+  --dept-hexa: #1b4574;
+  --dept-mica: #1a5fbf;
+  --dept-spar: #0c6b4f;
+  --dept-axle: #374b62;
+  --dept-kiln: #a32b1e;
+  --dept-rasp: #7a5b12;
+  --dept-relay: #14508f;
+  --dept-achiles: #8a5a0b;
 
   /* The deck's layout system: sidebar, copilot rail, topbar. */
   /* 236px cut five of the eight department labels and the longest module name
@@ -187,114 +354,362 @@
   --motion-slow: 520ms;
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
-  --ambient-brand: rgba(29, 95, 209, 0.075);
-  --ambient-ai: rgba(124, 92, 214, 0.055);
-  --surface-glass: rgba(255, 255, 255, 0.86);
+  --ambient-brand: rgba(184, 137, 31, 0.1);
+  --ambient-ai: rgba(15, 46, 82, 0.045);
+
+  /* THE PRESENTER DOCK.
+     `demo/demo-launcher.tsx` draws a floating guide dock and its picker dialog. Like the
+     kill switch it is ALWAYS DARK — it is an overlay standing on top of whichever theme is
+     running, and a dock that went pale in light mode would disappear into the page it is
+     supposed to be narrating. So these are declared once, with no dark counterpart, which is
+     the accurate statement of the design. They replace roughly thirty Tailwind palette
+     classes (`text-slate-400`, `bg-blue-600`, `text-emerald-300`, …) that were the last
+     place in this product where a colour came from somewhere other than this file.
+     Measured on the dock ground: ink 15.73:1, soft 9.51:1, muted 6.41:1, faint 5.47:1,
+     accent 10.90:1, good 9.44:1 — and on the inset fact tiles, 4.62:1 at the faintest. */
+  --dock-bg: #0b1a2e;
+  --dock-panel: #0f2e52;
+  --dock-ink: #f4f1ea;
+  --dock-ink-soft: #e4ddce;
+  --dock-ink-muted: #c6bba4;
+  --dock-ink-faint: #8a98a6;
+  --dock-accent: #d9a93c;
+  --dock-good: #66c98a;
+  --dock-good-fill: #1b6b41;
+  --dock-good-fill-hover: #23834f;
+  --dock-bad: #f0787e;
+  --dock-action: #14508f;
+  --dock-action-hover: #1b4574;
+  --dock-action-ink: #ffffff;
+  --dock-disabled: #14263f;
+  --dock-hero-a: #0f2e52;
+  --dock-hero-b: #1b4574;
+  --dock-hero-c: #7a5b12;
+  /* The two launch buttons, which stand on a LIGHT page and carry white type, so both
+     gradients have to stay dark at every stop: 8.6:1 at the palest. */
+  --dock-launch-a: #12543a;
+  --dock-launch-b: #10554f;
+  --dock-launch-c: #0f2e52;
+  --dock-launch-d: #4a1f3f;
+
+  /* THE KILL-SWITCH THEATRE.
+     `aicontrol/control.tsx` draws a deep-crimson danger panel that is deliberately the SAME
+     in both themes — it is the one surface in the product that must not look like the rest
+     of the product — and it carried a dozen hardcoded hexes to do it. They are tokens now,
+     retuned onto the palette's carmine, and they are declared once in `:root` with no dark
+     counterpart, which is the accurate statement of the design: this panel does not switch.
+     Measured on the panel ground: eyebrow 7.91:1, released-state chip 10.84:1, white on the
+     armed button 4.72:1, crimson on the white release button 9.33:1. */
+  --kill-bg: #190a0c;
+  --kill-bg-mid: #2b1015;
+  --kill-bg-end: #150709;
+  --kill-bg-stopped: #220a0d;
+  --kill-line: #5e2028;
+  --kill-line-hot: #f0787e;
+  --kill-orb: #c7303c;
+  --kill-mark: #8c1620;
+  --kill-mark-stopped: #c7303c;
+  --kill-arm: #d8323f;
+  --kill-eyebrow: #f5919a;
+  --kill-ink: #8c1620;
+  --kill-ink-hover: #fae7e9;
+  --kill-clear: #86dcb0;
+
+  /* The scrim behind a modal and behind the mobile nav. Navy rather than neutral, so the
+     page dims into the palette instead of into grey. */
+  --overlay-scrim: rgba(11, 26, 46, 0.44);
+  /* The 1px lit edge along the top of a solid mark. Kept as a token because it is a colour,
+     and a literal in a component is a colour that cannot follow the theme. */
+  --sheen: rgba(255, 255, 255, 0.24);
+
+  /* ==========================================================================
+     NAMES THE RE-THEME LEFT BEHIND — declared here so they resolve to a token.
+     ==========================================================================
+     Ten colour names survive at call sites that this file stopped defining when the
+     palette changed. An undefined `var()` is not a fallback, it is a DROPPED
+     DECLARATION: `border-color` reverts to its initial value `currentColor`, so a
+     hairline takes the body ink; `background-color` reverts to `transparent`; and
+     `color`, being inherited, silently takes the parent's. The "Live" pill on
+     /copilot/ask was rendering as an outline in body ink on nothing, not as a green
+     chip, because all three of its colours were names with no value.
+
+     Each is an ALIAS, never a literal, so it follows both themes for free — the
+     targets are all redefined under `:root[data-theme="dark"]`, and a custom property
+     is substituted against the element it is declared on, which here is <html>. */
+
+  /* The heavier of the two rules. `--border-subtle` is the hairline; this is the one
+     that has to hold an edge on its own. */
+  --border-strong: var(--border-input);
+  /* A card that floats over another surface — the asset pins on the robot-cell map. */
+  --surface-overlay: var(--surface-raised);
+  /* The old two-step shadow scale, pointed at the three-step one that replaced it. */
+  --shadow-card: var(--shadow-md);
+  --shadow-subtle: var(--shadow-sm);
+  /* The generic accent dot. `--brand` rather than `--action`: this is read as a 8px
+     FILL on a pale card, and raw sky measures 2.43:1 there against the deepened sky's 5.91:1. */
+  --accent: var(--brand);
+
+  /* The status family shipped `-text` and `-bg` for eight states but a `-border` for
+     only one (draft). These three are the states whose borders are asked for. The mix
+     matches what draft already does: draft's own border measures 2.31:1 on its chip
+     ground in light and 3.64:1 in dark, and a 50% ink-into-ground mix lands at
+     2.35:1 / 2.39:1 / 2.25:1 in light — the same hairline weight, not a new one. */
+  --status-pending-border: color-mix(in srgb, var(--status-pending-text) 50%, var(--status-pending-bg));
+  --status-rejected-border: color-mix(in srgb, var(--status-rejected-text) 50%, var(--status-rejected-bg));
+
+  /* "success" was renamed to "done". The three call sites in /copilot/ask were not. */
+  --status-success: var(--status-done-text);
+  --status-success-soft: var(--status-done-bg);
+  --status-success-border: color-mix(in srgb, var(--status-done-text) 50%, var(--status-done-bg));
+
+  /* ==========================================================================
+     THE CHROME — NAVY IN BOTH THEMES, AND THAT IS THE WHOLE POINT.
+     ==========================================================================
+     The sidebar, the topbar and the module tab strip are NAVY with near-white ink and SKY
+     on the active state, the mark and the rules. They are declared once here with no dark
+     counterpart, exactly like `--dock-*` and `--kill-*`, because that is the accurate
+     statement of the design: the frame does not switch.
+
+     THIS IS WHERE THE THIRD COLOUR LIVES. On a light page the accent can only appear in
+     fragments — a fill here, a rule there — because sky cannot be ink on a pale ground.
+     Putting the frame in navy puts sky-on-navy permanently on screen in BOTH themes: the
+     nav, the tabs and the mark carry it from the moment the app opens, and no screen can
+     lose it. Without this the palette would be two blues and a rumour of a third.
+
+     THE CANVAS STAYS LIGHT IN LIGHT MODE, and that contrast is the effect. A navy frame
+     around a pale workspace reads as a bound object — a ledger, a folio. A dark frame
+     around a dark canvas would just read as a dark app, which is a different and much
+     cheaper thing.
+
+     THE GROUNDS DEEPEN TOWARD NAVY AT THE EDGES (`--chrome-top` → `--chrome` →
+     `--chrome-deep` → `--chrome-edge`), so the frame has a light source, the crown is the
+     sky end of the mixture, and the outer boundary against the pale canvas is its darkest
+     part.
+
+     MEASURED ACROSS EVERY CHROME GROUND: near-white ink 7.62–14.65:1, soft 6.14–11.81:1,
+     muted 4.77–9.18:1, faint 3.27–6.30:1, the lifted accent 5.13–9.87:1, the structural
+     hairline 1.53–2.95:1 and the sky keyline 3.91–7.51:1. Every one clears the floor for
+     the job it does, and `palette-contrast.test.ts` fails the build if one stops. */
+  --chrome-top: #1b4574;
+  --chrome: #0f2e52;
+  --chrome-deep: #14263f;
+  --chrome-edge: #0b1a2e;
+  /* A pill, a dropdown or a ghost button STANDING ON the bar, one step above it. */
+  --chrome-raised: #1b4574;
+  --chrome-hover: #1b4574;
+  /* The active nav row and the active tab: the DEEPEST of the chrome grounds, deliberately.
+     The label on it is the lifted accent, and label and band are the same hue — so the band
+     has to move away in lightness or the two merge. 7.40:1 as drawn. */
+  --chrome-active: #14263f;
+  --chrome-ink: #f4f1ea;
+  --chrome-ink-soft: #e4ddce;
+  --chrome-ink-muted: #c6bba4;
+  --chrome-ink-faint: #8a98a6;
+  /* The structural hairline inside the chrome — a divider between two navy things. */
+  --chrome-line: #374b62;
+  /* THE ACCENT RULE. The mark's underline, the foot of the topbar, the foot of the tab strip
+     and the outer edge of the sidebar. These four lines are what draw the frame. */
+  --chrome-line-accent: #c9a24a;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b1220;
-  --surface: #111a2e;
-  --surface-raised: #16213a;
-  --surface-sunken: #0e1626;
+  /* ---- surfaces ----
+     DEEP-NAVY PAGE, LIFTED NAVY CARDS. The layering is the whole premium reading: a flat
+     near-black everywhere is cheap, a room with objects standing in it is not. The steps
+     stay deliberately small because on a dark field the eye reads a small absolute step as
+     a real one, and because every card also carries a border and a rim light.
 
-  --border-subtle: #202a42;
-  --border-input: #4a5c82;
-  --border-focus: #5b8def;
+     THE PAGE IS NO LONGER PURE BLACK. #000 gave the deepest possible step to the cards and
+     an office-lit screen of it reads as a void rather than as a dark room. A navy-charcoal
+     ground keeps the same layering while putting the theme in the same family as the frame
+     around it. */
+  --bg: #0b1a2e;
+  --surface: #14263f;
+  --surface-raised: #0f2e52;
+  --surface-sunken: #0b1a2e;
+  /* The dark counterpart of the white table interior. White inverts to the CLEANEST, not
+     the lightest: a well cut below the navy card, so a dense grid reads as a recessed
+     panel rather than as more card. Body ink 14.76:1 on it. */
+  --surface-data: #0b1a2e;
 
-  --text-primary: #e7ecf3;
-  --text-secondary: #aab6c6;
-  --text-muted: #93a0b4;
-  --text-disabled: #64738d;
-  --text-on-brand: #ffffff;
+  /* Structural hairlines on the dark grounds. */
+  --border-subtle: #374b62;
+  --border-input: #5c6e82;
+  /* Sky, and here it earns it: 7.97:1 on the page, 6.48:1 on a card. On dark the accent
+     is finally bright enough to be the ring on its own. */
+  --border-focus: #d9a93c;
 
-  --brand: #5b8def;
-  --brand-hover: #79a3f2;
-  --brand-soft: #16274a;
-  --brand-soft-2: #121c33;
+  /* ---- text ----
+     A blue-tinted white, held off pure #fff so a screen of tabular numbers is comfortable
+     rather than glaring, then two steps beneath it in the same tint. Body 14.55:1 on the
+     page and 11.83:1 on a card. */
+  --text-primary: #f4f1ea;
+  --text-secondary: #e4ddce;
+  --text-muted: #c6bba4;
+  --text-disabled: #8a98a6;
+  /* Ink drawn ON a `--brand` fill, which is bright SKY here: navy on sky, 9.79:1. This is
+     the token that must flip between themes — the light theme puts white on a deep sky
+     fill, and white on THIS sky would be 2.2:1. */
+  --text-on-brand: #0b1a2e;
+  --text-on-fill: #ffffff;
+  /* Navy, for the reason set out in the light block. */
+  --text-on-accent: #0b1a2e;
 
-  --status-draft-text: #c3cbd8;
-  --status-draft-border: #4a5c82;
-  --status-draft-bg: #16213a;
+  /* ---- brand ----
+     Sky, because on this ground it is finally legible as text as well as as a fill:
+     9.15:1 on black, 7.08:1 on a navy card, 5.12:1 on a raised one. */
+  --brand: #d9a93c;
+  --brand-hover: #f2e8ce;
+  /* The sky band of the light theme, inverted: a deep marine ground carrying bright sky. */
+  --brand-soft: #14263f;
+  --brand-soft-2: #0b1a2e;
 
-  --status-pending-text: #e0a542;
-  --status-pending-bg: #2b2013;
+  --status-draft-text: #e2e8f0;
+  --status-draft-border: #5c6e82;
+  --status-draft-bg: #14263f;
 
-  --status-approved-text: #5b8def;
-  --status-approved-bg: #14213d;
+  --status-pending-text: #f4e9cf;
+  --status-pending-bg: #8a5a0b;
 
-  --status-progress-text: #4fd1c5;
-  --status-progress-bg: #0f2321;
+  /* THE ONE CHIP GROUND THAT CANNOT BE MEASURED AGAINST THE PAGE.
+     Every other chip here is a deep, strongly-hued well that separates from the navy card
+     by HUE: pending sits ΔE 36.9 from `--surface`, done 39.5, rejected 30.7, overdue 30.3,
+     progress 26.0. Approved is the exception, because approved is BLUE and the card it is
+     drawn on is navy — so hue can do none of the work and only lightness is left. At the
+     old #12294f that came to ΔE 4.7 and a 1.13 luminance step: measured on a screenshot of
+     /purchase/orders, the APPROVED pill had no body at all while RECEIVED beside it clearly
+     did, so eight document states rendered as two visual classes — "has a pill" and "is
+     loose text" — and the split did not follow the meaning. Lifted ABOVE the card instead
+     of sunk below it, which is the only direction with room: ΔE 20.1 from `--surface`,
+     16.9 from the nearest other chip ground, and the ink still clears 5.18:1 on it. */
+  --status-approved-text: #e1eaf7;
+  --status-approved-bg: #14508f;
 
-  --status-done-text: #4ade80;
-  --status-done-bg: #10281a;
+  --status-progress-text: #e2e8f0;
+  --status-progress-bg: #0f2e52;
 
-  --status-hold-text: #c3cbd8;
-  --status-hold-bg: #232e47;
+  --status-done-text: #dcede4;
+  --status-done-bg: #0c6b4f;
 
-  --status-rejected-text: #f2777a;
-  --status-rejected-bg: #2c1416;
+  --status-hold-text: #e4ddce;
+  --status-hold-bg: #14263f;
 
-  --status-overdue-text: #ef6a6d;
-  --status-overdue-bg: #301518;
+  --status-rejected-text: #f6e0db;
+  --status-rejected-bg: #a32b1e;
 
-  --ai-text: #b39ce8;
-  --ai-accent: #9d7fe0;
-  --ai-bg: #201a35;
+  --status-overdue-text: #f6e0db;
+  --status-overdue-bg: #a32b1e;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 24px 56px rgba(0, 0, 0, 0.5);
-  --shadow-bar: 0 -4px 12px rgba(0, 0, 0, 0.4);
+  --ai-text: #e1eaf7;
+  --ai-accent: #e1eaf7;
+  --ai-bg: #14263f;
+  --ai-fill: #0f2e52;
+  --ai-fill-2: #1b4574;
 
-  /* The deck is a light design and has no dark counterpart. These are the same hues
-     lifted for a dark surface — the hue is preserved so the product still reads as the
-     same product, and only the lightness moves. */
-  --grid: #1b2438;
-  --mut: #93a0b4;
+  /* SHADOW BECOMES RIM LIGHT. A drop shadow is darkness added to a surface, and there is no
+     darkness left to add on a black page — the old dark shadows were invisible and every
+     card floated with no edge at all. What a dark room actually gives an object is a lit
+     edge, so each level keeps a black spread for the softness under it and adds a hairline
+     of sky at a few percent, which is what makes a navy card read as a physical panel. */
+  --shadow-sm: 0 1px 2px rgba(11, 26, 46, 0.55), 0 0 0 1px rgba(217, 169, 60, 0.07);
+  --shadow-md:
+    0 2px 6px rgba(11, 26, 46, 0.6), 0 10px 24px rgba(11, 26, 46, 0.5),
+    0 0 0 1px rgba(217, 169, 60, 0.09);
+  --shadow-lg:
+    0 6px 16px rgba(11, 26, 46, 0.7), 0 24px 56px rgba(11, 26, 46, 0.6),
+    0 0 0 1px rgba(217, 169, 60, 0.12);
+  --shadow-bar: 0 -4px 12px rgba(11, 26, 46, 0.6), 0 -1px 0 rgba(217, 169, 60, 0.13);
 
-  --ok: #34d399;
-  --ok-soft: #10281a;
-  --ok-ink: #4ade80;
+  /* The accent set, lifted for a dark field. Each clears 4.5:1 on all four dark surfaces,
+     so the same call sites that read an accent as text in light are safe here too.
+     WARNING IS KEPT WELL CLEAR OF THE HOUSE BLUES: a saturated orange, and
+     far more chromatic, so "needs attention" can never be read as "house colour". */
+  /* Same correction on the dark side: #23304f was 1.08:1 on a raised card. 1.61:1 at
+     worst now. */
+  --grid: #374b62;
+  --mut: #c6bba4;
 
-  --warn: #fb923c;
-  --warn-soft: #2b2013;
-  --warn-ink: #e0a542;
+  --ok: #dcede4;
+  --ok-soft: #0c6b4f;
+  --ok-ink: #dcede4;
 
-  --bad: #f2777a;
-  --bad-soft: #2c1416;
-  --bad-ink: #ef6a6d;
+  --warn: #f4e9cf;
+  --warn-soft: #8a5a0b;
+  --warn-ink: #f4e9cf;
+
+  --bad: #f6e0db;
+  --bad-soft: #a32b1e;
+  --bad-ink: #f6e0db;
+
+  --accent: #d9a93c;
+  --accent-soft: #14263f;
+  /* Lifted from #4e4224, which measured 1.43:1 on a raised card — below the 1.5:1 floor a
+     border has to clear to exist. 1.71–2.55:1 across the four dark surfaces. */
+  --accent-line: #7a5b12;
+  --accent-ink: #f2e8ce;
 
   --gold: #d9ab48;
   --gold-soft: #2a2313;
-  --gold-line: #4a3d1c;
+  --gold-line: #c49a35;
   --gold-ink: #e2bb63;
+  --gold-on-chrome: #d9bc74;
+  --gold-mark-ink: #1c2735;
 
-  --violet: #9d7fe0;
-  --violet-soft: #201a35;
+  --violet: #4285da;
+  --violet-soft: #0f2e52;
 
-  /* A light steel rather than white: fading toward pure white on a dark page bleaches the
-     far end of the ramp into one indistinguishable glare, which loses the categories just
-     as surely as fading into the background would. */
-  --ramp-mix: #93a7c6;
+  /* `--action` and `--action-ink` do NOT flip: the primary button is deep sky under white ink in
+     both themes, which is the one object that should look identical wherever you meet it.
+     `--figure` lifts to bright sky, because on this ground the accent finally IS legible as text
+     — 9.20:1 on the page, 7.98:1 on a raised card. `--focus-core` inverts with the ring
+     around it. */
+  --figure: #d9a93c;
+  --focus-core: #0b1a2e;
 
-  /* The same seven hues, lifted for a dark surface. ONYX's near-black navy is the only one
-     that had to move materially — a #0c2340 node on a #0b1220 page is invisible, and an
-     agent nobody can see on the map is the one agent the whole page is about. The other six
-     keep their hue exactly and only gain lightness. */
-  --dept-onyx: #6f8fd8;
-  --dept-hexa: #5b8def;
-  --dept-mica: #62a8e8;
-  --dept-spar: #35b696;
-  --dept-axle: #a58bf0;
-  --dept-kiln: #f07f45;
-  --dept-rasp: #e2bb63;
-  --dept-relay: #2dd4bf;
-  --dept-achiles: #e879f9;
+  /* The same pairs, lifted for a dark surface — the ink goes light and the tint goes to the
+     deep ground it is read on, exactly as the accent partners above do. Each `-fg` clears
+     6.7:1 against its own `-bg` here, which is what keeps an evidence chip readable on a
+     night shift. See the light block for why the ink contract and the fill contract cannot
+     share one token. */
+  --bad-fg: #f6e0db;
+  --bad-bg: #a32b1e;
 
-  --ambient-brand: rgba(91, 141, 239, 0.11);
-  --ambient-ai: rgba(157, 127, 224, 0.08);
-  --surface-glass: rgba(17, 26, 46, 0.86);
+  /* Kept identical to `--status-approved-*`, and lifted with it — see the note there for why
+     a blue chip on a navy card has to move in lightness rather than hue. 5.18:1. */
+  --info-fg: #e1eaf7;
+  --info-bg: #14508f;
+
+
+  /* Lifted a step off the light-theme value so a filled button separates from the navy card
+     behind it, while still holding `--text-on-fill` at 6.5:1 or better. */
+  --good-fill: #0c6b4f;
+
+  /* A warm stone rather than white: fading toward pure white on a dark page bleaches the far
+     end of the ramp into one indistinguishable glare, which loses the categories just as
+     surely as fading into the background would. Stone keeps the ramp inside the palette. */
+  --ramp-mix: #c6bba4;
+
+  /* The same nine owners, lifted for a dark field. ONYX takes the palest step rather than
+     the darkest — a near-black navy node on a black page is invisible, and an agent nobody
+     can see on the map is the one agent the whole page is about. RASP stays in the amber
+     family. All nine clear 4.5:1 on every dark surface. */
+  --dept-onyx: #e2e8f0;
+  --dept-hexa: #4285da;
+  --dept-mica: #1a5fbf;
+  --dept-spar: #dcede4;
+  --dept-axle: #c6bba4;
+  --dept-kiln: #f6e0db;
+  --dept-rasp: #d9a93c;
+  --dept-relay: #e1eaf7;
+  --dept-achiles: #f4e9cf;
+
+  --ambient-brand: rgba(217, 169, 60, 0.1);
+  --ambient-ai: rgba(66, 133, 218, 0.07);
+
+  /* Heavier on a black page: a 44% navy veil over near-black is barely a veil at all, and
+     the dialog behind it stays legible enough to compete with the one in front. */
+  --overlay-scrim: rgba(11, 26, 46, 0.68);
+  --sheen: rgba(244, 241, 234, 0.16);
 }
 
 /* Make the tokens available as Tailwind colour utilities (bg-surface, text-muted, …). */
@@ -336,6 +751,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Keep accessible table captions in table layout. Tailwind's absolute `sr-only` position
+   can otherwise escape the workspace and create a long blank document after the app ends. */
+caption.sr-only {
+  position: static;
+}
+
 /* THE NUMERIC RULE. Every digit in this product is lining and tabular, so a quantity
    column stays in a straight line down the page. The deck this palette came from had
    `"tnum" 0` — figures were proportional, and columns of numbers drifted. In a ledger
@@ -363,10 +784,24 @@ table,
 /* One focus treatment everywhere. Visible, 2px, never removed — a keyboard user in a
    factory office is often a keyboard user because the mouse is somewhere under a pile of
    delivery challans. */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  /* TWO COLOURS, NOT ONE, AND THE REASON IS ARITHMETIC. The ring wants to be the accent;
+     raw sky is 2.43:1 on the pale page, under even the 3:1 floor a non-text indicator has
+     to clear, so a sky ring alone would be a ring a keyboard user cannot find. It is
+     therefore a 2px sky band hugging the control with a 2px deep-sky ring drawn around it:
+     the deep sky carries 5.91:1 against the page, the bright band is bounded by it so it
+     is unmistakably there, and what a person sees is a sky ring. On dark the two swap —
+     bright sky outside at 7.97:1 on the page, navy within — because there the arithmetic
+     inverts. Inside the navy chrome the ring is the lifted accent outright: it clears
+     6.76:1 on the bar with nothing to prop it up. */
+/* `:root` is prepended purely to lift this to 0,2,0 so it outranks the component classes
+   that also set a box-shadow — `.btn-pri` carries `--shadow-sm`, and at equal specificity
+   the later rule would win and swallow the accent band. The selector matches exactly what
+   it matched before. */
+:root :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
   border-radius: var(--radius-control);
+  box-shadow: 0 0 0 2px var(--focus-core);
 }
 
 ::selection {
@@ -386,7 +821,7 @@ table,
 }
 
 /* ============================================================================
-   XELOR MOTION & DEPTH SYSTEM
+   ONYX MOTION & DEPTH SYSTEM
 
    Motion communicates hierarchy and continuity: the workspace enters as one unit, rows
    resolve in reading order, active navigation settles into place, and interactive controls
@@ -406,11 +841,114 @@ table,
     var(--bg);
 }
 
+/* ============================================================================
+   THE NAVY CHROME
+   ============================================================================
+   Everything below re-points the SURFACE, INK, BORDER and BRAND tokens for the three
+   elements that frame every screen. It is done by redefining the custom properties on the
+   containers rather than by rewriting the markup, for two reasons. Custom properties
+   inherit, so one block moves the sidebar, the topbar, the tab strip and every control,
+   chip, pill and dropdown inside them onto the chrome palette at once — including the
+   files nobody has opened. And the SEMANTIC tokens are deliberately left alone: a warning
+   chip in the topbar is still `--warn`, an AI mark is still `--ai-accent`, a department
+   badge is still `--dept-*`, so nothing about meaning changes when the ground does.
+
+   `--brand` becoming the lifted accent here is the load-bearing line. Sixty call sites read
+   it as text and thirteen as a fill; on the pale page that forces it to be a DEEPENED sky,
+   which is why it cannot also be the bright mark on the nav. On navy the constraint inverts
+   — the lifted accent is 6.76:1 — so those same call sites render it WITHOUT A SINGLE ONE OF
+   THEM CHANGING. The active nav row, the active tab, its underline and the module icon are
+   bright sky because `--brand` is bright sky in here and nowhere else.
+
+   The nine department accents are re-pointed to their lifted values for the same reason:
+   `--dept-onyx` is #0a1f44 on a light page, which on a navy bar would be a badge that is
+   not there. Navy ink on the lifted nine measures 5.38:1 at worst, and they stay ≥15.1 ΔE
+   apart from one another. */
 .x-shell-sidebar,
-.x-shell-topbar {
-  background: var(--surface-glass);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  backdrop-filter: blur(18px) saturate(1.2);
+.x-shell-topbar,
+.x-workbench-tabs {
+  --bg: var(--chrome-hover);
+  --surface: var(--chrome-raised);
+  --surface-raised: var(--chrome-hover);
+  --surface-sunken: var(--chrome-deep);
+  --surface-data: var(--chrome-deep);
+
+  --border-subtle: var(--chrome-line);
+  --border: var(--chrome-line);
+  --border-input: var(--chrome-line);
+  --grid: var(--chrome-line);
+  --accent-line: var(--chrome-line-accent);
+
+  --text-primary: var(--chrome-ink);
+  --text-secondary: var(--chrome-ink-soft);
+  --text-muted: var(--chrome-ink-muted);
+  --text-disabled: var(--chrome-ink-faint);
+  --text-on-accent: var(--chrome);
+  --text-on-brand: var(--chrome);
+
+  /* THE SEMANTIC FILLS HAVE TO BE LIFTED IN HERE TOO, FOR THE SAME REASON THE DEPARTMENT
+     ACCENTS ARE (see the note above). The block above re-points `--text-on-accent` to navy
+     because the nine department accents in here are pale. But `--ok` / `--warn` / `--bad`
+     were deliberately left on their page values, and on a LIGHT page those are DARK fills:
+     the approvals count sat at navy #0a1f44 on `--warn` #a84315 — 2.69:1 at 9.5px — and the
+     alert badge at navy on `--bad` #a82530 — 2.30:1. Measured in the running app on
+     /sales/orders, /purchase/orders and /inventory/stock, both themes, both phases.
+     Lifted to the values the dark theme already gives these three tokens, so nothing moves
+     in dark and the ink that is drawn on them in here now clears AA: navy measures 7.06:1
+     on --ok, 6.55:1 on --warn and 5.95:1 on --bad. `--ok-soft` / `--warn-soft` / `--bad-soft`
+     and the matching `-ink` tokens are untouched: a soft chip in the topbar is still a pale
+     chip with its own dark ink (--warn-ink on --warn-soft is 6.56:1) and never reads this. */
+  --ok: #4fbf84;
+  --warn: #f4884a;
+  --bad: #f0787e;
+/* AND SO DO THE SOFT TINTS THEY PAIR WITH. Leaving `--*-soft` on its page value was the
+     last thing making the light chrome a different object from the dark one: the Approvals
+     pill is `--warn-soft`, and on light that is #fae5d8 — a 121x30 pale-pink lozenge at
+     13.36:1 against the navy bar, which made it the brightest thing in a frame that is
+     supposed to read navy-and-sky. Measured on /sales/orders, /purchase/orders and
+     /fulfilment/control: it is the ONLY soft-tint object inside the chrome on any of them,
+     so lifting the three pairs to their dark values moves that one pill and nothing else.
+     The ink partners have to move with the grounds or the pill loses its label: the lifted
+     pairs measure 7.80:1 (ok), 6.96:1 (warn) and 7.76:1 (bad). Like the fills above, the
+     dark theme already uses these numbers, so nothing moves there. */
+  --ok-soft: #0c2718;
+  --ok-ink: #66c98a;
+  --warn-soft: #2e1a0f;
+  --warn-ink: #f0905c;
+  --bad-soft: #2c1315;
+  --bad-ink: #f5919a;
+
+  --brand: var(--accent-on-chrome);
+  --brand-hover: var(--chrome-ink);
+  --brand-soft: var(--chrome-active);
+  --brand-soft-2: var(--chrome-hover);
+  --figure: var(--accent-on-chrome);
+  --gold-line: var(--gold-on-chrome);
+
+  /* The ring needs no navy prop on a navy ground. */
+  --border-focus: var(--accent-on-chrome);
+  --focus-core: var(--chrome);
+
+  /* Rim light, not drop shadow — there is no darkness left to add to navy. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(111, 189, 242, 0.08);
+  --shadow-md:
+    0 2px 6px rgba(0, 0, 0, 0.55), 0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(111, 189, 242, 0.1);
+  --shadow-lg:
+    0 6px 16px rgba(0, 0, 0, 0.66), 0 24px 56px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(111, 189, 242, 0.13);
+
+  --dept-onyx: #b7c4e2;
+  --dept-hexa: #6e9be8;
+  --dept-mica: #52c2e0;
+  --dept-spar: #4fc49e;
+  --dept-axle: #a98be8;
+  --dept-kiln: #e8724e;
+  --dept-rasp: #d9bc74;
+  --dept-relay: #45d0c4;
+  --dept-achiles: #e27bc8;
+
+  color: var(--chrome-ink);
 }
 
 .x-mobile-nav-backdrop {
@@ -443,7 +981,7 @@ table,
     inset: 0 0 0 min(84vw, 292px);
     z-index: 35;
     border: 0;
-    background: rgb(8 18 38 / 42%);
+    background: var(--overlay-scrim);
     backdrop-filter: blur(2px);
   }
 
@@ -461,28 +999,65 @@ table,
 }
 
 .x-shell-sidebar {
-  box-shadow: 10px 0 34px -32px
-    color-mix(in srgb, var(--text-primary) 28%, transparent);
+  /* Lit at the top, sinking to near-black at the foot: the rail has a light source, so it
+     reads as a panel standing beside the page rather than a flat navy rectangle. */
+  background: linear-gradient(
+    180deg,
+    var(--chrome-top) 0%,
+    var(--chrome) 38%,
+    var(--chrome-deep) 100%
+  );
+  /* The outer edge is SKY — one of the four rules that draw the frame. */
+  border-right-color: var(--chrome-line-accent);
+  box-shadow: 10px 0 34px -30px rgba(0, 0, 0, 0.7);
+}
+
+/* A restrained gold wordmark rule warms the navy frame without changing its hierarchy. */
+.x-shell-sidebar > :first-child {
+  border-bottom-color: var(--gold-line);
 }
 
 .x-shell-topbar {
-  box-shadow: 0 10px 32px -30px
-    color-mix(in srgb, var(--text-primary) 30%, transparent);
+  background: linear-gradient(
+    90deg,
+    var(--chrome) 0%,
+    var(--chrome) 58%,
+    var(--chrome-deep) 100%
+  );
+  border-bottom-color: var(--chrome-line-accent);
+  box-shadow: 0 10px 32px -28px rgba(0, 0, 0, 0.7);
   animation: x-topbar-arrive var(--motion-slow) var(--ease-emphasized) both;
 }
 
 .x-brand-mark {
   position: relative;
+  /* THE MARK IS SKY. It is the one object on screen allowed to be nothing but the house
+     colour, and on the navy rail it is the first thing the eye lands on.
+
+     The stops are `--action*` rather than `--accent*` because those two families differ in
+     one way that matters here: `--accent-ink` FLIPS between themes (#7d5e12 on light,
+     #dcc07e on dark), so a gradient seeded from it put navy initials on a 2.69:1 ground in
+     light mode. `--action` and `--action-hover` are sky in BOTH themes by construction —
+     they are the primary button — so the mark is the same object in both, and the navy
+     initials clear 9.20:1, 7.08:1 and 5.18:1 across the three stops. */
+  background: linear-gradient(
+    135deg,
+    var(--action-hover) 0%,
+    var(--action) 52%,
+    color-mix(in srgb, var(--action) 82%, var(--chrome)) 100%
+  );
+  color: var(--action-ink);
   box-shadow:
-    0 8px 18px -10px color-mix(in srgb, var(--brand) 80%, transparent),
-    inset 0 1px rgba(255, 255, 255, 0.24);
+    0 0 0 1px color-mix(in srgb, var(--gold-line) 72%, transparent),
+    0 8px 18px -10px rgba(111, 189, 242, 0.55),
+    inset 0 1px var(--sheen);
 }
 
 .x-brand-mark::after {
   content: "";
   position: absolute;
   inset: -3px;
-  border: 1px solid color-mix(in srgb, var(--brand) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold-line) 64%, transparent);
   border-radius: 12px;
   opacity: 0;
   transform: scale(0.82);
@@ -502,7 +1077,7 @@ table,
 }
 
 .x-module-link[aria-current="page"] {
-  box-shadow: inset 3px 0 var(--brand);
+  box-shadow: inset 3px 0 var(--gold-line);
 }
 
 .x-module-link svg,
@@ -517,11 +1092,15 @@ table,
 }
 
 .x-workbench-tabs {
-  background: var(--surface-glass);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow: 0 10px 28px -30px
-    color-mix(in srgb, var(--text-primary) 32%, transparent);
+  /* Deeper than the topbar above it, so the two navy bands are legibly two bands, and it
+     is the strip that actually touches the pale canvas — hence the sky rule at its foot. */
+  background: linear-gradient(
+    180deg,
+    var(--chrome-deep) 0%,
+    var(--chrome-edge) 100%
+  );
+  border-bottom-color: var(--chrome-line-accent);
+  box-shadow: 0 10px 28px -26px rgba(0, 0, 0, 0.7);
 }
 
 .x-workbench-tab {
@@ -541,6 +1120,7 @@ table,
 
 .x-workspace-scroll {
   scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
   scrollbar-color: color-mix(in srgb, var(--text-muted) 35%, transparent)
     transparent;
 }
@@ -585,8 +1165,8 @@ table,
   width: 3px;
   height: 22px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--brand), var(--ai-accent));
-  box-shadow: 0 0 14px color-mix(in srgb, var(--brand) 28%, transparent);
+  background: linear-gradient(180deg, var(--action), var(--gold-line));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gold) 24%, transparent);
   transform-origin: top;
   animation: x-header-rule var(--motion-slow) var(--ease-emphasized) both;
 }
@@ -596,11 +1176,20 @@ table,
     100deg,
     var(--text-primary) 0%,
     var(--text-primary) 74%,
-    color-mix(in srgb, var(--brand) 72%, var(--text-primary)) 100%
+    color-mix(in srgb, var(--figure) 78%, var(--text-primary)) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+/* THE STAT STRIP IS A KEY FIGURE ROW. `Loaded 7 · Past their date 1 · Value loaded
+   ₹94,42,903.00` is the number a person came to this screen for, and it was rendering at
+   `--text-primary` — the same ink as the paragraph above it, so the palette said nothing
+   about which of the two mattered. `--figure` is the token that already exists for exactly
+   this job (see its declaration): deep marine on light at 9.41:1 on a card, bright sky on dark
+   at 11.88:1. The LABEL stays muted; only the value takes the house colour. */
+.x-page-header dd[data-numeric] {
+  color: var(--figure);
 }
 
 .x-copilot-rail {
@@ -827,8 +1416,8 @@ body:has([role="dialog"]) .x-demo-dock {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-muted);
-  background: #fbfcfd;
-  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--accent-line);
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -836,6 +1425,12 @@ body:has([role="dialog"]) .x-demo-dock {
 }
 :root[data-theme="dark"] .grid-table th {
   background: var(--surface-sunken);
+}
+/* WHITE, DELIBERATELY. The interior of a data grid is the place on a light page where
+   a tint costs more than it returns — see `--surface-data`. The paper header well and its
+   gold underscore above it are what keep the table inside the palette. */
+.grid-table tbody {
+  background: var(--surface-data);
 }
 .grid-table td {
   padding: 10px 16px;
@@ -862,6 +1457,16 @@ body:has([role="dialog"]) .x-demo-dock {
 }
 .grid-table tbody tr[data-clickable]:hover td:first-child {
   color: var(--brand);
+}
+/* A TOTAL IS A KEY FIGURE. The last row of a grid marked `data-total` — the sum a person
+   is actually going to act on — takes the accent ink and an accent rule above it. */
+.grid-table tfoot td,
+.grid-table tr[data-total] td {
+  border-top: 1px solid var(--accent-line);
+  border-bottom: none;
+  background: var(--surface-sunken);
+  color: var(--figure);
+  font-weight: 700;
 }
 .grid-table tbody tr[data-clickable] {
   cursor: pointer;
@@ -914,7 +1519,7 @@ body:has([role="dialog"]) .x-demo-dock {
 .kpi:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  border-color: color-mix(in srgb, var(--brand) 24%, var(--border-subtle));
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border-subtle));
 }
 .kpi:hover::after {
   transform: scale(1);
@@ -933,7 +1538,11 @@ body:has([role="dialog"]) .x-demo-dock {
   letter-spacing: -0.02em;
   margin-top: 5px;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--text-primary);
+  /* THE NUMBER IS THE POINT OF THE TILE, so it is the number that carries the house
+     colour. `--figure` is bright sky on dark and sky pushed to a legible deep marine on
+     light (6.38:1 on the card) — the same hue in both, at the only two lightnesses that
+     are actually readable on their grounds. */
+  color: var(--figure);
 }
 .kpi-v small {
   font-size: 12px;
@@ -972,9 +1581,13 @@ body:has([role="dialog"]) .x-demo-dock {
   background: var(--bad-soft);
   color: var(--bad-ink);
 }
+/* Its own azure, not the brand band. `--brand-soft` IS the house sky band on a light page,
+   and an INFORMATION chip drawn in it is a chip wearing the house colour — which is
+   exactly the collision §5 of this file spends its length avoiding. `--info-*` is the pair
+   that already exists for the job. */
 .chip-info {
-  background: var(--brand-soft);
-  color: var(--brand);
+  background: var(--info-bg);
+  color: var(--info-fg);
 }
 .chip-grey {
   background: var(--bg);
@@ -985,10 +1598,10 @@ body:has([role="dialog"]) .x-demo-dock {
   background: var(--violet-soft);
   color: var(--ai-text);
 }
-.chip-gold {
-  background: var(--gold-soft);
-  color: var(--gold-ink);
-  border: 1px solid var(--gold-line);
+.chip-accent {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent-line);
 }
 
 /* ---- buttons -------------------------------------------------------------- */
@@ -1018,13 +1631,18 @@ body:has([role="dialog"]) .x-demo-dock {
   cursor: not-allowed;
   transform: none;
 }
+/* THE PRIMARY ACTION IS SKY, IN BOTH THEMES. White ink on deep sky is 7.51:1 and it is the
+   most confident pairing this palette can make — so the one control on a screen that says
+   "do the thing" is the one that wears the house colour outright. It takes `--action`
+   rather than `--brand` because `--brand` has to stay navy on a light page to survive the
+   sixty places it is read as text. */
 .btn-pri {
-  background: var(--brand);
-  color: #fff;
+  background: var(--action);
+  color: var(--action-ink);
   box-shadow: var(--shadow-sm);
 }
 .btn-pri:hover:not(:disabled) {
-  background: var(--brand-hover);
+  background: var(--action-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -1044,8 +1662,8 @@ body:has([role="dialog"]) .x-demo-dock {
    whole product depends on a person being able to tell at a glance whether a human or a
    machine produced what they are looking at. */
 .btn-ai {
-  background: linear-gradient(120deg, #12294f, var(--brand));
-  color: #fff;
+  background: linear-gradient(120deg, var(--ai-fill), var(--ai-fill-2));
+  color: var(--text-on-fill);
 }
 .btn-ai:hover:not(:disabled) {
   filter: brightness(1.12);
@@ -1080,7 +1698,9 @@ body:has([role="dialog"]) .x-demo-dock {
   align-items: center;
   justify-content: space-between;
   padding: 13px 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  /* A SECTION HAIRLINE. Every panel head in the product is underscored in sky — the same
+     rule as the table header and the page keyline, so the three read as one system. */
+  border-bottom: 1px solid var(--accent-line);
   font-weight: 650;
   font-size: 13px;
   gap: 8px;
@@ -1099,8 +1719,10 @@ body:has([role="dialog"]) .x-demo-dock {
 .field {
   font-size: 13px;
   color: var(--text-primary);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
+  /* White, for the same reason the table interior is white: this is where a person reads
+     and types a part number, and legibility beats warmth inside the control. */
+  background: var(--surface-data);
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-control);
   padding: 8px 11px;
   outline: none;
@@ -1112,7 +1734,9 @@ body:has([role="dialog"]) .x-demo-dock {
 }
 .field:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px var(--brand-soft);
+  /* The same sky-inside-deep-sky ring as every other focusable thing — see the `:focus-visible`
+     rule at the top of this file. */
+  box-shadow: 0 0 0 2px var(--focus-core), 0 0 0 5px var(--brand-soft);
 }
 .field-label {
   font-size: 10.5px;
@@ -1187,24 +1811,18 @@ body:has([role="dialog"]) .x-demo-dock {
    void has two, and it follows the theme like every other surface in the product.
 
    ---------------------------------------------------------------------------
-   WHY THE SEVEN AGENT HUES ARE RESTATED HERE RATHER THAN INHERITED
+   WHY THE NINE AGENT HUES ARE RESTATED HERE RATHER THAN INHERITED
    ---------------------------------------------------------------------------
-   The dark set is inherited verbatim — it is the identical seven from
-   `:root[data-theme="dark"]`, which is why the map matches the department badges a
-   dark-theme user sees everywhere else.
+   Both sets are now identical to the ones in `:root` and `:root[data-theme="dark"]`, which
+   is why the map matches the department badges a user sees everywhere else.
 
-   The LIGHT set is not, and the reason is measurement rather than taste. The product's
-   light hues are authored for chips and badges, where the colour is a FILL behind white
-   text. Here the same value is INK — a letter drawn on a pale field — and three of the
-   seven do not survive that change of job. Against this background:
-
-       RASP  #c8912a   2.48:1   fails 3:1 outright
-       SPAR  #1f8a70   3.79:1   passes, with nothing to spare
-       MICA  #2e7bc4   3.95:1   passes, with nothing to spare
-
-   Each keeps its hue and loses lightness until it clears 4.5:1, so the map is legible on a
-   sunlit plant-office monitor and the seven are still recognisably the same seven. The
-   three that had margin already (ONYX, HEXA, KILN) are untouched.
+   They used to differ, and the reason they no longer do is worth recording. The old light
+   hues were authored for chips and badges, where the colour is a FILL behind white text;
+   here the same value is INK — a letter drawn on a pale field — and three of them did not
+   survive the change of job (RASP measured 2.48:1). The rebuilt palette holds every owner
+   hue to 4.5:1 as INK on every light surface, so one set now serves both jobs and the
+   restatement is a guard rather than a correction: this block is the place a future value
+   that only works as a fill would be caught, on the field where the letters are drawn.
 
    ---------------------------------------------------------------------------
    THE AURORA IS A DIFFERENT RAMP IN EACH THEME, NOT THE SAME ONE DIMMED
@@ -1219,16 +1837,17 @@ body:has([role="dialog"]) .x-demo-dock {
    screen, the Brain and the map read as one identity: a confident mark, and one calmer
    shade beneath it. */
 .ind-void {
-  --void-bg: #eaeff5;
-  --void-ink: #12202e;
-  --void-ink-soft: #51606f;
+  --void-bg: #f0e9da;
+  --void-ink: #0d1f33;
+  --void-ink-soft: #4f4838;
 
-  /* The five aurora stops, in gradient order. */
-  --void-aurora-1: #0e7490;
-  --void-aurora-2: #0f766e;
-  --void-aurora-3: #4f46e5;
-  --void-aurora-4: #7c3aed;
-  --void-aurora-5: #a21caf;
+  /* The five aurora stops, in gradient order: an arc from navy through petrol and plum to
+     bronze, so the sweep ends on the house colour. Worst stop on this field is 4.89:1. */
+  --void-aurora-1: #0e3a62;
+  --void-aurora-2: #0f5a63;
+  --void-aurora-3: #5a3a7a;
+  --void-aurora-4: #8a2e5e;
+  --void-aurora-5: #8a5a16;
 
   /*
    * ───────────────────────────────────────────────────────────────────────────
@@ -1248,20 +1867,20 @@ body:has([role="dialog"]) .x-demo-dock {
    * Cut to about a third, which measures ~9 levels. The harness caps this rather than
    * eyeballing it — a smudge behind the hub is exactly the kind of thing that creeps back.
    */
-  --void-core-a: rgba(13, 148, 136, 0.045);
-  --void-core-b: rgba(79, 70, 229, 0.028);
+  --void-core-a: rgba(111, 189, 242, 0.05);
+  --void-core-b: rgba(13, 31, 51, 0.028);
   --void-wash-a: radial-gradient(
     circle,
-    rgba(13, 148, 136, 0.028) 0%,
-    rgba(79, 70, 229, 0.02) 38%,
+    rgba(111, 189, 242, 0.032) 0%,
+    rgba(13, 31, 51, 0.02) 38%,
     transparent 66%
   );
   --void-wash-b: radial-gradient(
     circle,
-    rgba(124, 58, 237, 0.025) 0%,
+    rgba(123, 42, 99, 0.022) 0%,
     transparent 62%
   );
-  --void-focus: #0e7490;
+  --void-focus: #1c5da3;
 
   /*
    * THE MARK GLOW, tuned per theme — see `.ind-mark-glow`.
@@ -1324,12 +1943,12 @@ body:has([role="dialog"]) .x-demo-dock {
    * THE HOVER HALO IS MUCH FAINTER HERE, BECAUSE A DARK ACCENT CANNOT TINT.
    * ───────────────────────────────────────────────────────────────────────────
    * Approaching a node lays its own accent behind it as a soft disc. On the dark panel the
-   * accents are LIGHT — ONYX is #6f8fd8 — so 16% of one over near-black is a coloured glow,
+   * accents are LIGHT — ONYX is #b7c4e2 — so 16% of one over near-black is a coloured glow,
    * which is exactly the intent.
    *
    * On the light panel the same accents are DARK by necessity, because they have to be ink
-   * on a pale field. ONYX is #0c2340, and 16% of a near-black navy over near-white is not a
-   * blue halo — it is rgb(199,206,216), a grey blob. Measured, and it was easy to miss for a
+   * on a pale field. ONYX is #0a1f44, and 16% of a near-black navy over near-warm-white is
+   * not a halo — it is a grey blob. Measured, and it was easy to miss for a
    * dull reason: the harness clicked at the centre of the viewport, so every screenshot taken
    * of this scene had the hub under the cursor and nobody had photographed it at rest.
    *
@@ -1342,44 +1961,45 @@ body:has([role="dialog"]) .x-demo-dock {
   --hub-halo-alpha: 0.07;
   --node-halo-alpha: 0.06;
 
-  --dept-onyx: #0c2340;
-  --dept-hexa: #1b4b8f;
-  --dept-mica: #1f6aae;
-  --dept-spar: #15735d;
-  --dept-axle: #6344c4;
-  --dept-kiln: #c2410c;
-  --dept-rasp: #9a6a14;
-  --dept-relay: #0f766e;
-  --dept-achiles: #86198f;
+  --dept-onyx: #0a1f44;
+  --dept-hexa: #1d4470;
+  --dept-mica: #17609e;
+  --dept-spar: #146b58;
+  --dept-axle: #5b4a9e;
+  --dept-kiln: #a8461c;
+  --dept-rasp: #7d5e12;
+  --dept-relay: #0e6a6b;
+  --dept-achiles: #7b2a63;
 }
 
 :root[data-theme="dark"] .ind-void {
   /* Near-black rather than pure: #000 on an OLED panel is a hole with hard edges where the
      glow stops. */
-  --void-bg: #04060c;
-  --void-ink: #e8f1f7;
-  --void-ink-soft: #8ea6ba;
+  --void-bg: #04050b;
+  --void-ink: #e9f3fc;
+  --void-ink-soft: #b2a184;
 
-  --void-aurora-1: #22d3ee;
-  --void-aurora-2: #2dd4bf;
-  --void-aurora-3: #818cf8;
-  --void-aurora-4: #a78bfa;
-  --void-aurora-5: #d946ef;
+  /* The same arc, lifted to glow. Worst stop on this field is 6.41:1. */
+  --void-aurora-1: #6e92c8;
+  --void-aurora-2: #63bfc2;
+  --void-aurora-3: #a88fd0;
+  --void-aurora-4: #de93b4;
+  --void-aurora-5: #e3c478;
 
-  --void-core-a: rgba(94, 234, 212, 0.15);
-  --void-core-b: rgba(129, 140, 248, 0.05);
+  --void-core-a: rgba(111, 189, 242, 0.15);
+  --void-core-b: rgba(110, 146, 200, 0.05);
   --void-wash-a: radial-gradient(
     circle,
-    rgba(45, 212, 191, 0.055) 0%,
-    rgba(129, 140, 248, 0.035) 38%,
+    rgba(111, 189, 242, 0.055) 0%,
+    rgba(110, 146, 200, 0.035) 38%,
     transparent 66%
   );
   --void-wash-b: radial-gradient(
     circle,
-    rgba(167, 139, 250, 0.05) 0%,
+    rgba(209, 139, 194, 0.05) 0%,
     transparent 62%
   );
-  --void-focus: #5eead4;
+  --void-focus: #4da3e0;
 
   --mark-glow-dy: 0px;
   --mark-glow-blur: 7px;
@@ -1399,15 +2019,15 @@ body:has([role="dialog"]) .x-demo-dock {
   --hub-halo-alpha: 0.16;
   --node-halo-alpha: 0.13;
 
-  --dept-onyx: #6f8fd8;
-  --dept-hexa: #5b8def;
-  --dept-mica: #62a8e8;
-  --dept-spar: #35b696;
-  --dept-axle: #a58bf0;
-  --dept-kiln: #f07f45;
-  --dept-rasp: #e2bb63;
-  --dept-relay: #2dd4bf;
-  --dept-achiles: #e879f9;
+  --dept-onyx: #b7c4e2;
+  --dept-hexa: #6e9be8;
+  --dept-mica: #52c2e0;
+  --dept-spar: #4fc49e;
+  --dept-axle: #a98be8;
+  --dept-kiln: #e8724e;
+  --dept-rasp: #d9bc74;
+  --dept-relay: #45d0c4;
+  --dept-achiles: #e27bc8;
 }
 
 /* ----------------------------------------------------------------------------

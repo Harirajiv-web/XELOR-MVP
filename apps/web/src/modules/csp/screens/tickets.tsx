@@ -148,7 +148,7 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Product cases"
-        subtitle="After-sales issues with products the factory sold—linked to the customer, machine serial, warranty cover and promised response time. XELOR technology incidents belong to RELAY."
+        subtitle="After-sales issues with products the factory sold—linked to the customer, machine serial, warranty cover and promised response time. ONYX technology incidents belong to RELAY."
         meta={
           all.length > 0
             ? [
@@ -171,7 +171,7 @@ export default function TicketsScreen(_props: ScreenProps): React.JSX.Element {
             onChange={(e) => setText(e.target.value)}
             placeholder="Filter by case, subject or machine serial…"
             aria-label="Filter product cases"
-            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="h-9 w-full rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
         </div>
 
@@ -245,7 +245,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface)] px-2 text-[13px] text-[var(--text-primary)]"
+        className="h-9 rounded-[var(--radius-control)] border border-[var(--border-input)] bg-[var(--surface-data)] px-2 text-[13px] text-[var(--text-primary)]"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

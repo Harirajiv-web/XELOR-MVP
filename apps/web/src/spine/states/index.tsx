@@ -209,7 +209,7 @@ export function NotLicensed({
       title={`${moduleName} is not part of your plan`}
       body={
         <div className="w-full max-w-[480px]">
-          <p>Contact the person who manages your XELOR subscription.</p>
+          <p>Contact the person who manages your ONYX subscription.</p>
           {summary ? (
             <Disclosure title="Module details" className="mt-3 text-left">
               <p>{summary}</p>

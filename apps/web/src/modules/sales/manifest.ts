@@ -133,7 +133,7 @@ function amountOf(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** "Trishul Precision Components" — or the customer's own PO when the name did not come. */
+/** "3S Precision Parts" — or the customer's own PO when the name did not come. */
 function who(o: OrderFact): string {
   if (o.customerName) return o.customerName;
   return o.custPoNo ? `the customer on PO ${o.custPoNo}` : "the customer";

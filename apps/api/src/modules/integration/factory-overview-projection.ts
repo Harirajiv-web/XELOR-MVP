@@ -21,6 +21,31 @@ export function projectFactoryCommandEvidence(command: unknown): Record<string, 
 }
 
 /**
+ * Stable, deliberately enumerated DTO for XELOR and the Production workroom screen.
+ * Keeping this separate from the combined overview prevents a future internal field from
+ * becoming integration data by accident.
+ */
+export function projectFactoryOperationsView(
+  overview: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const operations = recordOf(overview.operations);
+  if (!operations) {
+    throw new Error("Factory Operations projection is missing from the Factory overview.");
+  }
+  return {
+    schemaVersion: operations.schemaVersion,
+    demo: operations.demo,
+    customer: operations.customer,
+    source: operations.source,
+    freshness: operations.freshness,
+    summary: operations.summary,
+    machines: operations.machines,
+    atRiskJobs: operations.atRiskJobs,
+    replanProposals: operations.replanProposals,
+  };
+}
+
+/**
  * Department views are deliberately projections, not aliases of the full Factory Connect
  * evidence surface. Keep these object literals explicit: adding a field to `overview()` must
  * never silently disclose it to every department.
@@ -47,6 +72,7 @@ export function projectFactoryOverview(
         ...metadata,
         gateways: overview.gateways,
         assets: overview.assets,
+        operations: overview.operations,
         summary: overview.summary,
         mission: overview.mission,
       };

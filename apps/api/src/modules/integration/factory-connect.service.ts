@@ -11,6 +11,8 @@ import {
   machineCommandVerdict,
   newId,
   normalizeMachineCommandIntent,
+  projectFactoryOperations,
+  type FactoryOperationsAssetInput,
   type MachineCommandIntent,
   type MachineCommandPolicy,
   type MachineCommandRequest,
@@ -25,9 +27,17 @@ import {
 } from "./factory-command-approval.js";
 import {
   projectFactoryCommandEvidence,
+  projectFactoryOperationsView,
   projectFactoryOverview,
 } from "./factory-overview-projection.js";
 import { canonicalFactoryStateReplay } from "./factory-telemetry-integrity.js";
+import {
+  factoryWorkroomAlternateEvidence,
+  factoryWorkroomReplayMatches,
+  factoryWorkroomSafetyState,
+  factoryWorkroomScenarioIdentity,
+  type FactoryWorkroomScenarioAction,
+} from "./factory-workroom-scenario.js";
 
 const {
   factoryEdgeGateway,
@@ -42,6 +52,14 @@ const {
 
 const MAX_SIMULATOR_STATE_AGE_MS = 24 * 60 * 60_000;
 const MAX_TELEMETRY_FUTURE_SKEW_MS = 60_000;
+const THREE_S_TENANT_ID = "0192a8c0-0000-7000-8000-000000000001";
+const THREE_S_WORKROOM_ASSET_CODE = "AST-PNQ-TRN-01";
+const THREE_S_WORKROOM_ALTERNATE_ASSET_CODE = "AST-PNQ-LTH-02";
+
+export interface ThreeSWorkroomScenarioInput {
+  action: FactoryWorkroomScenarioAction;
+  idempotencyKey: string;
+}
 
 interface StateInput {
   assetCode: string;
@@ -64,6 +82,13 @@ function recordOf(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+function finiteNumberOf(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function policyOf(value: unknown): MachineCommandPolicy {
@@ -126,6 +151,17 @@ export class FactoryConnectService {
     return projectFactoryOverview(await this.overview(), "production");
   }
 
+  async operationsView(): Promise<Record<string, unknown>> {
+    if (currentTenant().tenantId !== THREE_S_TENANT_ID) {
+      throw new AppError(
+        "FACTORY_WORKROOM_SCENARIO_UNAVAILABLE",
+        404,
+        "Factory Operations is not configured for this tenant.",
+      );
+    }
+    return projectFactoryOperationsView(await this.overview());
+  }
+
   async planningView(): Promise<Record<string, unknown>> {
     return projectFactoryOverview(await this.overview(), "planning");
   }
@@ -143,6 +179,7 @@ export class FactoryConnectService {
   }
 
   async overview(): Promise<Record<string, unknown>> {
+    const { tenantId } = currentTenant();
     return withTenant(async (tx) => {
       // `withTenant` pins one PostgreSQL client so SET LOCAL and RLS stay inseparable from
       // every read. Keep the queries sequential on that client.
@@ -199,6 +236,8 @@ export class FactoryConnectService {
           manufacturer: asset.manufacturer,
           model: asset.model,
           gatewayCode: gateway?.code ?? null,
+          maintenanceAssetRef: asset.maintenanceAssetRef,
+          workCenterRef: asset.workCenterRef,
           adapterMode: gateway?.deploymentMode ?? "unknown",
           commandMode: gateway?.commandMode ?? "read_only",
           state: state?.state ?? "unknown",
@@ -254,8 +293,47 @@ export class FactoryConnectService {
 
       const constrained = assetRows.filter((row) => ["blocked", "faulted", "protective_stop", "offline"].includes(row.state));
       const exceeded = dwellRows.filter((row) => row.status === "exceeded");
+      const generatedAt = new Date(now).toISOString();
+      const operationAssets: FactoryOperationsAssetInput[] = assets.map((asset) => {
+        const state = latestState.get(asset.id);
+        const gateway = gatewayById.get(asset.gatewayId);
+        const evidenceFreshnessWindowMs = gateway?.deploymentMode === "simulator"
+          ? MAX_SIMULATOR_STATE_AGE_MS
+          : MAX_MACHINE_STATE_AGE_MS;
+        return {
+          assetCode: asset.assetCode,
+          name: asset.name,
+          assetKind: asset.assetKind,
+          siteCode: asset.siteCode,
+          zoneCode: asset.zoneCode,
+          maintenanceAssetRef: asset.maintenanceAssetRef,
+          workCenterRef: asset.workCenterRef,
+          state: state?.state ?? "unknown",
+          safetyState: state?.safetyState ?? "unknown",
+          observedAt: state?.observedAt?.toISOString() ?? null,
+          evidenceAgeSeconds: state?.observedAt
+            ? Math.max(0, Math.round((now - state.observedAt.getTime()) / 1_000))
+            : null,
+          evidenceStale: state?.observedAt
+            ? now - state.observedAt.getTime() > evidenceFreshnessWindowMs
+            : true,
+          adapterMode: gateway?.deploymentMode ?? "unknown",
+          actualCycleSeconds: finiteNumberOf(state?.cycleTimeSeconds),
+          goodCount: state?.goodCount ?? null,
+          rejectCount: state?.rejectCount ?? null,
+          attributes: recordOf(asset.attributes) ?? {},
+          stateEvidence: recordOf(state?.evidence) ?? {},
+        };
+      });
+      const operations = tenantId === THREE_S_TENANT_ID
+        ? projectFactoryOperations({
+            generatedAt,
+            customer: { tenantId, code: "3S", name: "3S Precision Parts Pvt Ltd" },
+            assets: operationAssets,
+          })
+        : null;
       return {
-        generatedAt: new Date(now).toISOString(),
+        generatedAt,
         boundary: "Simulator evidence is explicit. No physical controller is connected and no safety function is remotely controlled.",
         gateways: gateways.map((gateway) => {
           const heartbeat = gatewayHeartbeat(gateway, nowDate);
@@ -288,6 +366,7 @@ export class FactoryConnectService {
           createdAt: command.createdAt.toISOString(),
           result: command.result,
         })),
+        operations,
         summary: {
           assets: assetRows.length,
           constrained: constrained.length,
@@ -403,6 +482,305 @@ export class FactoryConnectService {
         ));
       return { id: existing.id, status: "duplicate", sourceEventId: input.sourceEventId };
     });
+  }
+
+  /**
+   * Toggle one explicit 3S POC machine between running and faulted evidence.
+   * This writes an append-only simulator observation; it never calls the command path,
+   * contacts a controller, changes a Production order, or publishes a Planning schedule.
+   */
+  async simulate3sWorkroom(
+    input: ThreeSWorkroomScenarioInput,
+  ): Promise<Record<string, unknown>> {
+    const { tenantId, actorId } = currentTenant();
+    if (tenantId !== THREE_S_TENANT_ID) {
+      throw new AppError(
+        "FACTORY_WORKROOM_SCENARIO_UNAVAILABLE",
+        404,
+        "The 3S Workroom simulator scenario is not available for this tenant.",
+      );
+    }
+
+    const { idempotencyDigest, sourceEventId, alternateSourceEventId } =
+      factoryWorkroomScenarioIdentity(input.idempotencyKey);
+    const result = await withTenant(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtext(${`factory-workroom:${tenantId}:${input.idempotencyKey}`}))`,
+      );
+
+      const [asset] = await tx
+        .select()
+        .from(industrialAssetBinding)
+        .where(and(
+          eq(industrialAssetBinding.assetCode, THREE_S_WORKROOM_ASSET_CODE),
+          eq(industrialAssetBinding.isActive, true),
+        ))
+        .limit(1);
+      if (!asset) {
+        throw new AppError(
+          "FACTORY_WORKROOM_SCENARIO_UNAVAILABLE",
+          404,
+          "The configured 3S Workroom simulator asset was not found.",
+        );
+      }
+
+      const [alternate] = await tx
+        .select()
+        .from(industrialAssetBinding)
+        .where(and(
+          eq(industrialAssetBinding.assetCode, THREE_S_WORKROOM_ALTERNATE_ASSET_CODE),
+          eq(industrialAssetBinding.isActive, true),
+        ))
+        .limit(1);
+      if (!alternate) {
+        throw new AppError(
+          "FACTORY_WORKROOM_SCENARIO_UNAVAILABLE",
+          404,
+          "The configured 3S Workroom alternate simulator asset was not found.",
+        );
+      }
+
+      const [gateway] = await tx
+        .select()
+        .from(factoryEdgeGateway)
+        .where(and(
+          eq(factoryEdgeGateway.id, asset.gatewayId),
+          eq(factoryEdgeGateway.isActive, true),
+        ))
+        .limit(1);
+      const [alternateGateway] = await tx
+        .select()
+        .from(factoryEdgeGateway)
+        .where(and(
+          eq(factoryEdgeGateway.id, alternate.gatewayId),
+          eq(factoryEdgeGateway.isActive, true),
+        ))
+        .limit(1);
+      const workroom = recordOf(recordOf(asset.attributes)?.workroom);
+      const alternateWorkroom = recordOf(recordOf(alternate.attributes)?.workroom);
+      const explicitAlternates = Array.isArray(workroom?.alternateAssetCodes)
+        ? workroom.alternateAssetCodes.filter((code): code is string => typeof code === "string")
+        : [];
+      if (
+        !gateway ||
+        !alternateGateway ||
+        gateway.deploymentMode !== "simulator" ||
+        alternateGateway.deploymentMode !== "simulator" ||
+        workroom?.mockOnly !== true ||
+        alternateWorkroom?.mockOnly !== true ||
+        alternateWorkroom.workCenterCode !== "WC-LTH02" ||
+        !explicitAlternates.includes(alternate.assetCode)
+      ) {
+        throw new AppError(
+          "FACTORY_WORKROOM_SIMULATOR_REQUIRED",
+          403,
+          "The scenario is restricted to the configured mock-only 3S lathe and its explicit WC-LTH02 alternate.",
+        );
+      }
+
+      const [existing] = await tx
+        .select()
+        .from(assetStateEvent)
+        .where(and(
+          eq(assetStateEvent.assetId, asset.id),
+          eq(assetStateEvent.sourceEventId, sourceEventId),
+        ))
+        .limit(1);
+      const [existingAlternate] = await tx
+        .select()
+        .from(assetStateEvent)
+        .where(and(
+          eq(assetStateEvent.assetId, alternate.id),
+          eq(assetStateEvent.sourceEventId, alternateSourceEventId),
+        ))
+        .limit(1);
+      if (existing || existingAlternate) {
+        if (!existing || !existingAlternate) {
+          throw new AppError(
+            "FACTORY_WORKROOM_IDEMPOTENCY_CONFLICT",
+            409,
+            "The Workroom scenario replay evidence is incomplete; neither simulator event was duplicated.",
+          );
+        }
+        if (
+          !factoryWorkroomReplayMatches(existing.evidence, {
+            action: input.action,
+            idempotencyDigest,
+            scenarioRole: "constrained_machine",
+          }) ||
+          !factoryWorkroomReplayMatches(existingAlternate.evidence, {
+            action: input.action,
+            idempotencyDigest,
+            scenarioRole: "explicit_alternate_freshness",
+          })
+        ) {
+          throw new AppError(
+            "FACTORY_WORKROOM_IDEMPOTENCY_MISMATCH",
+            409,
+            "The idempotency key was already used for a different Workroom scenario action.",
+          );
+        }
+        return {
+          id: existing.id,
+          status: "duplicate",
+          changed: false,
+          action: input.action,
+          assetCode: asset.assetCode,
+          sourceEventId,
+          alternateAssetCode: alternate.assetCode,
+          alternateSourceEventId,
+          mockOnly: true,
+          physicalControllerContacted: false,
+          autoPublished: false,
+        };
+      }
+
+      const [latest] = await tx
+        .select()
+        .from(assetStateEvent)
+        .where(and(
+          eq(assetStateEvent.assetId, asset.id),
+          eq(assetStateEvent.isActive, true),
+        ))
+        .orderBy(desc(assetStateEvent.observedAt), desc(assetStateEvent.id))
+        .limit(1);
+      const [latestAlternate] = await tx
+        .select()
+        .from(assetStateEvent)
+        .where(and(
+          eq(assetStateEvent.assetId, alternate.id),
+          eq(assetStateEvent.isActive, true),
+        ))
+        .orderBy(desc(assetStateEvent.observedAt), desc(assetStateEvent.id))
+        .limit(1);
+      const targetState = input.action === "breakdown" ? "faulted" : "running";
+      const changed = latest?.state !== targetState;
+      const now = new Date();
+      const id = newId();
+      const alternateId = newId();
+      const mockShift = {
+        code: "B",
+        label: "Shift B · deterministic POC scenario",
+        source: "configured_3s_mock_shift",
+        plannedProductionSeconds: 27_000,
+        runSeconds: input.action === "breakdown" ? 20_500 : 23_800,
+        idealCycleSeconds: 1_260,
+      };
+      const latestAlternateEvidence = recordOf(latestAlternate?.evidence) ?? {};
+      const inserted = await tx
+        .insert(assetStateEvent)
+        .values([
+          {
+            id,
+            tenantId,
+            createdBy: actorId,
+            updatedBy: actorId,
+            assetId: asset.id,
+            sourceEventId,
+            observedAt: now,
+            state: targetState,
+            safetyState: factoryWorkroomSafetyState(input.action, latest?.safetyState),
+            activeProgram: latest?.activeProgram ?? "PX400_SHAFT_OP10",
+            workRef: latest?.workRef ?? "MO-2627-00003",
+            materialRef: latest?.materialRef ?? "CMP-PX4-SFT",
+            cycleTimeSeconds: latest?.cycleTimeSeconds ?? "1320",
+            goodCount: latest?.goodCount ?? 18,
+            rejectCount: latest?.rejectCount ?? 0,
+            energyKwh: latest?.energyKwh ?? "38.6700",
+            alarmCode: input.action === "breakdown" ? "POC_SIMULATED_SPINDLE_TRIP" : null,
+            evidence: {
+              source: "3s_workroom_scenario",
+              mockOnly: true,
+              scenario: "3s-workroom-poc",
+              scenarioAction: input.action,
+              scenarioRole: "constrained_machine",
+              idempotencyDigest,
+              physicalControllerContacted: false,
+              autoPublished: false,
+              boundary: "Mock observation only; no physical controller or schedule was contacted.",
+              mockShift,
+            },
+          },
+          {
+            id: alternateId,
+            tenantId,
+            createdBy: actorId,
+            updatedBy: actorId,
+            assetId: alternate.id,
+            sourceEventId: alternateSourceEventId,
+            observedAt: now,
+            state: "idle",
+            safetyState: "normal",
+            activeProgram: latestAlternate?.activeProgram ?? null,
+            workRef: latestAlternate?.workRef ?? null,
+            materialRef: latestAlternate?.materialRef ?? null,
+            cycleTimeSeconds: latestAlternate?.cycleTimeSeconds ?? null,
+            goodCount: latestAlternate?.goodCount ?? 0,
+            rejectCount: latestAlternate?.rejectCount ?? 0,
+            energyKwh: latestAlternate?.energyKwh ?? "2.1100",
+            alarmCode: null,
+            evidence: factoryWorkroomAlternateEvidence({
+              latestEvidence: latestAlternateEvidence,
+              action: input.action,
+              idempotencyDigest,
+              preservedFromStateEventId: latestAlternate?.id ?? null,
+            }),
+          },
+        ])
+        .onConflictDoNothing({
+          target: [assetStateEvent.tenantId, assetStateEvent.assetId, assetStateEvent.sourceEventId],
+        })
+        .returning({ id: assetStateEvent.id });
+      if (inserted.length !== 2) {
+        throw new AppError(
+          "FACTORY_WORKROOM_IDEMPOTENCY_CONFLICT",
+          409,
+          "The Workroom scenario could not be persisted idempotently.",
+        );
+      }
+
+      await tx
+        .update(factoryEdgeGateway)
+        .set({ lastHeartbeatAt: now, updatedAt: now, updatedBy: actorId })
+        .where(and(
+          inArray(factoryEdgeGateway.id, [gateway.id, alternateGateway.id]),
+          eq(factoryEdgeGateway.deploymentMode, "simulator"),
+          eq(factoryEdgeGateway.isActive, true),
+        ));
+      await this.audit.appendInTx(tx, {
+        action: `factory.workroom.${input.action}_simulated`,
+        entityType: "asset_state_event",
+        entityId: id,
+        data: {
+          assetCode: asset.assetCode,
+          sourceEventId,
+          alternateAssetCode: alternate.assetCode,
+          alternateSourceEventId,
+          alternateResultingState: "idle",
+          previousState: latest?.state ?? null,
+          resultingState: targetState,
+          changed,
+          mockOnly: true,
+          physicalControllerContacted: false,
+          autoPublished: false,
+        },
+      });
+      return {
+        id,
+        status: changed ? "accepted" : "no_change",
+        changed,
+        action: input.action,
+        assetCode: asset.assetCode,
+        sourceEventId,
+        alternateAssetCode: alternate.assetCode,
+        alternateSourceEventId,
+        mockOnly: true,
+        physicalControllerContacted: false,
+        autoPublished: false,
+      };
+    });
+
+    return { ...result, operations: await this.operationsView() };
   }
 
   async requestCommand(input: MachineCommandRequest): Promise<Record<string, unknown>> {
@@ -610,7 +988,7 @@ export class FactoryConnectService {
         localControllerRemainsSafetyAuthority: true,
         approvalExecutorSeparated,
         separationOfDutiesRequired: false,
-        note: "The approved command passed XELOR policy gates in the simulator; no physical action was attempted.",
+        note: "The approved command passed ONYX policy gates in the simulator; no physical action was attempted.",
       };
       const policySnapshot = {
         evaluatedAt: now.toISOString(),

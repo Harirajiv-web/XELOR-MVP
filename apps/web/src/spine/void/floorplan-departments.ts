@@ -126,7 +126,7 @@ export interface ZoneAnnotation {
  * other side.
  */
 export const ZONE_ANNOTATIONS: readonly ZoneAnnotation[] = [
-  // XELOR aurora: related jewel tones rather than six unrelated neon primaries. The cool
+  // ONYX aurora: related jewel tones rather than six unrelated neon primaries. The cool
   // KILN sequence flows teal → sky → indigo, while supply and dispatch retain distinct
   // emerald, amber and rose cues. Each light-panel value is the accessible 700 counterpart.
   { id: "machine_shop", department: "KILN", color: 0x2dd4bf, colorLight: 0x0f766e, heads: 9 },

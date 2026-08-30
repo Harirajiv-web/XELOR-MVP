@@ -10,7 +10,7 @@ async function signIn(page: Page): Promise<void> {
   if (await username.isVisible()) {
     await username.fill("venkat");
     await page.getByRole("textbox", { name: "Password" }).fill("demo");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(brain).toBeVisible({ timeout: 30_000 });
 }

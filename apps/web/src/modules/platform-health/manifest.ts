@@ -5,7 +5,7 @@ export const platformHealthManifest: ModuleManifest = {
   key: "platform-health",
   name: "Platform Health",
   summary:
-    "ACHILES privately checks whether XELOR's web application, API, database and supporting runtime are responding, then keeps a tenant-fenced history for authorised internal operators.",
+    "ACHILES privately checks whether ONYX's web application, API, database and supporting runtime are responding, then keeps a tenant-fenced history for authorised internal operators.",
   department: "ACHILES",
   icon: "Activity",
   licenceKey: "aiops",

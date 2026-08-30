@@ -23,7 +23,7 @@ const TITLES: Record<
     title: "Service command centre",
     kicker: "RELAY · MANAGED SERVICE OPERATIONS",
     description:
-      "One operating view for the service around XELOR—from onboarding and monitoring to restoration, customer updates and measurable improvement.",
+      "One operating view for the service around ONYX—from onboarding and monitoring to restoration, customer updates and measurable improvement.",
   },
   incidents: {
     title: "Incidents & escalation",
@@ -55,7 +55,7 @@ function BoundaryNote({ text }: { text: string }): React.JSX.Element {
   return (
     <div
       role="note"
-      className="flex items-start gap-2.5 rounded-[12px] border border-amber-500/25 bg-amber-500/10 px-3.5 py-3 text-amber-800 dark:text-amber-200"
+      className="flex items-start gap-2.5 rounded-[12px] border border-[var(--warn)]/30 bg-[var(--warn)]/10 px-3.5 py-3 text-[var(--warn-ink)]"
     >
       <Icons.FlaskConical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
       <div>
@@ -96,7 +96,7 @@ function Hero({
         </div>
         <div className="rounded-[14px] border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--surface-raised)_88%,transparent)] p-4 backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[var(--dept-relay)] text-white shadow-[var(--shadow-md)]">
+            <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[var(--dept-relay)] text-[var(--text-on-accent)] shadow-[var(--shadow-md)]">
               <Icons.Headset className="h-5 w-5" aria-hidden />
             </span>
             <div>
@@ -220,7 +220,7 @@ function CommandCentre({
               className="rounded-[13px] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4"
             >
               <div className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--dept-relay)] text-[10px] font-extrabold text-white">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--dept-relay)] text-[10px] font-extrabold text-[var(--text-on-accent)]">
                   {index + 1}
                 </span>
                 <h2 className="text-[13px] font-extrabold text-[var(--text-primary)]">
@@ -524,7 +524,7 @@ function ResponsibilityRow({
       <div>
         <span
           className={cn(
-            "inline-flex rounded-[7px] px-2 py-1 text-[10px] font-extrabold tracking-[.08em] text-white",
+            "inline-flex rounded-[7px] px-2 py-1 text-[10px] font-extrabold tracking-[.08em] text-[var(--text-on-accent)]",
             item.accountable === "RELAY"
               ? "bg-[var(--dept-relay)]"
               : "bg-[var(--text-primary)]",

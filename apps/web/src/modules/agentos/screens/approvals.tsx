@@ -119,7 +119,7 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
         />
         <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--violet)] text-white shadow-[var(--shadow-md)]">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-[var(--violet)] text-[var(--text-on-accent)] shadow-[var(--shadow-md)]">
               <UserRoundCheck className="h-6 w-6" aria-hidden />
             </span>
             <div>
@@ -324,7 +324,7 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
                         maxLength={500}
                         rows={3}
                         placeholder="State what you checked and why you approve or reject…"
-                        className="mt-2 w-full resize-y rounded-[9px] border border-[var(--border-input)] bg-[var(--surface)] px-3 py-2 text-[12px] leading-5 text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
+                        className="mt-2 w-full resize-y rounded-[9px] border border-[var(--border-input)] bg-[var(--surface-data)] px-3 py-2 text-[12px] leading-5 text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
                       />
                       <p className="mt-1 text-[9.5px] text-[var(--text-muted)]">
                         Required · saved with your identity · {note.length}/500
@@ -343,7 +343,7 @@ export default function ApprovalsScreen(_props: ScreenProps): React.JSX.Element 
                           type="button"
                           disabled={note.trim().length < 3 || deciding !== null}
                           onClick={() => void decide(item, "approved")}
-                          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--ok)] text-[11px] font-bold text-white transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-45"
+                          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[var(--ok)] text-[11px] font-bold text-[var(--text-on-accent)] transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-45"
                         >
                           <Check className="h-3.5 w-3.5" aria-hidden />
                           {busy ? "Recording…" : "Approve"}

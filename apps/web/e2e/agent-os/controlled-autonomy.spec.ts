@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.ONYX_E2E_BASE_URL ?? "http://localhost:3001";
 
 async function ensureAutomationActive(page: Page): Promise<void> {
   const token = await page.evaluate(() => {
@@ -54,7 +54,7 @@ test("ONYX runs the connected nine-agent controlled-autonomy flow", async ({
   if (await page.locator("#username").isVisible()) {
     await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
   }
   await expect(brain).toBeVisible();
   await ensureAutomationActive(page);

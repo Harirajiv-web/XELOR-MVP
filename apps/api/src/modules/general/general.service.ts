@@ -49,7 +49,7 @@ export interface GstRegistrationRow {
  *
  * One legal entity holding several GSTINs is the case that makes this an Indian ERP rather
  * than a translated one, and it was invisible in the product until this join existed: the
- * list returned a legal name and a CIN, and Trishul's two plants under two state
+ * list returned a legal name and a CIN, and 3S's two plants under two state
  * registrations — the §7 demo universe — could not be seen anywhere.
  */
 export interface CompanyWithRegistrations extends CompanyRow {

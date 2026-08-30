@@ -27,14 +27,6 @@ export function pageSummary(title: string): string {
   return `View ${shown.toLowerCase()} and the latest information.`;
 }
 
-export function conciseCopilotAnswer(answer: string, rowCount: number): string {
-  const lines = answer.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  if (rowCount > 0 && (answer.length > 320 || lines.length > 4)) {
-    return `I found ${rowCount} matching ${rowCount === 1 ? "record" : "records"}. Open “Records used” below to see the details.`;
-  }
-  return answer;
-}
-
 const DEPARTMENT_NAMES: Readonly<Record<string, string>> = {
   ONYX: "Assistant & Automation",
   HEXA: "Company Setup",
@@ -59,8 +51,8 @@ const DEPARTMENT_SUMMARIES: Readonly<Record<string, string>> = {
   KILN: "Tracks production, quality, equipment and daily factory work.",
   MICA: "Manages customers, sales, deliveries, product warranty and after-sales care.",
   RASP: "Manages employees, spending and accounts.",
-  RELAY: "Coordinates the service around XELOR, including incidents, changes and customer updates.",
-  ACHILES: "Privately checks whether XELOR is working and records the evidence for authorised internal operators.",
+  RELAY: "Coordinates the service around ONYX, including incidents, changes and customer updates.",
+  ACHILES: "Privately checks whether ONYX is working and records the evidence for authorised internal operators.",
 };
 
 export function plainDepartmentSummary(code: string, fallback: string): string {

@@ -182,7 +182,7 @@ export function Gateway(): React.JSX.Element {
    * The authenticated entry point is the Brain.
    *
    * It is the visual handshake between authentication and the operating system: sign-in
-   * establishes who is present, the Brain establishes what XELOR is, and activating it
+   * establishes who is present, the Brain establishes what ONYX is, and activating it
    * reveals the catalogue-backed nine-agent topology. Starting in `onyx` skipped that
    * handshake entirely and left the Brain mounted but permanently hidden.
    */

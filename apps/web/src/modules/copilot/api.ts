@@ -33,7 +33,9 @@ export interface Capabilities {
 }
 
 /**
- * What an answer was drawn from. This travels WITH every answer, never behind a disclosure.
+ * What an answer was drawn from. This travels with every API response for governance and
+ * auditability, even when the investor-facing result deliberately renders only the active
+ * agent, department and tabular answer.
  *
  * `sources` are the database tables the hand-written query actually read — raw table names
  * rather than pretty labels, because the claim being made is checkable by somebody who can

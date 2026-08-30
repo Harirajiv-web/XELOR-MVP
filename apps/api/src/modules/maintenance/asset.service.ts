@@ -134,7 +134,7 @@ export class AssetService {
         warrantyEndDate: input.warrantyEndDate ?? null,
         statutoryClass: input.statutoryClass ?? "none",
         competentPersonRef: input.competentPersonRef ?? null,
-        qrPayload: `XELOR:asset:${input.assetCode}`,
+        qrPayload: `ONYX:asset:${input.assetCode}`,
       });
 
       await this.audit.appendInTx(tx, {

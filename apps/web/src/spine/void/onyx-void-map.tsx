@@ -631,7 +631,7 @@ function OnyxVoidMapInner({
                   transition: "stroke-width 300ms ease, opacity 300ms ease",
                 }}
               />
-              {/* The focal point of the whole map, in the XELOR face at its UNBOLDED step —
+              {/* The focal point of the whole map, in the ONYX face at its UNBOLDED step —
                   see `HUB`. It is the hub because of where it sits and how big it is, not
                   because it was the heaviest thing on screen.
 

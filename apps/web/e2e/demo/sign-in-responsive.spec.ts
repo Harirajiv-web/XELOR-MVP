@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3001";
+const baseUrl = process.env.ONYX_E2E_BASE_URL ?? "http://localhost:3001";
 
 /**
  * THIS FILE TESTS THE KEYCLOAK SIGN-IN THEME, WHICH THE PUBLIC DEMO DELIBERATELY REMOVES.
  *
- * Every assertion below ("Username or email", "Enter XELOR", "real Keycloak access") is
+ * Every assertion below ("Username or email", "Enter ONYX", "real Keycloak access") is
  * about the themed login form served from Keycloak on :8080, which the app reaches by
  * redirecting away from `/`. With NEXT_PUBLIC_PUBLIC_DEMO=true there is no redirect: `/`
  * opens the arrival experience with a demo identity, on purpose, and none of those controls
@@ -46,7 +46,7 @@ test("the desktop sign-in renders the live cinematic digital twin", async ({ pag
 
   await expect(page.getByRole("textbox", { name: "Username or email" })).toBeVisible();
   await expect(page.getByText("Presenter account prefilled · real Keycloak access", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enter XELOR" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enter ONYX" })).toBeVisible();
   await expect(page.locator("#ind-backdrop canvas")).toBeVisible();
   await expect(page.getByText("Digital twin online", { exact: true })).toBeVisible();
   await expect(page.getByText("SCANNING OPERATIONAL GRAPH", { exact: true })).toBeVisible();
@@ -88,8 +88,8 @@ test("the cinematic sign-in stays usable on a phone", async ({ page }, testInfo)
   await page.goto("/");
 
   await expect(page.getByRole("textbox", { name: "Username or email" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enter XELOR" })).toBeVisible();
-  await expect(page.getByText("XELOR", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enter ONYX" })).toBeVisible();
+  await expect(page.getByText("ONYX", { exact: true }).first()).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -115,7 +115,7 @@ test("the fresh demo login succeeds on the first attempt", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("textbox", { name: "Username or email" })).toHaveValue("hari");
   await expect(page.getByRole("textbox", { name: "Password" })).toHaveValue("1234");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
 
   await expect(page).toHaveURL(`${baseUrl}/`);
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
@@ -126,7 +126,7 @@ test("unknown credentials are rejected instead of becoming the presenter account
   await expect(page.getByText("Presenter account prefilled · real Keycloak access", { exact: true })).toBeVisible();
   await page.getByRole("textbox", { name: "Username or email" }).fill("presenter@example.com");
   await page.getByRole("textbox", { name: "Password" }).fill("anything-at-all");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
 
   await expect(page.getByRole("heading", { name: "Sign in to your account" })).toBeVisible();
   await expect(page.getByText(/invalid username or password/i)).toBeVisible();
@@ -136,16 +136,16 @@ test("one action enters the demo even when both fields are empty", async ({ page
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill("");
   await page.getByRole("textbox", { name: "Password" }).fill("");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
 
   await expect(page).toHaveURL(`${baseUrl}/`);
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
 });
 
-test("one Enter XELOR click works repeatedly in the same browser tab", async ({ page }) => {
+test("one Enter ONYX click works repeatedly in the same browser tab", async ({ page }) => {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await page.goto("/");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter ONYX" }).click();
     await expect(page).toHaveURL(`${baseUrl}/`);
     await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
   }
@@ -154,7 +154,7 @@ test("one Enter XELOR click works repeatedly in the same browser tab", async ({ 
 test("an inactive presenter stays on the current ERP screen beyond thirty seconds", async ({ page }) => {
   test.setTimeout(50_000);
   await page.goto("/");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
   await expect(page.getByRole("button", { name: "Enter the factory intelligence" })).toBeVisible();
   await page.goto("/sales/orders");
   await expect(page.getByRole("heading", { name: /Sales orders/i, level: 1 })).toBeVisible();
@@ -170,7 +170,7 @@ test("returning to the root always requires credentials again", async ({ page })
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
   await page.getByRole("textbox", { name: "Password" }).fill("1234");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
 
   await expect(page).toHaveURL(`${baseUrl}/`);
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });
@@ -183,7 +183,7 @@ test("returning to the root always requires credentials again", async ({ page })
   await page.reload();
   await expect(page.getByRole("heading", { name: "Sign in to your account" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Password" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enter XELOR" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enter ONYX" })).toBeVisible();
   expect(new URL(page.url()).port).toBe("8080");
 });
 
@@ -199,7 +199,7 @@ test("dark mode uses a calm background after sign-in", async ({ context, page },
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
   await page.getByRole("textbox", { name: "Password" }).fill("1234");
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter ONYX" }).click();
 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   const brain = page.getByRole("button", { name: "Enter the factory intelligence" });

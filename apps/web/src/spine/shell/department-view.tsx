@@ -213,7 +213,7 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
       <Reveal>
         <header className="flex flex-wrap items-start gap-4">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] text-white"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] text-[var(--text-on-accent)]"
             style={{ background: dept.accent }}
           >
             <Icon className="h-6 w-6" aria-hidden />
@@ -221,7 +221,7 @@ export function DepartmentView({ code }: { code: string }): React.JSX.Element {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5">
               <span
-                className="rounded-[6px] px-2 py-1 text-[11px] font-extrabold tracking-[0.12em] text-white"
+                className="rounded-[6px] px-2 py-1 text-[11px] font-extrabold tracking-[0.12em] text-[var(--text-on-accent)]"
                 style={{ background: dept.accent }}
               >
                 {dept.code}
@@ -465,7 +465,7 @@ function ModuleCard({
     <article className="card flex h-full flex-col overflow-hidden">
       <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
         <span
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] text-white"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] text-[var(--text-on-accent)]"
           style={{ background: accent }}
         >
           <Icon className="h-3.5 w-3.5" aria-hidden />

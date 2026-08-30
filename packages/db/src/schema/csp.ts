@@ -22,7 +22,7 @@ import { amendableColumns, tenantScopedColumns } from "./columns.js";
  *
  * **The second scoping dimension.** Every table a portal session can reach carries
  * `customer_account_id` alongside `tenant_id`, and the migration puts a RESTRICTIVE
- * row-level policy on it. Tenant isolation answers "is this Trishul's row?"; the second
+ * row-level policy on it. Tenant isolation answers "is this 3S's row?"; the second
  * dimension answers "is this *this customer's* row?" — so a BlueOrbit engineer with a
  * valid token and a correctly-guessed ticket id still reads nothing, because the database
  * refuses before the application is consulted. Staff sessions leave the setting empty and

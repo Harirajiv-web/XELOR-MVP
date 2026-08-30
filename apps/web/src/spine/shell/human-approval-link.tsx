@@ -86,7 +86,7 @@ export function HumanApprovalLink(): React.JSX.Element | null {
         className={cn(
           "grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[9.5px] font-extrabold",
           waiting
-            ? "bg-[var(--warn)] text-white"
+            ? "bg-[var(--warn)] text-[var(--text-on-accent)]"
             : "bg-[var(--surface-sunken)] text-[var(--text-muted)]",
         )}
         aria-hidden

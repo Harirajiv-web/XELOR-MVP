@@ -358,7 +358,7 @@ export const DEPARTMENTS: readonly Department[] = [
     angle: -45,
     tagline: "Owns sales and the manufactured-product relationship after delivery.",
     blurb:
-      "MICA runs the customer journey from enquiry and quotation through sales order and dispatch, then keeps the manufactured product connected to complaints, warranty, AMC and spares. It does not run the XELOR technology service; operational incidents affecting XELOR belong to RELAY.",
+      "MICA runs the customer journey from enquiry and quotation through sales order and dispatch, then keeps the manufactured product connected to complaints, warranty, AMC and spares. It does not run the ONYX technology service; operational incidents affecting ONYX belong to RELAY.",
     capabilities: [
       {
         icon: "TrendingUp",
@@ -404,7 +404,7 @@ export const DEPARTMENTS: readonly Department[] = [
       {
         between: "MICA ↔ RELAY",
         through:
-          "Manufactured-product cases stay with MICA; XELOR application, integration and AI service incidents stay with RELAY, with a reference link only when both are affected",
+          "Manufactured-product cases stay with MICA; ONYX application, integration and AI service incidents stay with RELAY, with a reference link only when both are affected",
       },
     ],
     accent: "var(--dept-mica)",
@@ -539,7 +539,7 @@ export const DEPARTMENTS: readonly Department[] = [
   {
     code: "RELAY",
     name: "Managed Service Operations",
-    owns: "The service around XELOR — catalogue, onboarding, monitoring, incidents, requests, change calendar, service levels, customer updates and continual improvement.",
+    owns: "The service around ONYX — catalogue, onboarding, monitoring, incidents, requests, change calendar, service levels, customer updates and continual improvement.",
     blueprints: [
       {
         file: "docs/01-agent-os/04-managed-services.md",
@@ -550,7 +550,7 @@ export const DEPARTMENTS: readonly Department[] = [
     angle: 180,
     tagline: "Owns the service clock and the customer handoff.",
     blurb:
-      "RELAY wraps XELOR in a managed operating service. It coordinates onboarding, event triage, incidents, changes, service levels and reviews, while the affected specialist still diagnoses and repairs its own technology or business domain. That separation prevents a second support desk from quietly duplicating everyone else's work.",
+      "RELAY wraps ONYX in a managed operating service. It coordinates onboarding, event triage, incidents, changes, service levels and reviews, while the affected specialist still diagnoses and repairs its own technology or business domain. That separation prevents a second support desk from quietly duplicating everyone else's work.",
     capabilities: [
       {
         icon: "ListChecks",
@@ -601,7 +601,7 @@ export const DEPARTMENTS: readonly Department[] = [
       {
         between: "RELAY ↔ MICA / KILN",
         through:
-          "XELOR service cases stay with RELAY; manufactured-product support stays with MICA and physical-asset restoration stays with KILN",
+          "ONYX service cases stay with RELAY; manufactured-product support stays with MICA and physical-asset restoration stays with KILN",
       },
       {
         between: "RELAY ↔ ONYX",
@@ -615,7 +615,7 @@ export const DEPARTMENTS: readonly Department[] = [
   {
     code: "ACHILES",
     name: "Platform Assurance",
-    owns: "Private, time-stamped evidence that XELOR's web application, API, database and supporting runtime are responding as expected.",
+    owns: "Private, time-stamped evidence that ONYX's web application, API, database and supporting runtime are responding as expected.",
     blueprints: [
       {
         file: "docs/01-agent-os/05-achiles-platform-assurance.md",
@@ -624,9 +624,9 @@ export const DEPARTMENTS: readonly Department[] = [
     ],
     letter: "A",
     angle: -135,
-    tagline: "Quietly checks whether XELOR is working.",
+    tagline: "Quietly checks whether ONYX is working.",
     blurb:
-      "ACHILES is XELOR's private platform-health guardian. It runs deterministic, read-only availability checks, keeps an immutable tenant-fenced history and tells authorised internal operators when evidence is missing, stale or failing. Ordinary customers never see the monitor. ACHILES observes; it does not repair systems, alter ERP records or send customer communications.",
+      "ACHILES is ONYX's private platform-health guardian. It runs deterministic, read-only availability checks, keeps an immutable tenant-fenced history and tells authorised internal operators when evidence is missing, stale or failing. Ordinary customers never see the monitor. ACHILES observes; it does not repair systems, alter ERP records or send customer communications.",
     capabilities: [
       {
         icon: "TimerReset",
@@ -687,6 +687,28 @@ const BY_CODE = new Map(DEPARTMENTS.map((d) => [d.code, d]));
 
 export function department(code: string): Department | undefined {
   return BY_CODE.get(code);
+}
+
+export interface ModuleDepartmentRoute {
+  module: ModuleManifest;
+  department: Department;
+}
+
+/**
+ * Resolve the business department an installed module belongs to.
+ *
+ * Copilot answers carry a governed intent key, and that intent names a module. Keeping the
+ * final module -> department lookup here means feature folders do not reach sideways into
+ * the installed-module registry just to draw the route an answer took.
+ */
+export function departmentForModule(
+  moduleKey: string | null | undefined,
+): ModuleDepartmentRoute | undefined {
+  if (!moduleKey) return undefined;
+  const module = orderedModules().find((entry) => entry.key === moduleKey);
+  if (!module) return undefined;
+  const owner = department(module.department);
+  return owner ? { module, department: owner } : undefined;
 }
 
 export interface DepartmentGroup {

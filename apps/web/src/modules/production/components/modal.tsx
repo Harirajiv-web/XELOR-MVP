@@ -91,7 +91,7 @@ export function Modal({
       // repo, and a disable comment naming a rule ESLint does not know is itself an error —
       // so the justification lives here instead: the scrim is not the control. Escape and
       // the ✕ button both close this dialog, and both are dead while `busy`.
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-[rgba(18,32,46,0.5)] p-5 backdrop-blur-[3px]"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-[var(--overlay-scrim)] p-5 backdrop-blur-[3px]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget && !busy) onClose();
       }}

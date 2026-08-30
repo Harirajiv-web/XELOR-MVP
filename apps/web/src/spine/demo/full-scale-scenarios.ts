@@ -3,7 +3,7 @@ import type { DemoScenario } from "./demo-scenarios";
 /**
  * Long-form presenter journeys. Like the focused scenarios, these contain narration only:
  * they do not seed records, call APIs or simulate a successful write. Each step opens an
- * existing XELOR screen and explains where governed automation would operate in production.
+ * existing ONYX screen and explains where governed automation would operate in production.
  */
 export const fullScaleDemoScenarios: DemoScenario[] = [
   {
@@ -13,10 +13,10 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     severity: "High",
     duration: "18–22 min",
     problem: "A growing manufacturer runs daily reporting in notebooks and spreadsheets. A customer order arrives by phone, is written on paper and must be carried manually through purchasing, production, delivery, invoicing and collections.",
-    decision: "Show how XELOR digitises the business without losing human control or disrupting today's operations.",
+    decision: "Show how ONYX digitises the business without losing human control or disrupting today's operations.",
     outcome: "One traceable digital journey from handwritten input to fulfilled order, collected cash and live management reporting.",
     icon: "Route",
-    accent: "#6d28d9",
+    accent: "#4a1f3f",
     scale: "full",
     demoRecord: {
       reference: "DEMO-JOURNEY-2407",
@@ -32,14 +32,14 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
       { phase: "Capture", title: "Collect paper and spreadsheet reports", path: "/aiops/connectors", body: "Photos of paper sheets, PDFs, spreadsheets and mailbox attachments enter a controlled document intake. Every file keeps its source, time and uploader; the demo does not upload a real document.", presenterLine: "Old and new ways of working can coexist during the transition.", agents: ["ONYX", "HEXA"] },
       { phase: "Digitise", title: "OCR turns documents into proposed data", path: "/aiops/registry", body: "Document AI extracts dates, item codes, quantities, customer names and totals. Confidence is stored per field, and the original image remains beside the proposed values.", presenterLine: "OCR proposes structured data; it never makes uncertain handwriting silently become business truth.", agents: ["ONYX", "MICA"] },
       { phase: "Validate", title: "A person checks uncertain fields", path: "/aiops/review", body: "Low-confidence values, duplicate documents and master-data mismatches go to a simple side-by-side review. A trained person corrects only the highlighted fields and the correction becomes auditable feedback.", presenterLine: "The human reviews exceptions, not every character on every page.", agents: ["HEXA", "Human reviewer"] },
-      { phase: "Capture", title: "A customer places an order by phone", path: "/copilot/ask", body: "In the fictional story, a salesperson photographs their handwritten call note or dictates the order. ONYX extracts the customer, product, quantity, requested date and special instructions as a draft—not a confirmed order.", presenterLine: "The salesperson can work naturally while XELOR creates a structured draft in the background.", agents: ["ONYX", "MICA"] },
+      { phase: "Capture", title: "A customer places an order by phone", path: "/copilot/ask", body: "In the fictional story, a salesperson photographs their handwritten call note or dictates the order. ONYX extracts the customer, product, quantity, requested date and special instructions as a draft—not a confirmed order.", presenterLine: "The salesperson can work naturally while ONYX creates a structured draft in the background.", agents: ["ONYX", "MICA"] },
       { phase: "Validate", title: "Match the customer and commercial terms", path: "/sales/customers", body: "MICA matches the draft to the customer master, delivery address, credit context and agreed terms. Ambiguous matches remain visibly unresolved for a person.", presenterLine: "The platform connects the note to trusted master data before it becomes a transaction.", agents: ["MICA", "RASP"] },
       { phase: "Human decision", title: "Confirm the sales order", path: "/sales/orders", body: "The salesperson sees the original note beside the clean order draft and confirms product, quantity, price and requested date. In this presentation, no order is created or changed.", presenterLine: "AI removes retyping, but the responsible salesperson confirms the customer promise.", agents: ["MICA", "Human salesperson"] },
       { phase: "Calculate", title: "Check what can be promised", path: "/inventory/stock", body: "SPAR checks usable, reserved, incoming and quality-held stock. Deterministic available-to-promise rules calculate the gap; AI explains it in simple language.", presenterLine: "Inventory rules calculate the quantity. AI explains what is available and why.", agents: ["SPAR", "KILN"] },
       { phase: "Calculate", title: "Plan materials and capacity", path: "/planning/mrp", body: "AXLE expands the bill of material, lead times and production capacity. It produces planned supply and exceptions for missing components rather than inventing a feasible date.", presenterLine: "The planning engine creates the facts; agents coordinate the response across teams.", agents: ["AXLE", "SPAR"] },
       { phase: "Coordinate", title: "Prepare purchase requirements", path: "/purchase/orders", body: "SPAR groups shortages into proposed purchase orders using approved vendors, minimum quantities, prices and lead times. ONYX attaches the customer and production consequences to each proposal.", presenterLine: "The buyer sees why each purchase is needed, not just another line in a queue.", agents: ["SPAR", "ONYX", "RASP"] },
       { phase: "Govern", title: "Approve spend before sending a PO", path: "/agentos/approvals", body: "HEXA routes the precise purchase proposal to the person with the correct spending authority and requires a note. Demo Mode cannot approve or send the fictional PO.", presenterLine: "Automation prepares the work; authority remains with the accountable person.", agents: ["HEXA", "Human approver"] },
-      { phase: "Execute", title: "Receive and identify the material", path: "/purchase/grn", body: "When material arrives, a warehouse worker would scan the PO and quantity on a phone. XELOR links the receipt to the supplier, order and batch while handling shortages or over-delivery as exceptions.", presenterLine: "The physical material and its digital identity meet at receiving.", agents: ["SPAR"] },
+      { phase: "Execute", title: "Receive and identify the material", path: "/purchase/grn", body: "When material arrives, a warehouse worker would scan the PO and quantity on a phone. ONYX links the receipt to the supplier, order and batch while handling shortages or over-delivery as exceptions.", presenterLine: "The physical material and its digital identity meet at receiving.", agents: ["SPAR"] },
       { phase: "Verify", title: "Inspect before release", path: "/quality/inspections", body: "KILN selects the required inspection plan, captures results and keeps failed or uncertain material unavailable. Release requires the correct quality authority.", presenterLine: "Received does not automatically mean usable.", agents: ["KILN", "HEXA"] },
       { phase: "Execute", title: "Run production from the same plan", path: "/production/orders", body: "AXLE shows the production order, required operations and material readiness. Shop-floor progress updates replace the old handwritten shift report while exceptions still work if connectivity is lost.", presenterLine: "The original customer need now drives a traceable factory plan.", agents: ["AXLE", "KILN"] },
       { phase: "Verify", title: "Move finished goods to dispatch", path: "/inventory/warehouses", body: "SPAR verifies finished quantity, batch identity, storage location and customer allocation before dispatch. The order retains end-to-end material traceability.", presenterLine: "At any point, we can explain where the order and its material came from.", agents: ["SPAR", "MICA"] },
@@ -58,7 +58,7 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     decision: "Turn an unstructured request into a controlled product, feasible promise and profitable first delivery.",
     outcome: "A governed digital thread from drawing and BOM through sourcing, inspection, production, invoice and margin review.",
     icon: "DraftingCompass",
-    accent: "#0369a1",
+    accent: "#0e3a62",
     scale: "full",
     demoRecord: {
       reference: "DEMO-NPI-2000",
@@ -98,7 +98,7 @@ export const fullScaleDemoScenarios: DemoScenario[] = [
     decision: "Protect people, customer promises, margin and cash while restoring stable operations.",
     outcome: "A cross-functional recovery mission with evidence, controlled approvals, reversible actions and verified closure.",
     icon: "RadioTower",
-    accent: "#be123c",
+    accent: "#9b1d3f",
     scale: "full",
     demoRecord: {
       reference: "DEMO-CRISIS-0731",

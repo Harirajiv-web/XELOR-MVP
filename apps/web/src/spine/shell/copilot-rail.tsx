@@ -8,8 +8,8 @@ import { api } from "../api/client";
 import { AppError } from "../api/errors";
 import { useAccess } from "../access/permissions";
 import { cn } from "../ui/cn";
-import { Disclosure } from "../ui/disclosure";
-import { conciseCopilotAnswer } from "../ui/plain-language";
+import { CopilotAnswerTable } from "../ui/copilot-answer-table";
+import { CopilotDepartmentRoute } from "../ui/copilot-department-route";
 
 interface Citation {
   intentKey: string;
@@ -26,7 +26,12 @@ interface AskResult {
   answer: string;
   rows: ReadonlyArray<Record<string, unknown>>;
   citation: Citation | null;
-  understanding: { routedBy: string; confidence: number };
+  understanding: {
+    intentKey: string | null;
+    routedBy: string;
+    confidence: number;
+    explanation: string;
+  };
   refusal?: { code: string; message: string };
   didYouMean?: ReadonlyArray<{ key: string; question: string }>;
   correlationId: string;
@@ -94,7 +99,22 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
   }, [available]);
 
   useEffect(() => {
-    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
+    const body = bodyRef.current;
+    if (!body) return;
+    const latestAnswer = body.querySelector<HTMLElement>(
+      '[data-latest-copilot-answer="true"]',
+    );
+    if (latestAnswer) {
+      const latestQuestion = body.querySelector<HTMLElement>(
+        '[data-latest-copilot-question="true"]',
+      );
+      (latestQuestion ?? latestAnswer).scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+    body.scrollTo({ top: body.scrollHeight, behavior: "smooth" });
   }, [turns, busy]);
 
   const quickQuestions = useMemo(() => {
@@ -231,6 +251,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
             turns={turns}
             busy={busy}
             questions={quickQuestions}
+            catalogue={suggestions}
             currentModule={currentModule}
             onAsk={ask}
           />
@@ -274,7 +295,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
             <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] px-1 pt-2">
               <span className="flex items-center gap-1 text-[9px] text-[var(--text-muted)]">
                 <Icons.Database className="h-3 w-3" aria-hidden />
-                Uses your XELOR records
+                Uses your ONYX records
               </span>
               <span className="ml-auto text-[8.5px] tabular-nums text-[var(--text-muted)]">
                 {text.length}/500
@@ -282,7 +303,7 @@ export function CopilotRail({ onClose }: { onClose: () => void }): React.JSX.Ele
               <button
                 type="submit"
                 disabled={busy || !text.trim()}
-                className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[var(--brand)] px-3 text-[10.5px] font-bold text-white transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-45"
+                className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[var(--brand)] px-3 text-[10.5px] font-bold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] disabled:opacity-45"
               >
                 <Icons.Send className="h-3 w-3" aria-hidden />
                 Ask
@@ -306,12 +327,14 @@ function ChatPanel({
   turns,
   busy,
   questions,
+  catalogue,
   currentModule,
   onAsk,
 }: {
   turns: readonly Turn[];
   busy: boolean;
   questions: Capabilities["canAsk"];
+  catalogue: Capabilities["canAsk"];
   currentModule: string | null;
   onAsk: (question: string) => Promise<void>;
 }): React.JSX.Element {
@@ -321,7 +344,7 @@ function ChatPanel({
         <div className="flex flex-col gap-3">
           <section className="overflow-hidden rounded-[16px] border border-[var(--brand-soft)] bg-[linear-gradient(145deg,var(--brand-soft-2),var(--surface))] p-4 shadow-[var(--shadow-sm)]">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[var(--brand)] text-white shadow-[0_10px_24px_-12px_var(--brand)]">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[0_10px_24px_-12px_var(--brand)]">
                 <Icons.Sparkles className="h-4 w-4" aria-hidden />
               </span>
               <div>
@@ -386,7 +409,10 @@ function ChatPanel({
         turn.kind === "asked" ? (
           <p
             key={index}
-            className="max-w-[92%] self-end rounded-[13px_13px_3px_13px] bg-[var(--brand)] px-3 py-2 text-[12.5px] font-medium leading-[1.55] text-white"
+            data-latest-copilot-question={
+              index === turns.length - 2 && turns[index + 1]?.kind === "answer"
+            }
+            className="max-w-[92%] self-end rounded-[13px_13px_3px_13px] bg-[var(--brand)] px-3 py-2 text-[12.5px] font-medium leading-[1.55] text-[var(--text-on-brand)]"
           >
             {turn.text}
           </p>
@@ -398,7 +424,13 @@ function ChatPanel({
             {turn.message}
           </p>
         ) : (
-          <Answer key={index} result={turn.result} onAsk={onAsk} />
+          <Answer
+            key={index}
+            result={turn.result}
+            catalogue={catalogue}
+            latest={index === turns.length - 1}
+            onAsk={onAsk}
+          />
         ),
       )}
 
@@ -436,55 +468,29 @@ function OperationalLinkPanel({ kind }: { kind: Exclude<RailTab, "chat"> }): Rea
   );
 }
 
-function CopyAnswer({ text }: { text: string }): React.JSX.Element {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const copy = navigator.clipboard?.writeText(text);
-        if (copy) {
-          void copy
-            .then(() => {
-              setCopied(true);
-              window.setTimeout(() => setCopied(false), 1600);
-            })
-            .catch(() => {
-              // Clipboard policy can refuse writes in embedded or insecure contexts.
-            });
-        }
-      }}
-      className="inline-flex h-7 items-center gap-1 rounded-[8px] px-2 text-[9.5px] font-semibold text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text-primary)]"
-    >
-      {copied ? (
-        <Icons.Check className="h-3 w-3 text-[var(--ok-ink)]" aria-hidden />
-      ) : (
-        <Icons.Copy className="h-3 w-3" aria-hidden />
-      )}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
-
 function Answer({
   result,
+  catalogue,
+  latest,
   onAsk,
 }: {
   result: AskResult;
+  catalogue: Capabilities["canAsk"];
+  latest: boolean;
   onAsk: (question: string) => Promise<void>;
 }): React.JSX.Element {
   if (!result.answered) {
     return (
-      <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--gold-line)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-2 border-b border-[var(--gold-line)] bg-[var(--gold-soft)] px-3 py-2">
-          <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--surface)] text-[var(--gold-ink)]">
+      <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--accent-line)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-2 border-b border-[var(--accent-line)] bg-[var(--accent-soft)] px-3 py-2">
+          <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--surface)] text-[var(--accent-ink)]">
             <Icons.ShieldAlert className="h-3.5 w-3.5" aria-hidden />
           </span>
           <span>
             <span className="block text-[10.5px] font-bold text-[var(--text-primary)]">
               Guardrail response
             </span>
-            <span className="block text-[8.5px] uppercase tracking-[0.09em] text-[var(--gold-ink)]">
+            <span className="block text-[8.5px] uppercase tracking-[0.09em] text-[var(--accent-ink)]">
               {result.refusal?.code?.replace(/_/g, " ") ?? "Needs clarification"}
             </span>
           </span>
@@ -514,142 +520,17 @@ function Answer({
     );
   }
 
-  const columns = result.rows.length > 0 ? Object.keys(result.rows[0] ?? {}) : [];
-  const confidence = Math.max(0, Math.min(1, result.understanding.confidence));
-  const asOf = result.citation?.asOf
-    ? new Date(result.citation.asOf).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : null;
+  const intentKey = result.understanding.intentKey ?? result.citation?.intentKey;
+  const moduleKey = catalogue.find((entry) => entry.key === intentKey)?.module;
 
   return (
-    <article className="w-full self-start overflow-hidden rounded-[14px] border border-[var(--border-subtle)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
-      <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] bg-[linear-gradient(120deg,var(--brand-soft-2),var(--surface))] px-3 py-2.5">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[var(--brand)] text-white">
-          <Icons.Sparkles className="h-3.5 w-3.5" aria-hidden />
-        </span>
-        <span>
-          <span className="block text-[10.5px] font-bold text-[var(--text-primary)]">
-            ONYX answer
-          </span>
-          <span className="flex items-center gap-1 text-[8.5px] uppercase tracking-[0.08em] text-[var(--ok-ink)]">
-            <Icons.BadgeCheck className="h-3 w-3" aria-hidden />
-            Evidence-backed
-          </span>
-        </span>
-        <span className="ml-auto">
-          <CopyAnswer text={result.answer} />
-        </span>
-      </div>
-      <p className="whitespace-pre-wrap px-3.5 py-3 text-[12.5px] font-medium leading-[1.65] text-[var(--text-primary)]">
-        {conciseCopilotAnswer(result.answer, result.rows.length)}
-      </p>
-
-      {result.rows.length > 0 ? (
-        <div className="px-3 pb-3">
-          <Disclosure
-            title="Records used"
-            hint={`${result.citation?.rowCount ?? result.rows.length} records`}
-          >
-          <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-              <Icons.Rows3 className="h-3 w-3" aria-hidden />
-              Records read
-            </span>
-            <span className="text-[9px] tabular-nums text-[var(--text-muted)]">
-              Showing {Math.min(result.rows.length, 8)} of {result.citation?.rowCount ?? result.rows.length}
-            </span>
-          </div>
-          <div className="overflow-x-auto rounded-[9px] border border-[var(--border-subtle)] bg-[var(--surface)]">
-            <table className="grid-table">
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th key={column} scope="col">
-                    {column.replace(/([a-z])([A-Z])/g, "$1 $2")}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {result.rows.slice(0, 8).map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {columns.map((column) => (
-                    <td key={column}>{String(row[column] ?? "—")}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-          </Disclosure>
-        </div>
-      ) : null}
-
-      {result.citation ? (
-        <div className="px-3 pb-3">
-          <Disclosure title="How this answer was found" hint="Sources and checks">
-          <div className="flex items-center gap-2">
-            <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--ok-soft)] text-[var(--ok-ink)]">
-              <Icons.ScanSearch className="h-3.5 w-3.5" aria-hidden />
-            </span>
-            <span>
-              <span className="block text-[9.5px] font-bold uppercase tracking-[0.09em] text-[var(--text-primary)]">
-                Evidence trail
-              </span>
-              <span className="block text-[8.5px] text-[var(--text-muted)]">
-                {result.understanding.routedBy === "model"
-                  ? "AI matched, then catalogue verified"
-                  : "Deterministically matched"}{" "}
-                · {Math.round(confidence * 100)}% confidence
-              </span>
-            </span>
-          </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--surface)]">
-            <span
-              className="block h-full rounded-full bg-[var(--ok)]"
-              style={{ width: `${Math.round(confidence * 100)}%` }}
-            />
-          </div>
-          <p className="mt-2 text-[10.5px] leading-[1.5] text-[var(--text-secondary)]">
-            Understood as <b className="font-semibold text-[var(--text-primary)]">“{result.citation.intentQuestion}”</b>
-          </p>
-          {result.citation.params && Object.keys(result.citation.params).length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {Object.entries(result.citation.params).map(([key, value]) => (
-                <code
-                  key={key}
-                  className="rounded-[6px] bg-[var(--surface)] px-1.5 py-0.5 font-[var(--font-mono)] text-[8.5px] text-[var(--text-secondary)]"
-                >
-                  {key}={String(value)}
-                </code>
-              ))}
-            </div>
-          ) : null}
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <span className="text-[8.5px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-              Sources
-            </span>
-            {result.citation.sources.map((source) => (
-              <code
-                key={source}
-                className="rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-0.5 font-[var(--font-mono)] text-[8.5px] font-bold text-[var(--text-muted)]"
-              >
-                {source}
-              </code>
-            ))}
-            {result.citation.truncated ? (
-              <span className="chip chip-gold">Row cap applied</span>
-            ) : null}
-          </div>
-          <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2 text-[8.5px] text-[var(--text-muted)]">
-            <span>{asOf ? `As of ${asOf}` : "Current permitted records"}</span>
-            <code className="font-[var(--font-mono)]">trace {result.correlationId.slice(0, 8)}</code>
-          </div>
-          </Disclosure>
-        </div>
-      ) : null}
-    </article>
+    <div
+      data-testid="copilot-answer"
+      data-latest-copilot-answer={latest}
+      className="flex w-full flex-col gap-2.5 self-start"
+    >
+      <CopilotDepartmentRoute moduleKey={moduleKey} compact />
+      <CopilotAnswerTable rows={result.rows} compact />
+    </div>
   );
 }

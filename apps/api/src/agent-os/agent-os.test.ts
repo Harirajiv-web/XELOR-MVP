@@ -815,7 +815,7 @@ function missionHarness(deny: string, denySideEffecting = false) {
 }
 
 test("a read-only evidence source the operator may not read is skipped, not fatal, and the mission still reaches its human gate", async () => {
-  // The regression this locks down: ACHILES' platform health is XELOR-internal and a plant
+  // The regression this locks down: ACHILES' platform health is ONYX-internal and a plant
   // operations lead deliberately cannot read it, so the ACHILES capability raised a 403 and
   // failed the ENTIRE mission. The decision a named person was waiting to approve was lost
   // to a permission they were never meant to hold.
