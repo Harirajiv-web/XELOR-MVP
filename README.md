@@ -1,3 +1,29 @@
+# ONYX & XELOR by AIKYANTRA
+
+> **What is in this repository, and on which branch.** One platform, two products, and the
+> shared documents that describe both.
+>
+> | Branch | Product | What it is |
+> |---|---|---|
+> | **`main`** | **XELOR by AIKYANTRA** — Phase 2 | The intelligence layer: autonomous fulfilment missions, the nine agents, the copilot, the AI control centre. Runs on api `:3100` · web `:3101` · db `indcore_p2`. |
+> | **`onyx-phase-1`** | **ONYX by AIKYANTRA** — Phase 1 | The ERP and system of record: sales, purchase, inventory, production, quality, maintenance, people, accounts. Runs on api `:3000` · web `:3001` · db `indcore`. |
+>
+> XELOR does not replace ONYX and does not fork it. It reads ONYX's records and writes back
+> through ONYX's own endpoints, which is why the two run side by side on separate ports and
+> separate databases rather than as one build.
+>
+> **`workspace/`** on this branch holds everything that belongs to *both* products — the
+> binding platform decisions, the module blueprints, and the documents written for people
+> outside the team. Start with [`workspace/README.md`](workspace/README.md), and read
+> [`workspace/docs/00-governance/01-binding-platform-decisions-v2.md`](workspace/docs/00-governance/01-binding-platform-decisions-v2.md)
+> before writing any code — it is binding and wins on any conflict with a module blueprint.
+>
+> Two three-page briefs summarise the whole system:
+> [the MVP as built](workspace/deliverables/1-MVP-ONYX-and-XELOR-Technology-and-Architecture.pdf)
+> and [the production architecture](workspace/deliverables/2-END-PRODUCT-ONYX-and-XELOR-Production-Architecture.pdf).
+
+---
+
 # XELOR Manufacturing Intelligence — MVP Prototype 1
 
 A **boundary-enforced modular monolith** built strictly to **`DECISIONS-V2.md`**
