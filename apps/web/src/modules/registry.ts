@@ -3,9 +3,11 @@ import type { ModuleManifest } from "@spine/registry/manifest";
 import { copilotManifest } from "./copilot/manifest";
 import { generalManifest } from "./general/manifest";
 import { engineeringManifest } from "./engineering/manifest";
+import { sourcingManifest } from "./sourcing/manifest";
 import { purchaseManifest } from "./purchase/manifest";
 import { inventoryManifest } from "./inventory/manifest";
 import { planningManifest } from "./planning/manifest";
+import { quotationManifest } from "./quotation/manifest";
 import { salesManifest } from "./sales/manifest";
 import { productionManifest } from "./production/manifest";
 import { cspManifest } from "./csp/manifest";
@@ -41,7 +43,7 @@ import { platformHealthManifest } from "./platform-health/manifest";
  * licence decides whether the company bought it, and permissions decide whether this
  * person may open it. Three independent gates, three different people who can change them.
  *
- * Twenty-two installed modules span the departmental systems of record plus the shared
+ * Twenty-four installed modules span the departmental systems of record plus the shared
  * intelligence, service-assurance and platform-health surfaces. The array below is the
  * executable inventory; keep this explanation deliberately free of a second hand-written
  * module list so adding a module cannot make the architecture comment lie again.
@@ -52,9 +54,11 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   copilotManifest,
   generalManifest,
   engineeringManifest,
+  sourcingManifest,
   purchaseManifest,
   inventoryManifest,
   planningManifest,
+  quotationManifest,
   salesManifest,
   productionManifest,
   cspManifest,

@@ -1,6 +1,11 @@
 export const DEMO_RECORD_CREATED_EVENT = "xelor:demo-record-created";
 
-export type DemoRecordKind = "sales-order" | "purchase-order";
+/**
+ * The document kinds a guided demo can pause on. Each one is a form a PERSON fills in during
+ * the walkthrough — the guide never writes anything itself, it only unlocks Next once the
+ * real document exists.
+ */
+export type DemoRecordKind = "sales-order" | "purchase-order" | "quotation" | "rfq";
 
 export interface DemoRecordCreatedDetail {
   kind: DemoRecordKind;

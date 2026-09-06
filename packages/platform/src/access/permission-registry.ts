@@ -171,6 +171,37 @@ export const PERMISSION_REGISTRY = [
     privileged: true,
   },
   {
+    permission: "purchase.rfq.read",
+    docType: "sourcing_rfq",
+    description: "Read requests for quotation and the supplier responses to them.",
+    privileged: false,
+  },
+  {
+    permission: "purchase.rfq.create",
+    docType: "sourcing_rfq",
+    description: "Raise a request for quotation.",
+    privileged: false,
+  },
+  {
+    permission: "purchase.rfq.issue",
+    docType: "sourcing_rfq",
+    description: "Issue an RFQ to the invited suppliers.",
+    privileged: false,
+  },
+  {
+    permission: "purchase.rfq.quote",
+    docType: "sourcing_rfq",
+    description: "Record a supplier quotation and set its technical gate.",
+    privileged: false,
+  },
+  {
+    // Privileged: this is the moment money is committed to one supplier rather than another.
+    permission: "purchase.rfq.award",
+    docType: "sourcing_rfq",
+    description: "Award an RFQ to a supplier and raise the purchase order.",
+    privileged: true,
+  },
+  {
     permission: "purchase.po.read",
     docType: "purchase_order",
     description: "Read purchase orders.",
@@ -254,6 +285,36 @@ export const PERMISSION_REGISTRY = [
     permission: "sales.customer.create",
     docType: "customer",
     description: "Create a customer.",
+    privileged: false,
+  },
+  {
+    permission: "sales.quotation.read",
+    docType: "sales_quotation",
+    description: "Read sales quotations.",
+    privileged: false,
+  },
+  {
+    permission: "sales.quotation.create",
+    docType: "sales_quotation",
+    description: "Raise a sales quotation.",
+    privileged: false,
+  },
+  {
+    permission: "sales.quotation.send",
+    docType: "sales_quotation",
+    description: "Send a quotation to the customer.",
+    privileged: false,
+  },
+  {
+    permission: "sales.quotation.decide",
+    docType: "sales_quotation",
+    description: "Record the customer's acceptance or rejection of a quotation.",
+    privileged: false,
+  },
+  {
+    permission: "sales.quotation.convert",
+    docType: "sales_quotation",
+    description: "Convert an accepted quotation into a sales order.",
     privileged: false,
   },
   {
