@@ -1,0 +1,336 @@
+{
+  "schemaVersion": "xelor-demo-upgrade.v1",
+  "version": "2.0",
+  "snapshot": {
+    "xelorHead": "9946091",
+    "xelorRemoteMain": "216238c",
+    "onyxHead": "bd57cd2",
+    "capturedAt": "2026-08-31"
+  },
+  "purpose": "Trace every proposed demo capability to product ownership, code, contracts, permissions, tests and an honest readiness state.",
+  "allowedStatuses": ["live-current", "demo-current", "proposed", "gap"],
+  "ownership": {
+    "ONYX": "Authoritative ERP transactions, documents, stock, schedules, quality, maintenance and accounting.",
+    "XELOR": "Read projections, evidence, intelligence, recommendations, missions and outcome verification.",
+    "Pocket": "Role-specific client of existing permissions and APIs; never an authority layer.",
+    "SupplierConnect": "Participant-scoped supplier profile, RFQ and quote experience."
+  },
+  "workstreams": [
+    {
+      "id": "D0-REPOSITORY",
+      "title": "Repository and demo truth",
+      "phase": "D0",
+      "owner": "HEXA",
+      "status": "gap",
+      "existingPaths": [
+        "README.md",
+        "workspace/README.md",
+        "apps/web/src/modules/agentos/manifest.ts",
+        "apps/web/src/modules/registry.ts",
+        "apps/web/next.config.ts",
+        "apps/web/src/modules/blueprint"
+      ],
+      "proposedPaths": [
+        "workspace/docs/UI-UX.md",
+        "workspace/docs/07-execution/02-xelor-demo-upgrade-implementation-blueprint.md"
+      ],
+      "apis": [],
+      "events": [],
+      "permissions": [],
+      "tests": [
+        "apps/web/scripts/validation/check-demo-upgrade-manifest.mjs",
+        "apps/web/scripts/validation/check-module-manifests.mjs"
+      ],
+      "acceptance": [
+        "XELOR and ONYX ports and databases are stated consistently.",
+        "The illegal Windows path is renamed, not deleted.",
+        "Each demo capability is labelled live, demo, proposed or gap.",
+        "The Unified Blueprint routes exist only in public-demo builds and never convert a failed source read into a live zero."
+      ]
+    },
+    {
+      "id": "D0-CONTRACTS",
+      "title": "Generated ONYX and XELOR contracts",
+      "phase": "D0",
+      "owner": "HEXA",
+      "status": "proposed",
+      "existingPaths": [
+        "apps/api/src/ports/onyx-factory-intelligence.port.ts",
+        "apps/api/src/agent-os/onyx-factory-intelligence.http-adapter.ts"
+      ],
+      "proposedPaths": [
+        "packages/contracts/src/common/envelope.ts",
+        "packages/contracts/src/onyx/factory-operations.v2.ts",
+        "packages/contracts/src/onyx/fulfilment-context.v1.ts",
+        "packages/contracts/src/onyx/sourcing.v1.ts",
+        "packages/contracts/src/onyx/commands.v1.ts",
+        "packages/contracts/openapi/onyx-v1.yaml",
+        "packages/contracts/asyncapi/domain-events.yaml"
+      ],
+      "apis": [
+        "GET /api/v1/projections/factory/sites/:siteCode/operations",
+        "GET /api/v1/projections/fulfilment/orders/:orderId",
+        "POST /api/v1/planning/replan-reviews"
+      ],
+      "events": [
+        "factory.shift-kpi.closed.v1",
+        "planning.schedule.published.v1"
+      ],
+      "permissions": ["factory.operations.read", "intelligence.factory.read"],
+      "tests": [
+        "provider contract test",
+        "consumer fixture test",
+        "unsupported version fail-closed test",
+        "idempotent command replay test"
+      ],
+      "acceptance": [
+        "One schema generates producer and consumer validation.",
+        "Every projection includes source, watermark, timestamps, freshness and evidence references.",
+        "Every command includes idempotency key and expected version."
+      ]
+    },
+    {
+      "id": "D0-FACTORY-V2",
+      "title": "Generic Factory Intelligence v2",
+      "phase": "D0",
+      "owner": "AXLE",
+      "status": "demo-current",
+      "existingPaths": [
+        "packages/platform/src/factory-intelligence/oee.ts",
+        "packages/platform/src/factory-intelligence/replan.ts",
+        "apps/api/src/agent-os/factory-intelligence.service.ts",
+        "apps/web/src/modules/agentos/screens/factory-intelligence.tsx"
+      ],
+      "proposedPaths": [
+        "apps/api/src/intelligence/factory/factory-intelligence.service.ts",
+        "apps/api/src/integrations/onyx/onyx-client.ts",
+        "apps/api/scripts/demo/factory/3s-workroom-poc.ts"
+      ],
+      "apis": [
+        "GET /api/v1/agent-os/factory-intelligence",
+        "POST /api/v1/planning/replan-reviews"
+      ],
+      "events": [
+        "factory.asset-state.changed.v1",
+        "production.operation.blocked.v1"
+      ],
+      "permissions": [
+        "production.factory-connect.read",
+        "agentos.run.read",
+        "intelligence.factory.read"
+      ],
+      "tests": [
+        "packages/platform/src/factory-intelligence/oee.test.ts",
+        "packages/platform/src/factory-intelligence/replan.test.ts",
+        "apps/api/src/agent-os/factory-intelligence.service.test.ts",
+        "apps/api/src/agent-os/onyx-factory-intelligence.http-adapter.test.ts",
+        "apps/web/e2e/agent-os/factory-intelligence.spec.ts",
+        "new real-stack ONYX-XELOR recovery spec"
+      ],
+      "acceptance": [
+        "Service accepts tenant, site and time window rather than hardcoded 3S identifiers.",
+        "Fixture evidence remains visibly labelled.",
+        "No proposal, stale proposal or unqualified alternate fails closed.",
+        "Approval creates one review work item and never changes a schedule."
+      ]
+    },
+    {
+      "id": "D1-SOURCING",
+      "title": "Invite-only sourcing loop",
+      "phase": "D1",
+      "owner": "SPAR",
+      "status": "proposed",
+      "existingPaths": [
+        "apps/api/src/fulfilment/sourcing-terms.ts",
+        "apps/api/src/modules/purchase",
+        "packages/db/src/schema/purchase.ts"
+      ],
+      "proposedPaths": [
+        "packages/db/src/schema/sourcing.ts",
+        "apps/api/src/modules/sourcing/sourcing.module.ts",
+        "apps/api/src/modules/sourcing/requirement.service.ts",
+        "apps/api/src/modules/sourcing/rfq.service.ts",
+        "apps/api/src/modules/sourcing/quote.service.ts",
+        "apps/api/src/modules/sourcing/award.service.ts",
+        "apps/web/src/modules/sourcing/manifest.ts",
+        "apps/web/src/modules/sourcing/screens"
+      ],
+      "apis": [
+        "POST /api/v1/sourcing/requirements",
+        "POST /api/v1/sourcing/rfqs",
+        "POST /api/v1/sourcing/rfqs/:id/publish",
+        "GET /api/v1/sourcing/rfqs/:id/quotes",
+        "POST /api/v1/sourcing/awards/:id/recommend",
+        "POST /api/v1/sourcing/awards/:id/decide"
+      ],
+      "events": [
+        "planning.requisition.raised.v1",
+        "sourcing.rfq.published.v1",
+        "sourcing.quote.submitted.v1",
+        "sourcing.award.approved.v1",
+        "purchase.po.approved.v1"
+      ],
+      "permissions": [
+        "sourcing.requirement.create",
+        "sourcing.requirement.read",
+        "sourcing.requirement.submit",
+        "sourcing.rfq.create",
+        "sourcing.rfq.read",
+        "sourcing.rfq.publish",
+        "sourcing.quote.read",
+        "sourcing.quote.respond",
+        "sourcing.award.recommend",
+        "sourcing.award.approve"
+      ],
+      "tests": [
+        "tenant and supplier participant isolation test",
+        "immutable quote revision test",
+        "requester cannot approve own award test",
+        "approved award creates one draft PO test"
+      ],
+      "acceptance": [
+        "Only active qualified suppliers are invited.",
+        "Competitors cannot read each other's quotes.",
+        "Every comparison preserves quote revision and normalization evidence.",
+        "Award approval is independent and produces one draft PO."
+      ]
+    },
+    {
+      "id": "D1-SUPPLIER-CONNECT",
+      "title": "Supplier participant experience",
+      "phase": "D1",
+      "owner": "MICA",
+      "status": "proposed",
+      "existingPaths": ["apps/api/src/modules/csp", "apps/web/src/modules/csp"],
+      "proposedPaths": [
+        "apps/api/src/modules/supplier-portal",
+        "apps/web/src/modules/supplier-connect",
+        "packages/db/src/schema/supplier-network.ts"
+      ],
+      "apis": [
+        "GET /api/v1/supplier/rfqs",
+        "POST /api/v1/supplier/rfqs/:id/quotes",
+        "POST /api/v1/supplier/profile/publication"
+      ],
+      "events": [
+        "supplier.profile.published.v1",
+        "sourcing.quote.submitted.v1"
+      ],
+      "permissions": ["sourcing.quote.respond"],
+      "tests": [
+        "tenant plus supplier account scope test",
+        "consent withdrawal removes public projection test",
+        "attachment grant isolation test"
+      ],
+      "acceptance": [
+        "Supplier identity is attributable and participant-scoped.",
+        "Publication requires consent and provenance.",
+        "No marketplace data is scraped or copied."
+      ]
+    },
+    {
+      "id": "D2-POCKET",
+      "title": "Read-first Pocket PWA",
+      "phase": "D2",
+      "owner": "HEXA",
+      "status": "proposed",
+      "existingPaths": [
+        "apps/web/src/spine/shell/app-shell.tsx",
+        "apps/web/src/modules/agentos/screens/factory-intelligence.tsx"
+      ],
+      "proposedPaths": [
+        "apps/web/src/app/manifest.ts",
+        "apps/web/public/sw.js",
+        "apps/web/src/spine/offline/db.ts",
+        "apps/web/src/spine/offline/outbox.ts",
+        "apps/web/src/spine/offline/sync.ts",
+        "apps/web/src/spine/offline/policy.ts",
+        "apps/web/src/modules/pocket/manifest.ts",
+        "apps/web/src/modules/pocket/screens"
+      ],
+      "apis": [
+        "GET /api/v1/mobile/home",
+        "GET /api/v1/mobile/my-work",
+        "POST /api/v1/mobile/drafts"
+      ],
+      "events": ["mobile.draft.accepted.v1", "mobile.sync.conflict.v1"],
+      "permissions": ["factory.operations.read", "intelligence.factory.read"],
+      "tests": [
+        "390x844 owner, supervisor, buyer and receiving specs",
+        "offline draft idempotency test",
+        "conflict and revoked-session test",
+        "logout cache purge test"
+      ],
+      "acceptance": [
+        "Every KPI shows source and freshness.",
+        "Cost and margin are hidden from operator roles.",
+        "Offline mode supports drafts only.",
+        "Approvals, posting, release, payment and schedule publication are unavailable offline."
+      ]
+    },
+    {
+      "id": "D3-PILOT-TELEMETRY",
+      "title": "Pilot edge telemetry",
+      "phase": "D3",
+      "owner": "KILN",
+      "status": "proposed",
+      "existingPaths": [
+        "apps/api/src/modules/integration/factory-connect.service.ts",
+        "packages/db/migrations/0073_factory_connect.sql"
+      ],
+      "proposedPaths": [
+        "apps/edge/src/connectors/opcua",
+        "apps/edge/src/connectors/mqtt",
+        "packages/db/src/schema/factory-operations.ts"
+      ],
+      "apis": ["POST /api/v1/integration/factory/telemetry/state"],
+      "events": [
+        "factory.asset-state.changed.v1",
+        "factory.shift-kpi.closed.v1"
+      ],
+      "permissions": ["factory.telemetry.ingest", "factory.operations.read"],
+      "tests": [
+        "counter reconciliation test",
+        "late and duplicate event test",
+        "edge reconnect test",
+        "shadow OEE comparison test"
+      ],
+      "acceptance": [
+        "One adapter supports two to three machines in shadow mode.",
+        "Data-quality SLA and reconciliation are measured.",
+        "Raw high-frequency data stays at edge or historian.",
+        "No machine command path is enabled."
+      ]
+    },
+    {
+      "id": "D4-CONTROLLED-RECOVERY",
+      "title": "Approval-controlled recovery",
+      "phase": "D4",
+      "owner": "ONYX",
+      "status": "proposed",
+      "existingPaths": [
+        "apps/api/src/agent-os/agent-authorization.service.ts",
+        "apps/api/src/agent-os/agent-action.service.ts"
+      ],
+      "proposedPaths": [
+        "apps/api/src/integrations/onyx/planning-review.client.ts",
+        "apps/api/src/intelligence/factory/recovery-outcome.service.ts"
+      ],
+      "apis": ["POST /api/v1/planning/replan-reviews"],
+      "events": ["planning.schedule.published.v1"],
+      "permissions": ["intelligence.factory.read", "agentos.approval.decide"],
+      "tests": [
+        "approval rejection dispatches zero test",
+        "approval success dispatches once test",
+        "expected-version conflict test",
+        "outcome verification test"
+      ],
+      "acceptance": [
+        "Review request is bounded, attributable and idempotent.",
+        "ONYX independently authorizes any schedule change.",
+        "XELOR records the eventual outcome.",
+        "Physical machine control remains out of scope."
+      ]
+    }
+  ]
+}

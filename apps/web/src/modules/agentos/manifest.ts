@@ -8,7 +8,7 @@ export const agentosManifest: ModuleManifest = {
   key: "agentos",
   name: "Agent OS",
   summary:
-    "ONYX mission control: live specialist connections, bounded graph runs, evidence, checkpoints and human approvals.",
+    "XELOR mission control: live specialist connections, bounded graph runs, evidence, checkpoints and human approvals.",
   department: "ONYX",
   icon: "Orbit",
   // Agent OS is part of the AI Operations entitlement in this phase.

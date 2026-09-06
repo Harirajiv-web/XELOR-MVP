@@ -21,7 +21,7 @@ coverage/
 
 # Next.js build output and generated types. Committed once by accident when a .gitignore
 # edit silently wrote to the wrong directory; 86 build artefacts went in with the web app.
-.next/
+.next*/
 next-env.d.ts
 
 # Browser-level UI verification artefacts.
@@ -33,3 +33,8 @@ apps/web/playwright-report/
 # Machine-local Codex/plugin skill packages are not application dependencies.
 .agents/
 skills-lock.json
+
+# Generated document QA and Python caches are local, never product source.
+tmp/
+**/__pycache__/
+*.py[cod]

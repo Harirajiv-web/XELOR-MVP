@@ -3,6 +3,20 @@
 Two products, one platform, one workspace. **Everything here belongs to exactly one of
 them, or is deliberately shared — and the folder name says which.**
 
+## Demo upgrade implementation contract
+
+The current demo-to-pilot change set is defined in
+[02-xelor-demo-upgrade-implementation-blueprint.md](docs/07-execution/02-xelor-demo-upgrade-implementation-blueprint.md).
+Its machine-readable ownership, API, event, permission, path and test map is
+[03-demo-upgrade-codebase-manifest.json](docs/07-execution/03-demo-upgrade-codebase-manifest.json).
+
+Run `pnpm demo-upgrade-check` from the repository root whenever either file changes.
+The check fails if current code anchors disappear, ownership IDs collide, API/event names
+are malformed, or mandatory demo disclosures are removed.
+
+Generate the shareable implementation edition with `pnpm pdf:demo-upgrade`. The PDF is written to
+[XELOR_DEMO_UPGRADE_TECHNICAL_IMPLEMENTATION_BLUEPRINT.pdf](../output/pdf/XELOR_DEMO_UPGRADE_TECHNICAL_IMPLEMENTATION_BLUEPRINT.pdf).
+
 | | | |
 |---|---|---|
 | **ONYX by AIKYANTRA** | Phase 1 | The ERP. The system of record: Sales, Purchase, Inventory, Production, Quality, Maintenance, People and Accounts. |

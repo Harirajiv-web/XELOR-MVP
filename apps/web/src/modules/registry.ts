@@ -1,6 +1,7 @@
 import type { ModuleManifest } from "@spine/registry/manifest";
 
 import { copilotManifest } from "./copilot/manifest";
+import { blueprintManifest } from "./blueprint/manifest";
 import { generalManifest } from "./general/manifest";
 import { engineeringManifest } from "./engineering/manifest";
 import { purchaseManifest } from "./purchase/manifest";
@@ -43,8 +44,10 @@ import { platformHealthManifest } from "./platform-health/manifest";
  * licence decides whether the company bought it, and permissions decide whether this
  * person may open it. Three independent gates, three different people who can change them.
  *
- * Twenty-four installed modules span the departmental systems of record plus the shared
- * intelligence, service-assurance, platform-health and data-import surfaces. The array below
+ * Twenty-four base modules span the departmental systems of record plus the shared
+ * intelligence, service-assurance, platform-health and data-import surfaces. Public-demo
+ * builds add one deliberate exception, `blueprint`, which presents proposed work rather
+ * than recording anything and says so on every screen it draws. The array below
  * is the executable inventory; keep this explanation deliberately free of a second hand-written
  * module list so adding a module cannot make the architecture comment lie again.
  *
@@ -52,6 +55,9 @@ import { platformHealthManifest } from "./platform-health/manifest";
  */
 export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   copilotManifest,
+  ...(process.env.NEXT_PUBLIC_PUBLIC_DEMO === "true"
+    ? [blueprintManifest]
+    : []),
   generalManifest,
   engineeringManifest,
   purchaseManifest,
