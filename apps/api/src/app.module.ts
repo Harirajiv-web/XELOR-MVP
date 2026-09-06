@@ -13,6 +13,7 @@ import { WorkflowModule } from "./modules/workflow/workflow.module.js";
 import { EngineeringModule } from "./modules/engineering/engineering.module.js";
 import { InventoryModule } from "./modules/inventory/inventory.module.js";
 import { PurchaseModule } from "./modules/purchase/purchase.module.js";
+import { MarketplaceModule } from "./modules/marketplace/marketplace.module.js";
 import { ProductionModule } from "./modules/production/production.module.js";
 import { QualityModule } from "./modules/quality/quality.module.js";
 import { SalesModule } from "./modules/sales/sales.module.js";
@@ -56,6 +57,7 @@ import { ServerlessWorkerController } from "./serverless-worker.controller.js";
     EngineeringModule,
     InventoryModule,
     PurchaseModule,
+    MarketplaceModule,
     QualityModule,
     ProductionModule,
     // Accounts is listed before Sales: SMBD depends on the ledger port, never the reverse.

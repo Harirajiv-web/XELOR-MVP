@@ -40,6 +40,11 @@ export function DemoLauncher(): React.JSX.Element {
   );
   const step = active?.steps[stepIndex];
   const isAgentTour = active?.kind === "agent-tour";
+
+  // Where each group heading goes in the picker. Derived from the scenario list rather than
+  // hard-coded to positions 0 and 1, which filed the third story under "Meet the agents".
+  const firstStoryIndex = demoScenarios.findIndex((s) => s.kind !== "agent-tour");
+  const firstTourIndex = demoScenarios.findIndex((s) => s.kind === "agent-tour");
   const interactionKey = active && step ? `${active.id}:${stepIndex}` : null;
   const completedInteraction = interactionKey
     ? completedInteractions[interactionKey]
@@ -154,7 +159,7 @@ export function DemoLauncher(): React.JSX.Element {
                   </span>
                   <Dialog.Title className="text-[25px] font-bold tracking-[-.025em]">Choose a demo</Dialog.Title>
                   <Dialog.Description id="demo-picker-description" className="mt-1 max-w-2xl text-[13px] leading-5 text-[var(--dock-ink-soft)]">
-                    Choose the real factory story for a non-technical audience, or the separate agent tour for a simple explanation of all nine agents and their connections.
+                    Choose a real factory story for a non-technical audience, or the separate agent tour for a simple explanation of all nine agents and their connections.
                   </Dialog.Description>
                 </div>
                 <Dialog.Close className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close demo chooser">
@@ -166,23 +171,27 @@ export function DemoLauncher(): React.JSX.Element {
             <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1.55fr)_minmax(310px,.85fr)]">
               <div className="overflow-y-auto p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="text-[11px] font-bold uppercase tracking-[.13em] text-[var(--text-muted)]">Two separate presenter modes</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[.13em] text-[var(--text-muted)]">Presenter modes</p>
                   <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[var(--ok-ink)]"><Icons.ShieldCheck className="h-3.5 w-3.5" aria-hidden /> User-controlled Next steps</span>
                 </div>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {demoScenarios.map((scenario, index) => {
+                    // A heading is drawn before the first scenario of its kind. Keying this
+                    // on the kind rather than on the array position means adding a story
+                    // files it under the right heading instead of the next one along.
                     const chosen = selected?.id === scenario.id;
                     return (
                       <Fragment key={scenario.id}>
-                      {index === 0 ? (
+                      {index === firstStoryIndex ? (
                         <div className="col-span-full mb-0.5 flex items-center gap-2 rounded-[11px] border border-[var(--ai-accent)]/20 bg-[var(--ai-accent)]/8 px-3 py-2">
                           <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--ai-fill)] text-[var(--text-on-fill)]"><Icons.Route className="h-3.5 w-3.5" aria-hidden /></span>
-                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 1 · Real factory journey</b><span className="block text-[9.5px] text-[var(--text-muted)]">Create real demo orders, then follow the customer promise.</span></span>
+                          <span><b className="block text-[11px] text-[var(--text-primary)]">Real factory journeys</b><span className="block text-[9.5px] text-[var(--text-muted)]">Create real demo documents, then follow what happens to them.</span></span>
                         </div>
-                      ) : index === 1 ? (
+                      ) : null}
+                      {index === firstTourIndex ? (
                         <div className="col-span-full mt-2 flex items-center gap-2 rounded-[11px] border border-[var(--ok)]/20 bg-[var(--ok)]/8 px-3 py-2">
                           <span className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--good-fill)] text-[var(--text-on-fill)]"><Icons.Network className="h-3.5 w-3.5" aria-hidden /></span>
-                          <span><b className="block text-[11px] text-[var(--text-primary)]">Demo 2 · Meet the agents</b><span className="block text-[9.5px] text-[var(--text-muted)]">Nine headings, nine simple roles, no transaction detail.</span></span>
+                          <span><b className="block text-[11px] text-[var(--text-primary)]">Meet the agents</b><span className="block text-[9.5px] text-[var(--text-muted)]">Nine headings, nine simple roles, no transaction detail.</span></span>
                         </div>
                       ) : null}
                       <button

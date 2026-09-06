@@ -12,6 +12,8 @@ const { documentSeries } = schema;
  * is exactly the row an auditor finds and nobody can explain.
  */
 export type DocSeriesType =
+  | "sales_quotation"
+  | "sourcing_rfq"
   | "sales_order"
   | "delivery_note"
   | "purchase_order"

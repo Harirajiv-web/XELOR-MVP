@@ -144,6 +144,14 @@ const jwks = createRemoteJWKSet(
   new URL(`${ISSUER}/protocol/openid-connect/certs`),
 );
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Who a supplier's submission is attributed to. Not a person and not a staff account: rows
+ * written from outside the building should be identifiable as such in the audit trail.
+ */
+const SUPPLIER_PORTAL_ACTOR = "0192a8c0-0000-7000-8000-0000000000fe";
+
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -158,6 +166,34 @@ export class TenantMiddleware implements NestMiddleware {
       pathname?.startsWith("/health/")
     ) {
       next();
+      return;
+    }
+
+    // THE SUPPLIER ZONE. A supplier is a workshop with a phone who will never hold an
+    // account, so their invitation link is the whole of their identity — there is no bearer
+    // token to resolve and no Keycloak realm they belong to.
+    //
+    // The tenant therefore travels IN the link, as an unhidden prefix: `<tenantId>~<secret>`.
+    // The tenant id is not a secret (it is a uuid in a URL); the 32 random bytes after it are
+    // the credential, and only their hash is stored. Carrying it this way means the fence can
+    // be raised BEFORE any query runs — the alternative, looking the token up to discover its
+    // tenant, is an unfenced read of a cross-tenant table on an unauthenticated path.
+    //
+    // Everything downstream is still RLS-scoped to that tenant, and the routes reachable here
+    // are the two on SupplierPortalController and nothing else.
+    if (pathname?.startsWith("/api/v1/supplier/")) {
+      const rawToken = decodeURIComponent(pathname.slice("/api/v1/supplier/".length).split("/")[0] ?? "");
+      const tenantId = rawToken.split("~", 1)[0] ?? "";
+      if (!UUID_RE.test(tenantId)) {
+        // 404, never 401: a malformed link and a link for somebody else must look the same.
+        const err = new AppError("NOT_FOUND", 404, "This invitation link is not valid.");
+        res.status(err.httpStatus).json(err.toEnvelope(req.header("x-trace-id") || randomUUID()));
+        return;
+      }
+      runWithTenant(
+        { tenantId, actorId: SUPPLIER_PORTAL_ACTOR, principal: "portal" },
+        () => next(),
+      );
       return;
     }
 
