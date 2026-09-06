@@ -45,6 +45,9 @@ import pg from "pg";
 const here = dirname(fileURLToPath(import.meta.url));
 const initSqlPath = join(here, "..", "..", "..", "infra", "postgres", "init", "00-init.sql");
 
+/** A database name is an identifier, not a literal — double quotes, and doubled quotes inside. */
+const quoteIdent = (name: string): string => `"${name.replace(/"/g, '""')}"`;
+
 /** DECISIONS-V2 §7. Nothing else may be present for this to be a demo database. */
 const DEMO_TENANTS = new Set([
   "0192a8c0-0000-7000-8000-000000000001", // 3S Precision Parts Pvt Ltd
@@ -109,7 +112,16 @@ async function main(): Promise<void> {
     // Without that replay the rebuild appears to work — migrations run as the owner and
     // succeed — and then the API answers 500 on every query, because `app_user` lost USAGE
     // on a schema that no longer had any default privileges attached to it.
-    const init = await readFile(initSqlPath, "utf8");
+    // `00-init.sql` names its database literally, because on a container's first boot there
+    // is only one. Here there is not: the phases run side by side as `indcore`, `indcore_p2`
+    // and `indcore_p3` in one cluster, and a literal `ALTER DATABASE indcore` executed while
+    // connected to `indcore_p3` silently reconfigures ANOTHER PHASE — it succeeds, so nothing
+    // says so. Retarget the two database-scoped statements at the database actually being
+    // reset. Everything else in that file is schema- or role-scoped and needs no change.
+    const init = (await readFile(initSqlPath, "utf8")).replace(
+      /\b(ALTER DATABASE|GRANT CONNECT ON DATABASE)\s+indcore\b/g,
+      (_match, statement: string) => `${statement} ${quoteIdent(db)}`,
+    );
     await client.query("DROP SCHEMA IF EXISTS public CASCADE");
     await client.query("CREATE SCHEMA public");
     await client.query(init);

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "XELOR Manufacturing Intelligence — boundary-enforced modular monolith (MVP prototype 1). Baseline: DECISIONS-V2 (binding).",
+  "description": "XELOR Manufacturing Intelligence \u2014 boundary-enforced modular monolith (MVP prototype 1). Baseline: DECISIONS-V2 (binding).",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=22 <25",
@@ -32,7 +32,9 @@
     "db:demo-reset": "pnpm --filter @ind-core/db demo-reset",
     "demo:northstar": "node apps/api/scripts/demo/02-seed-northstar-story.mjs",
     "demo:verify": "node apps/api/scripts/diagnostics/investor-demo-matrix.mjs",
-    "demo:rebuild": "pnpm db:demo-reset --yes && pnpm db:migrate && pnpm demo:seed && pnpm demo:northstar"
+    "demo:rebuild": "pnpm db:demo-reset --yes && pnpm db:migrate && pnpm demo:seed && pnpm demo:northstar && pnpm demo:commercial && pnpm demo:network",
+    "demo:commercial": "node apps/api/scripts/demo/03-seed-sourcing-and-quotations.mjs",
+    "demo:network": "node apps/api/scripts/demo/04-seed-supplier-network.mjs"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.15.0",

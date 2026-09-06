@@ -29,6 +29,19 @@ const PUBLIC_DEMO_PERMISSIONS = [
   "sales.order.create",
   "purchase.po.create",
   "production.order.create",
+  // The quotation and sourcing journeys, both driven by hand in the demo: quote → send →
+  // accept → order, and RFQ → issue → record quotes → gate → award → PO.
+  "sales.quotation.create",
+  "sales.quotation.send",
+  "sales.quotation.decide",
+  "sales.quotation.convert",
+  "purchase.rfq.create",
+  "purchase.rfq.issue",
+  "purchase.rfq.quote",
+  "purchase.rfq.award",
+  // The supplier network: publishing a request, and bringing an answer onto it.
+  "purchase.network.manage",
+  "purchase.network.broadcast",
   // Spreadsheet import: reading a file is `flow.read` (already covered by the nav entry),
   // but committing rows into Phase 1 is `flow.manage`, which no nav entry asks for.
   "integration.flow.manage",

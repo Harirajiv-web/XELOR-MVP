@@ -939,6 +939,148 @@ const focusedDemoScenarios: DemoScenario[] = [
   },
 ];
 
+/**
+ * THE COMMERCIAL LOOP — the two gaps this ERP had, and what closing them changes.
+ *
+ * The other two stories start at a sales order and end at a purchase order, because until
+ * now those were the first documents the system held. This one starts EARLIER, at the two
+ * decisions that used to happen in a mailbox: what price did we offer, and why did we choose
+ * that supplier.
+ *
+ * It is built around two moments a spreadsheet cannot survive:
+ *
+ *   THE PRICE THAT MOVED. A customer haggles, the quotation is re-priced, and the revision
+ *   they were originally shown is still readable afterwards. That is the document that
+ *   settles an argument about price six months later.
+ *
+ *   THE CHEAPEST SUPPLIER WHO CANNOT BE USED. Three suppliers answer, the cheapest is struck
+ *   through on screen because it cannot deliver before the material is needed, and the system
+ *   refuses to award it. A comparison ranked on price alone would have chosen it.
+ *
+ * Two steps pause for a real document. The guide never writes anything itself; it waits for
+ * the presenter to fill in the ordinary form and then click Next.
+ */
+const commercialLoopScenario: DemoScenario = {
+  id: "commercial-loop",
+  title: "From a price quoted to a supplier chosen",
+  category: "Real-life factory story",
+  severity: "High",
+  duration: "8-10 min",
+  problem:
+    "A customer asks for a price and then negotiates it. At the same time the factory is short of casings and three suppliers answer with different prices, different delivery dates and different material. Both decisions used to live in email, so the ERP recorded what was agreed but never what was offered or why one supplier was chosen.",
+  decision:
+    "Show the two commercial decisions being made inside the system, with the evidence for each one kept beside the document it produced.",
+  outcome:
+    "A quotation that was re-priced still shows the price the customer was first offered, and became a sales order with nothing retyped. A purchase order can now answer why that supplier, at that price, on that date - and the cheapest quote is visibly the one the system refused.",
+  icon: "FileText",
+  accent: "#7a4bd0",
+  kind: "business-story",
+  scale: "full",
+  evidenceMode: "live",
+  demoRecord: {
+    reference: "QT-2627-00001 · RFQ-2627-00001",
+    subject: "Bharat Auto Components · 60 CP-50 pumps, and the casings to build them",
+    facts: [
+      { label: "Quoted", value: "₹4.18 lakh, re-priced to ₹4.00 lakh" },
+      { label: "Became", value: "SO-2627-00005, nothing retyped" },
+      { label: "Sourcing", value: "3 suppliers · cheapest refused · PO-2627-00005" },
+      { label: "Control", value: "A second person signs the award, with a written reason" },
+    ],
+  },
+  steps: [
+    {
+      phase: "Capture",
+      title: "Quote the customer a price",
+      path: "/quotation/list",
+      body:
+        "A customer has asked what 60 pumps would cost. Until now this ERP could take their order but could not hold the offer that came before it, so every order was retyped from an email. Click New quotation, fill in the ordinary form and save it.",
+      presenterLine:
+        "This is the document that used to live in somebody's inbox. From here on, the price we offered is a record like any other.",
+      agents: ["MICA"],
+      interaction: {
+        recordKind: "quotation",
+        instruction:
+          "Click New quotation, complete the form and save it. Open the saved quotation and show its number and total, then press Next here.",
+      },
+    },
+    {
+      phase: "Human decision",
+      title: "The customer haggles, and the first price survives",
+      path: "/quotation/list",
+      body:
+        "Open QT-2627-00001. It exists at two revisions: r1 at ₹4,17,720 and r2 at ₹4,00,020. Re-pricing did not overwrite anything - r1 is marked superseded and is still readable at the price the customer was actually shown.",
+      presenterLine:
+        "This is the part a spreadsheet loses. Six months from now, if anyone argues about what was offered, both prices are still here and dated.",
+      agents: ["MICA"],
+    },
+    {
+      phase: "Execute",
+      title: "The accepted price becomes the order",
+      path: "/sales/orders",
+      body:
+        "The customer accepted r2, and one action turned it into SO-2627-00005 - same items, same quantities, same prices, no retyping. The order carries the normal GST treatment and credit check, because it was raised through the ordinary sales path rather than around it.",
+      presenterLine:
+        "The typing is what we removed. Every rule the order has always had still applies to it.",
+      agents: ["MICA"],
+    },
+    {
+      phase: "Trigger",
+      title: "The factory is short of casings",
+      path: "/planning/mrp",
+      body:
+        "Planning turns the new demand into a shortage: 240 casing bodies are needed and not in stock. Previously the next step left the system - a buyer emailed some suppliers and came back with a purchase order.",
+      presenterLine:
+        "The shortage is arithmetic from the recipe and stock. What happens next used to be invisible.",
+      agents: ["AXLE", "SPAR"],
+    },
+    {
+      phase: "Coordinate",
+      title: "Ask several suppliers the same question",
+      path: "/sourcing/rfqs",
+      body:
+        "A request for quotation names the part, the quantity, the drawing revision and the date the material is actually needed - so three suppliers are answering one question instead of three slightly different ones. Click New request, complete the form and save it.",
+      presenterLine:
+        "Comparable answers need an identical question. The drawing revision is on the request for exactly that reason.",
+      agents: ["SPAR"],
+      interaction: {
+        recordKind: "rfq",
+        instruction:
+          "Click New request, complete the form, invite at least two suppliers and save it. Show the saved request, then press Next here.",
+      },
+    },
+    {
+      phase: "Investigate",
+      title: "The cheapest supplier is the one we cannot use",
+      path: "/sourcing/rfqs",
+      body:
+        "Open RFQ-2627-00001. Three suppliers answered and the list is ordered cheapest first. The top row - ₹9,210, the lowest landed cost on the page - is struck through: it promised delivery 42 days out against a 30-day need date, so it failed the specification and has no Award button at all.",
+      presenterLine:
+        "This is the whole argument. A marketplace that ranks on price would have put that supplier first; the system will not let anybody buy from them, whatever it costs.",
+      agents: ["SPAR", "AXLE"],
+    },
+    {
+      phase: "Govern",
+      title: "A second person signs, and writes down why",
+      path: "/sourcing/rfqs",
+      body:
+        "The order went to the supplier charging ₹28,840 - three times the cheapest - because they meet the date with certification. The buyer who raised the request cannot award it; the system refuses that outright. The reason is stored with the award and shown above the comparison.",
+      presenterLine:
+        "Two controls, both refusals rather than warnings: the raiser cannot sign their own award, and no award is possible without a reason typed by a person.",
+      agents: ["SPAR", "HEXA"],
+    },
+    {
+      phase: "Close",
+      title: "The purchase order can now answer why",
+      path: "/purchase/orders",
+      body:
+        "PO-2627-00005 was raised from the award, through the normal purchase path with its usual approval route and numbering. The difference is that it is no longer just a record of what was bought - the request, the three answers, the specification judgement and the written reason all sit behind it.",
+      presenterLine:
+        "Before today this order existed and the decision behind it did not. That is what the two new sections add.",
+      agents: ["SPAR"],
+    },
+  ],
+};
+
 const agentOverviewScenario: DemoScenario = {
   id: "meet-the-agents",
   title: "Meet the nine ONYX agents",
@@ -1048,5 +1190,6 @@ const agentOverviewScenario: DemoScenario = {
  */
 export const demoScenarios: DemoScenario[] = [
   focusedDemoScenarios[0]!,
+  commercialLoopScenario,
   agentOverviewScenario,
 ];

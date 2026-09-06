@@ -1,6 +1,8 @@
 import { Global, Module } from "@nestjs/common";
 import { SalesController } from "./sales.controller.js";
 import { SalesService } from "./sales.service.js";
+import { QuotationController } from "./quotation.controller.js";
+import { QuotationService } from "./quotation.service.js";
 import { DEMAND_SOURCE } from "../../ports/planning-inputs.port.js";
 
 /**
@@ -18,10 +20,12 @@ import { DEMAND_SOURCE } from "../../ports/planning-inputs.port.js";
  */
 @Global()
 @Module({
-  controllers: [SalesController],
+  // The quotation is a Sales document and converts through SalesService, so it belongs in
+  // this module rather than reaching across a boundary to raise an order.
+  controllers: [SalesController, QuotationController],
   // @Global since PLANNING arrived: Sales is the origin of independent demand for the
   // whole plant, and MRP reads it through DEMAND_SOURCE without importing this module.
-  providers: [SalesService, { provide: DEMAND_SOURCE, useExisting: SalesService }],
-  exports: [SalesService, DEMAND_SOURCE],
+  providers: [SalesService, QuotationService, { provide: DEMAND_SOURCE, useExisting: SalesService }],
+  exports: [SalesService, QuotationService, DEMAND_SOURCE],
 })
 export class SalesModule {}
