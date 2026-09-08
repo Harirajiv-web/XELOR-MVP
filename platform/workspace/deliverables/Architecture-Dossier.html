@@ -1,0 +1,1356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XELOR — Platform Architecture &amp; Verification Dossier</title>
+<meta name="description" content="The complete technical account of XELOR (system of record) and ONYX (intelligence layer), with every structural claim reproducible from the repository.">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+img,svg{max-width:100%}
+:root{
+  --measure:74ch;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;
+  --hdr:60px;
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#f0f4fa; --sunken:#eaeff7;
+  --ink:#101a2e; --ink-2:#3d4d68; --ink-3:#65748d;
+  --line:#d9e1ee; --line-2:#c3cfe2;
+  --navy:#0a1730; --blue:#1d4ed8; --blue-2:#2563eb;
+  --green:#0a7a53; --amber:#a15c00; --red:#b42318; --violet:#6d28d9; --cyan:#0e7490;
+  --code:#173d82; --code-bg:#eef3fc;
+  --pre-bg:#0a1730; --pre-ink:#dbe8ff;
+  --shadow:0 1px 2px rgba(16,26,46,.05),0 4px 14px rgba(16,26,46,.06);
+  --radius:12px;
+  --fs-xs:12.5px;--fs-sm:13.5px;--fs:15.5px;--fs-lead:18px;--fs-h3:19px;--fs-h2:27px;--fs-display:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#080d18; --surface:#0e1626; --surface-2:#131d31; --sunken:#0b1220;
+    --ink:#e8eefb; --ink-2:#b3c2da; --ink-3:#8595b0;
+    --line:#1f2c45; --line-2:#2b3b58;
+    --blue:#7aa5ff; --blue-2:#96b8ff; --green:#3ecf9a; --amber:#e0a33c; --red:#ff8b80;
+    --violet:#b191f5; --cyan:#4fc4dd;
+    --code:#a8c7ff; --code-bg:#111c31; --pre-bg:#050a14; --pre-ink:#d3e2ff;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080d18; --surface:#0e1626; --surface-2:#131d31; --sunken:#0b1220;
+  --ink:#e8eefb; --ink-2:#b3c2da; --ink-3:#8595b0;
+  --line:#1f2c45; --line-2:#2b3b58;
+  --blue:#7aa5ff; --blue-2:#96b8ff; --green:#3ecf9a; --amber:#e0a33c; --red:#ff8b80;
+  --violet:#b191f5; --cyan:#4fc4dd;
+  --code:#a8c7ff; --code-bg:#111c31; --pre-bg:#050a14; --pre-ink:#d3e2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:var(--fs)/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--blue);text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+/* ---------- chrome ---------- */
+.topbar{position:sticky;top:0;z-index:60;height:var(--hdr);background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(1.6) blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1400px;margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--s4);padding:0 var(--s5)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.2px;white-space:nowrap}
+.brand .mk{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;
+  background:linear-gradient(135deg,#1d4ed8,#6d28d9);color:#fff;font-size:11px;font-weight:800}
+.brand .bt{font-size:14.5px}
+.brand .bs{color:var(--ink-3);font-weight:500;font-size:12.5px}
+@media (max-width:720px){.brand .bs{display:none}.brand{min-width:0}.topbar-in{gap:var(--s3);padding:0 var(--s4)}}
+.spacer{flex:1}
+.tbtn{appearance:none;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);
+  border-radius:8px;padding:6px 11px;font:600 12.5px/1 inherit;cursor:pointer;white-space:nowrap}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+.menu{display:none}
+@media (max-width:1080px){.menu{display:inline-block}}
+
+/* ---------- masthead ---------- */
+.masthead{background:radial-gradient(1100px 420px at 82% -10%,rgba(31,122,167,.5) 0,transparent 60%),
+  linear-gradient(145deg,#050f25 0%,#112d6b 58%,#4c1d95 130%);color:#fff}
+.mh-in{max-width:1400px;margin:0 auto;padding:var(--s8) var(--s5) var(--s7)}
+.eyebrow{color:#8de5ff;font-size:12px;font-weight:750;letter-spacing:2.4px;margin-bottom:var(--s3)}
+.masthead h1{margin:0 0 var(--s4);font-size:var(--fs-display);line-height:1.06;letter-spacing:-1.4px;max-width:20ch;text-wrap:balance}
+.masthead .sub{color:#dcecff;font-size:var(--fs-lead);line-height:1.55;max-width:66ch;margin:0 0 var(--s5)}
+.masthead .scope{max-width:74ch;padding:var(--s4) var(--s5);border:1px solid #6ea6dc80;border-radius:var(--radius);
+  background:#ffffff12;color:#d9e9fb;font-size:14px;line-height:1.62}
+.masthead .scope b{color:#fff}
+.masthead code,.masthead .k{color:#bdeaff;background:#ffffff1a;border:1px solid #ffffff26;padding:1px 6px;border-radius:5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+.mh-meta{margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid #6b9bcc55;color:#c9ddf4;font-size:12.5px}
+
+/* ---------- shell ---------- */
+.shell{max-width:1400px;margin:0 auto;padding:var(--s7) var(--s5) var(--s9);
+  display:grid;grid-template-columns:264px minmax(0,1fr);gap:var(--s8);align-items:start}
+@media (max-width:1080px){.shell{grid-template-columns:1fr;gap:var(--s5);padding-top:var(--s5)}}
+main{min-width:0;max-width:1000px}
+
+/* ---------- toc ---------- */
+.toc{position:sticky;top:calc(var(--hdr) + var(--s4));max-height:calc(100vh - var(--hdr) - var(--s6));
+  overflow:auto;overscroll-behavior:contain;font-size:var(--fs-sm)}
+.toc h2{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-3);margin:0 0 var(--s3);padding:0;border:0}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:0}
+.toc a{display:flex;gap:9px;align-items:baseline;padding:5px 9px;border-radius:7px;color:var(--ink-2);
+  text-decoration:none;line-height:1.35;border-left:2px solid transparent}
+.toc a:hover{background:var(--surface-2);color:var(--ink)}
+.toc a.on{background:var(--surface-2);color:var(--blue);font-weight:650;border-left-color:var(--blue)}
+.tn{flex:0 0 20px;font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink-3);font-weight:700}
+.toc a.on .tn{color:var(--blue)}
+@media (max-width:1080px){
+  .toc{position:fixed;inset:var(--hdr) auto 0 0;width:280px;max-height:none;height:calc(100vh - var(--hdr));
+    background:var(--surface);border-right:1px solid var(--line);padding:var(--s5);z-index:55;
+    transform:translateX(-102%);transition:transform .22s ease;box-shadow:var(--shadow)}
+  .toc.open{transform:none}
+}
+
+/* ---------- typography ---------- */
+h2{margin:0 0 var(--s4);font-size:var(--fs-h2);line-height:1.2;letter-spacing:-.5px;
+  padding-bottom:var(--s3);border-bottom:2px solid var(--blue);scroll-margin-top:calc(var(--hdr) + 14px);text-wrap:balance}
+.sn{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 7px;margin-right:11px;border-radius:8px;
+  background:var(--blue);color:#fff;font-size:14px;font-weight:800;vertical-align:2px;font-variant-numeric:tabular-nums}
+h3{margin:var(--s6) 0 var(--s3);font-size:var(--fs-h3);line-height:1.28;color:var(--blue);letter-spacing:-.2px;scroll-margin-top:calc(var(--hdr) + 14px)}
+h4{margin:var(--s5) 0 var(--s2);font-size:15.5px;color:var(--ink)}
+p{margin:0 0 var(--s4);max-width:var(--measure);text-wrap:pretty}
+ul,ol{margin:0 0 var(--s4);padding-left:1.4em;max-width:var(--measure)}
+li{margin:var(--s2) 0}
+.lead{font-size:var(--fs-lead);line-height:1.56;color:var(--ink-2);max-width:66ch;margin-bottom:var(--s5)}
+.small{font-size:var(--fs-xs);color:var(--ink-3)}
+b,strong{font-weight:680}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;color:var(--code);
+  background:var(--code-bg);padding:1.5px 5px;border-radius:5px;overflow-wrap:anywhere}
+th code{color:#cfe3ff;background:#ffffff1f}
+pre{margin:0 0 var(--s5);padding:var(--s4) var(--s5);border-radius:var(--radius);background:var(--pre-bg);color:var(--pre-ink);
+  font:13px/1.62 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;white-space:pre;box-shadow:var(--shadow)}
+pre b{color:#7ee0b0;font-weight:600}
+pre i{color:#93a9cc;font-style:normal}
+pre code{background:none;color:inherit;padding:0;font-size:1em}
+
+/* ---------- sections ---------- */
+.sec{padding:var(--s7) 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0;padding-top:0}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:0 0 var(--s5);border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:560px}
+th{background:var(--navy);color:#fff;text-align:left;padding:10px 13px;font-weight:650;font-size:var(--fs-xs);
+  letter-spacing:.2px;position:sticky;top:0;z-index:1}
+:root[data-theme="dark"] th, :root:not([data-theme="light"]) th{background:#12203a}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) th{background:var(--navy)}}
+td{padding:9px 13px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
+tbody tr:nth-child(even) td,table tr:nth-child(even) td{background:var(--surface-2)}
+table b{color:var(--ink)}
+
+/* ---------- callouts ---------- */
+.callout{margin:0 0 var(--s5);padding:var(--s4) var(--s5);border-left:3px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;
+  background:color-mix(in srgb,var(--blue) 8%,var(--surface));max-width:var(--measure)}
+.callout > :last-child{margin-bottom:0}
+.callout.good{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 9%,var(--surface))}
+.callout.warn{border-left-color:var(--amber);background:color-mix(in srgb,var(--amber) 10%,var(--surface))}
+.callout.bad{border-left-color:var(--red);background:color-mix(in srgb,var(--red) 8%,var(--surface))}
+.callout.violet{border-left-color:var(--violet);background:color-mix(in srgb,var(--violet) 8%,var(--surface))}
+.callout .tw{max-width:none;margin-top:var(--s3);margin-bottom:0}
+.callout table{min-width:520px}
+
+/* ---------- cards / kpi / grid ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--s4);margin:0 0 var(--s5)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--s3);margin:0 0 var(--s5)}
+.card{padding:var(--s5);border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow)}
+.card > :last-child{margin-bottom:0}
+.card h3,.card h4{margin-top:0}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--s3);margin:0 0 var(--s6)}
+.kpi div{padding:var(--s4) var(--s5);border-radius:var(--radius);background:var(--navy);color:#dceaff;
+  font-size:var(--fs-xs);line-height:1.42;box-shadow:var(--shadow)}
+.kpi b{display:block;margin-bottom:3px;color:#7ad4ff;font-size:26px;font-weight:800;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+
+/* ---------- verify blocks ---------- */
+.verify{margin:0 0 var(--s5);border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.verify .vh{padding:9px var(--s5);background:var(--sunken);border-bottom:1px solid var(--line);
+  font-size:var(--fs-xs);font-weight:750;letter-spacing:.6px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.verify .vh::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);flex:0 0 auto}
+.verify .vb{padding:var(--s4) var(--s5)}
+.verify pre{margin:0;box-shadow:none}
+
+/* ---------- flow ---------- */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--s2);margin:0 0 var(--s5)}
+.flow > div{flex:1 1 150px;display:grid;place-items:center;padding:var(--s4) var(--s3);border:1px solid var(--line-2);
+  border-radius:10px;background:var(--surface);text-align:center;font-size:var(--fs-xs);font-weight:700;line-height:1.35;box-shadow:var(--shadow)}
+.flow .arrow{flex:0 0 22px;border:0;background:none;box-shadow:none;color:var(--blue);font-size:17px;font-weight:400}
+
+/* ---------- tags / severity ---------- */
+.tag{display:inline-block;padding:2px 8px;border-radius:11px;font-size:11px;font-weight:750;white-space:nowrap;line-height:1.5}
+.live{background:color-mix(in srgb,var(--green) 20%,transparent);color:var(--green)}
+.stand{background:color-mix(in srgb,var(--amber) 22%,transparent);color:var(--amber)}
+.off{background:color-mix(in srgb,var(--ink-3) 20%,transparent);color:var(--ink-2)}
+.human{background:color-mix(in srgb,var(--violet) 20%,transparent);color:var(--violet)}
+.sev{display:inline-block;min-width:54px;padding:2px 7px;border-radius:6px;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.3px}
+.s-high{background:color-mix(in srgb,var(--red) 20%,transparent);color:var(--red)}
+.s-med{background:color-mix(in srgb,var(--amber) 22%,transparent);color:var(--amber)}
+.s-low{background:color-mix(in srgb,var(--blue) 18%,transparent);color:var(--blue)}
+.s-none{background:color-mix(in srgb,var(--green) 20%,transparent);color:var(--green)}
+
+/* ---------- misc from print sheet ---------- */
+.num{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:6px;
+  background:var(--blue);color:#fff;font-size:11px;font-weight:800;vertical-align:-3px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:4px 22px;margin:0 0 var(--s5);max-width:none}
+.toc-grid p{margin:0;padding:5px 0}
+.toc-grid a{text-decoration:none;color:var(--ink-2)}
+.toc-grid a:hover{color:var(--blue)}
+.dense{font-size:var(--fs-xs)}
+.footer-note{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--line);color:var(--ink-3);font-size:var(--fs-xs);max-width:none}
+.no-break{}
+.mono-col code{white-space:nowrap}
+.page{}
+
+/* ---------- back to top ---------- */
+.top{position:fixed;right:22px;bottom:22px;z-index:50;width:42px;height:42px;border-radius:50%;
+  border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);cursor:pointer;
+  box-shadow:var(--shadow);font-size:17px;opacity:0;pointer-events:none;transition:opacity .2s}
+.top.show{opacity:1;pointer-events:auto}
+.top:hover{color:var(--blue);border-color:var(--blue)}
+.scrim{position:fixed;inset:0;background:#0009;z-index:54;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+@media (min-width:1081px){.scrim{display:none}}
+
+@media print{
+  .topbar,.toc,.top,.menu,.scrim{display:none!important}
+  .shell{display:block;padding:0;max-width:none}
+  .sec{page-break-before:always;border-top:0}
+  body{background:#fff;color:#000;font-size:10pt}
+  .tw{overflow:visible;box-shadow:none}
+  th{position:static}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="tbtn" style="position:absolute;left:-9999px;top:0"
+   onfocus="this.style.left='8px';this.style.top='8px';this.style.zIndex='99'"
+   onblur="this.style.left='-9999px'">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <button class="tbtn menu" id="menu" aria-expanded="false" aria-controls="toc">Contents</button>
+    <div class="brand"><span class="mk">XE</span>
+      <span><span class="bt">XELOR</span> <span class="bs">· Architecture &amp; Verification Dossier</span></span>
+    </div>
+    <span class="spacer"></span>
+    <button class="tbtn" id="theme">Dark</button>
+  </div>
+</header>
+
+<div class="masthead">
+  <div class="mh-in">
+    <div class="eyebrow">XELOR · PLATFORM ENGINEERING</div>
+    <h1>Architecture &amp; Verification Dossier</h1>
+    <p class="sub">The complete technical account of the platform's two named layers — <b>XELOR</b>, the system of record, and <b>ONYX</b>, the intelligence layer above it — written so that every structural claim in it can be re-proved from the repository by a reviewer who trusts none of it.</p>
+    <div class="scope">
+    <b>Purpose:</b> architecture review and independent verification. This supersedes the <i>MVP Technical Handoff Brief</i>, which stopped at the Phase&nbsp;1 investor build.<br>
+    <b>Audience:</b> senior/principal architects, engineering leadership, technical due diligence, incoming platform engineers.<br>
+    <b>Method:</b> every number in this document was measured against the running system and the checked-out source on the date below. Commands are given so each can be re-run.<br>
+    <b>Scope:</b> <b>XELOR</b> = <code class="k">PHASE-1</code>, the ERP baseline · <b>ONYX</b> = <code class="k">PHASE-2</code>, autonomous fulfilment and the AI module. PostgreSQL&nbsp;17.10, 96 migrations, 995 automated tests.
+  </div>
+    <div class="mh-meta">Measured from the live stack, the schema, the route table, the CI gates and the test runners — not from design documents · 16 August 2026</div>
+  </div>
+</div>
+
+<div class="scrim"></div>
+<div class="shell">
+  <nav class="toc" id="toc" aria-label="Document sections">
+    <h2>Contents</h2>
+    <ol><li><a href="#s0"><span class="tn">0</span><span>The verification contract</span></a></li>
+<li><a href="#s1"><span class="tn">1</span><span>System in one page</span></a></li>
+<li><a href="#s2"><span class="tn">2</span><span>Codebase topology and boundary enforcement</span></a></li>
+<li><a href="#s3"><span class="tn">3</span><span>XELOR — the system of record (Phase 1)</span></a></li>
+<li><a href="#s4"><span class="tn">4</span><span>Data architecture</span></a></li>
+<li><a href="#s5"><span class="tn">5</span><span>Multi-tenancy and row-level security</span></a></li>
+<li><a href="#s6"><span class="tn">6</span><span>Transaction, consistency and eventing model</span></a></li>
+<li><a href="#s7"><span class="tn">7</span><span>Document numbering and statutory constraints</span></a></li>
+<li><a href="#s8"><span class="tn">8</span><span>API contract</span></a></li>
+<li><a href="#s9"><span class="tn">9</span><span>Identity and authorisation</span></a></li>
+<li><a href="#s10"><span class="tn">10</span><span>Audit, evidence and tamper-evidence</span></a></li>
+<li><a href="#s11"><span class="tn">11</span><span>ONYX — the intelligence layer (Phase 2)</span></a></li>
+<li><a href="#s12"><span class="tn">12</span><span>The mission arc</span></a></li>
+<li><a href="#s13"><span class="tn">13</span><span>ONYX's decision engine — determinism</span></a></li>
+<li><a href="#s14"><span class="tn">14</span><span>The AI module — providers, models and governance</span></a></li>
+<li><a href="#s15"><span class="tn">15</span><span>Failure, retry and recovery</span></a></li>
+<li><a href="#s16"><span class="tn">16</span><span>Verification evidence</span></a></li>
+<li><a href="#s17"><span class="tn">17</span><span>Build, run and deploy</span></a></li>
+<li><a href="#s18"><span class="tn">18</span><span>Gap, risk and decision register</span></a></li>
+<li><a href="#s19"><span class="tn">19</span><span>The reviewer's checklist</span></a></li></ol>
+  </nav>
+  <main id="main"><section class="sec" aria-labelledby="s0">
+  <h2 id="s0"><span class="sn">0</span>The verification contract</h2>
+  <p class="lead">This document makes claims about a system. A claim that cannot be checked is an opinion, so every substantive section carries the command that re-derives it. If a command's output disagrees with the text, the text is wrong.</p>
+
+  <div class="callout"><b>How to reproduce every number in this document in one pass.</b> From <code>PHASE-2/</code>, with the infrastructure up:
+  <pre>pnpm build &amp;&amp; pnpm lint &amp;&amp; pnpm typecheck &amp;&amp; pnpm db:migrate &amp;&amp; pnpm test \
+  &amp;&amp; pnpm ai:eval &amp;&amp; pnpm db:rls-check &amp;&amp; pnpm db:perm-check \
+  &amp;&amp; pnpm db:naming-check &amp;&amp; pnpm module-check &amp;&amp; pnpm report-data-check
+<i># this exact chain is the `pnpm verify` script and job 1 of .github/workflows/ci.yml</i></pre></div>
+
+  <h3>What is being asserted, and at what strength</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:14%">Strength</th><th style="width:38%">Meaning</th><th style="width:48%">Example of a claim at this strength</th></tr>
+    <tr><td><b>Enforced</b></td><td>A machine rejects the change. CI fails, a constraint fires, or a lint rule blocks the merge.</td><td>"No module imports another module's internals" — <code>eslint-plugin-boundaries</code>, CI job 1.</td></tr>
+    <tr><td><b>Measured</b></td><td>Observed on the running system on the date of this document. Re-running may give a different number as data grows.</td><td>"List endpoints answer in 10–22&nbsp;ms" — at 6,208 live rows.</td></tr>
+    <tr><td><b>Implemented</b></td><td>The code path exists and executes, but nothing prevents a future change from removing it.</td><td>"The mission never writes stock directly."</td></tr>
+    <tr><td><b>Stated</b></td><td>A design intent recorded in the binding decisions document, not yet mechanically enforced.</td><td>"RLS overhead above 15–20% triggers a design review."</td></tr>
+  </table></div>
+
+  <div class="callout warn"><b>Read §18 before forming a view.</b> The gap and risk register is not an appendix of nice-to-haves. It contains the four things a reviewer would otherwise find themselves, including one schema inconsistency, one demo scenario that cannot start, and the precise blast radius of the public-demo authentication bypass.</div>
+
+  <h3>Document map</h3>
+  <div class="toc-grid">
+    <p><span class="num">1</span>System in one page</p>
+    <p><span class="num">2</span>Codebase topology and boundary enforcement</p>
+    <p><span class="num">3</span><b>XELOR</b> — the system of record</p>
+    <p><span class="num">4</span>Data architecture</p>
+    <p><span class="num">5</span>Multi-tenancy and row-level security</p>
+    <p><span class="num">6</span>Transaction, consistency and eventing model</p>
+    <p><span class="num">7</span>Document numbering and statutory constraints</p>
+    <p><span class="num">8</span>API contract</p>
+    <p><span class="num">9</span>Identity and authorisation</p>
+    <p><span class="num">10</span>Audit, evidence and tamper-evidence</p>
+    <p><span class="num">11</span><b>ONYX</b> — the intelligence layer</p>
+    <p><span class="num">12</span>The mission arc</p>
+    <p><span class="num">13</span>Determinism and AI governance</p>
+    <p><span class="num">14</span>The AI module — providers, models, governance</p>
+    <p><span class="num">15</span>Failure, retry and recovery</p>
+    <p><span class="num">16</span>Verification evidence</p>
+    <p><span class="num">17</span>Build, run and deploy</p>
+    <p><span class="num">18</span>Gap, risk and decision register</p>
+    <p><span class="num">19</span>The reviewer's checklist</p>
+  </div>
+</section><section class="sec" aria-labelledby="s1">
+  <h2 id="s1"><span class="sn">1</span>System in one page</h2>
+  <p class="lead">XELOR is a boundary-enforced modular monolith: one deployable API, one deployable web application, one PostgreSQL database with forced row-level security, and a set of internal modules that are prevented — mechanically, in CI — from reaching into one another.</p>
+
+  <div class="kpi">
+    <div><b>153,961</b>lines of TypeScript across 648 source files</div>
+    <div><b>252</b>tables · 242 tenant-scoped, all FORCE&nbsp;RLS</div>
+    <div><b>449</b>HTTP routes · 165 distinct permissions</div>
+    <div><b>995</b>automated tests · 994 pass, 1 environment-skipped</div>
+  </div>
+
+  <h3>The two layers, and why they are two</h3>
+  <p>The platform is exactly two layers, and they are named. <b>XELOR</b> is a conventional ERP: the system of record, and authoritative. <b>ONYX</b> is the intelligence and automation layer that sits <i>on top</i> of XELOR and reaches it only through declared ports. The separation is architectural, not presentational — ONYX contains no import of any XELOR module.</p>
+  <div class="callout"><b>One name, two scopes — read this before §11 and §14.</b> <b>ONYX</b> names the whole upper layer in this document. Inside the codebase the same four letters also name (a) the AI Operations component that owns the provider router and feature registry (§14), and (b) the coordinating agent in the mission arc, as distinct from AXLE, SPAR, KILN and HEXA (§12). All three usages are the same idea at different zoom levels — the intelligence of the product — but a reviewer reading <code>agentKey: "ONYX"</code> on a mission step is looking at the narrowest of the three.</div>
+
+  <div class="tw"><table>
+    <tr><th style="width:16%"></th><th style="width:42%">XELOR — system of record <span style="font-weight:400">(Phase 1)</span></th><th style="width:42%">ONYX — intelligence layer <span style="font-weight:400">(Phase 2)</span></th></tr>
+    <tr><td><b>Answers</b></td><td>"What is true, and what did we commit to?"</td><td>"Given what is true, what should we do, and did it work?"</td></tr>
+    <tr><td><b>Owns</b></td><td>Every table. All writes. All numbering. All statutory records.</td><td>Missions, plans, approvals, actions and evidence. Nothing in a XELOR domain.</td></tr>
+    <tr><td><b>Reaches the other by</b></td><td>— <b>XELOR does not know ONYX exists.</b> No XELOR module imports, references or depends on anything in the ONYX tree.</td><td>15 injected port tokens; never a module import.</td></tr>
+    <tr><td><b>Code footprint</b></td><td>202 API files · 122 platform files · 90 migrations</td><td><b>+21</b> API files · <b>+19</b> platform files · <b>+6</b> migrations (0092–0097)</td></tr>
+    <tr><td><b>Added directories</b></td><td>—</td><td><code>apps/api/src/fulfilment/</code> · <code>packages/platform/src/{fulfilment,intelligence,dataimport}/</code></td></tr>
+    <tr><td><b>Runs on</b></td><td>api :3000 · web :3001 · db <code>indcore</code></td><td>api :3100 · web :3101 · db <code>indcore_p2</code></td></tr>
+  </table></div>
+
+  <div class="callout good"><b>Why the two layers get separate databases and separate ports.</b> ONYX runs six migrations XELOR has never seen. A shared database would mean that starting ONYX once silently rewrote XELOR into a state that no longer matches its own code — and the XELOR build is the baseline against which ONYX's value is demonstrated. The separation is enforced by <code>run-phase.sh</code>, which frees the other layer's ports before binding its own.</div>
+
+  <h3>Runtime topology</h3>
+  <div class="flow">
+    <div>Browser<br><span class="small" style="color:#4a5a75">Next.js 15 / React 19</span></div>
+    <div class="arrow">→</div>
+    <div>API<br><span class="small" style="color:#4a5a75">NestJS 11 / Node 22</span></div>
+    <div class="arrow">→</div>
+    <div>PostgreSQL 17.10<br><span class="small" style="color:#4a5a75">FORCE RLS + pgvector</span></div>
+    <div class="arrow">→</div>
+    <div>Valkey 8<br><span class="small" style="color:#4a5a75">cache + BullMQ</span></div>
+  </div>
+
+  <div class="tw"><table class="dense">
+    <tr><th style="width:20%">Component</th><th style="width:22%">Image / runtime</th><th style="width:58%">Responsibility, and what fails if it is absent</th></tr>
+    <tr><td>PostgreSQL</td><td><code>pgvector/pgvector:pg17</code></td><td>Every durable fact. Extensions in use: <code>vector</code>, <code>pg_trgm</code>, <code>btree_gist</code>, <code>plpgsql</code>. Absent → nothing starts; migration 0000 requires all three non-default extensions.</td></tr>
+    <tr><td>API</td><td>Node 22 · NestJS 11</td><td>All domain logic, all authorisation, all transaction boundaries. The web app holds no business rule it can act on alone.</td></tr>
+    <tr><td>Web</td><td>Next.js 15 · React 19</td><td>24 registered modules. Proxies <code>/api/v1</code> to <code>NEXT_PUBLIC_API_ORIGIN</code>; misconfiguring this points ONYX's UI at XELOR's API, which answers 401 rather than failing loudly.</td></tr>
+    <tr><td>Keycloak</td><td><code>keycloak:26.0</code></td><td>OIDC identity. Absent → sign-in fails; public-demo mode still works, which is why 12 e2e tests skip rather than fail in that configuration.</td></tr>
+    <tr><td>Valkey</td><td><code>valkey/valkey:8</code></td><td>Cache and BullMQ queues. Absent → background work stalls; synchronous ledger paths are unaffected by design (§6).</td></tr>
+    <tr><td>Gotenberg</td><td><code>gotenberg:8</code></td><td>Server-side PDF rendering for documents produced by the product. Distinct from the local report pipeline that produced this file.</td></tr>
+    <tr><td>Edge worker</td><td><code>apps/edge</code></td><td>Small runtime for serverless invocation paths. 6 tests.</td></tr>
+  </table></div>
+
+  <div class="verify no-break">
+    <div class="vh">VERIFY §1</div>
+    <div class="vb"><pre>docker compose -f infra/docker-compose.yml config --services
+psql "$DATABASE_URL" -c "select extname from pg_extension order by 1"
+psql "$DATABASE_URL" -c "select version()"
+<b>PostgreSQL 17.10 · btree_gist, pg_trgm, plpgsql, vector</b></pre></div>
+  </div>
+</section><section class="sec" aria-labelledby="s2">
+  <h2 id="s2"><span class="sn">2</span>Codebase topology and boundary enforcement</h2>
+  <p class="lead">The single most load-bearing architectural decision in this codebase is that module boundaries are enforced by a linter that fails the build, not by a convention in a README. Everything else — the ports, the outbox, the phase separation — depends on that rule actually biting.</p>
+
+  <h3>Workspace layout</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:22%">Package</th><th style="width:12%">Files</th><th style="width:11%">Lines</th><th style="width:55%">May depend on</th></tr>
+    <tr><td><code>packages/platform</code></td><td>141</td><td>31,676</td><td><b>Nothing internal.</b> Pure logic: errors, ids, tenancy, audit, events, access, tax, accounting, planning, quality, fulfilment, intelligence. This is why 822 of the 995 tests live here — it is testable without a database.</td></tr>
+    <tr><td><code>packages/db</code></td><td>42</td><td>7,895</td><td><code>platform</code> only. Drizzle schema, 96 migrations, and five executable proof scripts.</td></tr>
+    <tr><td><code>apps/api/src/modules/*</code></td><td>—</td><td>—</td><td><code>platform</code> + <code>db</code> + <b>its own module only</b>. Cross-module access goes through a sibling's public <code>index.ts</code> or an outbox event.</td></tr>
+    <tr><td><code>apps/api</code> (rest)</td><td>223 total</td><td>55,512</td><td>Bootstrap, common middleware, ports, agent-os, fulfilment.</td></tr>
+    <tr><td><code>apps/web</code></td><td>242</td><td>58,878</td><td>24 modules under a shared spine. Module manifests are validated in CI.</td></tr>
+    <tr><td><code>apps/edge</code></td><td>3</td><td>—</td><td>Serverless runtime shim.</td></tr>
+  </table></div>
+
+  <h3>The rule, as the linter states it</h3>
+  <p>From <code>eslint.config.js</code> — the element model and the load-bearing constraint:</p>
+  <pre><i>// platform  -> packages/platform  (the bootstrap; may depend on nothing internal)</i>
+<i>// db        -> packages/db        (schema/migrations; may depend on platform only)</i>
+<i>// module    -> apps/api/src/modules/&lt;name&gt;  (one ERP domain each)</i>
+<i>// app       -> apps/api/src (everything else: bootstrap, common)</i>
+<b>// The load-bearing rule: a `module` may import platform + db + ITS OWN module only.</b>
+<i>// Cross-module access must go through a sibling module's public `index.ts`</i>
+<i>// (exported service interface) or an outbox event — never a deep import.</i></pre>
+
+  <div class="callout"><b>A subtlety worth checking in review.</b> The config carries an explicit note that a TypeScript-aware resolver is <i>required</i> for these rules to bite — without it the plugin cannot resolve <code>.js</code>→<code>.ts</code> imports and "silently classifies nothing", i.e. the gate passes while enforcing nothing. The resolver is configured against every <code>apps/*/tsconfig.json</code> and <code>packages/*/tsconfig.json</code>. A reviewer should confirm this survives any future build-tool change, because its failure mode is silent.</div>
+
+  <h3>What the boundary buys, concretely</h3>
+  <p>Two named doctypes in this schema would collapse into one under a weaker boundary. <code>production_order</code> (a shop-floor job) and <code>maintenance_work_order</code> (an asset repair) are distinct records owned by distinct modules, and the naming proof asserts there is <b>no foreign key between them</b> — the check exists because the two are colloquially both "work orders" and merging them is the obvious wrong refactor.</p>
+
+  <div class="verify no-break">
+    <div class="vh">VERIFY §2 — measured 16 Aug 2026</div>
+    <div class="vb"><pre>pnpm lint            <i># eslint . --max-warnings=0, includes boundary rules</i>
+pnpm module-check
+<b>Module check OK — 24 module(s) installed and registered; 169 nav permission(s)
+all defined by the platform; no cross-module imports.</b>
+pnpm db:naming-check
+<b>Naming check OK — 252 tables; production_order and maintenance_work_order
+are distinct doctypes with no FK between them.</b></pre></div>
+  </div>
+</section><section class="sec" aria-labelledby="s3">
+  <h2 id="s3"><span class="sn">3</span>XELOR — the system of record (Phase 1)</h2>
+  <p class="lead">XELOR is a complete manufacturing ERP and it is the authority for every durable fact in the product. ONYX has no table of its own in any XELOR domain and no privileged path into one. Everything in this section exists independently of, and before, the intelligence layer — XELOR runs, and is useful, with ONYX switched off entirely.</p>
+
+  <h3>3.1 Ownership model — six departments, one cross-cutting component</h3>
+  <p>Every module has exactly one owning department. The naming system is deliberate: four letters, industrial register, and the departmental initial matches the owner's initial. These are internal engineering identifiers, not customer-facing branding.</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:9%">Agent</th><th style="width:23%">Department</th><th style="width:68%">Owns — system of record</th></tr>
+    <tr><td><b>HEXA</b></td><td>Platform &amp; Governance</td><td>Master data, identity, RBAC/ABAC, the workflow engine, the hash-chained audit trail, the outbox event bus, external connectors. Owns the binding decisions document itself.</td></tr>
+    <tr><td><b>MICA</b></td><td>Commercial</td><td>Customer master, leads, quotations, sales orders, tenders, dispatch and invoicing; service tickets, complaints, warranty and AMC.</td></tr>
+    <tr><td><b>SPAR</b></td><td>Supply Chain</td><td>Vendor master, the PO→GRN→invoice→payment cycle, and the stock ledger itself — bins, valuation, batches, and the single write path every other module must use.</td></tr>
+    <tr><td><b>AXLE</b></td><td>Product Engineering &amp; Planning</td><td>Item, BOM and routing masters, ECR→ECO change control, MPS, MRP, capacity and finite scheduling.</td></tr>
+    <tr><td><b>KILN</b></td><td>Manufacturing Operations</td><td>Work orders, material issue and output, scrap, batch genealogy, quality gates, NCR and CAPA, calibration, asset uptime and downtime.</td></tr>
+    <tr><td><b>RASP</b></td><td>People &amp; Money</td><td>Employee master, shifts and rosters, attendance, leave, payroll and Indian statutory compliance, budgets, expense claims, indirect spend, the general ledger.</td></tr>
+    <tr><td><b>ONYX</b></td><td>AI Operations <span class="small">(component, not a department)</span></td><td>Provider-agnostic router, closed feature registry, prompt lifecycle, golden-set eval gates, guardrails, cost ledger, PII egress control, human-in-the-loop queue, kill switch.</td></tr>
+  </table></div>
+  <div class="callout"><b>A named hazard, accepted knowingly.</b> SPAR and RASP are anagrams. The mitigation recorded in the governance document is that the owner's initial disambiguates them and neither may ever be abbreviated in code, package names, branches or tickets. A reviewer should treat any three-letter form of either as a defect.</div>
+
+  <h3>3.2 The module map</h3>
+  <p>21 API modules serve 24 registered web modules. Route counts are the count of <code>@Get</code>/<code>@Post</code>/<code>@Patch</code> decorators in each module's controllers.</p>
+  <div class="tw"><table class="dense mono-col">
+    <tr><th style="width:16%">Module</th><th style="width:9%">Owner</th><th style="width:17%">Route prefix</th><th style="width:7%">Routes</th><th style="width:7%">Tables</th><th style="width:44%">Substance</th></tr>
+    <tr><td>maintenance</td><td>KILN</td><td><code>/maintenance</code></td><td>53</td><td>23</td><td>Assets, preventive schedules, breakdown requests, downtime, spares consumption, calibration.</td></tr>
+    <tr><td>csp</td><td>MICA</td><td><code>/portal</code></td><td>41</td><td>22</td><td>Customer service portal: tickets, SLA clocks, complaints, warranty, AMC, spares orders.</td></tr>
+    <tr><td>expenditure</td><td>RASP</td><td><code>/expenditure</code></td><td>40</td><td>23</td><td>Budgets, indirect spend, expense claims and their approval policy.</td></tr>
+    <tr><td>administration</td><td>HEXA</td><td><code>/admin</code></td><td>36</td><td>19</td><td>Roles, permissions, segregation of duties, audit browsing, tenant configuration.</td></tr>
+    <tr><td>hrm</td><td>RASP</td><td><code>/hrm</code></td><td>35</td><td>27</td><td>Employees, shifts, rosters, muster, attendance, leave, payroll and Indian statutory outputs.</td></tr>
+    <tr><td>aiops</td><td>ONYX</td><td><code>/aiops</code></td><td>33</td><td>17</td><td>AI router, feature registry, prompt versions, eval runs, cost ledger, kill switch, connectors.</td></tr>
+    <tr><td>planning</td><td>AXLE</td><td><code>/planning</code></td><td>33</td><td>21</td><td>MPS, MRP runs, planned orders, pegging, capacity load, plan exceptions, policies.</td></tr>
+    <tr><td>integration</td><td>HEXA</td><td><code>/integration</code></td><td>32</td><td>16</td><td>External connectors, flows, dead-letter handling, replay.</td></tr>
+    <tr><td>quality</td><td>KILN</td><td><code>/quality</code></td><td>17</td><td>9</td><td>Inspection plans, results, sampling, NCR, CAPA, quality releases.</td></tr>
+    <tr><td>purchase</td><td>SPAR</td><td><code>/purchase/*</code></td><td>15</td><td>5</td><td>Vendor master, purchase orders and lines, GRN, vendor invoice matching.</td></tr>
+    <tr><td>sales</td><td>MICA</td><td><code>/sales</code></td><td>12</td><td>5</td><td>Customer master, sales orders and lines, credit gate, dispatch, GST invoicing.</td></tr>
+    <tr><td>production</td><td>KILN</td><td><code>/production/orders</code></td><td>11</td><td>3</td><td>Work orders, component issue, output confirmation, scrap.</td></tr>
+    <tr><td>engineering</td><td>AXLE</td><td><code>/engineering/boms</code></td><td>8</td><td>3</td><td>Items, BOMs and BOM lines. One active revision per item, enforced by migration 0092.</td></tr>
+    <tr><td>accounts</td><td>RASP</td><td><code>/accounts</code></td><td>8</td><td>7</td><td>Chart of accounts, journal vouchers, trial balance, customer outstanding.</td></tr>
+    <tr><td>dataimport</td><td>HEXA</td><td><code>/dataimport</code></td><td>6</td><td>2</td><td>Spreadsheet/CSV onboarding: upload, sheet selection, column mapping, per-row validation and commit.</td></tr>
+    <tr><td>inventory</td><td>SPAR</td><td><code>/stock/entries</code></td><td>5</td><td>5</td><td>Stock balances, bins, batches, valuation — and <b>the single write path</b> (§3.3).</td></tr>
+    <tr><td>workflow</td><td>HEXA</td><td><code>/workflow</code></td><td>5</td><td>3</td><td>The <code>WorkflowExecutor</code> port and its instances/actions.</td></tr>
+    <tr><td>copilot</td><td>ONYX</td><td><code>/copilot</code></td><td>4</td><td>1</td><td>Grounded question answering over the tenant's own records.</td></tr>
+    <tr><td>platform-health</td><td>HEXA</td><td><code>/platform-health</code></td><td>3</td><td>1</td><td>ACHILES self-assurance checks and their history.</td></tr>
+    <tr><td>general</td><td>HEXA</td><td><code>/general/companies</code></td><td>2</td><td>2</td><td>Company, plant and department masters.</td></tr>
+    <tr><td>managed-services</td><td>—</td><td><code>/managed-services</code></td><td>1</td><td>—</td><td>RELAY managed-service lifecycle presentation.</td></tr>
+  </table></div>
+  <p class="small">Web-only modules with no distinct API prefix: <code>agentos</code>, <code>aicontrol</code>, <code>fulfilment</code> (Phase 2), <code>working-capital</code>. Registry: <code>apps/web/src/modules/registry.ts</code>.</p>
+
+  <h3>3.3 The single write path — the rule that keeps the ledger honest</h3>
+  <p>Stock is the most contended resource in a manufacturing ERP and the easiest to corrupt: five modules have a legitimate reason to move it. XELOR resolves this by giving Inventory sole ownership of the stock tables and forcing every other module through one endpoint.</p>
+  <pre><i>// apps/api/src/modules/inventory/stock.controller.ts</i>
+<b>* THE single write path to stock (DECISIONS-V2 §5.6): POST /api/v1/stock/entries.</b>
+<i>* Owned by Inventory; Production and every other module post here — nothing writes the</i>
+<i>* stock tables directly. Ledger-critical + race-safe inside the service.</i></pre>
+  <p>The rule is realised as the <code>STOCK_POSTER</code> port. Six modules resolve that token and none of them touches a stock table: <b>sales</b> (dispatch), <b>purchase</b> (goods receipt), <b>production</b> (issue and output), <b>quality</b> (release and rejection), <b>maintenance</b> (spares consumption), and <b>inventory</b> itself (the implementation). The endpoint additionally <i>requires</i> an <code>Idempotency-Key</code> header and rejects the request with a field-level validation error if it is absent — a stock movement is the write you least want duplicated by a retried request.</p>
+
+  <h3>3.4 The three chains XELOR actually runs</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:20%">Chain</th><th style="width:52%">Path through the modules</th><th style="width:28%">Where the ledger is touched</th></tr>
+    <tr><td><b>Order to cash</b></td><td>Customer master → sales order + lines → credit gate → reservation → dispatch → GST invoice → receivable → trial balance</td><td>Stock out via <code>STOCK_POSTER</code>; journal via <code>ACCOUNTS_POSTER</code>. Both synchronous.</td></tr>
+    <tr><td><b>Procure to pay</b></td><td>Vendor master → purchase order + lines → goods receipt → inspection gate → vendor invoice match → payable</td><td>Stock in via <code>STOCK_POSTER</code> after the <code>INSPECTION_GATE</code> clears.</td></tr>
+    <tr><td><b>Plan to produce</b></td><td>Item + BOM → MRP run → planned orders + pegging → capacity load → work order release → component issue → output → quality release</td><td>Issue and output both via <code>STOCK_POSTER</code>; the work order never writes stock itself.</td></tr>
+  </table></div>
+
+  <h3>3.5 What XELOR deliberately does not do</h3>
+  <ul>
+    <li><b>It does not decide.</b> XELOR records what people and rules determine. Every recommendation in this product comes from ONYX and is labelled as such.</li>
+    <li><b>It does not hard-delete.</b> There is not a single <code>@Delete</code> route in the entire API (§8). Masters, financial and statutory rows are retired via <code>is_active</code>, never removed.</li>
+    <li><b>It does not reach outside the tenant.</b> No XELOR module opens an outbound connection to a customer's system; that is the connector shelf's job and it is unimplemented (§11.4).</li>
+  </ul>
+
+  <div class="verify no-break">
+    <div class="vh">VERIFY §3</div>
+    <div class="vb"><pre>grep -rl "STOCK_POSTER" apps/api/src/modules   <i># the six consumers</i>
+grep -rc "@Delete(" apps/api/src               <i># expect 0 across the tree</i>
+node -e "…" apps/web/src/modules/registry.ts   <i># 24 registered modules</i></pre></div>
+  </div>
+</section><section class="sec" aria-labelledby="s4">
+  <h2 id="s4"><span class="sn">4</span>Data architecture</h2>
+  <p class="lead">252 tables, 709 indexes, 96 migrations, one database. The conventions below are applied to every tenant-scoped table without exception, and three of them are checked mechanically.</p>
+
+  <h3>4.1 Column conventions</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:22%">Convention</th><th style="width:44%">Rule</th><th style="width:34%">Why it is not negotiable</th></tr>
+    <tr><td>Primary key</td><td>UUIDv7, generated in application code</td><td>Time-ordered, so index locality survives; no round trip to allocate; safe to generate before the transaction.</td></tr>
+    <tr><td>Tenant</td><td><code>tenant_id uuid not null</code> on all 242 tenant-scoped tables; composite indexes lead with it</td><td>An index that does not lead with <code>tenant_id</code> is scanned across tenants before the policy filters it.</td></tr>
+    <tr><td>Provenance</td><td><code>created_at/by</code>, <code>updated_at/by</code></td><td>The audit trail explains a change; these say who last touched the row without a join.</td></tr>
+    <tr><td>Retirement</td><td><code>is_active</code> soft delete. No hard <code>DELETE</code> on masters, financial or statutory rows.</td><td>MCA requires an eight-year audit trail. A deleted row cannot be audited.</td></tr>
+    <tr><td>Money</td><td><code>NUMERIC(18,2)</code></td><td>Float rounding in a tax computation is a compliance defect, not a display bug.</td></tr>
+    <tr><td>Rates and statutes</td><td>Effective-dated masters</td><td>A GST rate change must not rewrite last quarter's invoices.</td></tr>
+  </table></div>
+
+  <h3>4.2 Where the tables live</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:25%">Domain</th><th style="width:10%">Tables</th><th style="width:65%">Notes</th></tr>
+    <tr><td>hrm</td><td>27</td><td>Largest single domain — employee, shift, roster, muster, leave, payroll and statutory outputs.</td></tr>
+    <tr><td>maintenance · expenditure</td><td>23 each</td><td>Asset lifecycle; budget and claim lifecycle.</td></tr>
+    <tr><td>csp</td><td>22</td><td>Ticket, SLA, complaint, warranty, AMC, spares.</td></tr>
+    <tr><td>planning</td><td>21</td><td>MRP run, planned order, pegging, capacity, exceptions.</td></tr>
+    <tr><td>administration · aiops · integration</td><td>19 · 17 · 16</td><td>RBAC and audit; AI governance; connectors and dead letters.</td></tr>
+    <tr><td>agent-os · quality · platform</td><td>11 · 9 · 9</td><td>Agent runs; inspection and NCR/CAPA; outbox, audit log, idempotency, event consumption.</td></tr>
+    <tr><td><b>fulfilment</b></td><td><b>7</b></td><td><b>ONYX's entire schema footprint</b> — mission, step, plan version, action, approval, event, plus numbering.</td></tr>
+    <tr><td>accounts · sales · purchase · inventory</td><td>7 · 5 · 5 · 5</td><td>The financial and transactional core. Deliberately small; the complexity is in the rules, not the tables.</td></tr>
+    <tr><td>production · engineering · workflow · admin</td><td>3 each</td><td>Work order and components; item/BOM/BOM line; workflow instance and actions.</td></tr>
+    <tr><td>general · dataimport · numbering · copilot · platform-health</td><td>2 · 2 · 1 · 1 · 1</td><td>Company/plant; import batch and row; the document counter; copilot log; health checks.</td></tr>
+  </table></div>
+
+  <h3>4.3 The ten global tables</h3>
+  <p>Ten tables carry no <code>tenant_id</code> and are therefore outside RLS. Each is deliberate and each was checked:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:30%">Table</th><th style="width:70%">Why it is global</th></tr>
+    <tr><td><code>tenant</code></td><td>The tenant registry itself. Cannot be tenant-scoped without circularity.</td></tr>
+    <tr><td><code>_migrations</code></td><td>Schema version ledger. Owned by the migrator role, not the application role.</td></tr>
+    <tr><td><code>stat_epf_config</code>, <code>stat_esi_config</code>, <code>stat_gratuity_config</code>, <code>stat_ot_config</code>, <code>stat_pt_slab</code>, <code>stat_tds_config</code>, <code>stat_tds_slab</code>, <code>stat_wage_definition</code></td><td>Indian statutory rate tables — EPF, ESI, gratuity, overtime, professional tax slabs, TDS and its slabs, and deemed-wage definitions. These are <b>law, not tenant data</b>: every tenant is subject to the same slab. Making them tenant-scoped would invite a tenant to edit its own tax rates. They are effective-dated instead.</td></tr>
+  </table></div>
+  <div class="callout good"><b>This is the correct reading of a compliance requirement.</b> "Every statutory number is config, never a constant in code" is satisfied by an effective-dated table; making that table tenant-writable would satisfy the letter and destroy the point. A reviewer should confirm the application role has no write grant on <code>stat_*</code> — <code>pnpm db:perm-check</code> covers grant cataloguing.</div>
+
+  <h3>4.4 Migration discipline</h3>
+  <p>96 forward-only SQL migrations, <code>0000_init.sql</code> through <code>0097_data_import_tenant_parent.sql</code>, applied by <code>pnpm db:migrate</code> as the owner role. The six that constitute ONYX are contiguous and identifiable:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:34%">Migration</th><th style="width:66%">What it adds</th></tr>
+    <tr><td><code>0092_one_active_bom_per_item.sql</code></td><td>Partial unique index guaranteeing a single active BOM revision per item — without it, the mission's BOM explosion double-counts.</td></tr>
+    <tr><td><code>0093_trace_spine.sql</code></td><td>The trace spine that links a mission step to the records it read and wrote.</td></tr>
+    <tr><td><code>0094_fulfilment_mission.sql</code></td><td>The six fulfilment tables and their RLS policies.</td></tr>
+    <tr><td><code>0095_fulfilment_numbering.sql</code></td><td><code>MSN-</code> mission series registered in the platform counter.</td></tr>
+    <tr><td><code>0096_data_import.sql</code> · <code>0097_data_import_tenant_parent.sql</code></td><td>Spreadsheet onboarding batch/row tables and their tenant parentage.</td></tr>
+  </table></div>
+</section><section class="sec" aria-labelledby="s5">
+  <h2 id="s5"><span class="sn">5</span>Multi-tenancy and row-level security</h2>
+  <p class="lead">Tenancy is enforced in the database, by a role that cannot bypass it, on every one of the 242 tenant-scoped tables. This is the control a reviewer should test hardest, because every other isolation claim in the product rests on it.</p>
+
+  <h3>5.1 The two-role model</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:22%">Role</th><th style="width:20%">Used by</th><th style="width:58%">Capability</th></tr>
+    <tr><td><code>indcore_owner</code></td><td>Migrations only</td><td>Owns the schema. Table owners are exempt from RLS unless <code>FORCE</code> is set — which is exactly why <code>FORCE</code> is set on all 242.</td></tr>
+    <tr><td><code>app_user</code></td><td>The running API</td><td><b>NOBYPASSRLS</b>, non-owner. Cannot see a row outside <code>app.current_tenant</code> even with a bug in the query. Bootstrapped by <code>infra/postgres/init/00-init.sql</code>.</td></tr>
+  </table></div>
+  <p>The tenant is carried per-transaction in the <code>app.current_tenant</code> session GUC, set by <code>withTenant()</code>, which opens the transaction. Because the GUC is transaction-scoped, a pooled connection cannot leak a previous request's tenant into the next one.</p>
+
+  <h3>5.2 Coverage — measured, not asserted</h3>
+  <div class="verify no-break">
+    <div class="vh">VERIFY §5.2 — measured 16 Aug 2026 against <code>indcore_p2</code></div>
+    <div class="vb"><pre>pnpm db:rls-check
+<b>RLS check OK — 242 tenant-scoped table(s) fenced
+(FORCE RLS + a policy keying on app.current_tenant).</b>
+
+select count(*) from pg_tables where schemaname='public';                        <b>252</b>
+select count(distinct table_name) from information_schema.columns
+  where table_schema='public' and column_name='tenant_id';                       <b>242</b>
+select count(*) from pg_class where relrowsecurity;                              <b>242</b>
+select count(*) from pg_class where relforcerowsecurity;                         <b>242</b>
+select count(*) from pg_policies where schemaname='public';                      <b>257</b></pre></div>
+  </div>
+  <p>242 of 242 tenant-scoped tables have RLS <b>enabled and forced</b>. There is no partial coverage and no exemption list.</p>
+
+  <h3>5.3 Two policy shapes, and the difference between them</h3>
+  <p>The 257 policies are not identical. 248 use a <code>NULLIF</code>-guarded predicate; 9 do not.</p>
+  <pre><i>-- the guarded form, 248 policies (e.g. sales_order)</i>
+tenant_id = (NULLIF(current_setting('app.current_tenant', true), ''))::uuid
+
+<i>-- the unguarded form, 9 policies (e.g. fulfilment_mission)</i>
+tenant_id = (current_setting('app.current_tenant', true))::uuid</pre>
+  <p>The nine unguarded tables are exactly the newest ones: <code>fulfilment_mission</code>, <code>fulfilment_step</code>, <code>fulfilment_plan_version</code>, <code>fulfilment_action</code>, <code>fulfilment_approval</code>, <code>fulfilment_event</code>, <code>data_import_batch</code>, <code>data_import_row</code>, <code>quality_release</code>.</p>
+
+  <div class="verify no-break">
+    <div class="vh">VERIFY §5.3 — the behavioural difference, measured</div>
+    <div class="vb"><pre><i>-- GUC absent entirely: both shapes fail closed, identically</i>
+select count(*) from sales_order;          <b>0 rows</b>
+select count(*) from fulfilment_mission;   <b>0 rows</b>
+
+<i>-- GUC set to the empty string:</i>
+set app.current_tenant = '';
+select count(*) from sales_order;          <b>0 rows</b>
+select count(*) from fulfilment_mission;   <b>ERROR: invalid input syntax for type uuid: ""</b></pre></div>
+  </div>
+
+  <div class="callout warn"><b>Assessed accurately: this is a robustness defect, not an isolation defect.</b> Neither shape leaks a row. Both fail closed when the tenant is unknown. The difference is that the guarded form returns an empty set and the unguarded form raises a database error, which surfaces as a 500 rather than a clean empty response and puts a Postgres error string into the log. It is worth correcting for uniformity and for log hygiene, and it is <i>not</i> a tenancy hole. Tracked as <b>R-2</b> in §18.</div>
+
+  <h3>5.4 Isolation under test</h3>
+  <p>A dedicated leak probe (<code>packages/db/src/rls/leak-probe.test.ts</code>) exercises cross-tenant reads against a second seeded tenant — <b>Kaveri ElectroFab Industries</b> — which exists in the demo universe for no other purpose than to be the tenant whose rows must never appear. The permission catalogue covers both tenants: 330 catalogue rows, 0 uncatalogued grants.</p>
+
+  <h3>5.5 Performance of the fence</h3>
+  <p>The binding decisions document states that RLS overhead above 15–20% triggers a mandatory design review. Measured on the current dataset:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:34%">Query as</th><th style="width:22%">Warm run 1</th><th style="width:22%">Warm run 2</th><th style="width:22%">Overhead</th></tr>
+    <tr><td><code>indcore_owner</code> (RLS bypassed)</td><td>0.434 ms</td><td>0.460 ms</td><td rowspan="2" style="vertical-align:middle"><b>Inside measurement noise</b></td></tr>
+    <tr><td><code>app_user</code> (FORCE RLS)</td><td>0.450 ms</td><td>0.415 ms</td></tr>
+  </table></div>
+  <div class="callout warn"><b>This number does not generalise and must not be quoted as if it did.</b> It was taken against 6,208 live rows in a 43&nbsp;MB database — a demo dataset. At that volume the planner's work is dominated by fixed costs and the policy predicate is free. The 15–20% criterion is only meaningfully testable at production row counts on production-shaped indexes. <b>The overhead is currently unmeasured at scale</b>, and that is an open item (<b>R-4</b>, §18), not a passed test.</div>
+</section><section class="sec" aria-labelledby="s6">
+  <h2 id="s6"><span class="sn">6</span>Transaction, consistency and eventing model</h2>
+  <p class="lead">The rule that determines whether this system can be trusted with money is a single sentence: <b>ledger-critical writes stay synchronous, in one transaction, and never on the bus.</b> Everything else about the eventing design follows from wanting that to remain true.</p>
+
+  <h3>6.1 What is synchronous, and what is not</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Write</th><th style="width:16%">Mode</th><th style="width:58%">Reasoning</th></tr>
+    <tr><td>Stock movement</td><td><b>Synchronous</b></td><td>Posted through <code>POST /api/v1/stock/entries</code> inside one transaction, race-safe in the service. An eventually-consistent stock balance is a wrong stock balance.</td></tr>
+    <tr><td>Journal posting</td><td><b>Synchronous</b></td><td>Via <code>ACCOUNTS_POSTER</code>. A voucher that posts a second later is a voucher that can post in the wrong period.</td></tr>
+    <tr><td>Document numbering</td><td><b>Synchronous</b></td><td>Inside the caller's transaction (§7), so a failed insert cannot burn a number.</td></tr>
+    <tr><td>Audit entry</td><td><b>Synchronous</b></td><td><code>audit.appendInTx(tx, …)</code> — the chain link is written in the same transaction as the change it describes, or neither happens.</td></tr>
+    <tr><td>Cross-module notification</td><td>Asynchronous</td><td>Transactional outbox. The consumer's work is not part of the producer's correctness.</td></tr>
+    <tr><td>Report rendering, imports, long AI work</td><td>Asynchronous</td><td>BullMQ on Valkey.</td></tr>
+  </table></div>
+
+  <h3>6.2 The transactional outbox</h3>
+  <p><code>outbox_event</code> is written <b>in the same transaction as the domain change</b>, so an event can never describe a change that was rolled back, and a committed change can never fail to produce its event. A relay publishes and stamps <code>published_at</code>; <code>attempts</code> records redelivery.</p>
+  <pre>outbox_event(id, tenant_id, <b>name</b>, payload, created_at, published_at, attempts)
+  <i>name is versioned: module.entity.verb.v1</i>
+  <i>index ix_outbox_unpublished on (tenant_id, created_at)</i></pre>
+  <p>Delivery is at-least-once. It is turned into an exactly-once <i>effect</i> on the consumer side by <code>event_consumption</code>, a dedup ledger with one row per <code>(consumer, event)</code> and a unique key that makes a redelivery a no-op. The guarantee is stated precisely in the schema comment:</p>
+  <pre><i>// Consumer-side dedup ledger for the outbox relay (§5.4). One row per (consumer,</i>
+<i>// event) actually handled; the unique key turns a redelivery into a no-op, so the</i>
+<b>// bus's at-least-once guarantee becomes an exactly-once EFFECT.</b> <i>Append-only.</i></pre>
+
+  <h3>6.3 Request idempotency</h3>
+  <p>Every mutating endpoint accepts an <code>Idempotency-Key</code> header; the stock endpoint <i>requires</i> one. The record is more careful than a bare key check:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Column</th><th style="width:74%">Purpose</th></tr>
+    <tr><td><code>(tenant_id, key)</code> unique</td><td>Scopes the key to the tenant, so two tenants cannot collide.</td></tr>
+    <tr><td><code>fingerprint char(64)</code></td><td>SHA-256 of the request body. A replay with the <i>same</i> key and a <i>different</i> body is a client bug and is rejected, not silently answered from cache.</td></tr>
+    <tr><td><code>status</code>, <code>response_status</code>, <code>response_body</code></td><td>The saved answer, so a retried request returns the original response rather than re-executing.</td></tr>
+  </table></div>
+  <p>ONYX derives its keys deterministically rather than randomly, e.g. <code>fulfil:{missionId}:v{versionNo}:procure:{vendorId}</code>. This is what makes a mission retry (§15) replay the documents already created and raise only the ones that were not — the vendor does not get the order twice.</p>
+
+  <h3>6.4 The transaction-scoping rule engineers must know</h3>
+  <div class="callout"><b><code>withTenant()</code> opens a transaction and cannot be nested.</b> Any code path that reads through <code>withTenant</code>, then calls a port that opens its own transaction, then writes, must be written as three phases — read tx → port call (its own tx) → write tx. This is not a style preference; nesting produces a runtime failure. It is the single most common way to get an ONYX mission step wrong, because the ports are precisely the things that own their own transactions.</div>
+
+  <h3>6.5 Where hard deletes exist — stated precisely</h3>
+  <p>The API exposes <b>zero <code>@Delete</code> routes</b>. There are, however, four <code>tx.delete(...)</code> call sites in the codebase, and honesty about them matters more than the headline:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:30%">Location</th><th style="width:22%">Tables</th><th style="width:48%">Justification</th></tr>
+    <tr><td><code>mission.service.ts</code> — retry</td><td><code>fulfilment_step</code>, <code>fulfilment_approval</code></td><td>A failed step row must be removed because the arc's resume point is a row count; a failed row would make the mission believe that step was done. The failure is written to the event log and the audit trail <i>before</i> the row goes, and the re-run opens with a <code>retrying</code> row carrying the original reason.</td></tr>
+    <tr><td><code>mission.service.ts</code> — demo reset</td><td>All six <code>fulfilment_*</code></td><td>Clears mission telemetry only, and refuses to run at all if the database holds any tenant outside the demo universe (<code>NOT_A_DEMO_DATABASE</code>, HTTP 403). It does <b>not</b> delete the purchase orders or work orders those missions created — they are real ERP documents.</td></tr>
+  </table></div>
+  <p>No master, financial or statutory row is hard-deleted anywhere. The deletions are confined to ONYX's own execution telemetry.</p>
+</section><section class="sec" aria-labelledby="s7">
+  <h2 id="s7"><span class="sn">7</span>Document numbering and statutory constraints</h2>
+  <p class="lead">Fifteen call sites across six modules once built document numbers from a uuid fragment — <code>SO-358FA43E8CC9</code>. It was unique and it sorted, so nothing failed. It was still wrong, and the reasoning behind replacing it is a good measure of how this codebase treats compliance.</p>
+
+  <div class="tw"><table class="dense">
+    <tr><th style="width:28%">Problem with a uuid fragment</th><th style="width:72%">Consequence</th></tr>
+    <tr><td><b>A tax invoice number is regulated</b></td><td>CGST Rule 46(b) requires a <i>consecutive</i> serial number, not exceeding sixteen characters, unique for a financial year. A uuid fragment is unique and sixteen characters and is <b>not consecutive</b> — so the series was not compliant. This is the one number in the system where correctness is a legal question rather than a matter of taste.</td></tr>
+    <tr><td><b>A document number is read aloud</b></td><td>A storekeeper quotes a GRN number over a telephone; a customer quotes an invoice number in an email. <code>GRN-345C75F7FBFA</code> cannot be dictated without spelling it, or checked by eye against a printed challan.</td></tr>
+    <tr><td><b>It carries no year</b></td><td><code>SO-2627-00014</code> states which financial year's series it belongs to. The uuid form says nothing, so a register cannot be reconciled by reading it.</td></tr>
+  </table></div>
+
+  <h3>7.1 How gaplessness is achieved</h3>
+  <p>One counter row per <code>(tenant, doc type, financial year)</code>. Allocation is a single <code>UPDATE … RETURNING</code>, which takes a row lock held for the rest of the caller's transaction.</p>
+  <ul>
+    <li>Two clerks saving in the same millisecond <b>serialise on that row</b> and receive consecutive numbers.</li>
+    <li>Because the increment is inside the caller's transaction, a document that fails to insert <b>does not burn a number</b> that would then be missing from the series for ever.</li>
+    <li><b>A sequence would not give this.</b> PostgreSQL sequences are explicitly non-transactional; a rolled-back insert leaves a gap. Gaplessness is the requirement, so the slower design is the correct one.</li>
+  </ul>
+  <div class="callout"><b>Deliberate exceptions.</b> CSP (<code>csp_document_series</code>) and EXPENDITURE keep their own equivalent counters rather than sharing the platform table. A reviewer should confirm those two implement the same in-transaction locking discipline — three counters that behave differently is a worse outcome than one that is slightly duplicated.</div>
+
+  <h3>7.2 Other statutory facts held as configuration</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Area</th><th style="width:74%">Treatment</th></tr>
+    <tr><td>GST</td><td>Effective-dated rate masters, including the 1 Aug 2026 Ship-to-GSTIN requirement. Two GSTINs are seeded in the demo universe (Pune-Chakan <code>27AABCT1234F1Z5</code>, Coimbatore <code>33AABCT1234F1Z9</code>) so that interstate/intrastate determination is genuinely exercised.</td></tr>
+    <tr><td>Payroll</td><td>EPF, ESI, gratuity, overtime, professional tax slabs, TDS and slabs, deemed-wage definitions — eight global effective-dated tables (§4.3).</td></tr>
+    <tr><td>Audit retention</td><td>MCA eight-year trail. Enforced by append-only, not by policy (§10).</td></tr>
+    <tr><td>Data protection</td><td>DPDP and CERT-In obligations recorded in the binding decisions document; PII egress control sits in the AI router's remit.</td></tr>
+  </table></div>
+</section><section class="sec" aria-labelledby="s8">
+  <h2 id="s8"><span class="sn">8</span>API contract</h2>
+  <p class="lead">449 route decorators across 32 controllers, and the shape of every one of them is fixed by convention rather than by the taste of whoever wrote it.</p>
+
+  <div class="kpi">
+    <div><b>234</b>POST routes</div>
+    <div><b>190</b>GET routes</div>
+    <div><b>25</b>PATCH routes</div>
+    <div><b>0</b>DELETE routes — by design</div>
+  </div>
+
+  <h3>8.1 The canonical error envelope</h3>
+  <pre>{ "error": { "code": "VALIDATION_FAILED",          <i>// stable, SCREAMING_SNAKE</i>
+             "message": "Request failed validation.",
+             "details": [ { "field": "gstin",
+                            "message": "'BADGSTINSOY4FM9' is not a valid GSTIN" } ],
+             "traceId": "efc753b2-aa71-4528-8427-…" } }</pre>
+  <p>The <code>details</code> array is field-level and is carried all the way to the surface — a spreadsheet import that fails reports <i>which cell</i> and <i>why</i>, not "Request failed validation." <code>AppError</code> in <code>packages/platform/src/errors/error-envelope.ts</code> is the only thing that produces this shape, and common constructors (<code>Errors.validation</code>, <code>Errors.notFound</code>, …) exist so that codes stay consistent across modules.</p>
+
+  <h3>8.2 Pagination</h3>
+  <p>Keyset cursors only. Offset pagination is rejected on two grounds recorded in <code>pagination.ts</code>: it <i>drifts under concurrent inserts</i> and it <i>scans linearly</i>. The cursor is an opaque encoding of <code>(createdAt ISO, id)</code>. Every list endpoint caps <code>limit</code> at <b>100</b>, e.g. <code>Math.min(Number(limit ?? 25) || 25, 100)</code>.</p>
+  <div class="callout warn"><b>A trap for integrators, worth documenting for the reviewer.</b> List envelopes are not uniform across the whole API — some collections return <code>{ items: [...] }</code> and others <code>{ data: [...] }</code>. Any client written against one shape will silently read <code>undefined</code> from the other. Tracked as <b>R-3</b> in §18.</div>
+
+  <h3>8.3 Versioning and eventing names</h3>
+  <p>HTTP is served under <code>/api/v1</code>. Events are versioned independently as <code>module.entity.verb.v1</code>, so an event contract can advance without a breaking HTTP change and vice versa.</p>
+
+  <h3>8.4 Authorisation is declared on the route</h3>
+  <p>Every route carries a <code>@RequirePermission("…")</code> decorator. The permission proof asserts that this is exhaustive in both directions:</p>
+  <div class="verify no-break">
+    <div class="vh">VERIFY §8.4 — measured 16 Aug 2026</div>
+    <div class="vb"><pre>pnpm db:perm-check
+<b>routes demand 165 permission(s); registry declares 165.
+catalogue covers 2 tenant(s); 330 catalogue row(s); 0 uncatalogued grant(s).
+Permission check OK — 165 permissions; every route's demand is registered,
+every registered permission is enforced, every grant is catalogued.</b></pre></div>
+  </div>
+  <p>Both directions matter. "Every route's demand is registered" stops a route requiring a permission nobody can hold. "Every registered permission is enforced" stops a permission existing that no route consults — which is how a role appears to restrict something it does not.</p>
+</section><section class="sec" aria-labelledby="s9">
+  <h2 id="s9"><span class="sn">9</span>Identity and authorisation</h2>
+
+  <h3>9.1 Authentication</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:24%">Path</th><th style="width:22%">Mechanism</th><th style="width:54%">Notes</th></tr>
+    <tr><td>Normal</td><td>Keycloak 26 OIDC</td><td>Realm <code>indcore</code>, custom login theme under <code>infra/keycloak-themes/</code>. Token carries subject and tenant.</td></tr>
+    <tr><td>Public demo</td><td>Static header</td><td><code>API_PUBLIC_DEMO=true</code> plus header <code>x-xelor-public-demo: investor-presentation</code> resolves to a fixed administrator context. Personas (<code>hari</code>, …) select among fixed contexts; <b>they are not an authentication mechanism</b> and the code says so.</td></tr>
+  </table></div>
+
+  <div class="callout bad"><b>The blast radius of the demo bypass, stated plainly.</b> When <code>API_PUBLIC_DEMO=true</code>, a static string in a header <i>is</i> a signed-in administrator. There is no secret, no expiry and no revocation. The controls that make this acceptable are: (a) it is off unless the environment variable is explicitly set; (b) <code>tenant.middleware.ts</code> pins the context to the two demo tenant ids; (c) the demo-reset endpoint independently refuses to run against a database containing any tenant outside that set. <b>The invariant a reviewer must hold the team to is that this flag never runs in front of real customer data.</b> It is currently guarded by convention and by the tenant pin — not by a mechanism that could not be misconfigured. Tracked as <b>R-1</b> in §18.</div>
+
+  <h3>9.2 Authorisation</h3>
+  <p>165 permissions, role-based, catalogued per tenant. 169 navigation permissions gate what the web application even offers. The web app holds a permission list; the API holds the enforcement. These are separate on purpose — the UI hiding a button is a courtesy, the API refusing the call is the control.</p>
+  <div class="callout warn"><b>A real defect this separation caused, and what it teaches.</b> A "New work order" button never rendered in public-demo mode because the hardcoded demo permission list omitted <code>production.order.create</code> — while the API allowed the call throughout. The failure was in the courtesy layer, not the control layer, which is the correct way round for such a bug to happen; but it demonstrates that the two lists can drift. The <code>module-check</code> gate now asserts all 169 nav permissions are platform-defined.</div>
+
+  <h3>9.3 Segregation of duties</h3>
+  <p>The administration module carries an explicit segregation-of-duties surface (<code>/admin</code>, 36 routes) rather than treating conflicting-role detection as a reporting afterthought. Approval authority in ONYX is separate again, expressed as autonomy tiers (§13.3).</p>
+</section><section class="sec" aria-labelledby="s10">
+  <h2 id="s10"><span class="sn">10</span>Audit, evidence and tamper-evidence</h2>
+  <p class="lead">The audit trail is not a log. It is a per-tenant hash chain protected by two independent mechanisms, and it is the artefact that makes every other claim in this product checkable after the fact.</p>
+
+  <h3>10.1 The chain</h3>
+  <pre>entryHash = sha256( prevHash || "\n" || canonical(entry) )
+
+<i>canonical()  — deterministic JSON, object keys sorted recursively, so the hash is stable</i>
+<i>seq          — per-tenant monotonic sequence: the chain order, independent of wall-clock</i>
+<i>genesis      — seq 0 has no predecessor</i></pre>
+  <p>Editing any historical row without recomputing every row after it breaks the chain, and a verify job re-walks it. <code>ai_action_log</code> chains identically through the same <code>chainHash</code> primitive — one implementation, because two chains eventually disagree.</p>
+
+  <h3>10.2 Two independent enforcement mechanisms — both proved live</h3>
+  <div class="verify no-break">
+    <div class="vh">VERIFY §10.2 — executed against <code>indcore_p2</code>, 16 Aug 2026</div>
+    <div class="vb"><pre><i>-- 1. the application role has no grant at all</i>
+<b>app_user</b>&gt; delete from audit_log where seq = 1;
+<b>ERROR:  permission denied for table audit_log</b>
+
+<i>-- 2. the schema owner has the grant, and still meets the trigger</i>
+<b>indcore_owner</b>&gt; delete from audit_log where seq = 1;
+<b>ERROR:  audit_log is append-only (MCA Rule 11(g)); DELETE is forbidden</b>
+CONTEXT:  PL/pgSQL function audit_log_append_only() line 6 at RAISE
+
+<b>indcore_owner</b>&gt; update audit_log set action = 'tampered' where seq = 1;
+<b>ERROR:  audit_log is append-only (MCA Rule 11(g)); UPDATE is forbidden</b></pre></div>
+  </div>
+  <p>From <code>0000_init.sql</code>: a <code>BEFORE UPDATE OR DELETE</code> trigger raises, and — described in the migration as "belt-and-braces" — <code>REVOKE UPDATE, DELETE ON audit_log FROM app_user</code>. Defeating the audit trail requires defeating both, as the schema owner, from inside the database.</p>
+
+  <h3>10.3 What is recorded</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Column</th><th style="width:74%">Content</th></tr>
+    <tr><td><code>actor_id</code></td><td>Who. Never null — a system action carries the system actor, not an absence.</td></tr>
+    <tr><td><code>action</code></td><td>Dotted verb, e.g. <code>fulfilment.demo.reset</code>.</td></tr>
+    <tr><td><code>entity_type</code>, <code>entity_id</code></td><td>What was touched.</td></tr>
+    <tr><td><code>data</code> jsonb</td><td>The field-level change set, produced by <code>change-set.ts</code> with deterministic stringification so the hash is reproducible.</td></tr>
+    <tr><td><code>prev_hash</code>, <code>hash</code></td><td>char(64) each — the tamper-evidence.</td></tr>
+  </table></div>
+  <p>406 audit entries exist in the current demo database, written by ordinary operation rather than by a seeding routine.</p>
+</section><section class="sec" aria-labelledby="s11">
+  <h2 id="s11"><span class="sn">11</span>ONYX — the intelligence layer (Phase 2)</h2>
+  <p class="lead">ONYX adds 21 API files, 19 platform files, 6 migrations and 7 tables. It adds no table to any XELOR domain, no column to any XELOR table, and no import of any XELOR module. That constraint is the design, and it is what makes the layer portable to an ERP that is not XELOR.</p>
+
+  <h3>11.1 The architectural rule</h3>
+  <div class="callout good"><b>ONYX reaches XELOR only through injected port tokens.</b> <code>apps/api/src/fulfilment/</code> must never import <code>modules/purchase</code> or <code>modules/production</code>. It resolves <code>PURCHASE_ORDER_WRITER</code> and <code>PRODUCTION_ORDER_WRITER</code> — Symbol tokens whose implementations are provided by the owning modules. The consequence is that the same intelligence layer can be pointed at a different implementation of those ports without touching a line of mission code, which is precisely the claim that ONYX can sit on somebody else's ERP.</div>
+
+  <h3>11.2 The fifteen ports</h3>
+  <div class="tw"><table class="dense mono-col">
+    <tr><th style="width:27%">Token</th><th style="width:20%">Declared in</th><th style="width:53%">Contract</th></tr>
+    <tr><td><code>STOCK_POSTER</code></td><td><code>stock.port.ts</code></td><td>The single stock write path. Six XELOR modules and ONYX all go through it.</td></tr>
+    <tr><td><code>ACCOUNTS_POSTER</code></td><td><code>accounts.port.ts</code></td><td>Sales invoice raising, journal posting, customer outstanding.</td></tr>
+    <tr><td><code>ITEM_PROVIDER</code>, <code>BOM_PROVIDER</code></td><td><code>item.port.ts</code>, <code>bom.port.ts</code></td><td>Item specs and released BOM structure.</td></tr>
+    <tr><td><code>INSPECTION_GATE</code></td><td><code>inspection.port.ts</code></td><td>Request inspection; read gate status. Goods receipt waits on it.</td></tr>
+    <tr><td><code>BIOMETRIC_DEVICE</code></td><td><code>biometric.port.ts</code></td><td>Attendance punches from a device.</td></tr>
+    <tr><td><code>WORKFLOW_EXECUTOR</code></td><td><code>workflow.port.ts</code></td><td>The workflow engine behind a port so the engine itself can be replaced.</td></tr>
+    <tr><td><code>DEMAND_SOURCE</code>, <code>STOCK_READER</code>, <code>BOM_GRAPH</code>, <code>PURCHASE_SUPPLY</code>, <code>PRODUCTION_SUPPLY</code>, <code>PRODUCTION_ORDER_CREATOR</code></td><td><code>planning-inputs.port.ts</code></td><td>The six read/write contracts MRP needs, so Planning depends on interfaces rather than on five sibling modules.</td></tr>
+    <tr><td><b><code>PURCHASE_ORDER_WRITER</code></b></td><td rowspan="2"><code>fulfilment-docs.port.ts</code></td><td><b>ONYX → XELOR write.</b> One PO per vendor, enforced by the input shape rather than by discipline. PURCHASE numbers and approves its own documents.</td></tr>
+    <tr><td><b><code>PRODUCTION_ORDER_WRITER</code></b></td><td><b>ONYX → XELOR write.</b> PRODUCTION owns the release; the work order is pegged to the sales order line it was raised for.</td></tr>
+  </table></div>
+
+  <h3>11.3 Where ONYX gets its facts — nine connected, two stood in for, eight not connected</h3>
+  <p>The source registry (<code>packages/platform/src/intelligence/sources.ts</code>) is served to the UI at <code>GET /fulfilment/sources</code>. It is unusually candid and that candour is load-bearing.</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:9%">Status</th><th style="width:22%">Source</th><th style="width:26%">Tables read</th><th style="width:43%">Supplies</th></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Sales · Orders</td><td><code>sales_order</code>, <code>sales_order_line</code></td><td>The commitment: what, how many, at what rate, promised when. Written back via <code>reserved_qty</code>.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Sales · Customers</td><td><code>customer</code></td><td>Who the promise is to — the name on every approval brief.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Engineering · Items</td><td><code>item</code></td><td>Part numbers and UoM, so a shortage is a part and not a uuid.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Engineering · BOM</td><td><code>bom</code>, <code>bom_line</code></td><td>Released structure. One active revision per item, so the explosion cannot double-count.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Inventory · Stock</td><td><code>stock_balance</code></td><td>On-hand per item — the number the shortage is netted against.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Purchase · Vendors</td><td><code>vendor</code></td><td>Which suppliers exist. A plan naming an absent vendor stops the mission.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Purchase · Orders</td><td><code>purchase_order</code>, <code>purchase_order_line</code></td><td>Documents the mission raises — read back afterwards to prove they exist.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Production · Work orders</td><td><code>production_order</code></td><td>The job on the shop-floor list, pegged to its sales order line.</td></tr>
+    <tr><td><span class="tag live">LIVE</span></td><td>Planning · Runs &amp; problems</td><td><code>mrp_run</code>, <code>planned_order</code>, <code>plan_exception</code>, <code>plan_capacity_load</code></td><td><b>Nothing, deliberately.</b> The mission nets its own requirement per commitment; a plan run nets the whole factory. Recorded as an explicit non-integration rather than left to look like one.</td></tr>
+    <tr><td><span class="tag stand">STAND-IN</span></td><td>Supplier commercial terms</td><td>Seeded table <code>SEEDED_SOURCING</code></td><td>Unit price, lead time, on-time reliability, capacity — the four numbers the strategy comparison turns on. Surfaced with provenance <code>"seeded"</code> on every step that uses it; overridable per mission by uploading a spreadsheet.</td></tr>
+    <tr><td><span class="tag stand">STAND-IN</span></td><td>Work-centre load</td><td>Constant <code>SEEDED_FACTORY.capacityHeadroom</code></td><td>How much of the constraining work centre this batch can have. <b>No MES or SCADA is connected to this build.</b></td></tr>
+    <tr><td colspan="4" style="background:#f0f1f4"><span class="tag off">NOT CONNECTED</span> <b>SAP</b> (ECC/S4 via OData) · <b>Tally</b> · <b>Odoo</b> (JSON-RPC) · <b>Dynamics 365</b> (Dataverse) · <b>MES/SCADA</b> · <b>Excel/CSV</b> · <b>REST API</b> · <b>read-only database replica</b> — eight connectors, every one <code>connected: false</code>, shown on screen because "ONYX can sit on your existing systems" is a real product claim, and carrying no green light because a demo implying a live SAP connection would make every true thing beside it worthless.</td></tr>
+  </table></div>
+
+  <h3>11.4 ONYX's own schema</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Table</th><th style="width:74%">Holds</th></tr>
+    <tr><td><code>fulfilment_mission</code></td><td>One mission per sales order. Status, stage, autonomy tier, promised/forecast dates, confidence, margin, waiting reason, outcome.</td></tr>
+    <tr><td><code>fulfilment_step</code></td><td>One row per executed arc step: narration, evidence, findings, confidence, timing, pipeline. The resume point is a row count.</td></tr>
+    <tr><td><code>fulfilment_plan_version</code></td><td>Every plan considered, including superseded ones and <i>why</i> they were superseded.</td></tr>
+    <tr><td><code>fulfilment_action</code></td><td>Proposed → approved → executed → verified. Carries <code>digest</code>, <code>precondition</code>, <code>idempotency_key</code>, <code>autonomy_tier</code>, <code>approval_id</code>.</td></tr>
+    <tr><td><code>fulfilment_approval</code></td><td>The human decision, its brief, and the note the person wrote.</td></tr>
+    <tr><td><code>fulfilment_event</code></td><td>Everything that happened to the mission, with a CHECK-constrained <code>disposition</code> vocabulary.</td></tr>
+  </table></div>
+</section><section class="sec" aria-labelledby="s12">
+  <h2 id="s12"><span class="sn">12</span>The mission arc</h2>
+  <p class="lead">A mission is thirteen named steps grouped into six chapters. The arc is declared once, as data, in <code>mission.service.ts</code>; the chapter of each step is derived from that declaration so the two cannot disagree.</p>
+
+  <div class="tw"><table class="dense">
+    <tr><th style="width:6%">#</th><th style="width:13%">Step</th><th style="width:15%">Chapter</th><th style="width:9%">Agent</th><th style="width:9%">Kind</th><th style="width:48%">Question it answers</th></tr>
+    <tr><td>1</td><td><code>intake</code></td><td>Understand the promise</td><td>ONYX</td><td>observe</td><td>What exactly has been promised, and by when?</td></tr>
+    <tr><td>2</td><td><code>engineering</code></td><td rowspan="4" style="vertical-align:middle">Find out what is true</td><td>AXLE</td><td>observe</td><td>Is a released BOM in force for this product?</td></tr>
+    <tr><td>3</td><td><code>materials</code></td><td>SPAR</td><td>observe</td><td>What is short, after on-hand and inbound?</td></tr>
+    <tr><td>4</td><td><code>capacity</code></td><td>AXLE</td><td>observe</td><td>Can the floor absorb this batch on the promised date?</td></tr>
+    <tr><td>5</td><td><code>sourcing</code></td><td>SPAR</td><td>observe</td><td>Who is qualified to close the gap, and on what terms?</td></tr>
+    <tr><td>6</td><td><code>strategy</code></td><td rowspan="2" style="vertical-align:middle">Choose a way through</td><td>ONYX</td><td>plan</td><td>Which feasible strategy best serves the commitment?</td></tr>
+    <tr><td>7</td><td><code>critique</code></td><td>HEXA</td><td>critique</td><td>Does the evidence support what this plan claims?</td></tr>
+    <tr><td>8</td><td><code>authorize</code></td><td>Ask, or proceed</td><td>HEXA</td><td>authorize</td><td>Is this inside the mission's authority?</td></tr>
+    <tr><td>9</td><td><code>reserve</code></td><td rowspan="3" style="vertical-align:middle">Do it, and check it worked</td><td>SPAR</td><td>act</td><td>— reserves available stock against the order line</td></tr>
+    <tr><td>10</td><td><code>procure</code></td><td>SPAR</td><td>act</td><td>— raises the purchase orders through the port</td></tr>
+    <tr><td>11</td><td><code>workorder</code></td><td>KILN</td><td>act</td><td>— releases the work order through the port</td></tr>
+    <tr><td>12</td><td><code>watch</code></td><td rowspan="2" style="vertical-align:middle">Prove the outcome</td><td>ONYX</td><td>wait</td><td>— dormant until something it depends on changes</td></tr>
+    <tr><td>13</td><td><code>close</code></td><td>HEXA</td><td>close</td><td>Was the commitment actually met?</td></tr>
+  </table></div>
+
+  <h3>12.1 The proposer never grades itself</h3>
+  <p>Step 6 (ONYX) produces the plan; step 7 (HEXA) re-derives its numbers from the evidence independently. The engine interface makes this structural rather than procedural — <code>verify(chosen, evidence)</code> is a separate method with the comment "<i>The proposer never grades itself</i>". Two of the planner's tests exist solely to prove the critic bites: <i>"the critic recomputes the date instead of believing the plan"</i> and <i>"the critic catches a plan that does not cover the shortage"</i>.</p>
+
+  <h3>12.2 Waiting is a real state, not a pause</h3>
+  <p>Step 12 puts the mission in status <code>waiting</code>, stage <code>monitoring</code>, and <code>advance()</code> refuses to move it:</p>
+  <pre><i>// Waiting is a durable state, not a decorative step on the way to a fabricated</i>
+<i>// closure. A supplier/production/quality/dispatch event must wake the mission; an SSE</i>
+<b>// loop is not an event and may not advance it merely because the browser stayed open.</b></pre>
+  <p>Step 13 similarly refuses to write a close row when the downstream gate is not satisfied — because writing a "waiting" close row would mark the step done, and resume is row-based. The mission parks and says why. In the demo world, all eight runnable scenarios terminate at step 12 in <code>waiting</code>/<code>monitoring</code>; this is correct behaviour and not an incomplete run.</p>
+
+  <h3>12.3 Rejection is a real answer</h3>
+  <p>A person facing the approval has three responses, all of which are terminal states the system handles: <b>approve</b>, <b>try another plan</b> (the refused strategy is scored out of contention and <i>stays in the list</i>, because deleting it would make the next plan look as though it never considered the obvious option), and <b>stop</b>. A rejection fails the mission and commits nothing — verified by counting purchase orders across a rejection: 75 before, 75 after.</p>
+</section><section class="sec" aria-labelledby="s13">
+  <h2 id="s13"><span class="sn">13</span>ONYX's decision engine — determinism</h2>
+  <p class="lead">The governing sentence is "AI explains, never decides." In this build it is stronger than that: for the fulfilment mission, AI does not even explain in the sense of generating text — the engine is deterministic arithmetic, and the only method a language model could own is isolated behind a single interface method that is not currently model-backed.</p>
+
+  <h3>13.1 The engine interface</h3>
+  <pre>export interface IntelligenceEngine {
+  readonly name: string;
+  readonly kind: <b>"deterministic" | "model"</b>;    <i>// declared, and shown on screen</i>
+
+  assess(evidence)              <i>// what is true right now</i>
+  recommend(evidence, refused?) <i>// compare the ways through and pick one</i>
+  verify(chosen, evidence)      <i>// re-derive. The proposer never grades itself.</i>
+  <b>explain(request)</b>               <i>// "This method — and only this one — a model could own."</i>
+  confidence(chosen)            <i>// how sure, and why</i>
+}</pre>
+  <p>The shipped implementation is <code>DeterministicEngine</code>. No file under <code>packages/platform/src/intelligence/</code> contains an outbound HTTP call, an SDK import, or an API key reference. There is no network dependency in the decision path, which is why the demo runs fully offline and why the same evidence produces the same plan on any machine.</p>
+
+  <h3>13.2 Determinism, asserted as a test</h3>
+  <p>The planner's 19 behavioural tests are written as claims about the world rather than about the code. The last one is the guarantee itself:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:50%">Test</th><th style="width:50%">What it forbids</th></tr>
+    <tr><td><i>the same evidence always produces the same plan, byte for byte</i></td><td>Any nondeterminism — clock, randomness, map ordering, model sampling.</td></tr>
+    <tr><td><i>SHORTEN THE RUNWAY AND THE PLAN CHANGES SUPPLIER — same code, different world</i></td><td>A hardcoded answer masquerading as a decision.</td></tr>
+    <tr><td><i>REMOVE THE SHORTAGE AND IT STOPS BUYING ALTOGETHER</i></td><td>Buying as a default rather than a conclusion.</td></tr>
+    <tr><td><i>DISQUALIFY THE CHEAP VENDOR AND IT IS NOT USED, however good the price</i></td><td>Price overriding qualification.</td></tr>
+    <tr><td><i>when nothing is feasible it escalates rather than picking the least bad</i></td><td>A confident answer where there is no good one.</td></tr>
+    <tr><td><i>every narrated sentence carries a checkable number</i></td><td>Unfalsifiable narration.</td></tr>
+    <tr><td><i>the comparison sentence names the runner-up — proof a choice was made</i></td><td>Presenting one option as if it were a comparison.</td></tr>
+  </table></div>
+
+  <h3>13.3 Autonomy tiers — authority as configuration</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:8%">Tier</th><th style="width:18%">Name</th><th style="width:16%">Expedite limit</th><th style="width:58%">Behaviour</th></tr>
+    <tr><td><b>A2</b></td><td>Suggest only</td><td>₹0</td><td>Plans and explains, then waits for a person before committing anything — <b>including a stock reservation</b>, because reserving inventory for one customer changes what every other order can promise.</td></tr>
+    <tr><td><b>A3</b></td><td>Act within limits</td><td>₹20,000</td><td>Takes routine reversible actions alone; asks before material commercial commitments.</td></tr>
+    <tr><td><b>A4</b></td><td>Act and notify</td><td>₹5,00,000</td><td>Commits up to ₹5 lakh of premium alone, and tells you afterwards.</td></tr>
+  </table></div>
+  <div class="callout"><b>A design detail worth noticing.</b> A2 is not "A3 with a zero limit". The cheapest plan's premium is zero by definition, so a <code>premium &gt; limit</code> test would wave it straight through — which is what happened before a separate <code>requireApprovalForAnyCommitment</code> flag was introduced. Two tests exist purely to keep that fixed: <i>"SUGGEST-ONLY asks even when the premium is zero — a zero limit could not express this"</i> and <i>"suggest-only asks before reserving stock even when there is nothing to buy"</i>.</div>
+
+  <h3>13.4 And where a model <i>is</i> used, it is a different subsystem</h3>
+  <p>The AI Operations module (ONYX, 33 routes, 17 tables) governs a provider-agnostic router with a closed feature registry, prompt lifecycle, cost ledger, PII egress control and a kill switch. Two CI gates apply:</p>
+  <ul>
+    <li><b>The F1 gate</b> (<code>pnpm eval general.master_dedup</code>) grades the <i>detector</i> — does it find the duplicates.</li>
+    <li><b>The grounding gate</b> (<code>ai-grounding.ts</code>) grades the <i>explanation</i>. It exists because a local 3B model was measured <b>inventing an identifier and reversing a conclusion</b>. Its three rules: every conclusion must match the code-decided expectation, so the model cannot move it; no note may contain a value absent from the evidence; no note may contradict its own headline. It exits 1 on any violation, so CI can block a provider that is not safe to ship.</li>
+  </ul>
+  <div class="callout good"><b>This is the correct shape for AI governance.</b> The code decides; the model is permitted to phrase; and a gate checks the phrasing against the evidence and fails the build. Both gates run in CI job 1 under <code>pnpm ai:eval</code>, against whatever <code>AI_PROVIDER</code> is configured — <code>stub</code> (offline) or <code>ollama</code> (local).</div>
+</section><section class="sec" aria-labelledby="s14">
+  <h2 id="s14"><span class="sn">14</span>The AI module — providers, models and governance</h2>
+  <p class="lead">This section answers the question a reviewer always asks and a demo rarely answers straight: <b>what, exactly, is the AI?</b> Is there a model? Whose? Running where? What happens when it is wrong, or slow, or off? The honest answer has three parts, and they are different from each other.</p>
+
+  <div class="callout violet"><b>The three things called "AI" in this product, kept apart.</b>
+  <div class="tw"><table class="dense" style="margin:6px 0 0">
+    <tr><th style="width:22%">Name</th><th style="width:20%">Is it a model?</th><th style="width:58%">What it actually is</th></tr>
+    <tr><td><b>The ONYX decision engine</b><br><span class="small">§13, fulfilment missions</span></td><td><b>No. None.</b></td><td>Deterministic arithmetic and rules. No network call, no SDK, no key, no sampling. The same evidence produces the same plan byte for byte. <i>This is what drives the investor demo.</i></td></tr>
+    <tr><td><b>The AI module</b><br><span class="small">this section</span></td><td><b>Optionally, locally</b></td><td>A provider-agnostic router in front of a closed registry — the canonical 8 features, plus one in evaluation and one explicit "no AI here" entry (§14.5). The bound provider is either an offline deterministic stub or a model running on the plant's own machine via Ollama.</td></tr>
+    <tr><td><b>ONYX the agent</b><br><span class="small">§12, mission arc</span></td><td><b>No</b></td><td>A label on 3 of the 13 arc steps, distinguishing the coordinating role from AXLE, SPAR, KILN and HEXA. An agent here is a named responsibility, not a process and not a model.</td></tr>
+  </table></div></div>
+
+  <h3>14.1 Is it connected through an API, an LLM, or Ollama?</h3>
+  <p><b>Ollama, locally — or nothing at all. No hosted AI API is wired into this build.</b> Exactly two providers implement the <code>AiProvider</code> interface, and <code>AI_PROVIDER</code> selects between them:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:16%">Provider</th><th style="width:14%">Model?</th><th style="width:16%">Network</th><th style="width:54%">Behaviour</th></tr>
+    <tr><td><code>stub</code><br><span class="small">StubProvider</span></td><td>None</td><td><b>None</b></td><td>Named <code>stub-deterministic</code>. Returns the shape a real model would return, computed by rules. <b>Zero model spend</b>, so the entire product — and every test — runs with no model present. This is the default in development and in the demo.</td></tr>
+    <tr><td><code>ollama</code><br><span class="small">OllamaProvider</span></td><td><b>Yes, local</b></td><td>HTTP to <code>127.0.0.1</code> only</td><td>Posts to <code>{OLLAMA_BASE_URL}/api/chat</code>, default <code>http://127.0.0.1:11434</code>. Default model <code>qwen2.5:3b</code>. <code>temperature: 0.1</code>, <code>stream: false</code>, 20-second <code>AbortSignal.timeout</code>. Falls back to the stub on any failure.</td></tr>
+  </table></div>
+  <p><code>apps/api/package.json</code> declares no hosted-AI SDK — no OpenAI, Anthropic, Azure, Bedrock or Vertex client is in the dependency tree, and there is no API-key environment variable for one. The only occurrences of those vendor names in the AI path are code comments naming them as future options, and one baseline identifier string (<code>azure_doc_intelligence_prebuilt_invoice</code>, §14.5). Across both providers there is exactly <b>one</b> <code>fetch()</code> call site in the entire AI module. Adding a hosted provider is deliberately a <b>one-line binding change in <code>AiModule</code></b> — the router, the governance, the budget and the hash-chained log are identical whichever provider is bound.</p>
+
+  <h3>14.2 Configuration surface</h3>
+  <div class="tw"><table class="dense mono-col">
+    <tr><th style="width:32%">Variable</th><th style="width:22%">Default</th><th style="width:46%">Effect</th></tr>
+    <tr><td><code>AI_PROVIDER</code></td><td><code>stub</code></td><td><code>stub</code> = offline and deterministic; <code>ollama</code> = local model.</td></tr>
+    <tr><td><code>OLLAMA_BASE_URL</code></td><td><code>http://127.0.0.1:11434</code></td><td>Loopback by default — nothing leaves the machine unless this is deliberately repointed.</td></tr>
+    <tr><td><code>OLLAMA_MODEL</code></td><td><code>qwen2.5:3b</code></td><td>The <code>small</code> tier model.</td></tr>
+    <tr><td><code>OLLAMA_MODEL_PREMIUM</code></td><td>falls back to <code>OLLAMA_MODEL</code></td><td>The HYBRID-tier lever: a larger local model for the <code>premium</code> tier.</td></tr>
+    <tr><td><code>OLLAMA_TIMEOUT_MS</code></td><td><code>20000</code></td><td>Beyond this the call is abandoned and the deterministic answer is used.</td></tr>
+    <tr><td><code>AI_DAILY_TOKEN_BUDGET</code></td><td><code>2,000,000</code></td><td>Per-tenant daily ceiling; a per-tenant override lives in the ledger.</td></tr>
+  </table></div>
+
+  <h3>14.3 The router — one doorway, four steps, in order</h3>
+  <p>Every AI call in the product passes through <code>AiRouterService.complete()</code>. It is thin by design and contains no business logic — "<i>what a result MEANS is the owning module's job</i>".</p>
+  <div class="flow" style="grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr">
+    <div>1 · REJECT<br><span class="small" style="color:#4a5a75">not in the closed registry</span></div>
+    <div class="arrow">→</div>
+    <div>2 · ASK<br><span class="small" style="color:#4a5a75">kill switch · opt-out · budget</span></div>
+    <div class="arrow">→</div>
+    <div>3 · ROUTE<br><span class="small" style="color:#4a5a75">to the bound provider</span></div>
+    <div class="arrow">→</div>
+    <div>4 · LOG<br><span class="small" style="color:#4a5a75">hash-chained, refusals included</span></div>
+  </div>
+  <p>A refusal is itself an auditable AI action: it is written to <code>ai_action_log</code> with <code>degraded: true</code> and the reason, <i>then</i> the call fails closed with <code>AI_REFUSED</code> (403) so the caller drops to the feature's deterministic degraded mode. An unregistered feature key throws <code>AI_FEATURE_NOT_REGISTERED</code> before any token is spent.</p>
+
+  <h3>14.4 The PromptPack contract — the model phrases, it never concludes</h3>
+  <p>A provider does not know how to prompt for a feature; the feature contributes that, and — critically — contributes the validator too.</p>
+  <pre>export interface PromptPack&lt;I, O&gt; {
+  system: string;              <i>// "Keep it narrow — the model phrases, it never concludes."</i>
+  buildUser(input: I): string;
+  parse(text: string, input: I): O;
+  <b>// MUST throw if the text is ungrounded or malformed —</b>
+  <b>// the provider then degrades to the deterministic answer.</b>
+}</pre>
+  <p>Three consequences follow, and they are the whole safety story:</p>
+  <ul>
+    <li><b>A feature with no PromptPack never reaches a model at all.</b> <code>OllamaProvider</code> returns the deterministic answer marked <code>degraded: "no_prompt_pack"</code> — so the log shows AI did not really run. A feature is opted <i>in</i> to live inference, never opted out.</li>
+    <li><b>An ungrounded reply is discarded, not shown.</b> <code>parse()</code> throwing means "the model said something we will not show a user", and the call falls through to the deterministic answer.</li>
+    <li><b>The ERP never blocks on a model.</b> Unreachable, slow, HTTP error, malformed reply — every path degrades. There is no code path in which a model being down stops a factory from working.</li>
+  </ul>
+
+  <h3>14.5 The closed feature registry</h3>
+  <p>AI is not a capability that can appear anywhere someone adds a call. It is a closed list of ten entries — the canonical eight, one feature explicitly in evaluation, and one explicit <i>null</i> entry recording that Integrations has no MVP AI. Anything not on this list is rejected by the router.</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:5%">Ref</th><th style="width:20%">Feature</th><th style="width:9%">Owner</th><th style="width:10%">Status</th><th style="width:6%">Risk</th><th style="width:12%">Data class</th><th style="width:20%">Deterministic baseline it must beat</th><th style="width:18%">Degraded mode</th></tr>
+    <tr><td>AI #1</td><td>Receipt / document extraction + auto-categorisation</td><td>expenditure</td><td><span class="tag live">committed</span></td><td>2</td><td>pii_minimised</td><td><code>azure_doc_intelligence_prebuilt_invoice</code></td><td>manual_entry</td></tr>
+    <tr><td>AI #2</td><td>Master-data duplicate detection</td><td>general</td><td><span class="tag live">committed</span></td><td>2</td><td>business</td><td><code>pg_trgm_gstin_exact</code></td><td>deterministic_substitute</td></tr>
+    <tr><td>AI #3</td><td>Ticket auto-triage + sentiment</td><td>csp</td><td><span class="tag live">committed</span></td><td>1</td><td>pii_minimised</td><td><code>keyword_rule_classifier</code></td><td>feature_hidden</td></tr>
+    <tr><td>AI #4</td><td>Duplicate-receipt detection</td><td>expenditure</td><td><span class="tag stand">stretch</span></td><td>1</td><td>business</td><td><code>attachment_sha256_exact</code></td><td>deterministic_substitute</td></tr>
+    <tr><td>AI #5</td><td>HSN / SAC code suggestion</td><td>general</td><td><span class="tag stand">stretch</span></td><td>2</td><td>business</td><td><code>tax_code_directory_lookup</code></td><td>deterministic_substitute</td></tr>
+    <tr><td>AI #6</td><td>Reply drafting / thread summarisation</td><td>csp</td><td><span class="tag stand">stretch</span></td><td>2</td><td>pii_minimised</td><td><code>canned_response_template</code></td><td>feature_hidden</td></tr>
+    <tr><td>AI #7</td><td>Payslip explainer</td><td>hrm</td><td><span class="tag stand">stretch</span></td><td>3</td><td>pii_minimised</td><td><code>payslip_trace_template</code></td><td>template_output</td></tr>
+    <tr><td>AI #8</td><td>Segregation-of-duties conflict explanation</td><td>administration</td><td><span class="tag stand">stretch</span></td><td>3</td><td>business</td><td><code>sod_rule_static_sentence</code></td><td>template_output</td></tr>
+    <tr><td>AI #9</td><td>Copilot — read-only Q&amp;A over the tenant's own data</td><td>copilot</td><td><span class="tag human">in_eval</span></td><td>3</td><td>business</td><td><code>keyword_intent_router</code></td><td>deterministic_template</td></tr>
+    <tr><td>—</td><td><i>(explicit null entry — no MVP AI)</i></td><td>integrations</td><td><span class="tag off">no_mvp_ai</span></td><td>—</td><td>none</td><td><code>deterministic_dlq_triage_table</code></td><td>no_mvp_ai</td></tr>
+  </table></div>
+  <div class="callout"><b>Two registry fields are doing unusual and valuable work.</b> <code>deterministicBaseline</code> names the rules-only comparator the eval gate must <i>beat</i> — so a feature cannot ship on the grounds that it is "AI", only on the grounds that it outperforms the boring alternative. And <code>degradedMode</code> is declared per feature at design time, which is why "the model is down" has a defined product behaviour for every one of the ten rather than an exception.</div>
+
+  <h3>14.6 Governance — fail-closed, ordered, and audited</h3>
+  <p>Before a single token is spent, <code>DbAiGovernance.check()</code> asks three questions in a fixed order and refuses on the first failure:</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:7%">Order</th><th style="width:23%">Gate</th><th style="width:70%">Meaning</th></tr>
+    <tr><td>1</td><td><b>Tenant opt-out</b> (DPDP)</td><td>A tenant that has opted out of AI processing gets <code>opt_out</code>. This is checked first because consent precedes everything else.</td></tr>
+    <tr><td>2</td><td><b>Kill switch</b></td><td>Per feature, or tenant-wide via <code>'*'</code>. <b>Two control surfaces converge here</b> — <code>ai_kill_switch</code> (the AI Operations console) and <code>ai_feature_state</code>. They were unified after the console could display an engaged switch while real model calls continued.</td></tr>
+    <tr><td>3</td><td><b>Daily token budget</b></td><td>Per tenant per day, default 2,000,000 tokens. Exhaustion refuses rather than overspending.</td></tr>
+  </table></div>
+  <p>Every administrative action — engaging or releasing a kill switch, setting an opt-out, changing a budget — <b>requires a reason</b> and appends a hash-chained audit row, the same posture Administration takes everywhere else (§10).</p>
+  <p><code>ai_action_log</code> records every call: feature key, input, output, model, tier, token usage, and the <code>degraded</code> flag. It is chained with the identical <code>chainHash</code> primitive as <code>audit_log</code> (§10.1) — one implementation, because two chains eventually disagree. <b>A refusal is logged as carefully as a success</b>, so "the AI did not answer" is as provable as what it said.</p>
+
+  <h3>14.7 The two CI gates</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:24%">Gate</th><th style="width:20%">Grades</th><th style="width:56%">Rule</th></tr>
+    <tr><td><code>pnpm eval general.master_dedup</code></td><td>The <b>detector</b></td><td>Does it find the duplicates? F1 against a golden set, and it must beat the <code>deterministicBaseline</code>.</td></tr>
+    <tr><td><code>ai-grounding.ts</code></td><td>The <b>explanation</b></td><td>(1) Every conclusion must match the code-decided expectation — <b>the model cannot move it</b>. (2) No note may contain a value that is not in the evidence. (3) No note may contradict its own headline. Exits 1 on any violation.</td></tr>
+  </table></div>
+  <div class="callout bad"><b>Why the grounding gate exists — a measured failure, not a hypothetical.</b> A local 3B model was observed <b>inventing an identifier and reversing a conclusion</b> on the master-dedup explanation. The response was not a better prompt; it was a gate that fails the build. Both gates run in CI job 1 under <code>pnpm ai:eval</code>, against whatever <code>AI_PROVIDER</code> is configured — so a provider that is not safe to ship cannot be shipped.</div>
+
+  <h3>14.8 Why local-first — the benefits, and what each one buys</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:22%">Benefit</th><th style="width:46%">Mechanism</th><th style="width:32%">What it is worth</th></tr>
+    <tr><td><b>Data residency</b></td><td>Loopback base URL by default. Nothing leaves the site.</td><td>DPDP and CERT-In obligations are met by <i>topology</i>, not by a processing agreement. For an Indian MSME whose costing and customer data is its business, this is often the whole objection answered.</td></tr>
+    <tr><td><b>Zero marginal cost</b></td><td>No per-call billing; the stub costs nothing at all and Ollama costs electricity.</td><td>Unit economics do not degrade with usage, so AI can be on by default rather than rationed. It also makes 995 tests runnable without a spend budget.</td></tr>
+    <tr><td><b>Works offline</b></td><td>The demo and the entire test suite run with no model and no internet.</td><td>A factory in Coimbatore with an unreliable link is a target customer, not an edge case. It also means an investor demo cannot fail because of conference wi-fi.</td></tr>
+    <tr><td><b>No vendor lock-in</b></td><td>Provider-agnostic router; swapping is a binding change in <code>AiModule</code>.</td><td>Model pricing and capability are moving quarterly. The architecture treats the provider as replaceable rather than foundational.</td></tr>
+    <tr><td><b>Never blocks operations</b></td><td>Every feature declares a <code>degradedMode</code>; every failure path degrades.</td><td>The ERP's availability is independent of the model's. A model outage is a quality reduction, never an outage.</td></tr>
+    <tr><td><b>Provable behaviour</b></td><td>Hash-chained <code>ai_action_log</code> including refusals; kill switch; per-tenant budget.</td><td>"What did the AI do on 14 March, and who authorised it" is answerable — which is what a regulated or audited customer will eventually ask.</td></tr>
+    <tr><td><b>Honest evaluation</b></td><td>Every feature must beat a named rules-only baseline.</td><td>Stops the most common failure in AI products: shipping a model where an index would have been better, and calling it progress.</td></tr>
+    <tr><td><b>Tiering is demonstrable</b></td><td>CLOUD / HYBRID / EDGE, with <code>OLLAMA_MODEL_PREMIUM</code> as the HYBRID lever.</td><td>The deployment story is a configuration change rather than a rewrite — "aspirational" becomes "already running".</td></tr>
+  </table></div>
+
+  <h3>14.9 The costs of this choice, stated</h3>
+  <ul>
+    <li><b>A 3B local model is materially weaker</b> than a frontier hosted model. The grounding gate exists precisely because of what that weakness produced. Features whose value depends on strong reasoning are marked <code>stretch</code>, not <code>committed</code>.</li>
+    <li><b>Local inference needs local hardware.</b> The per-plant hardware requirement, and who pays for it, is a commercial question this document does not settle.</li>
+    <li><b>No hosted provider has been exercised end to end.</b> The router is provider-agnostic by construction and by interface, but that claim has not been proved by actually binding a hosted provider and running the gates against it. Tracked as <b>R-11</b> in §18.</li>
+    <li><b>The AI module is not what the fulfilment demo runs on.</b> Missions are decided by the deterministic engine (§13). A reviewer impressed by the mission arc should not attribute it to a model, and this document should not let them.</li>
+  </ul>
+
+  <div class="verify no-break">
+    <div class="vh">VERIFY §14</div>
+    <div class="vb"><pre>grep -rn "openai\|anthropic\|azure\|bedrock\|vertex" apps/api/src/ai packages/platform/src/ai
+<b># no hosted-provider client or key in the AI path</b>
+grep -rn "fetch(" apps/api/src/ai/*.provider.ts
+<b># exactly one call site: ${OLLAMA_BASE_URL}/api/chat</b>
+grep -rn "fetch(\|http" packages/platform/src/intelligence/*.ts
+<b># none — the ONYX decision engine has no network dependency at all</b>
+pnpm ai:eval        <i># F1 gate + grounding gate, both must exit 0</i></pre></div>
+  </div>
+</section><section class="sec" aria-labelledby="s15">
+  <h2 id="s15"><span class="sn">15</span>Failure, retry and recovery</h2>
+
+  <h3>15.1 A failed step stops the mission and says so</h3>
+  <p>Scenario 8 exists to demonstrate this and is the only demo scenario designed to fail. Its recorded reason is written to be indistinguishable in shape from a real refusal:</p>
+  <pre>status: <b>failed</b> · stage: execution · steps: 10
+waitingReason: "purchase order creation/verification failed — Simulated fault, armed by
+demo scenario 8 — PURCHASE was never called. <i>A real refusal here would read exactly like
+this: the vendor is on a credit hold that only a person can lift.</i>"</pre>
+
+  <h3>15.2 Retry replays rather than duplicates</h3>
+  <p><code>POST /fulfilment/missions/:id/retry</code> re-runs the last failed step. It is safe for a stated reason: every execute step derives its idempotency key from the mission, the plan version and the vendor — and from nothing that varies between attempts. So a re-run <b>replays the documents that already exist and raises only the ones that do not</b>. The vendor does not get the order twice.</p>
+  <div class="callout warn"><b>And the failure is not swallowed.</b> The failed step row must be removed, because the arc's resume point is a row count and a failed row would make the mission think that step was done. Before it goes, the failure is written to the event log and the hash-chained audit trail, and the re-run opens with a <code>retrying</code> row carrying the reason the first attempt failed. The code comment states the stakes exactly: "<i>A retry that quietly produced a clean-looking mission would be the most dangerous feature in this product.</i>"</div>
+
+  <h3>15.3 Concurrency and replanning</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:30%">Condition</th><th style="width:70%">Handling</th></tr>
+    <tr><td>Two advances race</td><td><code>isConcurrentAttempt(e)</code> collapses the loser into the winner's status rather than erroring.</td></tr>
+    <tr><td>A second mission on one order</td><td><code>start</code> is idempotent — it returns the live mission rather than opening a second. The demo's own narration says "was already running, N steps in" rather than "opened", because claiming otherwise would be the first inaccurate sentence of the demo.</td></tr>
+    <tr><td>The world changes mid-mission</td><td>Status <code>replanning</code>, a new plan version, and the superseded version retained with its reason.</td></tr>
+    <tr><td>A person refuses the approach</td><td>Marked <code>operator refused the strategy</code> — distinguished from "the world changed", because a supplier delay invalidates a <i>plan</i> whereas this invalidates an <i>approach</i>, and the approach must not be proposed again.</td></tr>
+    <tr><td>Downstream not yet proven</td><td>Mission parks in <code>waiting</code> with <code>outcome not yet proven — {reasons}</code>. No close row is written.</td></tr>
+  </table></div>
+
+  <h3>15.4 Integration failures</h3>
+  <p>The integration module (32 routes, 16 tables) carries a dead-letter surface with replay. Spreadsheet import failures are reported per row with the field and the value that failed, and a batch commits row by row through the domain service rather than by bulk insert — so a bad row cannot take a good one with it.</p>
+</section><section class="sec" aria-labelledby="s16">
+  <h2 id="s16"><span class="sn">16</span>Verification evidence</h2>
+  <p class="lead">Everything in this section was executed on 16 August 2026 against the checked-out source and the running stack. Commands are given so a reviewer can disagree with the numbers by producing different ones.</p>
+
+  <h3>16.1 Automated tests</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Suite</th><th style="width:11%">Tests</th><th style="width:11%">Pass</th><th style="width:11%">Fail</th><th style="width:11%">Skip</th><th style="width:30%">Character</th></tr>
+    <tr><td><code>@ind-core/platform</code></td><td>822</td><td>822</td><td>0</td><td>0</td><td>Pure logic — tax, planning, quality, accounting, audit, fulfilment, intelligence. No database.</td></tr>
+    <tr><td><code>@ind-core/api</code></td><td>104</td><td>103</td><td>0</td><td>1</td><td>Service and correctness tests. The skip is environment-gated.</td></tr>
+    <tr><td><code>@ind-core/web</code></td><td>58</td><td>58</td><td>0</td><td>0</td><td>Spine logic — pipeline parsing, mission arc, permissions.</td></tr>
+    <tr><td><code>@ind-core/db</code></td><td>6</td><td>6</td><td>0</td><td>0</td><td>Schema integrity, RLS leak probe, data-import integrity.</td></tr>
+    <tr><td><code>@ind-core/edge</code></td><td>6</td><td>6</td><td>0</td><td>0</td><td>Serverless runtime.</td></tr>
+    <tr><td><b>Total</b></td><td><b>995</b></td><td><b>994</b></td><td><b>0</b></td><td><b>1</b></td><td><b>0 failures across every suite.</b></td></tr>
+    <tr><td>Playwright e2e</td><td>39</td><td>27</td><td>0</td><td>12</td><td>Browser. The 12 skips need a Keycloak sign-in that public-demo mode bypasses — see <b>R-5</b>.</td></tr>
+  </table></div>
+
+  <h3>16.2 The five structural proof gates</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:24%">Gate</th><th style="width:76%">Result, verbatim</th></tr>
+    <tr><td><code>db:rls-check</code></td><td><span class="sev s-none">PASS</span> RLS check OK — 242 tenant-scoped table(s) fenced (FORCE RLS + a policy keying on <code>app.current_tenant</code>).</td></tr>
+    <tr><td><code>db:perm-check</code></td><td><span class="sev s-none">PASS</span> routes demand 165 permission(s); registry declares 165. Catalogue covers 2 tenant(s); 330 catalogue row(s); 0 uncatalogued grant(s).</td></tr>
+    <tr><td><code>db:naming-check</code></td><td><span class="sev s-none">PASS</span> 252 tables; <code>production_order</code> and <code>maintenance_work_order</code> are distinct doctypes with no FK between them.</td></tr>
+    <tr><td><code>module-check</code></td><td><span class="sev s-none">PASS</span> 24 module(s) installed and registered; 169 nav permission(s) all defined by the platform; <b>no cross-module imports</b>.</td></tr>
+    <tr><td><code>lint</code> / <code>typecheck</code></td><td><span class="sev s-none">PASS</span> <code>eslint --max-warnings=0</code> including the boundary rules; <code>tsc -b</code> clean across all five packages.</td></tr>
+  </table></div>
+
+  <h3>16.3 Functional evidence — the nine demo scenarios</h3>
+  <p>Each scenario resets the demo world, opens a mission on an order the resolver proves is suitable, and runs the arc.</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:5%">#</th><th style="width:21%">Scenario</th><th style="width:14%">Result</th><th style="width:9%">Steps</th><th style="width:51%">What it establishes</th></tr>
+    <tr><td>1</td><td>stock-covers-it</td><td>waiting/monitoring</td><td>12</td><td>"Nothing needs buying" is a conclusion, not a default. The procure step says so rather than skipping quietly.</td></tr>
+    <tr><td>2</td><td>short-of-material</td><td>waiting/monitoring</td><td>12</td><td>Netting against live stock; 2 of 5 components short.</td></tr>
+    <tr><td>3</td><td>recommend-purchase</td><td>waiting/monitoring</td><td>12</td><td>Raises real purchase orders through the port.</td></tr>
+    <tr><td>4</td><td>recommend-work-order</td><td>waiting/monitoring</td><td>12</td><td>Releases a real work order pegged to the sales order line.</td></tr>
+    <tr><td>5</td><td>missing-information</td><td><span class="sev s-med">BLOCKED</span></td><td>—</td><td>Cannot start: the seed contains no order lacking a released BOM or a qualified supplier. See <b>R-6</b>.</td></tr>
+    <tr><td>6</td><td>human-approval</td><td>waiting/monitoring</td><td>12</td><td>Stops at step 8 for a signature. 1 approval consumed.</td></tr>
+    <tr><td>7</td><td>spreadsheet-source</td><td>waiting/monitoring</td><td>12</td><td>A price list arriving as a spreadsheet overrides the stand-in terms for one mission.</td></tr>
+    <tr><td>8</td><td>failure-then-retry</td><td><b>failed</b> (by design)</td><td>10</td><td>Fails at the purchase step, names the reason, and is retryable.</td></tr>
+    <tr><td>9</td><td>full-audit-trail</td><td>waiting/monitoring</td><td>12</td><td>End to end with every action verified.</td></tr>
+  </table></div>
+
+  <h3>16.4 The claim that matters most, proved at database level</h3>
+  <div class="verify no-break">
+    <div class="vh">VERIFY §16.4 — ONYX writes real XELOR documents</div>
+    <div class="vb"><pre>POST /fulfilment/demo/reset                    <b>POs=13  WOs=13  missions=0</b>
+&lt;run scenario 3, recommend-purchase&gt;           <b>POs=14  WOs=14  missions=1</b>
+
+select po_no, status, total_amount from purchase_order order by created_at desc limit 1;
+  <b>PO-2627-00014 | draft | 4457.50</b>
+
+select action_type, status, verified, title from fulfilment_action;
+  inventory.reserve  | verified | t | Reserve stock against SO-2627-00002
+  purchase.commit    | verified | t | Raise 1 purchase order(s) for SO-2627-00002
+  production.release | verified | t | Release 1 work order(s) for SO-2627-00002</pre></div>
+  </div>
+  <p>All three actions reach <code>verified</code> — the mission re-reads what it wrote and confirms it exists. A governance counter-proof was also run: a rejected approval fails the mission and commits nothing, with the purchase order count unchanged across the rejection (75 → 75).</p>
+
+  <h3>16.5 Measured performance — and its limits</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:38%">Operation</th><th style="width:30%">Measured</th><th style="width:32%">Conditions</th></tr>
+    <tr><td><code>GET /sales/orders?limit=25</code></td><td>11–22 ms</td><td rowspan="4" style="vertical-align:middle"><b>6,208 live rows · 43 MB database · single local machine.</b> These are demo-scale figures.</td></tr>
+    <tr><td><code>GET /purchase/orders?limit=25</code></td><td>12–15 ms</td></tr>
+    <tr><td><code>GET /inventory/stock?limit=25</code></td><td>10–14 ms</td></tr>
+    <tr><td><code>GET /fulfilment/scenarios</code></td><td>49–87 ms</td></tr>
+    <tr><td>Full 12-step mission</td><td>587 ms</td><td>12 sequential HTTP advances plus polling reads.</td></tr>
+  </table></div>
+  <div class="callout warn"><b>Two honest caveats.</b> (1) <code>GET /fulfilment/scenarios</code> is 4–6× the other endpoints because it explodes the BOM and nets stock for <i>every</i> confirmed order to decide which scenarios can run — a cost the code acknowledges and caps. It is a demo-support endpoint, not a hot path. (2) None of these figures constitute a performance test. There has been no load test, no concurrency test, and no measurement at production row counts. See <b>R-4</b>.</div>
+</section><section class="sec" aria-labelledby="s17">
+  <h2 id="s17"><span class="sn">17</span>Build, run and deploy</h2>
+
+  <h3>17.1 Local</h3>
+  <pre><b># first time</b>
+docker compose -f infra/docker-compose.yml up -d
+psql "$DATABASE_OWNER_URL" -v ON_ERROR_STOP=1 -f infra/postgres/init/00-init.sql   <i># two-role model</i>
+pnpm install --frozen-lockfile &amp;&amp; pnpm build &amp;&amp; pnpm db:migrate
+pnpm demo:seed &amp;&amp; pnpm demo:northstar
+
+<b># run one phase, and only one</b>
+./run-phase.sh 1     <i># PHASE-1  api :3000  web :3001  db indcore</i>
+./run-phase.sh 2     <i># PHASE-2  api :3100  web :3101  db indcore_p2</i>
+./run-phase.sh stop
+
+<b># before any presentation</b>
+pnpm demo:rebuild &amp;&amp; pnpm demo:verify</pre>
+  <div class="callout"><b>The failure mode to know.</b> The web app proxies <code>/api/v1</code> to <code>NEXT_PUBLIC_API_ORIGIN</code> and defaults to :3000. For ONYX that default is <i>XELOR's</i> API — which answers, and has no <code>/fulfilment</code> routes, so the browser gets a clean 401 and the screen reports a technical error while every direct curl against :3100 passes. <code>run-phase.sh</code> sets the variable correctly; a hand-started process may not.</div>
+
+  <h3>17.2 Continuous integration</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:22%">Job</th><th style="width:78%">Gates</th></tr>
+    <tr><td><b>1. Static and schema proofs</b></td><td>Bootstrap two-role DB → build → <b>lint (boundary rules)</b> → typecheck → migrate → unit tests → <b>ai:eval</b> (F1 + grounding) → <b>rls-check</b> → <b>perm-check</b> → <b>naming-check</b> → <b>module-check</b> → report arithmetic proof → deployment descriptor syntax.</td></tr>
+    <tr><td><b>2. Clean image builds</b></td><td>Five images from a clean context: <code>standard-api-worker</code>, <code>standard-api-migrator</code>, <code>standard-web</code>, <code>railway-api</code>, <code>railway-web</code>. Building from a clean context is what catches a Dockerfile that only works because of a developer's local files.</td></tr>
+    <tr><td><b>3. Demo rebuild and acceptance</b></td><td>Migrate → seed → start API → start web → <code>pnpm demo:verify</code> acceptance matrix → browser smoke test.</td></tr>
+  </table></div>
+
+  <h3>17.3 Deployment surface</h3>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:26%">Artefact</th><th style="width:74%">Role</th></tr>
+    <tr><td><code>infra/docker-compose.yml</code></td><td>Local dependencies: postgres, valkey, keycloak, gotenberg.</td></tr>
+    <tr><td><code>infra/docker-compose.prod.yml</code></td><td>Production composition.</td></tr>
+    <tr><td><code>infra/Caddyfile</code></td><td>Single public surface; TLS termination and routing.</td></tr>
+    <tr><td><code>infra/railway/</code></td><td>Managed-platform descriptors, syntax-checked in CI.</td></tr>
+    <tr><td><code>infra/postgres/init/00-init.sql</code></td><td>Creates <code>indcore_owner</code>/<code>app_user</code>, the three required extensions and the grants. <b>Skipping this is the most common cause of a failed first migration</b> (<code>ResolveOpClass</code> at the pgvector step).</td></tr>
+    <tr><td><code>infra/keycloak-themes/indcore/</code></td><td>Branded login theme.</td></tr>
+  </table></div>
+  <p>Target region is AWS <code>ap-south-1</code> for data-residency reasons, provisioned with OpenTofu, observed with OpenTelemetry, Grafana and Sentry.</p>
+</section><section class="sec" aria-labelledby="s18">
+  <h2 id="s18"><span class="sn">18</span>Gap, risk and decision register</h2>
+  <p class="lead">Eleven open items. Each states the condition, the actual consequence, and what would close it. Nothing here is hypothetical — every item was observed on this build.</p>
+
+  <div class="tw"><table class="dense">
+    <tr><th style="width:5%">ID</th><th style="width:8%">Severity</th><th style="width:24%">Condition</th><th style="width:33%">Consequence</th><th style="width:30%">What closes it</th></tr>
+    <tr>
+      <td><b>R-1</b></td><td><span class="sev s-high">HIGH</span></td>
+      <td>Public-demo bypass: a static header is a signed-in administrator when <code>API_PUBLIC_DEMO=true</code>.</td>
+      <td>No secret, no expiry, no revocation. Mitigated by the tenant pin to the two demo ids and by <code>NOT_A_DEMO_DATABASE</code> on reset — but the flag reaching a real-data environment is a configuration mistake away.</td>
+      <td>Make the guard structural: refuse to boot with <code>API_PUBLIC_DEMO=true</code> if the database contains any tenant outside the demo set, rather than checking only at reset time.</td>
+    </tr>
+    <tr>
+      <td><b>R-2</b></td><td><span class="sev s-med">MED</span></td>
+      <td>9 of 257 RLS policies omit the <code>NULLIF</code> guard (all six <code>fulfilment_*</code>, both <code>data_import_*</code>, <code>quality_release</code>).</td>
+      <td><b>Not an isolation defect</b> — all fail closed. With the GUC set to empty string they raise <code>invalid input syntax for type uuid: ""</code> instead of returning zero rows, surfacing as a 500 and putting a Postgres error in the log.</td>
+      <td>One migration rewriting the nine predicates to the guarded form; extend <code>rls-check</code> to assert policy <i>shape</i>, not just presence.</td>
+    </tr>
+    <tr>
+      <td><b>R-3</b></td><td><span class="sev s-med">MED</span></td>
+      <td>List envelopes are not uniform: some endpoints return <code>{items:[…]}</code>, others <code>{data:[…]}</code>.</td>
+      <td>Any client written against one shape silently reads <code>undefined</code> from the other. Cost several hours of integration debugging during this review alone.</td>
+      <td>Pick one, migrate the minority, and add a contract test that fails on a list response using the other key.</td>
+    </tr>
+    <tr>
+      <td><b>R-4</b></td><td><span class="sev s-high">HIGH</span></td>
+      <td>No performance testing at scale. RLS overhead measured only at 6,208 rows.</td>
+      <td>The binding decision "RLS overhead &gt;15–20% triggers a design review" is currently <b>untestable</b> — the criterion exists but has never been evaluated under conditions where it could fail. Composite-index-leads-with-<code>tenant_id</code> discipline is likewise unvalidated at volume.</td>
+      <td>A seeded volume dataset (≥10⁶ rows on the hot tables), a load profile, and the RLS comparison re-run against it.</td>
+    </tr>
+    <tr>
+      <td><b>R-5</b></td><td><span class="sev s-med">MED</span></td>
+      <td>12 of 39 e2e tests are environment-skipped in the public-demo configuration.</td>
+      <td>Sign-in, persona isolation and credential rejection are <b>never exercised</b> in the configuration that is most often run. A regression in the Keycloak path would not be caught by a green suite.</td>
+      <td>A second CI matrix leg that runs the suite with Keycloak enabled and <code>API_PUBLIC_DEMO=false</code>.</td>
+    </tr>
+    <tr>
+      <td><b>R-6</b></td><td><span class="sev s-low">LOW</span></td>
+      <td>Demo scenario 5 (<code>missing-information</code>) cannot start.</td>
+      <td>The resolver honestly reports that no seeded order lacks a released BOM or a qualified supplier, so 1 of 9 scenarios shows UNAVAILABLE in the picker. The refusal behaviour it demonstrates is therefore never shown.</td>
+      <td>Seed one confirmed order whose finished good has no active BOM, or one shortage with no qualified supplier.</td>
+    </tr>
+    <tr>
+      <td><b>R-7</b></td><td><span class="sev s-low">LOW</span></td>
+      <td><code>demo/reset</code> clears missions but retains the purchase and work orders they raised.</td>
+      <td>Deliberate — they are real ERP documents and "a demo convenience is not a reason to make them erasable". But document numbers climb and stock depletes across repeated reruns, which can eventually flip scenarios to UNAVAILABLE mid-presentation.</td>
+      <td>Presenter guidance, or a separate full-world rebuild (<code>pnpm demo:rebuild</code>) between sessions.</td>
+    </tr>
+    <tr>
+      <td><b>R-8</b></td><td><span class="sev s-low">LOW</span></td>
+      <td>The mission's step-by-step pipeline visual is present on 4 of the 10 module screens the tour visits, plus Mission Control.</td>
+      <td>On the other 6 screens the Trigger→Collect→…→Record breakdown is not shown, so the "show the pipeline everywhere" requirement is partially met.</td>
+      <td>Mount the stage panel on the remaining screens, or return the rail to the shell-level copilot.</td>
+    </tr>
+    <tr>
+      <td><b>R-9</b></td><td><span class="sev s-low">LOW</span></td>
+      <td>The copilot card attributes every step to ONYX.</td>
+      <td>The arc assigns steps to AXLE, SPAR, KILN and HEXA (§12), so the card's "ONYX used…" sentence disagrees with the step's own <code>agentKey</code> on 8 of 13 steps.</td>
+      <td>Render <code>current.agentKey</code> and its role rather than a constant.</td>
+    </tr>
+    <tr>
+      <td><b>R-11</b></td><td><span class="sev s-med">MED</span></td>
+      <td>Provider-agnosticism of the AI router is proved by interface, not by exercise.</td>
+      <td>No hosted provider has ever been bound and run through the router, the governance gates, the budget ledger and the two CI eval gates. The abstraction is clean and the seam is one line — but "it will swap cleanly" is currently a design claim, and token accounting, latency behaviour and error mapping for a hosted provider are all untested.</td>
+      <td>Bind one hosted provider behind a feature flag, run <code>pnpm ai:eval</code> against it, and keep it as a second CI matrix leg.</td>
+    </tr>
+    <tr>
+      <td><b>R-10</b></td><td><span class="sev s-med">MED</span></td>
+      <td>Mobile/offline-first strategy is undecided.</td>
+      <td>Named in the governance document as the largest open gap and a blocking gate before the UX freeze and the manufacturing auth pack. A shop floor is the one place a browser session cannot be assumed.</td>
+      <td>An ADR reviewed by HEXA, before the UX freeze rather than after.</td>
+    </tr>
+  </table></div>
+
+  <h3>18.1 Defects found and fixed during this review</h3>
+  <p>Recorded because they indicate what the verification process catches, and how.</p>
+  <div class="tw"><table class="dense">
+    <tr><th style="width:30%">Defect</th><th style="width:40%">How it was found</th><th style="width:30%">Fix</th></tr>
+    <tr><td>The approval card named screens that do not exist — "Purchase → Orders" where the product's screen is "Purchase orders".</td><td>Comparing <code>applicationTargets</code> in <code>narrate.ts</code> against the step registry's <code>where</code> labels in <code>mission.service.ts</code>.</td><td>Names matched to the registry; asserted literally in <code>planner.test.ts</code>.</td></tr>
+    <tr><td>The centred copilot card (z-120) covered 40% of the application's own modal (z-50) and made its centre unclickable.</td><td>Live measurement with <code>elementFromPoint</code> at the dialog's centre, which returned the card.</td><td>The card yields to any <code>aria-modal</code> dialog; e2e regression test added.</td></tr>
+    <tr><td>ONYX's entire e2e suite defaulted to <code>localhost:3001</code> — XELOR's web server.</td><td>Repointing the config surfaced two specs with hardcoded origins.</td><td>Config and all 8 specs repointed to :3101/:3100.</td></tr>
+  </table></div>
+</section><section class="sec" aria-labelledby="s19">
+  <h2 id="s19"><span class="sn">19</span>The reviewer's checklist</h2>
+  <p class="lead">If you have one hour, these are the twelve questions worth asking, with where the answer is and what a wrong answer looks like.</p>
+
+  <div class="tw"><table class="dense">
+    <tr><th style="width:4%">#</th><th style="width:30%">Question</th><th style="width:33%">Where the answer is</th><th style="width:33%">A wrong answer looks like</th></tr>
+    <tr><td>1</td><td>Is tenant isolation enforced by the database, or by the application?</td><td>§5. <code>app_user</code> is NOBYPASSRLS; 242/242 tables FORCE RLS.</td><td>"The service always adds <code>where tenant_id</code>." One missed query is then a breach.</td></tr>
+    <tr><td>2</td><td>Can the module boundary actually be violated?</td><td>§2. <code>eslint-plugin-boundaries</code>, <code>--max-warnings=0</code>, CI job 1.</td><td>A README rule; or the TS resolver quietly unconfigured, so the gate classifies nothing.</td></tr>
+    <tr><td>3</td><td>What happens to the ledger if the queue is down?</td><td>§6.1. Stock, journal, numbering and audit are all synchronous.</td><td>"The event handler posts the journal."</td></tr>
+    <tr><td>4</td><td>Can the audit trail be edited by anyone?</td><td>§10.2. Trigger <i>and</i> REVOKE, both proved live against both roles.</td><td>A single mechanism; or an application-level "don't update this" convention.</td></tr>
+    <tr><td>5</td><td>Does the AI decide anything?</td><td>§13. Deterministic engine, no network in the decision path, <code>verify()</code> separate from <code>recommend()</code>, autonomy tiers gating commitment.</td><td>A model in the decision path; or an "explain" that can move the conclusion.</td></tr>
+    <tr><td>6</td><td>What <i>is</i> the AI — a hosted model, a local one, or none?</td><td>§14.1. Two providers: an offline deterministic stub, or a local model via Ollama on <code>127.0.0.1</code>. No hosted SDK in the dependency tree. The fulfilment demo uses no model at all (§14, first table).</td><td>"It uses AI" without naming the provider, the model, where it runs, or what happens when it is down.</td></tr>
+    <tr><td>7</td><td>Is ONYX's separation from XELOR real or presentational?</td><td>§11.1–11.2. 15 Symbol tokens; zero module imports; 7 tables all its own.</td><td>A direct import of <code>modules/purchase</code> from the fulfilment tree.</td></tr>
+    <tr><td>8</td><td>What stops a retried request from double-posting?</td><td>§6.3. <code>(tenant, key)</code> unique + SHA-256 body fingerprint + saved response; deterministic keys in ONYX.</td><td>A key check with no body fingerprint — a different body under the same key returns the wrong cached answer.</td></tr>
+    <tr><td>9</td><td>Are invoice numbers legally issuable?</td><td>§7. Gapless per (tenant, doctype, FY) via in-transaction <code>UPDATE … RETURNING</code>.</td><td>A Postgres sequence — non-transactional, so a rolled-back insert leaves a gap.</td></tr>
+    <tr><td>10</td><td>What is genuinely connected, and what is staged?</td><td>§11.3. 9 live, 2 stand-ins labelled at every surface, 8 connectors <code>connected: false</code>.</td><td>A connector list with green lights and no runtime behind them.</td></tr>
+    <tr><td>11</td><td>Does it perform?</td><td>§16.5 and <b>R-4</b>. <b>Unknown at scale.</b> Demo-volume figures only.</td><td>Quoting the 10–22 ms figures as though they were a load test result.</td></tr>
+    <tr><td>12</td><td>What is the weakest link today?</td><td><b>R-1</b> (demo auth bypass) and <b>R-4</b> (no scale testing), in that order.</td><td>An answer that names no weakest link.</td></tr>
+  </table></div>
+
+  <h3>19.1 The summary a reviewer can rely on</h3>
+  <div class="grid2">
+    <div class="card"><h4 style="color:#087a55">What this build genuinely demonstrates</h4>
+      <ul style="margin-bottom:0">
+        <li>Database-enforced multi-tenancy on 242/242 tables, with a non-bypassing application role.</li>
+        <li>Mechanically enforced module boundaries — 24 modules, zero cross-module imports, checked in CI.</li>
+        <li>A tamper-evident audit chain protected by two independent mechanisms, both demonstrable.</li>
+        <li>An intelligence layer that reaches the ERP only through 15 declared ports and writes real, verifiable documents.</li>
+        <li>A deterministic decision engine with no network dependency, an independent critic, and authority expressed as configuration.</li>
+        <li>An AI module that is honest about itself: a closed 10-entry registry, local-or-no model, fail-closed governance, a hash-chained call log, and every feature required to beat a named rules-only baseline.</li>
+        <li>995 automated tests and five structural proof gates, all currently green.</li>
+      </ul>
+    </div>
+    <div class="card"><h4 style="color:#b42318">What it does not yet demonstrate</h4>
+      <ul style="margin-bottom:0">
+        <li>Any behaviour at production scale — no load test, no concurrency test, RLS overhead unmeasured where it could fail.</li>
+        <li>A safe authentication story for the demo configuration (<b>R-1</b>).</li>
+        <li>A single live connector to any external ERP — all eight are declared and none is implemented.</li>
+        <li>Sign-in and persona isolation under CI, which the current configuration skips (<b>R-5</b>).</li>
+        <li>Mobile or offline operation, which is undecided (<b>R-10</b>).</li>
+        <li>A hosted AI provider exercised end to end — the router is provider-agnostic by construction but has only ever run a local model or the offline stub (<b>R-11</b>).</li>
+        <li>Autonomous external execution. The product does not claim it, and the code does not do it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout good"><b>The single sentence to take away.</b> XELOR's architecture is stronger than its operational evidence: the structural controls — tenancy, boundaries, audit, ports, determinism — are enforced by machines rather than asserted by documents, and each was re-proved while writing this dossier. What is missing is not design; it is scale evidence and the closing of a small, named set of gaps, every one of which is listed in §18 with the work that would close it.</div>
+
+  <div class="footer-note">
+    XELOR Platform Architecture &amp; Verification Dossier · 16 August 2026 · Measured against <code>PHASE-1</code> and <code>PHASE-2</code> at PostgreSQL 17.10, 96 migrations, 995 automated tests.<br>
+    Supersedes the <i>MVP Technical Handoff Brief</i> (8 August 2026), which covered the XELOR (Phase 1) investor build only. Every figure here is reproducible with the commands given in each VERIFY block.
+  </div>
+</section></main>
+</div>
+
+<button class="top" aria-label="Back to top">↑</button>
+<script>
+(function(){
+  var root=document.documentElement, KEY='xelor-dossier-theme';
+  var saved=localStorage.getItem(KEY); if(saved) root.setAttribute('data-theme',saved);
+  var btn=document.getElementById('theme');
+  function label(){
+    var t=root.getAttribute('data-theme');
+    var dark = t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    btn.textContent = dark ? 'Light' : 'Dark';
+    btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  btn.addEventListener('click',function(){
+    var t=root.getAttribute('data-theme');
+    var dark = t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light':'dark';
+    root.setAttribute('data-theme',next); localStorage.setItem(KEY,next); label();
+  });
+  label();
+
+  var toc=document.querySelector('.toc'), scrim=document.querySelector('.scrim'), menu=document.getElementById('menu');
+  function close(){toc.classList.remove('open');scrim.classList.remove('on');menu.setAttribute('aria-expanded','false');}
+  menu.addEventListener('click',function(){
+    var open=toc.classList.toggle('open'); scrim.classList.toggle('on',open);
+    menu.setAttribute('aria-expanded',String(open));
+  });
+  scrim.addEventListener('click',close);
+  toc.addEventListener('click',function(e){ if(e.target.closest('a')) close(); });
+  addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+
+  var links={}; [].forEach.call(document.querySelectorAll('.toc a'),function(a){links[a.getAttribute('href').slice(1)]=a;});
+  var heads=[].slice.call(document.querySelectorAll('h2[id]'));
+  var current=null;
+  function spy(){
+    var pick=heads[0];
+    for(var i=0;i<heads.length;i++){ if(heads[i].getBoundingClientRect().top<=110) pick=heads[i]; }
+    if(pick && pick.id!==current){
+      if(current&&links[current]) links[current].classList.remove('on');
+      current=pick.id;
+      if(links[current]){ links[current].classList.add('on');
+        var a=links[current], pn=a.closest('.toc');
+        if(a.offsetTop < pn.scrollTop || a.offsetTop > pn.scrollTop+pn.clientHeight-40) pn.scrollTop=a.offsetTop-pn.clientHeight/2;
+      }
+    }
+    top.classList.toggle('show', scrollY>700);
+  }
+  var top=document.querySelector('.top');
+  top.addEventListener('click',function(){scrollTo({top:0,behavior:'smooth'});});
+  var tick=false;
+  addEventListener('scroll',function(){ if(!tick){tick=true;requestAnimationFrame(function(){spy();tick=false;});} },{passive:true});
+  spy();
+})();
+</script>
+</body>
+</html>

@@ -28,6 +28,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    working-directory: platform
+
 env:
   # Match infra/docker-compose.yml and .env.example exactly, so a CI failure reproduces
   # locally with the same commands.
@@ -64,6 +68,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: platform/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 
@@ -225,6 +230,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: platform/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 
@@ -359,6 +365,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: platform/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 

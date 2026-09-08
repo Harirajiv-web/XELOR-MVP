@@ -1,4 +1,4 @@
-# Normalize line endings to LF — this repo is built in Linux/WSL.
+# Normalize text and preserve binary design assets across platforms.
 * text=auto eol=lf
 *.png binary
 *.jpg binary
