@@ -1,67 +1,76 @@
-# AIKYANTRA — four products, one manufacturing platform
+# XELOR, ONYX and AIKYANTRA
 
-The workspace now contains four launchable products. Their implementation lives in `platform/`, so shared improvements reach every phase.
+This is the main working directory for three products, with one shared implementation in `platform/`.
 
-The latest source and design for all four products are maintained together on `main` in [Harirajiv-web/XELOR-MVP](https://github.com/Harirajiv-web/XELOR-MVP). The older phase branches remain available as historical snapshots.
-
-| Phase | Product | Purpose | Local application |
+| Product folder | Product | Purpose | Web / API |
 |---|---|---|---|
-| 1 | ONYX ERP | Engineering, quotations, sales, purchasing, stock, production, quality, maintenance, people and finance | http://localhost:4001 |
-| 2 | XELOR AI layer | Connect manufacturing systems; ask questions with source evidence; assess commitments, recovery options and outcomes | http://localhost:4101 |
-| 3 | SOURCE supplier network | Suppliers, RFQs, quote links, multi-line tenders, technical gates, awards and supplier performance | http://localhost:4201 |
-| 4 | AIKYANTRA integrated | All three in one workspace, sharing business records and governed workflows | http://localhost:4301 |
+| [XELOR](XELOR/README.md) | **XELOR phase 2** | Manufacturing ERP and system of record | 4001 / 4000 |
+| [ONYX](ONYX/README.md) | **ONYX** | AI intelligence over ERP and connected business evidence | 4101 / 4100 |
+| [AIKYANTRA](AIKYANTRA/README.md) | **AIKYANTRA** | Supplier network, RFQs, quotations and sourcing | 4201 / 4200 |
+| [INTEGRATED](INTEGRATED/README.md) | Integrated workspace | Combined access to all three products | 4301 / 4300 |
+| [PLANT-OPERATIONS](PLANT-OPERATIONS/README.md) | Plant Operations | Machine signals, maintenance and energy on one asset register | 4401 / 4400 |
+| [QUALITY-SAFETY](QUALITY-SAFETY/README.md) | Quality, Safety & Compliance | One corrective-action engine for defects and incidents | 4501 / 4500 |
+| [WAREHOUSE-DISPATCH](WAREHOUSE-DISPATCH/README.md) | Warehouse & Dispatch | One handling unit from gate to truck | 4601 / 4600 |
+| [PLANNING-ENGINEERING](PLANNING-ENGINEERING/README.md) | Planning & Engineering | One BOM and capacity model; engineering change control | 4701 / 4700 |
+| [REVENUE-SERVICE](REVENUE-SERVICE/README.md) | Revenue & Service | Quoting and costing, then warranty, spares and field service | 4801 / 4800 |
+| [DELIVERY-SERVICES](DELIVERY-SERVICES/README.md) | Delivery & Managed Services | Implementation, integration, commissioning and support | 4901 / 4900 |
+
+The last six are the connected packages of **Project X** — the technology spine for Indian
+manufacturing. Each is its own product, never a bundle containing everything, and each reads
+and writes the same tenant-isolated database as the XELOR ERP through the same API,
+permission and RLS rules. See [the architecture note](docs/00-governance/04-project-x-architecture.md).
+
+These names follow the owner's instruction of 11 September 2026. The integrated workspace is a combined view, not a fourth brand. Historical PDFs and older branches use previous names.
+
+**XELOR phase 2** names the current ERP edition. It keeps technical launch profile **1**, including `-Phase 1`, its build directory and ports 4001/4000. Numeric profile **2** remains ONYX. The archived `xelor-phase-2` checkout is historical source, separate from this current edition.
 
 ```text
-phase-1-erp/                 ERP product launcher and definition
-phase-2-ai/                  Intelligence product launcher and definition
-phase-3-supplier-network/    Supplier product launcher and definition
-phase-4-integrated/          Complete product launcher and definition
-platform/                   Canonical NestJS + Next.js + PostgreSQL implementation
-docs/                       Architecture and governance
-deliverables/               Product guide, comparison and verification evidence
-archive/                    Local historical snapshots (excluded from Git)
+XELOR-MVP/
+  XELOR/         ERP definition and launcher
+  ONYX/          AI intelligence definition and launcher
+  AIKYANTRA/     Supplier network definition and launcher
+  INTEGRATED/    Combined workspace launcher
+  platform/      Shared API, web, domain packages, database and infrastructure
+  docs/          Architecture and product decisions
+  deliverables/  Product guides and dated verification evidence
+  output/        Existing PDFs and analysis, with their original filenames
+  research/      Original supplier research and source evidence
+  archive/       Local historical source snapshots and former runtime files
 ```
 
-## Run the products
+## Start a product on this Windows machine
 
-```bash
-./run-phase.sh 4             # API + responsive web app in development mode
-./run-phase.sh 1             # run another phase in a second terminal
-./run-phase.sh 2 build       # compile an individual product
-./run-phase.sh 2 start       # serve the compiled product
-./run-phase.sh stop          # stop processes created by these launchers
+```powershell
+.\XELOR\start.ps1
+.\ONYX\start.ps1
+.\AIKYANTRA\start.ps1
+.\INTEGRATED\start.ps1
 ```
 
-Starting a phase preserves its data. The four local profiles use the new, dedicated `aikyantra_demo` database. Original demo databases remain separate. Separate customer deployments can configure separate databases; phase 4 integrates the modules in one tenant and database.
+Each launcher uses its own ports and the same local `aikyantra_demo` database. Starting a product preserves data. For build, stop, prerequisites and runtime details, read [LOCAL-HOSTING.md](LOCAL-HOSTING.md). Current private configuration lives in `platform/.env`; do not copy old root configuration over it.
 
-## First setup on another machine
+Shared development commands run from `platform/`:
 
-Clone the complete repository, including all four phase folders and `platform/`. Run the phase launchers from the repository root; run `pnpm` commands from `platform/`. GitHub CI lives in `.github/workflows/ci.yml` at the repository root and runs its checks and container builds from `platform/`.
-
-Use Node 22–24 and pnpm 9 or later. Copy `platform/.env.example` to `platform/.env`; keep private credentials out of source control. Start PostgreSQL 17 with pgvector, Valkey, Keycloak and Gotenberg using `platform/infra/docker-compose.yml` (`docker compose`, or `docker-compose` where installed). The compose stack uses the existing `ind-core` volume name: do not delete volumes during an upgrade.
-
-```bash
+```powershell
 cd platform
 pnpm install --frozen-lockfile
-pnpm setup:local             # creates only an aikyantra_* database; never resets one
-pnpm db:migrate
-node scripts/phase.mjs 4 build
-node scripts/phase.mjs 4 start
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
 
-To populate an **isolated demo**, enable `API_PUBLIC_DEMO=true` and `NEXT_PUBLIC_PUBLIC_DEMO=true` in its environment before building/starting, then run `DEMO_PUBLIC_MODE=true API_BASE=http://127.0.0.1:4300 pnpm demo:seed-all` in another terminal. Keep those flags false for a real customer deployment. On an already imported Keycloak realm, add the new application origins and `/callback` URLs to the `indcore-web` client; the updated realm JSON includes them for fresh imports. The example environment leaves them false.
-
-## Phone and laptop
-
-The same responsive web application works on both. On this computer’s current network, open `http://192.168.0.48:4301/home` from a phone on the same Wi-Fi (the IP can change). Phone navigation has a drawer and bottom shortcuts; both devices read the same server records. A web app manifest and service worker provide installation and an offline reconnect screen. Installation on a physical phone requires a trusted HTTPS URL; this workspace does not contain native App Store or Play Store packages. Offline writes are not implemented.
+For a fresh machine, follow [platform setup](platform/README.md). Applied database migrations, phase IDs, permissions, storage keys and legacy integration configuration names remain compatible. Product folders select a profile; application changes belong in `platform/`.
 
 ## Read next
 
-- [Product map and user journeys](deliverables/Four-Phase-Product.md)
-- [Competitor comparison and practical differentiation](deliverables/Competitive-Positioning.md)
+- [Interactive ERP and add-on ecosystem diagram](deliverables/xelor-ecosystem.html)
+- [Product naming and workspace decision](docs/00-governance/03-product-names-and-workspace.md)
+- [Workspace reorganization and verification](deliverables/Workspace-Reorganization-2026-09-11.md)
+- [Product color system](deliverables/Product-Color-System-2026-09-11.md)
+- [Product capabilities and journeys](deliverables/Four-Phase-Product.md)
 - [Architecture decision](docs/00-governance/02-four-product-consolidation.md)
 - [Connected-system contract](platform/docs/07-product/connectivity-contract.md)
 - [Supplier and tender behavior](platform/docs/04-integrated-product/sourcing-and-tenders.md)
-- [Verification report](deliverables/Verification-2026-09-07.md)
+- [Output and historical PDF index](output/README.md)
 
-Earlier decks describe the historical five-phase prototype. The documents linked above describe this implementation.
+The former `xelor-phase-2` checkout and previous integrated baseline are preserved as ZIP snapshots in `archive/history/`. Related worktrees outside this directory remain historical references. This directory is the active workspace for the new naming.

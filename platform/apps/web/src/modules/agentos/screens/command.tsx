@@ -1471,7 +1471,7 @@ export default function AgentCommandScreen({ params }: ScreenProps): React.JSX.E
                     <p className="mt-1 text-[10px] text-[var(--text-secondary)]">Checking whether this approval already has simulator evidence…</p>
                   ) : factoryEvidenceQuery.error ? (
                     <div role="alert">
-                      <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">The command ledger could not be checked, so XELOR will not offer another submission.</p>
+                      <p className="mt-1 text-[10px] leading-4 text-[var(--bad-ink)]">The command ledger could not be checked, so ONYX will not offer another submission.</p>
                       <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={factoryEvidenceQuery.reload}>Check again</button>
                     </div>
                   ) : factoryQuery.loading ? (

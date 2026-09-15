@@ -244,7 +244,7 @@ function validateScope(input: OeeAnalysisInput, warnings: FactoryIntelligenceWar
       "WINDOW_BOUNDS_UNAVAILABLE",
       "info",
       "windowStart",
-      `ONYX supplied the window label "${input.windowLabel}" but no authoritative interval timestamps; none were inferred.`,
+      `The factory ERP supplied the window label "${input.windowLabel}" but no authoritative interval timestamps; none were inferred.`,
     );
   } else if (input.windowStart === null || input.windowEnd === null) {
     warning(

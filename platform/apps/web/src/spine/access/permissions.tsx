@@ -54,6 +54,35 @@ const PUBLIC_DEMO_PERMISSIONS = [
   "aiops.killswitch.operate",
   "platform_health.run.execute",
   "factory.command.execute",
+  // PROJECT X — the six connected packages (profiles 5-10).
+  //
+  // Same rule as the block above, and the same bug waiting if it is skipped: these are
+  // gated behind <Can> on a package screen and asked for by no nav entry, so the auto-
+  // derived set above does not contain them. Without these lines the action button is
+  // simply absent in public-demo mode, on a screen whose API call would have succeeded —
+  // which reads as a broken page rather than a missing permission.
+  //
+  // Each is still enforced twice: by <Can> here and by the API against the seeded admin.
+  // Grouped by the package that introduced them.
+  //
+  // Plant Operations — report a fault, then work the job through to closed.
+  "mnt.request.create",
+  "mnt.request.triage",
+  "mnt.mwo.execute",
+  "mnt.mwo.close",
+  "mnt.meter.write",
+  // Quality, Safety & Compliance — raise, contain and verify the corrective action.
+  "quality.inspection.execute",
+  "quality.disposition.decide",
+  "mnt.mwo.write",
+  // Warehouse & Dispatch — every scan that moves stock posts through Inventory's one path.
+  "inventory.stock.post",
+  // Revenue & Service — the reply box that closes the read-only ticket gap.
+  "csp.ticket.update",
+  // Planning & Engineering — publishing a schedule is the only real approval gate here.
+  "planning.schedule.publish",
+  // Delivery & Managed Services — replaying a dead letter is the recovery desk's action.
+  "integration.dlq.replay",
 ] as const;
 
 const PUBLIC_DEMO_IDENTITY: Identity = {

@@ -1,8 +1,0 @@
-{
-  "phase": 2,
-  "name": "XELOR \u2014 Connected manufacturing intelligence",
-  "description": "Connect existing systems, synchronize manufacturing evidence, ask grounded questions, assess order promises, compare recovery options and measure outcomes.",
-  "source": "../platform",
-  "webPort": 4101,
-  "apiPort": 4100
-}

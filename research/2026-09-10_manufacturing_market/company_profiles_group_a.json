@@ -1,0 +1,177 @@
+[
+  {
+    "id": "commercecx",
+    "title": "CommerceCX / ScaleFluidly",
+    "subtitle": "Quotations, commercial workflows, logistics and pharma operations",
+    "material": "Supplied photos 13, 14, 15 and 16; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "CommerceCX combines consulting and software to connect sales, quotations, contracts and orders. Its ScaleFluidly add-ons work around existing CRM, quoting and ERP systems; Salesforce and Conga are named partners. For manufacturing, its strongest relevance is coordinating the commercial decisions before and after production. [C1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "AI RFQ + CPQ: reads quotation requests, BOMs and drawings; compares revisions and supplier bids; proposes material, process, labour and tooling costs; applies pricing/approval rules; and follows quotes into orders/revenue. The brochure also advertises historical learning, an Athena assistant and voice commands. LogisticCX: container selection, mixed-goods loading, 3D plans and exportable reports. Pharma: NPI manages new products; PortfolioCX prioritises programmes; CGTOP coordinates cell/gene therapies; CRO supports clinical research. These are three distinct product families, not one factory module."
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Public product pages confirm quote versions, approvals, partner portals, pricing and order integration. Company LinkedIn confirms RFQ costing, freight/container planning and four pharma pillars. Its LogisticCX post describes irregular-product loading, weight/space balancing and freight analytics. The pharma website gives narrower detail than the brochure, particularly for clinical operations. LinkedIn was readable; X returned 403 and YouTube yielded only a channel shell. Three decoded QR codes reach commercecx.com; the clipped pharma QR could not decode, but its printed pharmaProducts.html page works. [C2–C6]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "No numerical public price was found. Expect a scoped software-and-implementation proposal. LogisticCX's cloud/on-premise options are brochure claims; no deployment specification was reviewed. PriceCX's Salesforce architecture should not automatically be assumed for every offering. Ask which licences, connectors, configuration and support are included. [C2]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Build continuity from enquiry to cost sheet, approved quote, production order and dispatch. Add supplier bid comparison and revision history first; loading optimisation suits customers with meaningful shipment volume. Pharma contributes reusable stage gates and audit history, while clinical workflows need specialists. Brochure figures such as 25–40% space savings, 90% time savings and zero errors are unverified marketing claims. AI drawing accuracy, exact clinical coverage and product-specific security/compliance attestations were not established."
+      }
+    ],
+    "sources": [
+      {"label": "C1 · Company", "url": "https://commercecx.com/"},
+      {"label": "C2 · Product catalogue", "url": "https://commercecx.com/products.html"},
+      {"label": "C3 · Pharma suite", "url": "https://commercecx.com/pharmaProducts.html"},
+      {"label": "C4 · LinkedIn", "url": "https://www.linkedin.com/company/commercecx"},
+      {"label": "C5 · LogisticCX", "url": "https://www.linkedin.com/posts/commercecx_logisticcx-scalefluidly-commercecx-activity-7470364161236070400-o7bC"},
+      {"label": "C6 · Portfolio/NPI", "url": "https://www.linkedin.com/posts/commercecx_biopharmaconclave-portfoliomanagement-activity-7469622950724370432-rWEe"}
+    ]
+  },
+  {
+    "id": "anjx",
+    "title": "AnjX Solutions",
+    "subtitle": "Demand, inventory and production planning for smaller manufacturers",
+    "material": "Video dated 7.11.12 AM: AnjX cover at approximately 0 seconds and interior at 3 seconds; no separate numbered photo.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "AnjX focuses on deciding what to stock, buy and produce. Its Cognitive Engine combines forecasting, inventory decisions and scenario simulation for small and medium enterprises. The public company profile places it in Chennai and identifies automotive and electronics manufacturers as target users. This is a planning proposition, rather than evidence of a complete factory execution system. [A1–A4]"
+      },
+      {
+        "heading": "Main capabilities",
+        "text": "Its solutions page covers demand forecasting, balancing stock availability against cash tied up in inventory, and production scheduling using capacity, people and materials. Scenario simulation lets planners consider changes before committing. In practical terms, the proposed value is fewer shortages, less excess stock and a more achievable production plan. Your video brochure presents a modular cloud offering and continuing support. Those packaging statements are distinct from proven forecast accuracy or measured scheduling improvement. [A2–A3; supplied video]"
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "The official vision page identifies a spare-parts pilot at Bajaj dealerships. Company LinkedIn describes the Cognitive Engine launch at UMAGINE TN 2026, manufacturing-SME positioning, pilot activity and the September 2026 Chennai factory summit. These confirm an active proposition; pilot success is vendor reported, without independent results reviewed. The linked Instagram page was throttled. The video's QR decodes to qrfy.io/TbOEEhO5KR, which redirects to a not-found page and returns 404. The printed anjx.in website works and provides an alternative route. [A1, A3–A5]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "No public numerical price was found. Cloud/modular packaging and 24×7 support appear in the brochure, but a contractual response-time commitment was not verified. Confirm data imports, supported ERP connections, planning limits, implementation effort and what happens when source data is incomplete. A dealership spare-parts pilot does not by itself demonstrate factory scheduling performance."
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Add simple material availability checks and capacity-aware scheduling, then forecasting where customers have reliable demand history. Connect plans to actual machine availability, stock and work-order progress in Xelor. Let planners compare scenarios and approve changes with reasons. Evaluate any planning partner on the customer's own history: compare forecasts with a simple baseline, test shortages and capacity conflicts, and measure planner effort. Do not assume that an AI label guarantees better forecasts, lower inventory or dependable delivery dates."
+      }
+    ],
+    "sources": [
+      {"label": "A1 · Company", "url": "https://www.anjx.in/"},
+      {"label": "A2 · Solutions", "url": "https://www.anjx.in/solutions"},
+      {"label": "A3 · Vision and pilot", "url": "https://www.anjx.in/vision"},
+      {"label": "A4 · LinkedIn", "url": "https://in.linkedin.com/company/anjx"},
+      {"label": "A5 · QR destination (404)", "url": "https://qrfy.io/TbOEEhO5KR"}
+    ]
+  },
+  {
+    "id": "slooze",
+    "title": "Slooze",
+    "subtitle": "Procurement, supplier coordination and supply-chain decisions",
+    "material": "Video dated 7.11.34 AM: September 2026 procurement playbooks and Slooze contact material; no separate numbered photo.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Slooze describes itself as AI-based supply-chain and procurement SaaS. Its public company LinkedIn lists Coimbatore and a 2025 founding year. Its central problem is coordinating suppliers, purchasing and external operations, including the decisions shared by procurement, finance and manufacturing teams. These are company descriptions, rather than independently verified delivery results. [S1–S2]"
+      },
+      {
+        "heading": "Main capabilities",
+        "text": "The official site advertises RFQs, contracts, budgets, payments/financing, customs, compliance, risk and operational workflows. A company-authored manufacturing article adds BOM-aware procurement, supplier discovery and alternates, supplier-performance signals, cost-volatility intelligence and common supplier documentation. It describes matching sourcing decisions to engineering needs, lead times and production requirements. The site calls its technology Unified SaaS, Rule Canvas and Insights Factory; these labels do not establish how much configuration or engineering a customer needs. [S1, S3]"
+      },
+      {
+        "heading": "Website, social and printed-link checks",
+        "text": "slooze.xyz redirects to the live www.slooze.xyz website. LinkedIn was publicly readable, including manufacturing-procurement and industry-event posts. Your video shows role-specific procurement playbooks for procurement chiefs, finance/project teams and owners/risk leaders. Full-resolution review confirms playbook@slooze.xyz is an email address; the back also shows hello@slooze.xyz. No email was sent and full playbooks were not obtained. The visible AOP / McKinsey & Company association wording remains an unverified brochure claim: no corroborating primary announcement was found. [S1–S2; supplied video]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "Slooze advertises a cloud platform, subscription/on-demand plans, REST APIs, SFTP, EDI and email integration. Named systems include SAP, Oracle, Salesforce, Dynamics 365 and Zoho. No public monetary price was readable. Confirm exact supported versions, data direction, setup charges, support and approval controls. Listed financing or payment functions do not establish lending availability or commercial terms. [S1]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Connect approved suppliers, purchase RFQs, bid comparison, budget approvals, delivery promises and supplier-quality exceptions to BOMs and production jobs. Give buyers, owners and accounts users different views of the same records. Start with accountable decisions and overdue alerts. Slooze's advertised 13–28% annual expense reduction and 50x speed, plus financial gains in anonymous examples, lack reviewed customer evidence. Request a working demonstration of one complete purchase cycle, including corrections and exceptions, before treating the broader platform claims as delivered capability."
+      }
+    ],
+    "sources": [
+      {"label": "S1 · Offering and integrations", "url": "https://www.slooze.xyz/"},
+      {"label": "S2 · LinkedIn", "url": "https://www.linkedin.com/company/slooze"},
+      {"label": "S3 · Manufacturing procurement", "url": "https://www.linkedin.com/pulse/procurement-new-power-lever-manufacturingheres-why-slooze-ptdzc"}
+    ]
+  },
+  {
+    "id": "tomax",
+    "title": "Tomax Digital / D3Minds",
+    "subtitle": "Connected production, warehouse, quality and engineering applications",
+    "material": "Supplied photos 19, 20, 21 and 22; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Tomax Digital is D3Minds' factory software platform. It connects production, quality, warehouse, planning, assets and engineering projects. Its website targets discrete manufacturers, including automotive, components, heavy industry, electrical and electronics. Its breadth makes it a useful reference for the operational applications a growing manufacturer may need around an ERP. [T1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "Production: scheduling/control, machine condition, OEE, dashboards, traceability and ERP integration. Warehouse: receiving, put-away, replenishment, e-Kanban, kitting, component history, scrap/rework, forklifts and dispatch. Quality: inspections, nonconformance, corrective/preventive action, calibration, FMEA, SPC, audits, complaints, documents, training and skills. Projects: capacity, dependencies, engineering changes, costs and timesheets. The brochure also names AI Studio, an industrial data hub, IIoT, maintenance and Odoo implementation, with SAP/Oracle/Dynamics connections. This extends well beyond monitoring machines."
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Public MES, quality and project pages corroborate substantial workflows. Quality covers suppliers, the factory and customer feedback. The official footer links to D3Minds LinkedIn; that profile and the Tomax showcase are readable. Posts discuss maintenance work orders, calibration, asset history, reliability measures, AI/vision quality, planning and warehouses. The QR in photo 19 opens tomaxdigital.com successfully. Named Amrapali and Howden case-study links lead to contact forms, so no detailed outcome study was obtained through those links. [T2–T6]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "The website explicitly offers cloud, on-premise or hybrid deployment; subscription or perpetual licences; and purchase by module. No numerical price was found. Obtain a proposal separating software, machine connections, ERP work, migration, training and support. Verify offline behaviour and compatibility with the customer's actual controller and ERP versions. A broad integration claim is not proof that a specific plant is ready to connect. [T1]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Prioritise material movement and lot history, inspection-to-corrective-action workflows, preventive maintenance and achievable scheduling. Connect these through common jobs, products and assets. Package training and continuing support alongside modules. Published productivity, downtime, defect and cost reductions remain vendor claims without reviewed baselines. Compliance-support features do not certify a customer. Tomax offers a strong scope comparison, but production maturity and the economics of a small-factory rollout still require a real pilot."
+      }
+    ],
+    "sources": [
+      {"label": "T1 · Platform and deployment", "url": "https://www.tomaxdigital.com/"},
+      {"label": "T2 · MES", "url": "https://www.tomaxdigital.com/products/manufacturing-execution-system"},
+      {"label": "T3 · Quality", "url": "https://www.tomaxdigital.com/products/enterprise-quality-management-system"},
+      {"label": "T4 · Projects", "url": "https://www.tomaxdigital.com/products/manufacturing-project-management.html"},
+      {"label": "T5 · D3Minds LinkedIn", "url": "https://www.linkedin.com/company/d3minds"},
+      {"label": "T6 · Tomax LinkedIn", "url": "https://www.linkedin.com/showcase/tomaxdigital/"}
+    ]
+  },
+  {
+    "id": "zeliot",
+    "title": "Zeliot / Condense",
+    "subtitle": "Live-data infrastructure and custom operational applications",
+    "material": "Supplied photos 17 and 18, originally upside down; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Condense is Zeliot's platform for moving, processing and acting on live data. It combines managed Kafka, connectors, transformations, application development, monitoring and governance. Think of it as a foundation connecting operational systems and custom applications. The reviewed material does not establish a complete ready-made ERP, MES or quality suite. [Z1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "The brochures connect legacy machines, PLC/DCS/SCADA, MES, ERP and sensors. They advertise business logic, alerts, workflows, reports and applications across plants and regions. Factory use cases include production/OEE visibility, process-quality correlation, traceability, maintenance anomalies and downtime intelligence. Zeliot also proposes delivery from integration and application development through deployment and operation. The website adds an AI-assisted development environment, custom connectors, roles and audit records. These tools still need useful business workflows and plant-specific configuration. [Z1]"
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Company LinkedIn is publicly readable and promotes factory integration, real-time dashboards and MQTT messages flowing into Kafka. Its September 2026 Chennai summit post matches the brochure's manufacturing focus. Both photo QR codes reach zeliot.in/events/learn-more-about-condense, a working enquiry form; nothing was submitted. Instagram could not be fetched and the YouTube channel was throttled. A named VECV case study describes connected-vehicle use with customer commentary, providing stronger context than a feature list alone. [Z2–Z4]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "The main model is Bring Your Own Cloud: deployment in the customer's AWS, Azure or Google Cloud account, with Zeliot operating the platform. Public pricing separates licence and cloud infrastructure and depends on workload. The page title's “from $800/month” is not an all-inclusive MSME quote. Estimate throughput, retention and support before judging affordability; a small line may not need an enterprise streaming platform. [Z1, Z5]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Adopt reusable machine/ERP connectors, validated event data, alert routing and monitored recovery. Consider Condense as a partner when several systems or plants justify its operating model. AIKYANTRA should still own the customer workflow and installation outcome. VECV's 250,000-plus vehicles and reported 20% cloud-cost/40% effort savings are vendor-published mobility results, not promises for manufacturing MSMEs. Connector compatibility, latency, access controls and total cost need testing against the customer's actual workload. No factory performance benchmark was run during this research. [Z4]"
+      }
+    ],
+    "sources": [
+      {"label": "Z1 · Platform", "url": "https://www.zeliot.in/"},
+      {"label": "Z2 · LinkedIn", "url": "https://www.linkedin.com/company/realzeliot"},
+      {"label": "Z3 · QR enquiry page", "url": "https://www.zeliot.in/events/learn-more-about-condense"},
+      {"label": "Z4 · VECV case", "url": "https://www.zeliot.in/customers/volvo-eicher-commercial-vehicles-connected-vehicles-condense"},
+      {"label": "Z5 · Pricing calculator", "url": "https://www.zeliot.in/pricing"}
+    ]
+  }
+]

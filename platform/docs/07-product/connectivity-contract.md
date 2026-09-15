@@ -1,15 +1,15 @@
-# Manufacturing connectivity and decisions
+# ONYX: manufacturing connectivity and decisions
 
-Phase 2 can work entirely from another system's evidence. A connection produces a dated,
+ONYX is the AI intelligence layer and can work entirely from another system's evidence. A connection produces a dated,
 tenant-owned snapshot. Order screening, recovery comparisons, and grounded questions read
-that selected snapshot. The native ONYX reader is optional; no external-source calculation
+that selected snapshot. The native XELOR ERP reader is optional; no external-source calculation
 silently queries the local ERP instead.
 
 ## Supported boundaries
 
 | Source | Implemented transport | Evidence and limits |
 |---|---|---|
-| Native ONYX | Tenant-scoped SQL reader | Orders, item availability, suppliers. Excludes quarantine and sales reservations. Production allocations and full BOM capacity still require confirmation. |
+| Native XELOR ERP | Tenant-scoped SQL reader | Orders, item availability, suppliers. Excludes quarantine and sales reservations. Production allocations and full BOM capacity still require confirmation. |
 | Odoo 19 | JSON-2 `search_read` | Product free stock, open sales-line quantities, supplier masters. Requires an API key and the vendor's external API entitlement. Due dates and supplier lead times remain unknown in this adapter. |
 | TallyPrime | XML export over HTTP | Stock items, units and closing quantity. Closing stock is retained as `onHandQty`; `availableQty` remains unknown until reservations are reconciled. |
 | SAP S/4HANA | Configured OData V2/V4 entity | Supplier, order-line or inventory mapping. `AvailableQuantity` must come from a reconciled view; physical stock is not substituted. Basic service-account authentication or bearer token. |

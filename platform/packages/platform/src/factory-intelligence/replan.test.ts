@@ -284,7 +284,7 @@ describe("governed breakdown replan analysis", () => {
     assert.equal(result.boundary.autoPublished, false);
     assert.equal(result.boundary.physicalCommandIssued, false);
     assert.match(result.boundary.statement, /proposal only/i);
-    assert.match(result.boundary.statement, /did not mutate an ONYX schedule/i);
+    assert.match(result.boundary.statement, /did not mutate a factory ERP schedule/i);
     assert.ok(result.proposals.every((proposal) => proposal.requiresHumanApproval));
     assert.ok(result.proposals.every((proposal) => !proposal.autoPublished));
   });

@@ -4,7 +4,7 @@
   "sslRequired": "none",
   "loginWithEmailAllowed": true,
   "editUsernameAllowed": true,
-  "displayName": "XELOR",
+  "displayName": "Workspace",
   "loginTheme": "indcore",
   "groups": [
     {
@@ -17,7 +17,7 @@
   "clients": [
     {
       "clientId": "indcore-api",
-      "name": "XELOR API",
+      "name": "Workspace API",
       "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,

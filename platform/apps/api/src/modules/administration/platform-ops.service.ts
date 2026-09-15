@@ -13,6 +13,7 @@ import {
   type ApiKeyRecord,
 } from "@ind-core/platform";
 import { AuditLogService } from "../../common/audit-log.service.js";
+import { assertGenericSettingWritable } from "./workspace-config.js";
 
 const { apiKey, featureFlag, systemSetting, licenceRecord, backupJob, appUser, appSession, loginAttempt } = schema;
 
@@ -151,6 +152,7 @@ export class PlatformOpsService {
    * is a floor until somebody writes a second code path.
    */
   async setSetting(key: string, value: string): Promise<Record<string, unknown>> {
+    assertGenericSettingWritable(key);
     const { actorId } = currentTenant();
     return withTenant(async (tx) => {
       const [row] = await tx.select().from(systemSetting).where(eq(systemSetting.settingKey, key)).limit(1);

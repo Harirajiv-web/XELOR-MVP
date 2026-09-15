@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "AIKYANTRA \u2014 ERP, manufacturing intelligence, supplier network and one integrated product.",
+  "description": "XELOR ERP, ONYX AI intelligence and the AIKYANTRA supplier network, with an integrated workspace.",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=22 <25",

@@ -1,0 +1,18 @@
+[
+  {
+    "file": "WhatsApp Video 2026-09-10 at 7.11.12 AM.mp4",
+    "video_id": 1,
+    "fps": 30.0,
+    "frames": 123,
+    "duration_seconds": 4.1,
+    "sampled_seconds": 5
+  },
+  {
+    "file": "WhatsApp Video 2026-09-10 at 7.11.34 AM.mp4",
+    "video_id": 2,
+    "fps": 30.002130833155764,
+    "frames": 704,
+    "duration_seconds": 23.465,
+    "sampled_seconds": 24
+  }
+]

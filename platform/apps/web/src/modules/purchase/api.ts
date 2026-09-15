@@ -80,6 +80,27 @@ export interface VendorRow {
   createdAt: string;
 }
 
+export interface VendorPerformance {
+  vendor: { id: string; code: string; name: string };
+  asOf: string;
+  orders: { total: number; completed: number; awaitingReceipt: number; overdue: number };
+  delivery: { sampleSize: number; onTime: number; onTimeRate: number | null; excludedCompleted: number };
+  receipts: { count: number };
+  quality: {
+    inspectionCount: number;
+    excludedInspections: number;
+    materials: {
+      itemId: string; itemCode: string | null; itemName: string | null; uom: string | null;
+      receivedQty: number; inspectionCount: number; acceptedQty: number; rejectedQty: number;
+      rejectionRate: number | null; inspections: { id: string; inspectionNo: string }[];
+    }[];
+  };
+  evidence: { poId: string; poNo: string; status: string; expectedDate: string | null; lastReceiptDate: string | null }[];
+  method: string;
+}
+
+export const vendorPerformancePath = (id: string): string => `/purchase/vendors/${encodeURIComponent(id)}/performance`;
+
 /** `batch` is a NOT NULL column defaulting to "" — an unbatched receipt is "", never null. */
 export interface GrnLineRow {
   lineNo: number;

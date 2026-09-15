@@ -302,7 +302,7 @@ function assertProjectionAndEvidenceConsistent(
   if (projectionAge > MAX_PROJECTION_AGE_MS || projectionAge < -MAX_FUTURE_SKEW_MS) {
     upstreamError(
       "ONYX_FACTORY_PROJECTION_STALE",
-      "ONYX returned a factory projection outside the accepted five-minute generation window.",
+      "The factory ERP returned a projection outside the accepted five-minute generation window.",
     );
   }
   const machinesMissingEvidence = parsed.machines.some(
@@ -312,7 +312,7 @@ function assertProjectionAndEvidenceConsistent(
   if (machinesMissingEvidence) {
     upstreamError(
       "ONYX_FACTORY_EVIDENCE_MISSING",
-      "ONYX returned a configured mock machine without observed-at or evidence-age evidence.",
+      "The factory ERP returned a configured mock machine without observed-at or evidence-age evidence.",
     );
   }
   const generatedMs = Date.parse(parsed.freshness.generatedAt);
@@ -329,14 +329,14 @@ function assertProjectionAndEvidenceConsistent(
   ) {
     upstreamError(
       "ONYX_FACTORY_EVIDENCE_FUTURE",
-      "ONYX returned machine evidence timestamped beyond the accepted clock-skew window.",
+      "The factory ERP returned machine evidence timestamped beyond the accepted clock-skew window.",
     );
   }
   const actualFreshestMs = Math.max(...observedTimes);
   if (freshest !== null && Date.parse(freshest) !== actualFreshestMs) {
     upstreamError(
       "ONYX_FACTORY_FRESHNESS_INVALID",
-      "ONYX freshestObservedAt does not match the newest machine observation.",
+      "The factory ERP's freshestObservedAt does not match the newest machine observation.",
     );
   }
   const flaggedStaleCount = parsed.machines.filter(
@@ -345,7 +345,7 @@ function assertProjectionAndEvidenceConsistent(
   if (parsed.freshness.staleMachineCount !== flaggedStaleCount) {
     upstreamError(
       "ONYX_FACTORY_STALE_COUNT_INVALID",
-      "ONYX staleMachineCount does not match the machine evidenceStale flags.",
+      "The factory ERP's staleMachineCount does not match the machine evidenceStale flags.",
     );
   }
 
@@ -368,7 +368,7 @@ function assertProjectionAndEvidenceConsistent(
   if (!summaryMatches) {
     upstreamError(
       "ONYX_FACTORY_SUMMARY_INVALID",
-      "ONYX factory summary counts do not match the versioned evidence arrays.",
+      "The factory ERP summary counts do not match the versioned evidence arrays.",
     );
   }
   if (
@@ -377,7 +377,7 @@ function assertProjectionAndEvidenceConsistent(
   ) {
     upstreamError(
       "ONYX_FACTORY_LINK_INVALID",
-      "ONYX returned an at-risk job or replan proposal without its assignment evidence.",
+      "The factory ERP returned an at-risk job or replan proposal without its assignment evidence.",
     );
   }
   if (
@@ -389,7 +389,7 @@ function assertProjectionAndEvidenceConsistent(
   ) {
     upstreamError(
       "ONYX_FACTORY_WORK_CENTER_LINK_MISSING",
-      "An ONYX OEE or assignment row is missing its work-centre reference.",
+      "A factory ERP OEE or assignment row is missing its work-centre reference.",
     );
   }
   if (
@@ -404,13 +404,13 @@ function assertProjectionAndEvidenceConsistent(
   ) {
     upstreamError(
       "ONYX_FACTORY_REPLAN_INVALID",
-      "ONYX returned a proposed alternate without distinct source and target asset evidence.",
+      "The factory ERP returned a proposed alternate without distinct source and target asset evidence.",
     );
   }
   if (!parsed.machines.some((machine) => machine.oee !== null)) {
     upstreamError(
       "ONYX_FACTORY_OEE_INPUTS_MISSING",
-      "ONYX returned no raw OEE inputs for the 3S factory snapshot.",
+      "The factory ERP returned no raw OEE inputs for the 3S factory snapshot.",
     );
   }
 }
@@ -425,7 +425,7 @@ export function parseOnyxFactoryOperations(
     const field = first?.path.join(".") || "response";
     upstreamError(
       "ONYX_FACTORY_CONTRACT_INVALID",
-      `ONYX factory operations did not match factory-operations.v1 at '${field}'.`,
+      `The factory ERP operations did not match factory-operations.v1 at '${field}'.`,
     );
   }
   const parsed = result.data;
@@ -470,13 +470,13 @@ export async function fetchOnyxFactoryOperations(
   } catch {
     upstreamError(
       "ONYX_FACTORY_UNREACHABLE",
-      "XELOR could not reach the configured ONYX factory operations endpoint.",
+      "ONYX could not reach the configured factory ERP operations endpoint.",
     );
   }
   if (!response.ok) {
     upstreamError(
       "ONYX_FACTORY_UPSTREAM_REFUSED",
-      `ONYX refused the factory operations read with HTTP ${response.status}.`,
+      `The factory ERP refused the operations read with HTTP ${response.status}.`,
     );
   }
 
@@ -486,7 +486,7 @@ export async function fetchOnyxFactoryOperations(
   } catch {
     upstreamError(
       "ONYX_FACTORY_RESPONSE_INVALID",
-      "ONYX returned a non-JSON factory operations response.",
+      "The factory ERP returned a non-JSON operations response.",
     );
   }
   return parseOnyxFactoryOperations(raw, { now: options.now, maxEvidenceAgeMs });

@@ -129,12 +129,12 @@ export const purchaseManifest: ModuleManifest = {
         "Every order placed on a supplier, with what has been received against it so far. Receiving goods does not happen here — a goods receipt is a separate document, and stock only moves when one is recorded. An order shown as fully received has had its quantity matched, not merely its delivery promised.",
     },
     {
-      label: "Vendors",
+      label: "Suppliers & performance",
       path: "vendors",
       permission: "purchase.vendor.read",
       icon: "Truck",
       description:
-        "The supplier master — who the plant is allowed to buy from, with their GSTIN and terms. A vendor is never deleted, only made inactive, because orders and invoices already point at them and the audit trail has to survive a supplier you stopped using.",
+        "Review existing suppliers, completed-order delivery performance and incoming quality by material. Open the purchase orders and inspections behind each figure; missing evidence stays unknown.",
     },
     {
       label: "Purchase order",

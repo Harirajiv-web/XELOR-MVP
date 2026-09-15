@@ -79,7 +79,7 @@ async function signIn(
   await page.goto("/");
   await page.getByRole("textbox", { name: "Username or email" }).fill(username);
   await page.getByRole("textbox", { name: "Password" }).fill(password);
-  await page.getByRole("button", { name: "Enter XELOR" }).click();
+  await page.getByRole("button", { name: "Enter workspace" }).click();
   const brain = page.getByRole("button", {
     name: "Enter the factory intelligence",
   });

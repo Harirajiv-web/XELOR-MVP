@@ -1,4 +1,5 @@
-import { isModuleEnabled } from "@spine/product/profile";
+import { isModuleEnabled, PRODUCT_PROFILE } from "@spine/product/profile";
+import { erpCoreManifest } from "@spine/product/erp-core";
 import type { ModuleManifest } from "@spine/registry/manifest";
 
 import { copilotManifest } from "./copilot/manifest";
@@ -30,6 +31,14 @@ import { managedServicesManifest } from "./managed-services/manifest";
 import { platformHealthManifest } from "./platform-health/manifest";
 import { connectivityManifest } from "./connectivity/manifest";
 import { decisionworkspaceManifest } from "./decisionworkspace/manifest";
+// Project X — the six connected packages. Each adds screens over the ERP APIs it
+// extends; none of them introduces a permission, an endpoint or a migration.
+import { safetyManifest } from "./safety/manifest";
+import { costingManifest } from "./costing/manifest";
+import { engChangeManifest } from "./engchange/manifest";
+import { plantOpsManifest } from "./plantops/manifest";
+import { warehouseManifest } from "./warehouse/manifest";
+import { deliveryManifest } from "./delivery/manifest";
 
 /**
  * THE INSTALLED MODULES. This list is the whole of "which modules does this build contain".
@@ -86,15 +95,22 @@ export const INSTALLED_MODULES: readonly ModuleManifest[] = [
   administrationManifest,
   integrationManifest,
   dataImportManifest,
+  safetyManifest,
+  costingManifest,
+  engChangeManifest,
+  plantOpsManifest,
+  warehouseManifest,
+  deliveryManifest,
 ];
 
 /** Sidebar order, then alphabetical — so adding a module never shuffles the others. */
 export function orderedModules(): readonly ModuleManifest[] {
-  return INSTALLED_MODULES.filter((module) => isModuleEnabled(module.key)).sort(
+  return INSTALLED_MODULES.filter((module) => isModuleEnabled(module.key)).map(module => PRODUCT_PROFILE.phase === "1" ? erpCoreManifest(module) : module).sort(
     (a, b) => a.order - b.order || a.name.localeCompare(b.name),
   );
 }
 
 export function findModule(key: string): ModuleManifest | undefined {
-  return INSTALLED_MODULES.find((m) => m.key === key && isModuleEnabled(m.key));
+  const manifest = INSTALLED_MODULES.find((m) => m.key === key && isModuleEnabled(m.key));
+  return manifest && PRODUCT_PROFILE.phase === "1" ? erpCoreManifest(manifest) : manifest;
 }

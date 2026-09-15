@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4b1d30">
+  <meta name="description" content="The XELOR ecosystem consolidated from eighteen separate offerings into eight, grouped by shared data foundation, buyer and delivery motion.">
+  <title>XELOR &mdash; consolidated ecosystem</title>
+  <style>
+    :root{color-scheme:light;--paper:#faf8f3;--ink:#243247;--muted:#687080;--maroon:#4b1d30;--gold:#d7af60;--line:#e5dfd4;--navy:#1e3048;--app:#833c53;--bronze:#9b7730;--delivery:#78643d}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    button{font:inherit}
+    button:focus-visible,a:focus-visible{outline:3px solid #32668c;outline-offset:4px}
+    html{scroll-behavior:smooth;scroll-padding-top:20px}[hidden]{display:none!important}
+    a{color:#704828;text-underline-offset:3px}
+    .page{max-width:1740px;margin:auto;padding:30px 38px 24px}
+    .masthead{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:23px;border-bottom:1px solid var(--line)}
+    .wordmark{display:flex;gap:13px;align-items:center}
+    .brand-symbol{width:39px;height:39px;border-radius:11px;background:var(--maroon);color:#e9c77c;display:grid;place-items:center;font-size:23px;font-weight:650}
+    .wordmark strong{font-size:17px;letter-spacing:.15em}
+    .wordmark small{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+    .context{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#766950}
+    .context span{display:inline-block;width:6px;height:6px;margin-right:8px;background:var(--gold);border-radius:50%}
+    .intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin:27px 0 22px}
+    .eyebrow{font-size:10px;letter-spacing:.16em;font-weight:700;text-transform:uppercase;color:#8a6a31;margin:0 0 8px}
+    h1{font-size:clamp(27px,3vw,42px);line-height:1.13;font-weight:620;letter-spacing:-.04em;color:var(--maroon);margin:0 0 10px}
+    .intro p:last-child{font-size:14px;line-height:1.6;color:var(--muted);margin:0;max-width:700px}
+    .intro-note{font-size:12px;line-height:1.5;text-align:right;color:#626c7b;max-width:215px;flex-shrink:0}
+    .tally{display:flex;flex-wrap:wrap;gap:0;margin:0 0 20px;border:1px solid #deccaa;border-radius:12px;background:#f5ecd9;overflow:hidden}
+    .tally div{flex:1;min-width:150px;padding:15px 20px;border-right:1px solid #e4d5b8}
+    .tally div:last-child{border-right:0}
+    .tally b{display:block;font-size:26px;font-weight:650;letter-spacing:-.03em;color:var(--maroon);line-height:1.1}
+    .tally span{display:block;font-size:11px;line-height:1.55;color:#6e5732;margin-top:5px}
+    .legend{display:flex;flex-wrap:wrap;gap:10px 24px;margin:0 0 18px;padding:0;list-style:none;font-size:11px;color:#596375}
+    .legend li{display:flex;align-items:center;gap:8px}
+    .swatch{width:8px;height:8px;border-radius:50%;background:var(--navy)}
+    .swatch.bronze{background:var(--bronze)}.swatch.application{background:var(--app)}.swatch.delivery{background:var(--delivery)}
+    .diagram-board{background:#fffefa;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 12px 35px #33241304}
+    .board-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 20px;border-bottom:1px solid #eee9df}
+    .board-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#72757c}
+    .board-label svg{color:#967431}
+    .text-button{border:1px solid #e5ded1;background:#fffefa;border-radius:7px;color:#596375;padding:7px 10px;font-size:11px;cursor:pointer;text-decoration:none;display:inline-block}
+    .text-button:hover{background:#f5efe3;color:var(--maroon)}
+    .map-viewport{overflow:auto;max-height:84vh;scrollbar-color:#d3c5ae #f9f6ee;overscroll-behavior:contain}
+    .ecosystem-map{display:block;width:100%;min-width:1150px;height:auto;user-select:none;-webkit-user-select:none;font-family:"Segoe UI",Arial,sans-serif}
+    .ecosystem-map .connection{transition:opacity .18s,stroke-width .18s}
+    .ecosystem-map .node{cursor:pointer;outline:none}
+    .ecosystem-map .node .node-card{transition:stroke-width .18s,filter .18s}
+    .ecosystem-map .node:hover .node-card{filter:drop-shadow(0 4px 7px #34241818);stroke-width:2.5}
+    .ecosystem-map .node:focus-visible .focus-ring{stroke:#32668c;stroke-width:4;opacity:1}
+    .ecosystem-map .node.is-selected .focus-ring{opacity:1;stroke-width:2.5}
+    .ecosystem-map .node.is-selected .node-card{stroke-width:2.2}
+    .ecosystem-map.has-selection .connection{opacity:.22}
+    .ecosystem-map.has-selection .connection.is-selected{opacity:1;stroke-width:3.2}
+    .ecosystem-map text{pointer-events:none}
+    .map-caption{display:flex;justify-content:space-between;gap:18px;border-top:1px solid #eee9df;padding:13px 20px;font-size:11px;line-height:1.5;color:#67676b}
+    .map-caption strong{color:#6f5b38;font-weight:600}
+    .detail{margin-top:18px;border:1px solid var(--line);border-radius:16px;background:#fffefa;overflow:hidden}
+    .detail-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:19px 24px;border-bottom:1px solid #eee9df}
+    .detail-heading h2{font-size:21px;letter-spacing:-.025em;margin:3px 0 0;font-weight:620;color:var(--maroon)}
+    .detail-kicker{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#7b6137}
+    .ratio-badge{font-size:12px;font-weight:650;padding:7px 12px;border:1px solid #e5dac4;background:#f8f1e3;color:#745e34;border-radius:7px;white-space:nowrap}
+    .detail-columns{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:26px;padding:21px 24px 23px}
+    .detail-columns h3{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#77613b;margin:0 0 8px}
+    .detail-columns p{font-size:13px;line-height:1.7;color:#546071;margin:0}
+    .absorbs{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:7px}
+    .absorbs li{font-size:11px;line-height:1.5;border:1px solid #e7dccc;border-radius:5px;background:#faf7ef;padding:5px 9px;color:#645b4c}
+    .readiness{border-top:1px solid #eee9df;padding:16px 24px 19px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+    .readiness h3{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#77613b;margin:0 14px 0 0}
+    .pill{font-size:11px;line-height:1.6;padding:4px 9px;border-radius:5px}
+    .pill.extend{background:#e9eff5;color:#315775}
+    .pill.new{background:#f3e8ee;color:#77334e}
+    .pill.partner{background:#edeff4;color:#4d5370}
+    .pill.delivery{background:#f3ecdd;color:#705a32}
+    h2.section-title{font-size:clamp(23px,2.5vw,32px);letter-spacing:-.035em;color:var(--maroon);margin:0 0 10px;font-weight:620}
+    .section-lede{font-size:13px;line-height:1.7;color:#596375;max-width:830px;margin:0 0 22px}
+    .mapping{margin-top:46px}
+    .merge-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+    .merge-card{border:1px solid #e4ddd1;border-top:4px solid var(--app);border-radius:12px;background:#fffefa;overflow:hidden;min-width:0}
+    .merge-card.keep{border-top-color:var(--navy)}
+    .merge-card.keep-bronze{border-top-color:var(--bronze)}
+    .merge-card.services{border-top-color:var(--delivery)}
+    .merge-card header{padding:19px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .merge-card h3{margin:0;font-size:19px;letter-spacing:-.025em;color:#3b2940;line-height:1.25}
+    .merge-ratio{white-space:nowrap;font-size:11px;font-weight:650;color:#6c3148;background:#f5eddd;padding:5px 8px;border-radius:5px;margin-top:2px}
+    .merge-card>p{font-size:12.5px;line-height:1.7;color:#576172;margin:12px 20px}
+    .merge-from{list-style:none;margin:0;padding:0 20px 4px;display:flex;flex-wrap:wrap;gap:6px}
+    .merge-from li{font-size:11px;line-height:1.5;border:1px solid #e7dccc;border-radius:5px;background:#f8f5ee;padding:4px 8px;color:#6b6252}
+    .merge-why{margin:12px 20px;background:#f8f5ee;border:1px solid #eee7d9;padding:11px 12px;border-radius:7px;font-size:12px;line-height:1.7;color:#576172}
+    .merge-why strong{display:block;color:#574b36;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;font-weight:700}
+    .merge-foot{border-top:1px solid #eee8dd;background:#fcfaf5;padding:12px 20px 15px;font-size:11px;line-height:1.7;color:#6a6255}
+    .merge-foot b{color:#5d5040}
+    .kept{margin-top:38px;background:#f3eddf;border:1px solid #e6d9c2;border-radius:15px;padding:24px}
+    .kept-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px}
+    .kept-grid article{border-top:2px solid #c9a45c;padding-top:12px}
+    .kept-grid h3{font-size:13px;line-height:1.5;color:var(--maroon);margin:0 0 7px}
+    .kept-grid p{font-size:12px;line-height:1.7;color:#625f58;margin:0}
+    .caveat{margin:26px 0 0;border-left:3px solid #cba356;background:#f3eee3;padding:14px 18px;color:#645a49;font-size:12px;line-height:1.75}
+    .caveat p{margin:0}.caveat p+p{margin-top:8px}
+    .footer{display:flex;justify-content:space-between;gap:24px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:10px;line-height:1.6;color:#706a61}
+    .footer p{margin:0;max-width:720px}
+    .footer .date{white-space:nowrap}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .noscript{margin:16px 0;color:#685237;font-size:13px;line-height:1.6}
+    @media(max-width:1150px){.merge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:850px){.page{padding:22px 20px}.intro{align-items:flex-start}.intro-note{display:none}.detail-columns{grid-template-columns:1fr;gap:20px}.detail-heading{align-items:flex-start;flex-direction:column;gap:10px}.footer{flex-direction:column;gap:7px}.map-viewport{max-height:65vh}.kept-grid{grid-template-columns:1fr}}
+    @media(max-width:750px){.merge-grid{grid-template-columns:1fr}}
+    @media(max-width:520px){.page{padding:18px 12px}.masthead{padding-bottom:17px}.context{font-size:9px;max-width:104px;text-align:right;line-height:1.6}.legend{gap:10px 16px;font-size:10px}.diagram-board{border-radius:15px}.board-toolbar{padding:11px 12px}.map-caption{padding:11px 12px;flex-direction:column;gap:3px}.detail-heading,.detail-columns{padding:17px 16px}.tally div{min-width:120px;padding:13px 16px}.kept{padding:18px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+    @media print{@page{size:landscape;margin:10mm}.page{padding:0;max-width:none}.masthead,.intro-note,.toolbar-actions,.detail,.map-caption{display:none}.intro{margin:0 0 10px}h1{font-size:24px}.diagram-board{box-shadow:none;border-radius:8px}.map-viewport{max-height:none;overflow:visible}.ecosystem-map{min-width:0;width:100%;max-height:150mm}.merge-grid{grid-template-columns:repeat(3,1fr)}.mapping{page-break-before:always}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <div class="wordmark"><span class="brand-symbol" aria-hidden="true">X</span><div><strong>XELOR</strong><small>Consolidated ecosystem</small></div></div>
+    <div class="context"><span></span>Packaging proposal</div>
+  </header>
+
+  <section class="intro" aria-labelledby="page-title">
+    <div>
+      <p class="eyebrow">Fewer things to explain, buy and build</p>
+      <h1 id="page-title">Eighteen offerings, eight packages.</h1>
+      <p>The same 94 researched capabilities, regrouped by what they actually share &mdash; one data foundation, one buyer, one delivery motion. Nothing was dropped and nothing was invented. Only the packaging changed.</p>
+    </div>
+    <div class="intro-note">Select a package.<br>See what it absorbs, and why.</div>
+  </section>
+
+  <div class="tally">
+    <div><b>18 &rarr; 8</b><span>surrounding offerings, after merging</span></div>
+    <div><b>16 &rarr; 6</b><span>excluding the two products that already ship</span></div>
+    <div><b>5 &rarr; 1</b><span>the largest merge: every delivery service</span></div>
+    <div><b>94</b><span>capabilities carried across, unchanged</span></div>
+  </div>
+
+  <ul class="legend" aria-label="Diagram categories">
+    <li><span class="swatch"></span>Existing product &mdash; ONYX</li>
+    <li><span class="swatch bronze"></span>Existing product &mdash; AIKYANTRA</li>
+    <li><span class="swatch application"></span>Application packages (merged)</li>
+    <li><span class="swatch delivery"></span>Services (merged)</li>
+  </ul>
+
+  <section class="diagram-board" aria-label="Consolidated XELOR ecosystem diagram">
+    <div class="board-toolbar">
+      <div class="board-label"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3" stroke="currentColor"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-dasharray="2 3"/></svg>Eight connections instead of eighteen</div>
+      <div class="toolbar-actions"><button class="text-button" type="button" id="core-button">Back to ERP</button></div>
+    </div>
+    <div class="map-viewport" id="map-viewport" tabindex="0" aria-label="Scrollable diagram. Tab to a package and press Enter to select it.">
+      <svg xmlns="http://www.w3.org/2000/svg" id="ecosystem-map" class="ecosystem-map" viewBox="0 0 1600 1040" role="group" aria-labelledby="map-title map-description">
+<title id="map-title">XELOR ERP and eight consolidated offerings</title>
+<desc id="map-description">XELOR ERP is at the centre. Eight surrounding packages connect to it: two existing products kept separate (ONYX and AIKYANTRA), five merged application packages, and one merged services package. Select a package for what it absorbs, why those parts belong together, and its readiness.</desc>
+<defs>
+ <linearGradient id="core-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#63253d"/><stop offset="100%" stop-color="#3a1727"/></linearGradient>
+ <linearGradient id="core-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0d49b"/><stop offset="45%" stop-color="#b88b37"/><stop offset="100%" stop-color="#ecd097"/></linearGradient>
+</defs>
+<rect width="1600" height="1040" fill="#fffefa"/>
+<ellipse cx="800" cy="520" rx="700" ry="480" fill="#fcf9f0"/>
+<ellipse cx="800" cy="520" rx="620" ry="405" fill="none" stroke="#eae4d7" stroke-width="1.2"/>
+<ellipse cx="800" cy="520" rx="530" ry="345" fill="none" stroke="#e9dfca" stroke-width="1" stroke-dasharray="2 8"/>
+<circle cx="800" cy="520" r="238" fill="none" stroke="#e8ddc6" stroke-width="1" stroke-dasharray="2 7"/>
+<text x="800" y="52" text-anchor="middle" font-size="11" letter-spacing="3" fill="#77684d">EIGHT CONSOLIDATED OFFERINGS</text>
+
+<path class="connection" data-connection="onyx" d="M 711.4 380.8 L 626.5 247.4" fill="none" stroke="#1e3048" stroke-width="1.4" opacity=".45"/><circle cx="711.4" cy="380.8" r="3" fill="#1e3048" opacity=".7"/>
+<path class="connection" data-connection="aikyantra" d="M 888.6 380.8 L 973.5 247.4" fill="none" stroke="#9b7730" stroke-width="1.4" opacity=".45"/><circle cx="888.6" cy="380.8" r="3" fill="#9b7730" opacity=".7"/>
+<path class="connection" data-connection="plant" d="M 959.3 477.1 L 1236.9 402.3" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="959.3" cy="477.1" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="compliance" d="M 959.3 562.9 L 1236.9 637.7" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="959.3" cy="562.9" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="logistics" d="M 888.6 659.2 L 973.5 792.6" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="888.6" cy="659.2" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="planning" d="M 711.4 659.2 L 626.5 792.6" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="711.4" cy="659.2" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="revenue" d="M 640.7 562.9 L 363.1 637.7" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="640.7" cy="562.9" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="services" d="M 640.7 477.1 L 363.1 402.3" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="640.7" cy="477.1" r="3" fill="#78643d" opacity=".7"/>
+
+<g class="core">
+  <circle cx="800" cy="520" r="176" fill="none" stroke="url(#core-rim)" stroke-width="2.4" opacity=".85"/>
+  <circle cx="800" cy="520" r="168" fill="none" stroke="url(#core-rim)" stroke-width="1.2" opacity=".55"/>
+  <circle cx="800" cy="520" r="158" fill="url(#core-fill)"/>
+  <text x="800" y="464" text-anchor="middle" font-size="10" letter-spacing="2.4" fill="#cfa96a">THE BUSINESS CORE</text>
+  <text x="800" y="512" text-anchor="middle" font-size="42" letter-spacing="3" font-weight="600" fill="#eccb8a">XELOR</text>
+  <text x="800" y="538" text-anchor="middle" font-size="15" letter-spacing="7" fill="#e0c188">ERP</text>
+  <text x="800" y="572" text-anchor="middle" font-size="12" fill="#e9d6b4">Orders &#183; Stock &#183; Finance</text>
+  <text x="800" y="592" text-anchor="middle" font-size="12" fill="#e9d6b4">People &#183; Approvals &#183; Reports</text>
+  <text x="800" y="625" text-anchor="middle" font-size="9" letter-spacing="2" fill="#bd9a5f">SYSTEM OF RECORD</text>
+</g>
+
+<g class="node" data-node="onyx" tabindex="0" role="button" aria-label="ONYX, existing product, kept separate">
+  <rect class="focus-ring" x="467" y="150" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="471" y="154" width="252" height="94" rx="12" fill="#1e3048" stroke="#16243a" stroke-width="1.5"/>
+  <text x="487" y="180" font-size="9" letter-spacing="1.3" fill="#a9bdd4">EXISTING PRODUCT &#183; KEPT</text>
+  <text x="487" y="208" font-size="19" font-weight="600" fill="#ffffff">ONYX</text>
+  <text x="487" y="230" font-size="12" fill="#b9c9dc">AI intelligence &#183; profile 2</text>
+</g>
+<g class="node" data-node="aikyantra" tabindex="0" role="button" aria-label="AIKYANTRA, existing product, kept separate">
+  <rect class="focus-ring" x="873" y="150" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="877" y="154" width="252" height="94" rx="12" fill="#f4e7c8" stroke="#c3a15b" stroke-width="1.5"/>
+  <text x="893" y="180" font-size="9" letter-spacing="1.3" fill="#8a6f36">EXISTING PRODUCT &#183; KEPT</text>
+  <text x="893" y="208" font-size="19" font-weight="600" fill="#4b3a18">AIKYANTRA</text>
+  <text x="893" y="230" font-size="12" fill="#7a6432">Supplier network &#183; profile 3</text>
+</g>
+<g class="node" data-node="plant" tabindex="0" role="button" aria-label="Plant Operations, three offerings merged into one">
+  <rect class="focus-ring" x="1160" y="337" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="1164" y="341" width="252" height="94" rx="12" fill="#fdf7f9" stroke="#833c53" stroke-width="1.5"/>
+  <text x="1180" y="367" font-size="9" letter-spacing="1.3" fill="#9c5570">APPLICATION PACKAGE</text>
+  <text x="1400" y="367" text-anchor="end" font-size="11" font-weight="700" fill="#833c53">3 &#8594; 1</text>
+  <text x="1180" y="395" font-size="18" font-weight="600" fill="#3b2940">Plant</text>
+  <text x="1180" y="417" font-size="18" font-weight="600" fill="#3b2940">Operations</text>
+</g>
+<g class="node" data-node="compliance" tabindex="0" role="button" aria-label="Quality, Safety and Compliance, two offerings merged into one">
+  <rect class="focus-ring" x="1160" y="601" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="1164" y="605" width="252" height="94" rx="12" fill="#fdf7f9" stroke="#833c53" stroke-width="1.5"/>
+  <text x="1180" y="631" font-size="9" letter-spacing="1.3" fill="#9c5570">APPLICATION PACKAGE</text>
+  <text x="1400" y="631" text-anchor="end" font-size="11" font-weight="700" fill="#833c53">2 &#8594; 1</text>
+  <text x="1180" y="659" font-size="18" font-weight="600" fill="#3b2940">Quality, Safety</text>
+  <text x="1180" y="681" font-size="18" font-weight="600" fill="#3b2940">&amp; Compliance</text>
+</g>
+<g class="node" data-node="logistics" tabindex="0" role="button" aria-label="Warehouse and Dispatch, two offerings merged into one">
+  <rect class="focus-ring" x="873" y="788" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="877" y="792" width="252" height="94" rx="12" fill="#fdf7f9" stroke="#833c53" stroke-width="1.5"/>
+  <text x="893" y="818" font-size="9" letter-spacing="1.3" fill="#9c5570">APPLICATION PACKAGE</text>
+  <text x="1113" y="818" text-anchor="end" font-size="11" font-weight="700" fill="#833c53">2 &#8594; 1</text>
+  <text x="893" y="846" font-size="18" font-weight="600" fill="#3b2940">Warehouse</text>
+  <text x="893" y="868" font-size="18" font-weight="600" fill="#3b2940">&amp; Dispatch</text>
+</g>
+<g class="node" data-node="planning" tabindex="0" role="button" aria-label="Planning and Engineering, two offerings merged into one">
+  <rect class="focus-ring" x="467" y="788" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="471" y="792" width="252" height="94" rx="12" fill="#fdf7f9" stroke="#833c53" stroke-width="1.5"/>
+  <text x="487" y="818" font-size="9" letter-spacing="1.3" fill="#9c5570">APPLICATION PACKAGE</text>
+  <text x="707" y="818" text-anchor="end" font-size="11" font-weight="700" fill="#833c53">2 &#8594; 1</text>
+  <text x="487" y="846" font-size="18" font-weight="600" fill="#3b2940">Planning</text>
+  <text x="487" y="868" font-size="18" font-weight="600" fill="#3b2940">&amp; Engineering</text>
+</g>
+<g class="node" data-node="revenue" tabindex="0" role="button" aria-label="Revenue and Service, two offerings merged into one">
+  <rect class="focus-ring" x="180" y="601" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="184" y="605" width="252" height="94" rx="12" fill="#fdf7f9" stroke="#833c53" stroke-width="1.5"/>
+  <text x="200" y="631" font-size="9" letter-spacing="1.3" fill="#9c5570">APPLICATION PACKAGE</text>
+  <text x="420" y="631" text-anchor="end" font-size="11" font-weight="700" fill="#833c53">2 &#8594; 1</text>
+  <text x="200" y="659" font-size="18" font-weight="600" fill="#3b2940">Revenue</text>
+  <text x="200" y="681" font-size="18" font-weight="600" fill="#3b2940">&amp; Service</text>
+</g>
+<g class="node" data-node="services" tabindex="0" role="button" aria-label="Delivery and Managed Services, five offerings merged into one">
+  <rect class="focus-ring" x="180" y="337" width="260" height="102" rx="15" fill="none" stroke="#c5a66b" stroke-width="2" opacity="0"/>
+  <rect class="node-card" x="184" y="341" width="252" height="94" rx="12" fill="#f8f4e9" stroke="#78643d" stroke-width="1.5"/>
+  <text x="200" y="367" font-size="9" letter-spacing="1.3" fill="#7d6738">SERVICES &#183; NOT SOFTWARE</text>
+  <text x="420" y="367" text-anchor="end" font-size="11" font-weight="700" fill="#6b5528">5 &#8594; 1</text>
+  <text x="200" y="395" font-size="18" font-weight="600" fill="#3c3320">Delivery &amp;</text>
+  <text x="200" y="417" font-size="18" font-weight="600" fill="#3c3320">Managed Services</text>
+</g>
+      </svg>
+    </div>
+    <div class="map-caption">
+      <span><strong>Every package still connects only to XELOR.</strong> Merging changed how the ring is grouped and sold, not what the ERP core owns.</span>
+      <span class="desktop-hint">Select a package for detail.</span>
+    </div>
+  </section>
+
+  <p class="sr-only" id="selection-announcement" role="status" aria-live="polite" aria-atomic="true">XELOR ERP selected. Details are below the diagram.</p>
+
+  <section class="detail" id="detail" aria-live="polite">
+    <div class="detail-heading">
+      <div><p class="detail-kicker" id="detail-kicker">Core business workspace</p><h2 id="detail-title">XELOR ERP</h2></div>
+      <span class="ratio-badge" id="detail-ratio">The centre &#183; unchanged</span>
+    </div>
+    <div class="detail-columns">
+      <div><h3>What it is</h3><p id="detail-purpose">Runs the everyday business: customers, orders, purchasing, inventory, finance, people and approvals. Every package on the ring reads from it and writes back to it.</p></div>
+      <div><h3>What it absorbs</h3><ul class="absorbs" id="detail-absorbs"><li>Nothing &mdash; the core was not regrouped</li></ul></div>
+      <div><h3>Why these belong together</h3><p id="detail-why">The consolidation applies only to the ring. Routine transactions, operator actions, budget controls, internal supplier history, basic reporting and permissions stay here regardless of which packages a customer buys.</p></div>
+    </div>
+    <div class="readiness"><h3>Readiness of its capabilities</h3><div id="detail-readiness" style="display:flex;flex-wrap:wrap;gap:9px"><span class="pill extend">4 extend existing</span><span class="pill new">2 to build</span></div></div>
+  </section>
+
+  <noscript><p class="noscript">The diagram and the full consolidation mapping below work without JavaScript. Enable JavaScript to select a package in the diagram and see its detail panel.</p></noscript>
+
+  <section class="mapping" id="mapping" aria-labelledby="mapping-title">
+    <h2 class="section-title" id="mapping-title">Where all eighteen went.</h2>
+    <p class="section-lede">Each merge is justified by something concrete the parts share &mdash; the same master record, the same device on the wall, the same person signing the cheque. Merges made only because two names sound similar are not merges; they are a bigger menu with fewer headings.</p>
+
+    <div class="merge-grid">
+
+      <article class="merge-card">
+        <header><h3>Plant Operations</h3><span class="merge-ratio">3 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Connected Factory</li><li>Maintenance &amp; Reliability</li><li>Energy &amp; Utilities</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>All three hang off one equipment register and one gateway on the wall. A machine event, a repair history and a kilowatt reading are three readings of the same asset. Sold separately, the customer pays to survey and wire the same plant three times.</p>
+        <div class="merge-foot"><b>Buyer:</b> plant head or works manager. <b>Stays in XELOR:</b> routine operator transactions and work-order booking. <b>14 capabilities</b> &mdash; maintenance is the readiest part of the whole ring, energy the least.</div>
+      </article>
+
+      <article class="merge-card">
+        <header><h3>Quality, Safety &amp; Compliance</h3><span class="merge-ratio">2 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Quality &amp; Audit</li><li>Safety &amp; Permits</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>One corrective-action engine. A defect and a near-miss run an identical loop &mdash; raise, contain, investigate, act, evidence, audit. Both need controlled documents, training records and an audit trail. Keeping them apart means building that engine twice and auditing it twice.</p>
+        <div class="merge-foot"><b>Buyer:</b> QA and EHS, usually one department; ISO 9001 and 45001 are audited together. <b>Stays in XELOR:</b> routine receipt and in-process inspection. <b>10 capabilities.</b></div>
+      </article>
+
+      <article class="merge-card">
+        <header><h3>Warehouse &amp; Dispatch</h3><span class="merge-ratio">2 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Warehouse Execution</li><li>Dispatch &amp; Loading</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>One handling unit and one scanner in one hand. Picking and packing run straight into loading the truck &mdash; splitting them cuts a single continuous physical motion in half and asks the same storeman to carry two apps.</p>
+        <div class="merge-foot"><b>Buyer:</b> stores or logistics manager. <b>Stays in XELOR:</b> the stock ledger remains the authoritative inventory record; routine dispatch stays core fulfilment. <b>9 capabilities</b> &mdash; the least-built bundle on the ring.</div>
+      </article>
+
+      <article class="merge-card">
+        <header><h3>Planning &amp; Engineering</h3><span class="merge-ratio">2 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Advanced Planning</li><li>Projects &amp; Engineering</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>One BOM, one routing, one capacity model. An engineering change rewrites the bill of materials, which rewrites the plan. They are the same model read forwards and backwards, so they cannot own separate copies of it.</p>
+        <div class="merge-foot"><b>Buyer:</b> planning head or engineering manager. <b>Stays in XELOR:</b> basic material requirements planning. <b>10 capabilities.</b></div>
+      </article>
+
+      <article class="merge-card">
+        <header><h3>Revenue &amp; Service</h3><span class="merge-ratio">2 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Quoting &amp; Costing</li><li>After-sales &amp; Service</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>The configuration you quote becomes the machine you service. One customer portal for accepting a quote and raising a service call, not two logins. Estimated-versus-actual margin and lifetime service cost close the same loop on the same serial number.</p>
+        <div class="merge-foot"><b>Buyer:</b> sales or commercial head. <b>Stays in XELOR:</b> standard quotations, revisions and conversion to orders. <b>10 capabilities.</b> <b>Honest note:</b> the loosest of the five merges &mdash; pre-sale and post-sale are different teams. The shared portal and product-configuration record are what carry it.</div>
+      </article>
+
+      <article class="merge-card services">
+        <header><h3>Delivery &amp; Managed Services</h3><span class="merge-ratio">5 &#8594; 1</span></header>
+        <ul class="merge-from"><li>Setup &amp; Migration</li><li>Integration &amp; Data Operations</li><li>Factory Commissioning</li><li>Ongoing Support</li><li>Managed IT &amp; OT Security</li></ul>
+        <p class="merge-why"><strong>Why they merge</strong>Twenty of these twenty-one capabilities are delivery or partner work &mdash; there is almost no product code here at all. They are one engagement read end to end: migrate, integrate, commission, support, secure. One contract, one owner, phases inside it.</p>
+        <div class="merge-foot"><b>Buyer:</b> the same signature as the subscription. <b>21 capabilities.</b> <b>The one exception:</b> the connector runtime inside Integration is real software and belongs in the platform. Operating it is the service; building it is not.</div>
+      </article>
+
+      <article class="merge-card keep">
+        <header><h3>ONYX</h3><span class="merge-ratio">kept</span></header>
+        <ul class="merge-from"><li>ONYX &mdash; AI intelligence</li></ul>
+        <p class="merge-why"><strong>Why it stays separate</strong>It is not an add-on to package. It is a product that already runs, on its own technical profile and its own ports. Folding it into a bundle would mean unbuilding working software to fit a diagram.</p>
+        <div class="merge-foot"><b>6 capabilities.</b> Sold as an optional intelligence subscription across XELOR and the packages.</div>
+      </article>
+
+      <article class="merge-card keep-bronze">
+        <header><h3>AIKYANTRA</h3><span class="merge-ratio">kept</span></header>
+        <ul class="merge-from"><li>AIKYANTRA &mdash; supplier network</li></ul>
+        <p class="merge-why"><strong>Why it stays separate</strong>Same reason, and one more: a network product has a second audience. Its value comes from suppliers outside the customer's company, which no internal package can absorb.</p>
+        <div class="merge-foot"><b>8 capabilities.</b> Internal vendor records, purchase orders and supplier performance stay in XELOR and need no network membership.</div>
+      </article>
+
+    </div>
+
+    <div class="kept">
+      <h2 class="section-title" style="font-size:22px">What consolidating does not change.</h2>
+      <div class="kept-grid">
+        <article><h3>It is packaging, not code</h3><p>No capability was merged out of existence, renamed away or quietly promoted from proposed to built. The readiness labels travel with each capability into its new package, and most of this ring is still proposed work.</p></article>
+        <article><h3>The ERP core keeps its boundary</h3><p>Everyday transactions, operator actions, budget control, internal supplier history and permissions remain in XELOR whichever packages a customer buys. Core finance and operator work must not move behind a paid add-on.</p></article>
+        <article><h3>Two cross-package couplings to honour</h3><p>Permit-to-work sits in Compliance but gates maintenance jobs in Plant Operations. The connector runtime sits in the platform but is operated by Services. Both need a defined interface, not a copy on each side.</p></article>
+        <article><h3>Nothing here is a commitment to build</h3><p>This regroups a research catalogue. Six packages is a cheaper story to tell than eighteen, but it is the same amount of engineering underneath, and most of it has not started.</p></article>
+      </div>
+    </div>
+
+    <div class="caveat">
+      <p><strong>Basis.</strong> Groupings were drawn from the 94 capability records in the original ecosystem map, including each capability's state &mdash; extend an existing foundation, build new, partner-delivered or service-delivered. The five-into-one services merge is the clearest case: every one of those twenty-one capabilities is marked delivery or partner except the connector runtime.</p>
+      <p><strong>Not established here.</strong> Pricing, licence packaging, per-package margins, customer demand for any bundle, and whether a buyer will purchase a merged package at a higher price than a single component. Those are commercial questions this map does not answer.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>A packaging proposal derived from the existing XELOR ecosystem map and the manufacturing research behind it. Merged packages still require completion and validation; grouping offerings together does not imply they are built, integrated or ready to deploy.</p>
+    <p class="date">14 September 2026 &#183; Works offline</p>
+  </footer>
+</main>
+
+<script type="application/json" id="package-data">
+{
+  "xelor": {
+    "kicker": "Core business workspace",
+    "title": "XELOR ERP",
+    "ratio": "The centre · unchanged",
+    "purpose": "Runs the everyday business: customers, orders, purchasing, inventory, finance, people and approvals. Every package on the ring reads from it and writes back to it.",
+    "absorbs": ["Nothing — the core was not regrouped"],
+    "why": "The consolidation applies only to the ring. Routine transactions, operator actions, budget controls, internal supplier history, basic reporting and permissions stay here regardless of which packages a customer buys.",
+    "readiness": [["extend", "4 extend existing"], ["new", "2 to build"]]
+  },
+  "onyx": {
+    "kicker": "Existing product · kept separate",
+    "title": "ONYX",
+    "ratio": "Kept · already ships",
+    "purpose": "Explains business evidence, compares supported options and assists with approved decisions. Sold as an optional intelligence subscription across XELOR and the packages.",
+    "absorbs": ["ONYX — AI intelligence"],
+    "why": "Not an add-on to package — a product that already runs, on its own technical profile and ports. Folding it into a bundle would mean unbuilding working software to fit a diagram.",
+    "readiness": [["extend", "4 extend existing"], ["new", "2 to build"]]
+  },
+  "aikyantra": {
+    "kicker": "Existing product · kept separate",
+    "title": "AIKYANTRA",
+    "ratio": "Kept · already ships",
+    "purpose": "Brings outside suppliers, RFQs, responses, comparisons and network evidence into a focused sourcing workspace.",
+    "absorbs": ["AIKYANTRA — supplier network"],
+    "why": "Same reason as ONYX, plus one more: a network product has a second audience. Its value comes from suppliers outside the customer's company, which no internal package can absorb. Internal vendor records and supplier performance stay in XELOR and need no network membership.",
+    "readiness": [["extend", "5 extend existing"], ["new", "2 to build"], ["partner", "1 partner"]]
+  },
+  "plant": {
+    "kicker": "Application package · 3 merged into 1",
+    "title": "Plant Operations",
+    "ratio": "3 → 1",
+    "purpose": "Machine signals, maintenance and energy on one asset register: OEE and downtime, preventive schedules and technician work orders, and consumption by plant, line, machine or job.",
+    "absorbs": ["Connected Factory", "Maintenance & Reliability", "Energy & Utilities"],
+    "why": "All three hang off one equipment register and one gateway on the wall. A machine event, a repair history and a kilowatt reading are three readings of the same asset. Sold separately, the customer pays to survey and wire the same plant three times. Buyer: plant head or works manager.",
+    "readiness": [["extend", "7 extend existing"], ["new", "7 to build"]]
+  },
+  "compliance": {
+    "kicker": "Application package · 2 merged into 1",
+    "title": "Quality, Safety & Compliance",
+    "ratio": "2 → 1",
+    "purpose": "Inspections, containment and corrective action alongside hazards, incidents and work permits — with the controlled documents, calibration, training records and audit evidence all of it depends on.",
+    "absorbs": ["Quality & Audit", "Safety & Permits"],
+    "why": "One corrective-action engine. A defect and a near-miss run an identical loop — raise, contain, investigate, act, evidence, audit. Keeping them apart means building that engine twice and auditing it twice. In most plants QA and EHS are one department, and ISO 9001 and 45001 are audited together.",
+    "readiness": [["extend", "2 extend existing"], ["new", "7 to build"], ["partner", "1 partner"]]
+  },
+  "logistics": {
+    "kicker": "Application package · 2 merged into 1",
+    "title": "Warehouse & Dispatch",
+    "ratio": "2 → 1",
+    "purpose": "Scan-based receiving, put-away, cycle counts, kitting and mobile picking, continuing into shipment grouping, loading constraints and load plans.",
+    "absorbs": ["Warehouse Execution", "Dispatch & Loading"],
+    "why": "One handling unit and one scanner in one hand. Picking and packing run straight into loading the truck — splitting them cuts a single continuous physical motion in half and asks the same storeman to carry two apps. The stock ledger in XELOR stays the authoritative inventory record.",
+    "readiness": [["extend", "1 extend existing"], ["new", "8 to build"]]
+  },
+  "planning": {
+    "kicker": "Application package · 2 merged into 1",
+    "title": "Planning & Engineering",
+    "ratio": "2 → 1",
+    "purpose": "Demand, capacity and what-if scenarios together with engineering changes, effective revisions, project gates and new-product introduction.",
+    "absorbs": ["Advanced Planning", "Projects & Engineering"],
+    "why": "One BOM, one routing, one capacity model. An engineering change rewrites the bill of materials, which rewrites the plan. They are the same model read forwards and backwards, so they cannot own separate copies of it. Basic MRP stays in XELOR.",
+    "readiness": [["extend", "3 extend existing"], ["new", "6 to build"], ["partner", "1 partner"]]
+  },
+  "revenue": {
+    "kicker": "Application package · 2 merged into 1",
+    "title": "Revenue & Service",
+    "ratio": "2 → 1",
+    "purpose": "Reviewed enquiry intake, cost build-up, configuration and margin approval, continuing after delivery into warranty, entitlement, spares, returns and field visits.",
+    "absorbs": ["Quoting & Costing", "After-sales & Service"],
+    "why": "The configuration you quote becomes the machine you service. One customer portal for accepting a quote and raising a service call, not two logins. Estimated-versus-actual margin and lifetime service cost close the same loop on the same serial number. This is the loosest of the five merges — pre-sale and post-sale are different teams, and the shared portal and configuration record are what carry it.",
+    "readiness": [["extend", "4 extend existing"], ["new", "6 to build"]]
+  },
+  "services": {
+    "kicker": "Services · 5 merged into 1",
+    "title": "Delivery & Managed Services",
+    "ratio": "5 → 1",
+    "purpose": "One engagement read end to end: discovery and data migration, system connectors and data operations, on-site survey and commissioning, ongoing support, and managed factory network security with a specialist partner.",
+    "absorbs": ["Setup & Migration", "Integration & Data Operations", "Factory Commissioning", "Ongoing Support", "Managed IT & OT Security"],
+    "why": "Twenty of these twenty-one capabilities are delivery or partner work — there is almost no product code here at all. That is the objective case for merging them: they are staffing, scope and a statement of work, not a software SKU. One contract, one owner, phases inside it. The single exception is the connector runtime, which is real software and belongs in the platform — operating it is the service, building it is not.",
+    "readiness": [["delivery", "13 service-delivered"], ["partner", "7 partner-delivered"], ["extend", "1 extend existing"]]
+  }
+}
+</script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById('package-data').textContent);
+  var map = document.getElementById('ecosystem-map');
+  var nodes = Array.prototype.slice.call(map.querySelectorAll('.node'));
+  var conns = Array.prototype.slice.call(map.querySelectorAll('.connection'));
+  var el = {
+    kicker: document.getElementById('detail-kicker'),
+    title: document.getElementById('detail-title'),
+    ratio: document.getElementById('detail-ratio'),
+    purpose: document.getElementById('detail-purpose'),
+    absorbs: document.getElementById('detail-absorbs'),
+    why: document.getElementById('detail-why'),
+    readiness: document.getElementById('detail-readiness'),
+    announce: document.getElementById('selection-announcement')
+  };
+
+  function select(id) {
+    var d = data[id];
+    if (!d) return;
+    el.kicker.textContent = d.kicker;
+    el.title.textContent = d.title;
+    el.ratio.textContent = d.ratio;
+    el.purpose.textContent = d.purpose;
+    el.why.textContent = d.why;
+
+    el.absorbs.textContent = '';
+    d.absorbs.forEach(function (name) {
+      var li = document.createElement('li');
+      li.textContent = name;
+      el.absorbs.appendChild(li);
+    });
+
+    el.readiness.textContent = '';
+    d.readiness.forEach(function (pair) {
+      var s = document.createElement('span');
+      s.className = 'pill ' + pair[0];
+      s.textContent = pair[1];
+      el.readiness.appendChild(s);
+    });
+
+    nodes.forEach(function (n) {
+      n.classList.toggle('is-selected', n.getAttribute('data-node') === id);
+    });
+    conns.forEach(function (c) {
+      c.classList.toggle('is-selected', c.getAttribute('data-connection') === id);
+    });
+    map.classList.toggle('has-selection', id !== 'xelor');
+    el.announce.textContent = d.title + ' selected. Details are below the diagram.';
+  }
+
+  nodes.forEach(function (n) {
+    var id = n.getAttribute('data-node');
+    n.addEventListener('click', function () { select(id); });
+    n.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        select(id);
+      }
+    });
+  });
+
+  document.getElementById('core-button').addEventListener('click', function () { select('xelor'); });
+})();
+</script>
+</body>
+</html>

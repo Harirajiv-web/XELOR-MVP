@@ -1,0 +1,8 @@
+{
+  "phase": 6,
+  "name": "Quality, Safety & Compliance — connected package",
+  "description": "One corrective-action engine for defects and incidents: inspection and containment, CAPA, calibration, work permits and the evidence an auditor can follow.",
+  "source": "../platform",
+  "webPort": 4501,
+  "apiPort": 4500
+}

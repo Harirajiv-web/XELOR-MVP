@@ -1,0 +1,54 @@
+[
+  {
+    "video": 1,
+    "model": "faster-whisper base multilingual",
+    "device": "CPU int8",
+    "sample_rate": 16000,
+    "normalization_gain": 51.314541387024605,
+    "normalization_gain_db": 34.204809036840764,
+    "variants": [
+      {
+        "variant": "original",
+        "language": "en",
+        "language_probability": 0.5837262868881226,
+        "duration": 4.1085,
+        "duration_after_vad": 0.0,
+        "segments": []
+      },
+      {
+        "variant": "normalized",
+        "language": "en",
+        "language_probability": 0.5837262868881226,
+        "duration": 4.1085,
+        "duration_after_vad": 0.0,
+        "segments": []
+      }
+    ]
+  },
+  {
+    "video": 2,
+    "model": "faster-whisper base multilingual",
+    "device": "CPU int8",
+    "sample_rate": 16000,
+    "normalization_gain": 22.532023575638505,
+    "normalization_gain_db": 27.056003939464695,
+    "variants": [
+      {
+        "variant": "original",
+        "language": "en",
+        "language_probability": 0.5837262868881226,
+        "duration": 23.4739375,
+        "duration_after_vad": 0.0,
+        "segments": []
+      },
+      {
+        "variant": "normalized",
+        "language": "en",
+        "language_probability": 0.5837262868881226,
+        "duration": 23.4739375,
+        "duration_after_vad": 0.0,
+        "segments": []
+      }
+    ]
+  }
+]

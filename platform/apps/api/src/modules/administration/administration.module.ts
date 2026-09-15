@@ -4,6 +4,8 @@ import { AccessService } from "./access.service.js";
 import { SodService } from "./sod.service.js";
 import { ComplianceService } from "./compliance.service.js";
 import { PlatformOpsService } from "./platform-ops.service.js";
+import { WorkspaceConfigController } from "./workspace-config.controller.js";
+import { WorkspaceConfigService } from "./workspace-config.service.js";
 
 /**
  * ADMINISTRATION (HEXA, Module 14) — the control plane.
@@ -16,8 +18,8 @@ import { PlatformOpsService } from "./platform-ops.service.js";
  * The AI spine is @Global, which is where `SodExplainer` (AI #8) comes from.
  */
 @Module({
-  controllers: [AdministrationController],
-  providers: [AccessService, SodService, ComplianceService, PlatformOpsService],
+  controllers: [AdministrationController, WorkspaceConfigController],
+  providers: [AccessService, SodService, ComplianceService, PlatformOpsService, WorkspaceConfigService],
   exports: [AccessService, ComplianceService],
 })
 export class AdministrationModule {}

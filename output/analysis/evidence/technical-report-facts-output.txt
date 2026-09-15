@@ -1,0 +1,55 @@
+Technical report fact check FAILED — 54 problem(s):
+  - apps/web/scripts/render-agent-guides.mjs SYSTEM.capabilities says 19; implementation says 20.
+  - apps/web/scripts/render-agent-guides.mjs SYSTEM.graphs says 7; implementation says 8.
+  - apps/web/scripts/render-agent-guides.mjs SYSTEM.modules says 24; implementation says 25.
+  - docs/reports/project-report-render-manifest.json does not cover the exact 12 project-report HTML sources.
+  - apps/web/scripts/render-agent-guides.mjs:648 claims 7 mission graph(s); implementation says 8.
+  - docs/reports/xelor-agentic-ai-implementation-strategy.html:458 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-architecture-implementation-playbook.html:103 claims 33 API controller surface(s); implementation says 34.
+  - docs/reports/xelor-architecture-implementation-playbook.html:107 claims 19 capability/tool(s); implementation says 20.
+  - docs/reports/xelor-architecture-implementation-playbook.html:107 claims 7 mission graph(s); implementation says 8.
+  - docs/reports/xelor-complete-platform-simple-guide.html:103 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:718 claims 1 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:774 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:774 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-master-plan-interactive.html:798 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:1093 claims 104 verified API test(s); implementation says 103.
+  - docs/reports/xelor-master-plan-interactive.html:1215 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:1215 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-master-plan-interactive.html:1227 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:1382 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-master-plan-interactive.html:1382 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-mvp-technical-handoff-brief.html:113 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-mvp-technical-handoff-brief.html:339 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-mvp-technical-handoff-brief.html:547 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-mvp-technical-handoff-brief.html:657 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-mvp-technical-handoff-brief.html:657 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-phase-1-phase-2-technology-architecture.html:877 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:166 claims 90 SQL migration(s); implementation says 96.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:166 claims 6 SQL migration(s); implementation says 96.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:188 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:215 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:238 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:265 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:319 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:569 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:570 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:619 claims 6 SQL migration(s); implementation says 96.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:931 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-platform-architecture-and-verification-dossier.html:1127 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-product-development-master-plan.html:128 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-product-development-master-plan.html:128 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-product-development-master-plan.html:262 claims 104 verified API test(s); implementation says 103.
+  - docs/reports/xelor-product-development-master-plan.html:419 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-product-development-master-plan.html:419 claims 169 navigation permission reference(s); implementation says 173.
+  - docs/reports/xelor-technology-stack-roadmap.html:83 claims 33 API controller surface(s); implementation says 34.
+  - docs/reports/xelor-technology-stack-roadmap.html:98 claims 33 API controller surface(s); implementation says 34.
+  - docs/reports/xelor-technology-stack-roadmap.html:171 claims 24 web module(s); implementation says 25.
+  - docs/reports/xelor-technology-stack-roadmap.html:176 claims 19 capability/tool(s); implementation says 20.
+  - docs/reports/xelor-technology-stack-roadmap.html:176 claims 7 mission graph(s); implementation says 8.
+  - docs/reports/agent-guides/master.html:108 claims 19 capability/tool(s); implementation says 20.
+  - docs/reports/agent-guides/master.html:109 claims 7 mission graph(s); implementation says 8.
+  - docs/reports/agent-guides/master.html:154 claims 19 capability/tool(s); implementation says 20.
+  - docs/reports/agent-guides/master.html:176 claims 18 of 19 read-only capabilities; implementation says 19 of 20.
+  - docs/reports/agent-guides/master.html:179 claims 6 of 7 non-acting graphs; implementation says 7 of 8.
+  - docs/reports/agent-guides/onyx.html:205 claims 7 mission graph(s); implementation says 8.

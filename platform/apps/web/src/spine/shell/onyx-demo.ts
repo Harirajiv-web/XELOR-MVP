@@ -1,10 +1,18 @@
 /**
- * Curated investor-demo material for ONYX.
+ * ONYX shell material — DELIBERATELY EMPTY.
  *
- * These records deliberately live in one file, carry a `Demo scenario` label in the UI,
- * and never pass through a write endpoint. They make the intended product experience
- * demonstrable while keeping it impossible to mistake a scripted recommendation for a
- * live ERP fact. Chat remains live and evidence-backed through `/copilot/ask`.
+ * These arrays once held curated investor-demo alerts, a briefing and a set of suggested
+ * actions: a machine "recorded as down", a named customer whose material cover was "tight",
+ * a purchase order "awaiting authority". None of it was ever read from the tenant's records,
+ * so on an empty company the shell was telling people about events that had not happened.
+ *
+ * An alert that is wrong in the reassuring direction is worse than no alert; an alert that
+ * is wrong in the alarming direction teaches people to ignore the bell. Both are worse than
+ * silence, so the shell is silent until something real fills these in.
+ *
+ * The exported names, types and shapes are unchanged: whatever populates them next must come
+ * from live, permission-filtered records (`/copilot/ask` and the module APIs already are),
+ * decided in code — a date comparison, a row with no end time — never narrated by a model.
  */
 
 export interface OnyxDemoAlert {
@@ -35,107 +43,20 @@ export interface OnyxDemoAction {
   href: string;
 }
 
-export const ONYX_DEMO_ALERTS: readonly OnyxDemoAlert[] = [
-  {
-    id: "cnc-03-down",
-    severity: "critical",
-    module: "maintenance",
-    title: "CNC-03 is recorded as down",
-    detail:
-      "The open downtime event can put today’s pump-casing sequence at risk.",
-    evidence: "Maintenance downtime · demo scenario",
-    href: "/maintenance/downtime",
-  },
-  {
-    id: "northstar-material",
-    severity: "urgent",
-    module: "planning",
-    title: "Northstar material cover is tight",
-    detail:
-      "Two planned requirements need supply review before the protected delivery window.",
-    evidence: "Planning exceptions · demo scenario",
-    href: "/planning/exceptions",
-  },
-  {
-    id: "po-awaiting",
-    severity: "attention",
-    module: "purchase",
-    title: "A purchase order is awaiting authority",
-    detail: "Review commercial terms and evidence before releasing the order.",
-    evidence: "Purchase approvals · demo scenario",
-    href: "/purchase/orders",
-  },
-];
+/** No scripted alerts. The bell stays quiet until a real record earns it. */
+export const ONYX_DEMO_ALERTS: readonly OnyxDemoAlert[] = [];
 
-export const ONYX_DEMO_BRIEF: readonly OnyxDemoBriefItem[] = [
-  {
-    label: "Delivery",
-    value: "At risk",
-    tone: "bad",
-    detail:
-      "The Northstar commitment needs a cross-functional recovery review.",
-    href: "/agentos/command",
-  },
-  {
-    label: "Shop floor",
-    value: "1 constraint",
-    tone: "warn",
-    detail: "CNC-03 downtime is the scenario’s primary production constraint.",
-    href: "/maintenance/downtime",
-  },
-  {
-    label: "Supply",
-    value: "2 reviews",
-    tone: "warn",
-    detail:
-      "Material cover and an awaiting purchase order need human attention.",
-    href: "/planning/exceptions",
-  },
-  {
-    label: "Governance",
-    value: "Ready",
-    tone: "ok",
-    detail:
-      "ONYX can prepare a governed business-and-service recovery review for approval.",
-    href: "/agentos/command",
-  },
-];
+/** No scripted briefing. A brief about a company with no transactions has nothing to say. */
+export const ONYX_DEMO_BRIEF: readonly OnyxDemoBriefItem[] = [];
 
-export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [
-  {
-    id: "northstar-review",
-    owner: "ONYX",
-    title: "Start the Northstar recovery review",
-    reason:
-      "Delivery, maintenance, supply, quality, commercial and finance evidence must converge.",
-    impact:
-      "Produces one governed recommendation with evidence and a named human gate.",
-    authority: "Plant Head",
-    href: "/agentos/command",
-  },
-  {
-    id: "cnc-review",
-    owner: "KILN",
-    title: "Review the CNC-03 maintenance response",
-    reason:
-      "An open downtime event is the scenario’s most immediate operational constraint.",
-    impact:
-      "Prepares the maintenance decision; it does not close or create a work order.",
-    authority: "Maintenance Manager",
-    href: "/maintenance/downtime",
-  },
-  {
-    id: "po-review",
-    owner: "SPAR",
-    title: "Review the awaiting purchase order",
-    reason:
-      "Material cover is tight and commercial authority is still required.",
-    impact: "Opens the real purchase workspace for a human decision.",
-    authority: "Purchase Approver",
-    href: "/purchase/orders",
-  },
-];
+/** No scripted recommendations. ONYX proposes work from evidence or it proposes nothing. */
+export const ONYX_DEMO_ACTIONS: readonly OnyxDemoAction[] = [];
 
+/**
+ * What ONYX can READ in each context. This is a description of its own capability and its
+ * limits — not data about the company — so it stays: it is true of an empty tenant as much
+ * as a busy one, and it is what stops a user assuming the assistant can see more than it can.
+ */
 export const ONYX_CONTEXT_COPY: Readonly<Record<string, string>> = {
   inventory:
     "I can read stock, warehouse balances and recent movements from your permitted records.",

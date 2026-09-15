@@ -1,8 +1,0 @@
-{
-  "phase": 1,
-  "name": "ONYX \u2014 Manufacturing ERP",
-  "description": "ERP records, engineering, quotations, purchasing, inventory, production, quality, maintenance, people and accounts.",
-  "source": "../platform",
-  "webPort": 4001,
-  "apiPort": 4000
-}

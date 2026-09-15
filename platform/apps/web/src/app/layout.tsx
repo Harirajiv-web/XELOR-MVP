@@ -5,6 +5,8 @@ import { InstallApp } from "@spine/product/install-app";
 import { Providers } from "./providers";
 import { themeBootScript } from "@spine/theme/theme";
 import "./globals.css";
+import "./product-palettes.css";
+import "./xelor-phase2.css";
 
 export const metadata: Metadata = {
   title: {
@@ -14,14 +16,14 @@ export const metadata: Metadata = {
   description: PRODUCT_PROFILE.description,
   applicationName: PRODUCT_PROFILE.name,
   appleWebApp: { capable: true, statusBarStyle: "default", title: PRODUCT_PROFILE.name },
-  icons: { icon: "/icons/app.svg", apple: "/icons/app.svg" },
+  icons: { icon: PRODUCT_PROFILE.icon, apple: PRODUCT_PROFILE.icon },
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#12302e", viewportFit: "cover" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: PRODUCT_PROFILE.themeColor, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: ReactNode }): React.JSX.Element {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-product-phase={PRODUCT_PROFILE.phase} suppressHydrationWarning>
       <head>
         {/* Runs before the body renders, so somebody on dark never sees a white flash on the
             way in. It has to be inline and it has to be here — a script loaded from a file

@@ -1,0 +1,8 @@
+{
+  "phase": 10,
+  "name": "Delivery & Managed Services — connected package",
+  "description": "The people work around the software: discovery and data migration, connectors and data operations, on-site commissioning evidence and ongoing support.",
+  "source": "../platform",
+  "webPort": 4901,
+  "apiPort": 4900
+}

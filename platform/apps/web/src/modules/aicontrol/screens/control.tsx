@@ -208,7 +208,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
               <p className="mt-3 max-w-[72ch] text-[12.5px] leading-5 text-white/72">
                 {stopped
                   ? "All agent reasoning, automated missions and governed dispatch are stopped at the backend chokepoint. The manual ERP is still fully available."
-                  : "Stops every XELOR agent and AI feature at the backend chokepoint. Running missions are halted safely; no browser-only toggle can bypass it."}
+                  : "Stops every ONYX agent and AI feature at the backend chokepoint. Running missions are halted safely; no browser-only toggle can bypass it."}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-[10.5px] font-bold">
                 <span className={cn("rounded-full px-3 py-1.5", stopped ? "bg-white text-[var(--kill-ink)]" : "bg-[var(--kill-clear)]/15 text-[var(--kill-clear)]") }>
@@ -260,7 +260,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--ai-text)]">Agent permissions</p>
-            <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.025em] text-[var(--text-primary)]">Choose how independently XELOR may work</h2>
+            <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.025em] text-[var(--text-primary)]">Choose how independently ONYX may work</h2>
             <p className="mt-1 max-w-[74ch] text-[11.5px] leading-5 text-[var(--text-secondary)]">Both modes keep mandatory financial, quality, compliance and authority approvals. The difference is whether routine bounded steps continue automatically.</p>
           </div>
           <span className="rounded-full bg-[var(--brand-soft)] px-3 py-1.5 text-[10px] font-bold text-[var(--brand)]">Current: {state?.policy.mode === "step_by_step" ? "Approve every step" : "Guarded autopilot"}</span>
@@ -283,7 +283,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
             icon={Hand}
             title="Approve every step"
             eyebrow="Human-led supervision"
-            body="Before each execution wave, XELOR explains what is ready and waits. Nothing continues until an authorised person clicks Proceed."
+            body="Before each execution wave, ONYX explains what is ready and waits. Nothing continues until an authorised person clicks Proceed."
             bullets={["A durable Proceed gate before every wave", "Separate from mandatory business approval", "Safe across restarts and refreshes"]}
             disabled={!mayOperate || stopped || busy !== null}
             busy={busy === "mode:step_by_step"}
@@ -351,7 +351,7 @@ export default function AiControlScreen(_props: ScreenProps): React.JSX.Element 
 
 function ModeCard({ active, icon: Icon, title, eyebrow, body, bullets, disabled, busy, onChoose }: { active: boolean; icon: LucideIcon; title: string; eyebrow: string; body: string; bullets: readonly string[]; disabled: boolean; busy: boolean; onChoose: () => void }): React.JSX.Element {
   return <article className={cn("rounded-[15px] border p-4 transition", active ? "border-[var(--brand)] bg-[var(--brand-soft)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--brand)_10%,transparent)]" : "border-[var(--border-subtle)] bg-[var(--surface)]")}>
-    <div className="flex items-start justify-between gap-3"><span className={cn("grid h-10 w-10 place-items-center rounded-[11px]", active ? "bg-[var(--brand)] text-white" : "bg-[var(--bg)] text-[var(--text-secondary)]")}><Icon className="h-5 w-5" aria-hidden /></span>{active ? <span className="rounded-full bg-[var(--brand)] px-2 py-1 text-[8.5px] font-black uppercase text-white">Active mode</span> : null}</div>
+    <div className="flex items-start justify-between gap-3"><span className={cn("grid h-10 w-10 place-items-center rounded-[11px]", active ? "bg-[var(--brand)] text-[var(--text-on-brand)]" : "bg-[var(--bg)] text-[var(--text-secondary)]")}><Icon className="h-5 w-5" aria-hidden /></span>{active ? <span className="rounded-full bg-[var(--brand)] px-2 py-1 text-[8.5px] font-black uppercase text-[var(--text-on-brand)]">Active mode</span> : null}</div>
     <p className="mt-3 text-[9px] font-extrabold uppercase tracking-[0.14em] text-[var(--text-muted)]">{eyebrow}</p><h3 className="mt-1 text-[15px] font-extrabold text-[var(--text-primary)]">{title}</h3><p className="mt-1.5 text-[10.8px] leading-[1.65] text-[var(--text-secondary)]">{body}</p>
     <ul className="mt-3 space-y-1.5">{bullets.map((bullet) => <li key={bullet} className="flex items-start gap-2 text-[9.8px] text-[var(--text-secondary)]"><CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-[var(--ok)]" aria-hidden />{bullet}</li>)}</ul>
     <button type="button" disabled={disabled || active} onClick={onChoose} className={cn("mt-4 flex w-full items-center justify-center gap-2 rounded-[9px] border px-3 py-2 text-[10.5px] font-bold disabled:cursor-not-allowed disabled:opacity-50", active ? "border-[var(--brand)] text-[var(--brand)]" : "border-[var(--border-input)] text-[var(--text-primary)] hover:border-[var(--brand)]")}>

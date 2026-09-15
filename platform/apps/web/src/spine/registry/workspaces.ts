@@ -46,7 +46,7 @@ export const WORKSPACES: readonly Workspace[] = [
   {
     code: "mission",
     name: "Mission Control",
-    purpose: "Give XELOR an order and watch it run. This is the operating system itself.",
+    purpose: "Give ONYX an order and follow its governed decisions and actions.",
     icon: "Radar",
     accent: "var(--dept-onyx)",
     // First, and alone at the top, because it is the product. Everything below it is the
@@ -59,7 +59,7 @@ export const WORKSPACES: readonly Workspace[] = [
     purpose: "What has been promised, to whom, and how well it is being served.",
     icon: "Handshake",
     accent: "var(--dept-mica)",
-    modules: ["quotation", "sales", "csp"],
+    modules: ["costing", "quotation", "sales", "csp"],
   },
   {
     code: "define",
@@ -73,7 +73,7 @@ export const WORKSPACES: readonly Workspace[] = [
     // the wrong place. `critical` is a severity band declared inside the planning module
     // (`planning/manifest.ts:139`), and a first-match grep for `key:` finds it before the
     // manifest's own key nineteen lines further down.
-    modules: ["engineering", "planning"],
+    modules: ["engchange", "engineering", "planning"],
   },
   {
     code: "supply",
@@ -81,7 +81,7 @@ export const WORKSPACES: readonly Workspace[] = [
     purpose: "Getting the material in, and knowing exactly what is on the shelf.",
     icon: "PackageSearch",
     accent: "var(--dept-spar)",
-    modules: ["network", "sourcing", "purchase", "inventory"],
+    modules: ["warehouse", "network", "sourcing", "purchase", "inventory"],
   },
   {
     code: "make",
@@ -89,7 +89,7 @@ export const WORKSPACES: readonly Workspace[] = [
     purpose: "Building it, proving it meets spec, and keeping the machines running.",
     icon: "Factory",
     accent: "var(--dept-kiln)",
-    modules: ["production", "quality", "maintenance"],
+    modules: ["plantops", "safety", "production", "quality", "maintenance"],
   },
   {
     code: "money",
@@ -102,7 +102,7 @@ export const WORKSPACES: readonly Workspace[] = [
   {
     code: "platform",
     name: "Platform",
-    purpose: "The company record, who may see what, and how XELOR itself is running.",
+    purpose: "The company record, who may see what, and how the workspace itself is running.",
     icon: "Settings2",
     accent: "var(--dept-hexa)",
     // Managed Services and Platform Health live here rather than in their own groups: they
@@ -111,7 +111,7 @@ export const WORKSPACES: readonly Workspace[] = [
     // different road: integration is the connection a plant has, spreadsheet import is the
     // one it has instead. Most factories bring their first year of data in through the
     // second, so filing it anywhere else would hide the path most of them actually take.
-    modules: ["connectivity", "general", "administration", "integration", "dataimport", "aiops", "managed-services", "platform-health"],
+    modules: ["delivery", "connectivity", "general", "administration", "integration", "dataimport", "aiops", "managed-services", "platform-health"],
   },
 ];
 

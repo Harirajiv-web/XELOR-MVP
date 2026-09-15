@@ -1,0 +1,49 @@
+[
+  {
+    "input": "https://meet.slooze.xyz/cal",
+    "chain": [
+      {
+        "url": "https://meet.slooze.xyz/cal",
+        "status": 302,
+        "location": "https://zcal.co/slooze-cx/intro"
+      }
+    ],
+    "final": "https://zcal.co/slooze-cx/intro",
+    "status": 200,
+    "title": "zcal \u2013 Free Online Meeting Scheduling",
+    "preview": "zcal \u2013 Free Online Meeting Scheduling You need to enable JavaScript to run this app.",
+    "links": []
+  },
+  {
+    "input": "https://about.slooze.xyz/news",
+    "chain": [
+      {
+        "url": "https://about.slooze.xyz/news",
+        "status": 302,
+        "location": "https://sloozexnewsletters.substack.com/"
+      }
+    ],
+    "final": "https://sloozexnewsletters.substack.com/",
+    "status": 200,
+    "title": "Slooze's newsletter | Substack",
+    "preview": "Slooze's newsletter | Substack Slooze's newsletter Slooze's Newsletter for Product, Team & Industry updates By Slooze Inc \u00b7 Launched 5 months ago Subscribe By subscribing, you agree Substack's Terms of Use , and acknowledge its Information Collection Notice and Privacy Policy . No thanks This site requires JavaScript to run correctly. Please turn on JavaScript or unblock scripts",
+    "links": [
+      {
+        "text": "Terms of Use",
+        "href": "https://substack.com/tos"
+      },
+      {
+        "text": "Information Collection Notice",
+        "href": "https://substack.com/ccpa#personal-data-collected"
+      },
+      {
+        "text": "Privacy Policy",
+        "href": "https://substack.com/privacy"
+      },
+      {
+        "text": "turn on JavaScript",
+        "href": "https://enable-javascript.com/"
+      }
+    ]
+  }
+]

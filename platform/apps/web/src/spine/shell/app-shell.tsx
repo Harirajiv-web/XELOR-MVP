@@ -9,7 +9,8 @@ import { useSession } from "../auth/session";
 import { useAccess } from "../access/permissions";
 import { moduleAvailability, visibleNav } from "../registry/manifest";
 import { groupByWorkspace } from "../registry/workspaces";
-import { ALL_PRODUCT_PROFILES, PRODUCT_PROFILE, isModuleEnabled } from "../product/profile";
+import { PRODUCT_PROFILE, isModuleEnabled } from "../product/profile";
+import { ProductLauncher } from "./product-launcher";
 import { cn } from "../ui/cn";
 import { Modal } from "../ui/modal";
 import { ThemeToggle } from "../theme/theme-toggle";
@@ -17,6 +18,8 @@ import { AlertCentre } from "./alert-centre";
 import { CopilotRail } from "./copilot-rail";
 import { AgentDriver } from "./agent-driver";
 import { HumanApprovalLink } from "./human-approval-link";
+import { ErpShell } from "../erp/erp-shell";
+import { ErpWorkspaceProvider } from "../erp/workspace-context";
 
 function Icon({ name, className }: { name?: string; className?: string }): React.JSX.Element {
   const Component = (name ? (Icons as unknown as Record<string, Icons.LucideIcon>)[name] : undefined) ?? Icons.Circle;
@@ -25,6 +28,12 @@ function Icon({ name, className }: { name?: string; className?: string }): React
 
 /** Persistent shell; navigation follows the product, licence and caller permissions. */
 export function AppShell({ children }: { children: ReactNode }): React.JSX.Element {
+  const { identity } = useAccess();
+  if (PRODUCT_PROFILE.phase === "1") return <ErpWorkspaceProvider key={identity ? `${identity.tenantId}:${identity.subject}` : "pending"}><ErpShell>{children}</ErpShell></ErpWorkspaceProvider>;
+  return <ExistingAppShell>{children}</ExistingAppShell>;
+}
+
+function ExistingAppShell({ children }: { children: ReactNode }): React.JSX.Element {
   const pathname = usePathname();
   const { user, signOut, isPublicDemo } = useSession();
   const { can, isLicensed, identity, licence } = useAccess();
@@ -34,7 +43,6 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
-  const [localHost, setLocalHost] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
   const modules = orderedModules().filter((module) => moduleAvailability(module, { can, isLicensed }) === null);
   const groups = groupByWorkspace(modules);
@@ -54,7 +62,6 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
 
   useEffect(() => { setMobileNavOpen(false); setSearchOpen(false); if (pathname.startsWith("/agentos/")) setRailOpen(false); }, [pathname]);
   useEffect(() => {
-    setLocalHost(["localhost", "127.0.0.1", "::1"].includes(window.location.hostname));
     const shortcut = (event: KeyboardEvent): void => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); setSearchOpen((open) => !open); } };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
@@ -92,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
         <button type="button" className="x-icon-button md:hidden" aria-label="Open navigation" aria-expanded={mobileNavOpen} onClick={() => { setCollapsed(false); setMobileNavOpen(true); }}><Icons.Menu className="h-5 w-5" aria-hidden /></button>
         <div className="min-w-0"><span className="x-topbar-company">{identity?.organisation?.name ?? user?.tenantLabel ?? "Company workspace"}</span><span className="x-topbar-context">{currentEntry?.label ?? "Business overview"}</span></div>
         <button type="button" className="x-command-search" onClick={() => setSearchOpen(true)}><Icons.Search className="h-4 w-4" aria-hidden /><span>Find a screen or workflow</span><kbd>⌘ K</kbd></button>
-        <div className="ml-auto flex shrink-0 items-center gap-1.5"><button type="button" className="x-icon-button x-mobile-search" aria-label="Search workspace" onClick={() => setSearchOpen(true)}><Icons.Search className="h-[18px] w-[18px]" aria-hidden /></button>{licence?.expired ? <span className="chip chip-warn hidden xl:inline-flex">Licence expired</span> : null}{isModuleEnabled("agentos") ? <span className="hidden xl:contents"><HumanApprovalLink /></span> : null}<AlertCentre /><span className="hidden sm:contents"><ThemeToggle /></span>{aiAvailable ? <button type="button" className="x-icon-button" aria-label={railOpen ? "Close assistant" : "Open assistant"} aria-pressed={railOpen} onClick={() => setRailOpen((value) => !value)}><Icons.Sparkles className="h-[18px] w-[18px]" aria-hidden /></button> : null}<button type="button" className="x-account-button" onClick={() => setProfileOpen(true)} aria-label="Account and product workspaces"><span className="x-avatar">{initials}</span><Icons.ChevronDown className="hidden h-3.5 w-3.5 sm:block" aria-hidden /></button></div>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5"><button type="button" className="x-icon-button x-mobile-search" aria-label="Search workspace" onClick={() => setSearchOpen(true)}><Icons.Search className="h-[18px] w-[18px]" aria-hidden /></button>{licence?.expired ? <span className="chip chip-warn hidden xl:inline-flex">Licence expired</span> : null}{isModuleEnabled("agentos") ? <span className="hidden xl:contents"><HumanApprovalLink /></span> : null}<AlertCentre /><ProductLauncher /><span className="hidden sm:contents"><ThemeToggle /></span>{aiAvailable ? <button type="button" className="x-icon-button" aria-label={railOpen ? "Close assistant" : "Open assistant"} aria-pressed={railOpen} onClick={() => setRailOpen((value) => !value)}><Icons.Sparkles className="h-[18px] w-[18px]" aria-hidden /></button> : null}<button type="button" className="x-account-button" onClick={() => setProfileOpen(true)} aria-label="Account and product workspaces"><span className="x-avatar">{initials}</span><Icons.ChevronDown className="hidden h-3.5 w-3.5 sm:block" aria-hidden /></button></div>
       </header>
       <main id="workspace-main" style={{ gridArea: "main" }} className="x-shell-main flex min-w-0 flex-col overflow-hidden" tabIndex={-1}>
         {current && entries.length > 1 ? <nav aria-label={`${current.name} screens`} className="x-workbench-tabs shrink-0 px-7"><div className="flex gap-1 overflow-x-auto">{entries.map((entry) => { const href = `/${current.key}/${entry.path}`; const active = pathname === href || pathname.startsWith(`${href}/`); return <Link key={href} href={href} aria-current={active ? "page" : undefined} className="x-workbench-tab"><Icon name={entry.icon} className="h-4 w-4" />{entry.label}</Link>; })}</div></nav> : null}
@@ -102,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }): React.JSX.Eleme
       {isModuleEnabled("fulfilment") ? <AgentDriver /> : null}
       <nav className="x-bottom-nav" aria-label="Quick navigation">{primary.slice(0, 3).map((entry) => <Link key={entry.href} href={entry.href} aria-current={pathname === entry.href ? "page" : undefined}><Icon name={entry.icon} className="h-5 w-5" /><span>{entry.label}</span></Link>)}<button type="button" onClick={() => { setCollapsed(false); setMobileNavOpen(true); }} aria-label="Browse all modules"><Icons.Menu className="h-5 w-5" aria-hidden /><span>More</span></button></nav>
       {searchOpen ? <Modal title="Find your workspace" subtitle="Search the screens available to your role." onClose={() => setSearchOpen(false)} width="max-w-xl"><label className="x-search-field"><Icons.Search className="h-5 w-5" aria-hidden /><input data-autofocus aria-label="Search screens" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Try purchase, inventory, approvals…" /></label><div className="mt-4 max-h-[50dvh] overflow-y-auto">{found.map((entry) => <Link key={entry.href} href={entry.href} onClick={() => setSearchOpen(false)} className="x-search-result"><Icon name={entry.icon} className="h-5 w-5" /><span><strong>{entry.label}</strong><small>{entry.module}</small></span><Icons.ArrowUpRight className="ml-auto h-4 w-4" aria-hidden /></Link>)}{found.length === 0 ? <p className="x-empty-copy">No matching screens. Try a different name.</p> : null}</div></Modal> : null}
-      {profileOpen ? <Modal title="Your workspace" subtitle={user?.displayName ?? "Signed in"} onClose={() => setProfileOpen(false)} width="max-w-lg"><div className="x-profile-current"><span className="x-avatar">{initials}</span><div><strong>{identity?.organisation?.name ?? "Company workspace"}</strong><p>{PRODUCT_PROFILE.name} · {PRODUCT_PROFILE.label}</p></div></div>{localHost ? <div className="mt-5"><p className="x-eyebrow">Open a product</p>{ALL_PRODUCT_PROFILES.map((profile) => <a key={profile.phase} className="x-search-result" href={`http://${typeof window === "undefined" ? "localhost" : window.location.hostname}:${profile.port}/home`}><Icons.Layers3 className="h-5 w-5" aria-hidden /><span><strong>{profile.name}</strong><small>{profile.label}</small></span>{profile.phase === PRODUCT_PROFILE.phase ? <span className="chip chip-info ml-auto">Current</span> : <Icons.ArrowUpRight className="ml-auto h-4 w-4" aria-hidden />}</a>)}</div> : null}{!isPublicDemo ? <button type="button" className="btn btn-secondary mt-5 w-full" onClick={signOut}><Icons.LogOut className="h-4 w-4" aria-hidden />Sign out</button> : <p className="mt-5 text-sm text-[var(--text-muted)]">This workspace contains demonstration data.</p>}</Modal> : null}
+      {profileOpen ? <Modal title="Your workspace" subtitle={user?.displayName ?? "Signed in"} onClose={() => setProfileOpen(false)} width="max-w-lg"><div className="x-profile-current"><span className="x-avatar">{initials}</span><div><strong>{identity?.organisation?.name ?? "Company workspace"}</strong><p>{PRODUCT_PROFILE.name} · {PRODUCT_PROFILE.label}</p></div></div>{!isPublicDemo ? <button type="button" className="btn btn-secondary mt-5 w-full" onClick={signOut}><Icons.LogOut className="h-4 w-4" aria-hidden />Sign out</button> : <p className="mt-5 text-sm text-[var(--text-muted)]">This workspace contains demonstration data.</p>}</Modal> : null}
     </div>
   );
 }

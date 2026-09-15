@@ -19,7 +19,7 @@ const BOUNDARY = {
   autoPublished: false,
   physicalCommandIssued: false,
   statement:
-    "This is a deterministic planning proposal only. It did not mutate an ONYX schedule, publish work, or issue a physical machine command.",
+    "This is a deterministic planning proposal only. It did not mutate a factory ERP schedule, publish work, or issue a physical machine command.",
 } as const;
 
 /**
@@ -63,7 +63,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         "ONYX_PROPOSAL_WITHOUT_AFFECTED_OPERATION",
         "warning",
         `onyxProposals.${proposal.proposalId}`,
-        "The ONYX proposal does not match an affected planning operation in this snapshot and was not applied to the preview.",
+        "The factory ERP proposal does not match an affected planning operation in this snapshot and was not applied to the preview.",
       );
     }
   }
@@ -127,7 +127,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "AMBIGUOUS_ONYX_PROPOSAL",
-          `The ONYX proposal has no operation sequence and matches ${matchingAffectedOperations.length} affected operations; XELOR will not guess which step to move.`,
+          `The factory ERP proposal has no operation sequence and matches ${matchingAffectedOperations.length} affected operations; ONYX will not guess which step to move.`,
           considered,
         ),
       );
@@ -146,7 +146,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "NO_ONYX_PROPOSAL",
-          "ONYX supplied no replan proposal for this affected job; XELOR will not invent one.",
+          "The factory ERP supplied no replan proposal for this affected job; ONYX will not invent one.",
           considered,
         ),
       );
@@ -158,7 +158,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "AMBIGUOUS_ONYX_PROPOSAL",
-          `ONYX supplied ${matchingProposals.length} proposals for the same affected job; a unique proposal is required.`,
+          `The factory ERP supplied ${matchingProposals.length} proposals for the same affected job; a unique proposal is required.`,
           considered,
         ),
       );
@@ -179,7 +179,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "PROPOSAL_SOURCE_MISMATCH",
-          `ONYX proposal source ${String(proposal.fromWorkCenterCode)} does not match ${operation.workCentreCode}.`,
+          `The factory ERP proposal source ${String(proposal.fromWorkCenterCode)} does not match ${operation.workCentreCode}.`,
           considered,
         ),
       );
@@ -197,7 +197,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "PROPOSED_ALTERNATE_NOT_CONFIGURED",
-          `ONYX target ${String(proposal.toAssetCode)} / ${String(proposal.toWorkCenterCode)} is not a configured routing alternate.`,
+          `The factory ERP target ${String(proposal.toAssetCode)} / ${String(proposal.toWorkCenterCode)} is not a configured routing alternate.`,
           considered,
         ),
       );
@@ -209,7 +209,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "PROPOSED_ALTERNATE_NOT_QUALIFIED",
-          `ONYX target ${selected.assetCode} / ${selected.workCenterCode} is configured but not qualified for this operation.`,
+          `The factory ERP target ${selected.assetCode} / ${selected.workCenterCode} is configured but not qualified for this operation.`,
           considered,
         ),
       );
@@ -221,7 +221,7 @@ export function simulateBreakdownReplan(input: BreakdownReplanInput): BreakdownR
         blocked(
           operation,
           "PROPOSED_ALTERNATE_UNAVAILABLE",
-          `ONYX target ${selected.assetCode} / ${selected.workCenterCode} is unavailable in this snapshot.`,
+          `The factory ERP target ${selected.assetCode} / ${selected.workCenterCode} is unavailable in this snapshot.`,
           considered,
         ),
       );
@@ -455,7 +455,7 @@ function validateInput(input: BreakdownReplanInput, warnings: FactoryIntelligenc
           "INVALID_ONYX_PROPOSAL",
           "error",
           `onyxProposals.${field}`,
-          `${field} is required on every ONYX replan proposal.`,
+          `${field} is required on every factory ERP replan proposal.`,
         );
       }
     }
@@ -465,7 +465,7 @@ function validateInput(input: BreakdownReplanInput, warnings: FactoryIntelligenc
         "DUPLICATE_ONYX_PROPOSAL_ID",
         "error",
         "onyxProposals.proposalId",
-        `ONYX proposal ${proposal.proposalId} occurs more than once.`,
+        `The factory ERP proposal ${proposal.proposalId} occurs more than once.`,
       );
     }
     proposalIds.add(proposal.proposalId);
@@ -487,7 +487,7 @@ function validateInput(input: BreakdownReplanInput, warnings: FactoryIntelligenc
         "INCOMPLETE_ONYX_PROPOSED_TARGET",
         "error",
         `onyxProposals.${proposal.proposalId}`,
-        "A proposed ONYX replan needs source work centre, target asset and target work centre.",
+        "A proposed factory ERP replan needs source work centre, target asset and target work centre.",
       );
     }
     if (proposal.status === "blocked" && (proposal.toAssetCode !== null || proposal.toWorkCenterCode !== null)) {
@@ -496,7 +496,7 @@ function validateInput(input: BreakdownReplanInput, warnings: FactoryIntelligenc
         "BLOCKED_ONYX_PROPOSAL_HAS_TARGET",
         "error",
         `onyxProposals.${proposal.proposalId}`,
-        "A blocked ONYX proposal cannot carry a target asset or work centre.",
+        "A blocked factory ERP proposal cannot carry a target asset or work centre.",
       );
     }
   }

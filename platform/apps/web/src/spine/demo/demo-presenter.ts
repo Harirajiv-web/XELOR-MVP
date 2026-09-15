@@ -106,7 +106,7 @@ export function buildPresenterSnapshot(
   return {
     area: screen.area,
     headline: screen.evidence,
-    explanation: `${step.agents[0] ?? "XELOR"} is using ${screen.source} for ${record.reference}. ${result}`,
+    explanation: `${step.agents[0] ?? "ONYX"} is using ${screen.source} for ${record.reference}. ${result}`,
     facts: [
       { label: "Demo case", value: record.reference },
       { label: storyFact.label, value: storyFact.value },

@@ -533,16 +533,16 @@ export class FactoryIntelligenceService {
         validation,
         recommendation,
         statement: recommendation
-          ? `ONYX supplied ${recommendation.fromWorkCenterCode} → ${recommendation.toWorkCenterCode}; XELOR matched it to the configured qualified, available alternate and prepared a review-only request.`
-          : "No ONYX WC-LTH01 → WC-LTH02 proposal currently passes XELOR validation. No planning-review request can be dispatched.",
+          ? `The factory ERP supplied ${recommendation.fromWorkCenterCode} → ${recommendation.toWorkCenterCode}; ONYX matched it to the configured qualified, available alternate and prepared a review-only request.`
+          : "No factory ERP WC-LTH01 → WC-LTH02 proposal currently passes ONYX validation. No planning-review request can be dispatched.",
       },
       mission: {
         graphKey: GRAPH_KEY,
         graphVersion: 1,
         goal:
-          "Explain the current 3S turning-centre constraint and OEE evidence, validate ONYX's WC-LTH01 to WC-LTH02 proposal, and pause before one planning-review request.",
+          "Explain the current 3S turning-centre constraint and OEE evidence, validate the factory ERP's WC-LTH01 to WC-LTH02 proposal, and pause before one planning-review request.",
         approvalBoundary:
-          "Approval creates one attributable review work item for ONYX Planning. It does not publish or apply a schedule and does not contact a machine.",
+          "Approval creates one attributable review work item for factory ERP planning. It does not publish or apply a schedule and does not contact a machine.",
       },
       boundary: {
         analysisOnly: true,
@@ -551,7 +551,7 @@ export class FactoryIntelligenceService {
         autoPublished: false,
         physicalCommandIssued: false,
         statement:
-          "XELOR recomputed and explained a configured 3S mock snapshot. ONYX remains the schedule source of truth; no schedule was changed, no work was auto-published and no physical controller was contacted.",
+          "ONYX recomputed and explained a configured 3S mock snapshot. The factory ERP remains the schedule source of truth; no schedule was changed, no work was auto-published and no physical controller was contacted.",
       },
     };
   }
@@ -603,7 +603,7 @@ export class FactoryIntelligenceService {
       throw new AppError(
         "FACTORY_INTELLIGENCE_NOT_ACTIONABLE",
         409,
-        "The current ONYX evidence does not contain a validated WC-LTH01 to WC-LTH02 review proposal. No governed action was started.",
+        "The current factory ERP evidence does not contain a validated WC-LTH01 to WC-LTH02 review proposal. No governed action was started.",
       );
     }
     return view;

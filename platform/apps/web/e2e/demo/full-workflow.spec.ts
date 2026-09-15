@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { getProductProfile } from "../../src/spine/product/profile";
 
 interface RouteResult {
   href: string;
@@ -9,6 +10,7 @@ interface RouteResult {
 
 const LEGACY_BRAND = /\bIND[- ]?(?:CORE|AI|ERP|Copilot)\b/i;
 const baseUrl = process.env.XELOR_E2E_BASE_URL ?? "http://localhost:3101";
+const productProfile = getProductProfile(process.env.NEXT_PUBLIC_PRODUCT_PHASE ?? process.env.PRODUCT_PHASE);
 
 async function signInThroughKeycloak(page: Page): Promise<void> {
   await page.goto("/");
@@ -19,10 +21,10 @@ async function signInThroughKeycloak(page: Page): Promise<void> {
   if (await page.locator("#username").isVisible()) {
     await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter workspace" }).click();
   }
   expect(new URL(page.url()).origin).toBe(baseUrl);
-  await expect(page.getByText("XELOR", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(productProfile.name, { exact: true }).first()).toBeVisible();
 }
 
 async function attachJson(testInfo: TestInfo, name: string, value: unknown): Promise<void> {
@@ -32,7 +34,7 @@ async function attachJson(testInfo: TestInfo, name: string, value: unknown): Pro
   });
 }
 
-test("an administrator can traverse the complete XELOR demo and use ONYX", async ({
+test("an administrator can traverse the complete workspace demo and use ONYX", async ({
   page,
 }, testInfo) => {
   test.setTimeout(180_000);

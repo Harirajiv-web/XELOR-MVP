@@ -29,7 +29,7 @@ export const agentosManifest: ModuleManifest = {
       permission: ["agentos.run.read", "production.factory-connect.read"],
       icon: "Gauge",
       description:
-        "Explain the configured 3S factory mock: recomputed OEE, operator and job assignments, constrained work and one approval-gated alternate-work-centre review request to ONYX Planning.",
+        "Explain the configured 3S factory mock: recomputed OEE, operator and job assignments, constrained work and one approval-gated alternate-work-centre review request to factory ERP planning.",
     },
     {
       label: "Approvals",

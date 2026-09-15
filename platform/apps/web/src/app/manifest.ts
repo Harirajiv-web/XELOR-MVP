@@ -10,12 +10,12 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/home",
     scope: "/",
     display: "standalone",
-    background_color: "#f6f8f7",
-    theme_color: "#12302e",
+    background_color: PRODUCT_PROFILE.backgroundColor,
+    theme_color: PRODUCT_PROFILE.themeColor,
     orientation: "any",
     icons: [
-      { src: "/icons/app.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/icons/app-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+      { src: PRODUCT_PROFILE.icon, sizes: "any", type: "image/svg+xml", purpose: "any" },
+      { src: PRODUCT_PROFILE.icon, sizes: "any", type: "image/svg+xml", purpose: "maskable" },
     ],
     shortcuts: [{ name: "Workspace", url: "/home" }],
   };

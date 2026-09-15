@@ -1,0 +1,1672 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4b1d30">
+  <meta name="description" content="An interactive map of XELOR ERP, ONYX intelligence, AIKYANTRA supplier network, optional applications and delivery services.">
+  <title>XELOR — ERP &amp; connected ecosystem</title>
+  <style>
+    :root{color-scheme:light;--paper:#faf8f3;--ink:#243247;--muted:#687080;--maroon:#4b1d30;--gold:#d7af60;--line:#e5dfd4;--navy:#1e3048;--app:#833c53;--specialist:#32668c;--delivery:#78643d}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}button{font:inherit}button:focus-visible,a:focus-visible{outline:3px solid #32668c;outline-offset:4px}.page{max-width:1740px;margin:auto;padding:30px 38px 24px}.masthead{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:23px;border-bottom:1px solid var(--line)}.wordmark{display:flex;gap:13px;align-items:center}.brand-symbol{width:39px;height:39px;border-radius:11px;background:var(--maroon);color:#e9c77c;display:grid;place-items:center;font-size:23px;font-weight:650}.wordmark strong{font-size:17px;letter-spacing:.15em}.wordmark small{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:3px}.context{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#766950}.context span{display:inline-block;width:6px;height:6px;margin-right:8px;background:var(--gold);border-radius:50%}.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin:27px 0 22px}.eyebrow{font-size:10px;letter-spacing:.16em;font-weight:700;text-transform:uppercase;color:#8a6a31;margin:0 0 8px}h1{font-size:clamp(27px,3vw,42px);line-height:1.13;font-weight:620;letter-spacing:-.04em;color:var(--maroon);margin:0 0 10px}.intro p:last-child{font-size:14px;line-height:1.6;color:var(--muted);margin:0;max-width:680px}.intro-note{font-size:12px;line-height:1.5;text-align:right;color:#626c7b;max-width:210px;flex-shrink:0}.legend{display:flex;flex-wrap:wrap;gap:10px 24px;margin:0;padding:0;list-style:none;font-size:11px;color:#596375}.legend li{display:flex;align-items:center;gap:8px}.swatch{width:8px;height:8px;border-radius:50%;background:var(--navy)}.swatch.application{background:var(--app)}.swatch.specialist{background:var(--specialist)}.swatch.delivery{background:var(--delivery)}.diagram-board{margin-top:18px;background:#fffefa;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 12px 35px #33241304}.board-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 20px;border-bottom:1px solid #eee9df;background:#fffefa}.board-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#72757c}.board-label svg{color:#967431}.toolbar-actions{display:flex;align-items:center;gap:8px}.text-button{border:1px solid #e5ded1;background:#fffefa;border-radius:7px;color:#596375;padding:7px 10px;font-size:11px;cursor:pointer}.text-button:hover{background:#f5efe3;color:var(--maroon)}.text-button[aria-pressed="true"]{background:#f2e8d5;color:var(--maroon)}.map-viewport{overflow:auto;max-height:82vh;scrollbar-color:#d3c5ae #f9f6ee;overscroll-behavior:contain;position:relative}.ecosystem-map{display:block;width:100%;min-width:1180px;height:auto;user-select:none;-webkit-user-select:none;font-family:"Segoe UI",Arial,sans-serif}.map-viewport.is-fit{max-height:none}.map-viewport.is-fit .ecosystem-map{min-width:0;max-height:74vh}.ecosystem-map .connection{transition:opacity .18s,stroke-width .18s}.ecosystem-map .node{cursor:pointer;outline:none}.ecosystem-map .node .node-card{transition:stroke-width .18s,filter .18s}.ecosystem-map .node:hover .node-card{filter:drop-shadow(0 4px 7px #34241818);stroke-width:2.5}.ecosystem-map .node:focus-visible .focus-ring{stroke:#32668c;stroke-width:4;opacity:1}.ecosystem-map .node.is-selected .focus-ring{opacity:1;stroke-width:2.5}.ecosystem-map .node.is-selected .node-card{stroke-width:2.2}.ecosystem-map.has-selection .connection{opacity:.28}.ecosystem-map.has-selection .connection.is-selected{opacity:1;stroke-width:3.2}.ecosystem-map .node text{pointer-events:none}.map-caption{display:flex;justify-content:space-between;gap:18px;border-top:1px solid #eee9df;padding:13px 20px;font-size:11px;line-height:1.5;color:#67676b}.map-caption strong{color:#6f5b38;font-weight:600}.mobile-hint{display:none}.detail{margin-top:18px;border:1px solid var(--line);border-radius:16px;background:#fffefa;overflow:hidden}.detail-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:19px 24px;border-bottom:1px solid #eee9df}.detail-heading h2{font-size:21px;letter-spacing:-.025em;margin:3px 0 0;font-weight:620;color:var(--maroon)}.detail-kicker{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#7b6137}.stage{font-size:11px;line-height:1.5;padding:6px 10px;border:1px solid #e5dac4;background:#f8f1e3;color:#745e34;border-radius:7px;text-align:right;max-width:330px}.detail-columns{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:26px;padding:21px 24px 23px}.detail-columns h3{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#77613b;margin:0 0 8px}.detail-columns p{font-size:13px;line-height:1.7;color:#546071;margin:0}.footer{display:flex;justify-content:space-between;gap:24px;margin-top:19px;font-size:10px;line-height:1.6;color:#706a61}.footer p{margin:0;max-width:690px}.footer .date{white-space:nowrap}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.noscript{margin:16px;color:#685237;font-size:13px;line-height:1.6}
+    @media(min-width:1600px){.ecosystem-map{max-height:none}.map-viewport{max-height:none}}@media(max-width:850px){.page{padding:22px 20px}.intro{align-items:flex-start}.intro-note{display:none}.detail-columns{grid-template-columns:1fr;gap:20px}.detail-heading{align-items:flex-start}.stage{max-width:220px}.footer{flex-direction:column;gap:7px}.map-viewport{max-height:65vh}.mobile-hint{display:inline}.desktop-hint{display:none}}@media(max-width:520px){.page{padding:18px 12px}.masthead{padding-bottom:17px}.context{font-size:9px;max-width:100px;text-align:right;line-height:1.6}.intro{margin-top:23px}.intro p:last-child{font-size:13px}.legend{gap:10px 16px;font-size:10px}.diagram-board{border-radius:15px}.board-toolbar{padding:11px 12px}.board-label{font-size:10px}.text-button{font-size:10px;padding:7px 8px}.map-caption{padding:11px 12px;flex-direction:column;gap:3px}.detail-heading{padding:16px;flex-direction:column;gap:10px}.stage{text-align:left;max-width:none}.detail-columns{padding:18px 16px}.detail-heading h2{font-size:20px}}@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}@media print{@page{size:landscape;margin:10mm}.page{padding:0;max-width:none}.masthead,.intro-note,.toolbar-actions,.detail,.footer,.map-caption{display:none}.intro{margin:0 0 10px}h1{font-size:24px}.intro p:last-child{font-size:11px}.diagram-board{box-shadow:none;margin-top:10px;border-radius:8px}.board-toolbar{padding:7px 10px}.map-viewport{max-height:none;overflow:visible}.ecosystem-map{min-width:0;width:100%;max-height:155mm}.legend{font-size:9px}.intro .eyebrow{display:none}}
+
+    html{scroll-behavior:smooth;scroll-padding-top:20px}[hidden]{display:none!important}a{color:#704828;text-underline-offset:3px}input,select{font:inherit}input:focus-visible,select:focus-visible,[tabindex="-1"]:focus{outline:3px solid #32668c;outline-offset:4px}.text-button{text-decoration:none;display:inline-block}.research-jump{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 18px;margin:20px 0 0;border:1px solid #deccaa;border-radius:12px;background:#f5ecd9;font-size:13px;color:#624c2a}.research-jump a{font-weight:650;white-space:nowrap}.detail-extras{border-top:1px solid #eee9df;padding:19px 24px;display:grid;grid-template-columns:1.15fr 1fr;gap:16px 26px}.detail-extras h3{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#77613b;margin:0 0 7px}.detail-extras p{font-size:13px;line-height:1.7;color:#546071;margin:0}.detail-feature-link{display:inline-block;margin-top:12px;font-size:13px;font-weight:650;color:#6c3148}.detail-topics{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 0;padding:0;list-style:none}.detail-topics li{font-size:11px;line-height:1.5;border:1px solid #e7dccc;border-radius:5px;background:#faf7ef;padding:4px 8px;color:#645b4c}.research-library{margin-top:46px}.library-heading{display:flex;gap:20px;align-items:center;justify-content:space-between}.library-heading h2,.industry-direction h2{font-size:clamp(23px,2.5vw,32px);letter-spacing:-.035em;color:var(--maroon);margin:0 0 10px;font-weight:620}.library-heading p:last-child,.industry-direction>div>p:last-child{font-size:13px;line-height:1.7;color:#596375;max-width:820px;margin:0}.library-heading>a{white-space:nowrap}.evidence-note{margin:20px 0;border-left:3px solid #cba356;background:#f3eee3;padding:13px 17px;color:#645a49;font-size:12px;line-height:1.7}.evidence-note p{margin:0}.evidence-note p+p{margin-top:7px}.research-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:0 0 18px}.search-field{flex:1;min-width:210px}.filter-field{min-width:210px}.research-controls label{display:block;font-size:11px;font-weight:600;color:#5e6070;margin-bottom:7px}.research-controls input,.research-controls select{width:100%;padding:11px 12px;border:1px solid #d7d0c3;border-radius:8px;background:#fffefa;color:#283749;font-size:13px;min-height:42px}.research-controls>.text-button{min-height:42px}.search-summary{width:100%;margin:1px 0 0;color:#606a77;font-size:12px}.research-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}.research-card{border:1px solid #e4ddd1;border-top:4px solid #833c53;border-radius:12px;background:#fffefa;overflow:hidden;min-width:0;scroll-margin-top:20px}.research-card.core{border-top-color:#c49a4b}.research-card.featured{border-top-color:#1e3048}.research-card[data-product="aikyantra"]{border-top-color:#c3a15b}.research-card.specialist{border-top-color:#32668c}.research-card.delivery{border-top-color:#78643d}.research-card.is-selected{box-shadow:0 0 0 2px #c5a66b}.research-card-heading{padding:20px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.research-card-heading h3{margin:0;font-size:20px;letter-spacing:-.025em;color:#3b2940;line-height:1.25}.research-card-heading .eyebrow{font-size:8px;line-height:1.6;letter-spacing:.1em}.feature-count{white-space:nowrap;font-size:10px;color:#706148;background:#f5eddd;padding:5px 7px;border-radius:5px;margin-top:3px}.research-stage{font-size:11px;line-height:1.6;color:#756246;padding:0 20px;margin:10px 0 13px}.offer{margin:0 20px 8px;font-size:12px;line-height:1.7;color:#576172;background:#f8f5ee;border:1px solid #eee7d9;padding:11px 12px;border-radius:7px}.offer strong{display:block;color:#574b36;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}.feature-list{list-style:none;margin:0;padding:0 20px}.feature-list li{padding:16px 0;border-bottom:1px solid #eee8dd;scroll-margin-top:20px}.feature-list li:last-child{border-bottom:0}.feature-top h4{font-size:13px;line-height:1.55;color:#283749;margin:0 0 5px;font-weight:650}.feature-state{font-size:9px;line-height:1.6;display:inline-block;padding:2px 6px;border-radius:4px;background:#f3e8ee;color:#77334e}.feature-state.extend{background:#e9eff5;color:#315775}.feature-state.partner{background:#edeff4;color:#4d5370}.feature-state.delivery{background:#f3ecdd;color:#705a32}.feature-list li p{font-size:12px;line-height:1.75;color:#596375;margin:8px 0}.source-links{display:inline-flex;gap:7px;flex-wrap:wrap;vertical-align:baseline}.source-links a{font-size:10px;color:#795526;line-height:1.6}.card-foot{padding:13px 20px 18px;border-top:1px solid #eee8dd;background:#fcfaf5}.card-foot p{font-size:10px;line-height:1.7;color:#6a6255;margin:0 0 10px}.card-foot .text-button{font-size:11px}.empty-state{border:1px dashed #c8b58f;border-radius:10px;padding:28px;text-align:center;color:#756246;font-size:14px}.industry-direction{margin-top:38px;background:#f3eddf;border:1px solid #e6d9c2;border-radius:15px;padding:24px}.industry-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:22px}.industry-grid article{border-top:2px solid #c9a45c;padding-top:12px}.industry-grid h3{font-size:13px;line-height:1.5;color:#4b1d30;margin:0 0 7px}.industry-grid p,.industry-boundary{font-size:12px;line-height:1.7;color:#625f58;margin:0}.industry-boundary{margin-top:19px}.footer{padding-top:7px}
+    @media(max-width:1150px){.research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.industry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:750px){.research-grid{grid-template-columns:1fr}.detail-extras{grid-template-columns:1fr}.library-heading{align-items:flex-start;flex-direction:column}.research-jump{align-items:flex-start;flex-direction:column;gap:8px}.research-library{margin-top:30px}}@media(max-width:520px){.detail-extras{padding:18px 16px}.research-card-heading{padding:18px 16px 0}.research-stage{padding:0 16px}.offer{margin-left:16px;margin-right:16px}.feature-list{padding:0 16px}.card-foot{padding:13px 16px 16px}.filter-field{flex:1;min-width:160px}.industry-direction{padding:18px}.industry-grid{grid-template-columns:1fr}.research-jump a{white-space:normal}}@media print{.research-jump,.research-library,.industry-direction{display:none}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <div class="wordmark"><span class="brand-symbol" aria-hidden="true">X</span><div><strong>XELOR</strong><small>ERP &amp; connected ecosystem</small></div></div>
+    <div class="context"><span></span>Proposed product structure</div>
+  </header>
+  <section class="intro" aria-labelledby="page-title">
+    <div><p class="eyebrow">The ERP is the foundation</p><h1 id="page-title">XELOR at the centre.</h1><p>One business workspace. Connected intelligence, supplier collaboration and optional applications that grow with it.</p></div>
+    <div class="intro-note">Select a connection.<br>Explore the research behind it.</div>
+  </section>
+  <ul class="legend" aria-label="Diagram categories">
+    <li><span class="swatch"></span>Existing products</li>
+    <li><span class="swatch application"></span>Proposed application packages</li>
+    <li><span class="swatch specialist"></span>Specialist options</li>
+    <li><span class="swatch delivery"></span>Delivery services</li>
+  </ul>
+  <div class="research-jump"><span><strong>94 research capabilities</strong> across the ERP and 18 connected offerings, including supplier discovery, advanced quality and managed OT security.</span><a href="#research-library">Explore the feature library &#8595;</a></div>
+  <section class="diagram-board" aria-label="XELOR ecosystem diagram">
+    <div class="board-toolbar"><div class="board-label"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3" stroke="currentColor"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-dasharray="2 3"/></svg>Every connection leads to XELOR</div><div class="toolbar-actions"><button class="text-button" type="button" id="fit-button" aria-pressed="false">Fit full map</button><button class="text-button" type="button" id="core-button">Back to ERP</button></div></div>
+    <div class="map-viewport" id="map-viewport" tabindex="0" aria-label="Scrollable diagram. Tab to an application and press Enter to select it.">
+      <svg xmlns="http://www.w3.org/2000/svg" id="ecosystem-map" class="ecosystem-map" font-family="sans-serif" viewBox="0 0 1600 1040" role="group" aria-labelledby="map-title map-description">
+<title id="map-title">XELOR ERP and its connected ecosystem</title>
+<desc id="map-description">XELOR ERP is at the centre. Eighteen surrounding nodes connect directly to it: two existing products, seven proposed application packages, four specialist options and five delivery services. Select a node for its role, proposed workflow, offering model and research capabilities.</desc>
+<defs>
+ <radialGradient id="map-wash"><stop offset="0%" stop-color="#f4ead5" stop-opacity=".78"/><stop offset="62%" stop-color="#fcf9f1" stop-opacity=".3"/><stop offset="100%" stop-color="#fffefa" stop-opacity="0"/></radialGradient>
+ <linearGradient id="core-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#63253d"/><stop offset="100%" stop-color="#3a1727"/></linearGradient>
+ <linearGradient id="core-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0d49b"/><stop offset="45%" stop-color="#b88b37"/><stop offset="100%" stop-color="#ecd097"/></linearGradient>
+</defs>
+<rect width="1600" height="1040" fill="#fffefa"/>
+<ellipse cx="800" cy="520" rx="710" ry="490" fill="#fcf9f0"/>
+<ellipse cx="800" cy="520" rx="635" ry="410" fill="none" stroke="#eae4d7" stroke-width="1.2"/>
+<ellipse cx="800" cy="520" rx="430" ry="272" fill="none" stroke="#e9dfca" stroke-width="1" stroke-dasharray="2 8"/>
+<circle cx="800" cy="520" r="224" fill="none" stroke="#e8ddc6" stroke-width="1" stroke-dasharray="2 7"/>
+<text x="800" y="56" text-anchor="middle" font-size="11" letter-spacing="3" fill="#77684d">CONNECTED APPLICATIONS &amp; SERVICES</text>
+<path class="connection" data-connection="onyx" d="M 753.11 348.29 L 700.38 155.23" fill="none" stroke="#1e3048" stroke-width="1.4" opacity=".45"/><circle cx="753.11" cy="348.29" r="3" fill="#1e3048" opacity=".7"/>
+<path class="connection" data-connection="aikyantra" d="M 846.89 348.29 L 899.62 155.23" fill="none" stroke="#9b7730" stroke-width="1.4" opacity=".45"/><circle cx="846.89" cy="348.29" r="3" fill="#9b7730" opacity=".7"/>
+<path class="connection" data-connection="maintenance" d="M 918.65 387.31 L 1082.63 203.93" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="918.65" cy="387.31" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="quality" d="M 956.51 435.21 L 1214.45 295.46" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="956.51" cy="435.21" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="service" d="M 973.28 479.28 L 1304.70 401.39" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="973.28" cy="479.28" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="quoting" d="M 978.00 520.00 L 1343.00 520.00" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="978.00" cy="520.00" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="planning" d="M 973.28 560.72 L 1304.70 638.61" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="973.28" cy="560.72" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="warehouse" d="M 956.51 604.79 L 1214.45 744.54" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="956.51" cy="604.79" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="projects" d="M 918.65 652.69 L 1082.63 836.07" fill="none" stroke="#833c53" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="918.65" cy="652.69" r="3" fill="#833c53" opacity=".7"/>
+<path class="connection" data-connection="factory" d="M 846.89 691.71 L 899.62 884.77" fill="none" stroke="#32668c" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="846.89" cy="691.71" r="3" fill="#32668c" opacity=".7"/>
+<path class="connection" data-connection="energy" d="M 753.11 691.71 L 700.38 884.77" fill="none" stroke="#32668c" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="753.11" cy="691.71" r="3" fill="#32668c" opacity=".7"/>
+<path class="connection" data-connection="safety" d="M 681.35 652.69 L 517.37 836.07" fill="none" stroke="#32668c" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="681.35" cy="652.69" r="3" fill="#32668c" opacity=".7"/>
+<path class="connection" data-connection="dispatch" d="M 643.49 604.79 L 385.55 744.54" fill="none" stroke="#32668c" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="643.49" cy="604.79" r="3" fill="#32668c" opacity=".7"/>
+<path class="connection" data-connection="setup" d="M 626.72 560.72 L 295.30 638.61" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="626.72" cy="560.72" r="3" fill="#78643d" opacity=".7"/>
+<path class="connection" data-connection="integration" d="M 622.00 520.00 L 257.00 520.00" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="622.00" cy="520.00" r="3" fill="#78643d" opacity=".7"/>
+<path class="connection" data-connection="commissioning" d="M 626.72 479.28 L 295.30 401.39" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="626.72" cy="479.28" r="3" fill="#78643d" opacity=".7"/>
+<path class="connection" data-connection="support" d="M 643.49 435.21 L 385.55 295.46" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="643.49" cy="435.21" r="3" fill="#78643d" opacity=".7"/>
+<path class="connection" data-connection="ot" d="M 681.35 387.31 L 517.37 203.93" fill="none" stroke="#78643d" stroke-width="1.4" opacity=".45" stroke-dasharray="4 6"/><circle cx="681.35" cy="387.31" r="3" fill="#78643d" opacity=".7"/>
+<g class="node is-selected" data-node="xelor" role="button" tabindex="0" aria-pressed="true" aria-controls="detail-panel" aria-label="XELOR ERP. Core business workspace. Show details.">
+<title>XELOR ERP: the core business workspace</title>
+<circle cx="800" cy="520" r="180" fill="#faf5e9" stroke="#e7d5af" stroke-width="1"/>
+<circle class="focus-ring" cx="800" cy="520" r="185" fill="none" stroke="#bb913f" stroke-width="2" opacity="0"/>
+<circle cx="800" cy="520" r="166" fill="#fff9eb" stroke="#cfac63" stroke-width="4"/>
+<circle class="node-card" cx="800" cy="520" r="155" fill="#4b1d30" stroke="#d9b46a" stroke-width="1.5"/>
+<text x="800" y="435" text-anchor="middle" font-size="11" letter-spacing="3" fill="#e2c78e">THE BUSINESS CORE</text>
+<text x="800" y="493" text-anchor="middle" font-size="51" font-weight="650" letter-spacing="4" fill="#f0d394">XELOR</text>
+<text x="800" y="526" text-anchor="middle" font-size="23" font-weight="400" letter-spacing="6" fill="#fff8e8">ERP</text>
+<path d="M 760 548 H 840" stroke="#ccaa68" stroke-width="1.2"/>
+<text x="800" y="574" text-anchor="middle" font-size="14" fill="#f3e6d3">Orders &#183; Stock &#183; Finance</text>
+<text x="800" y="597" text-anchor="middle" font-size="13" fill="#e6d6c8">People &#183; Approvals &#183; Reports</text>
+<text x="800" y="620" text-anchor="middle" font-size="13" fill="#e6d6c8">Industry configuration</text>
+<text x="800" y="652" text-anchor="middle" font-size="10" letter-spacing="2" fill="#d9bc7e">SYSTEM OF RECORD</text>
+</g>
+<g class="node" data-node="onyx" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="ONYX. Existing product · Intelligence. Show details." transform="translate(597.73 77.23)">
+<title>ONYX: Existing intelligence foundation · bounded capabilities</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#1e3048" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#1e3048" stroke="#1e3048" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#dfbd74"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#c4d3e4">INTELLIGENCE</text>
+<text x="15" y="46" font-size="22" font-weight="650" letter-spacing=".5" fill="#fff7e8">ONYX</text>
+<text x="15" y="65" font-size="13" fill="#c4d3e4">AI intelligence</text>
+</g>
+<g class="node" data-node="aikyantra" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="AIKYANTRA. Existing product · Supplier network. Show details." transform="translate(818.27 77.23)">
+<title>AIKYANTRA: Existing supplier workflows · wider network proposed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#846422" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#f2e6c9" stroke="#b79752" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#846422"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#735a2c">SUPPLIER NETWORK</text>
+<text x="15" y="46" font-size="22" font-weight="650" letter-spacing=".5" fill="#493817">AIKYANTRA</text>
+<text x="15" y="65" font-size="13" fill="#735a2c">Supplier network</text>
+</g>
+<g class="node" data-node="maintenance" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Maintenance &amp; Reliability. Proposed application package. Show details." transform="translate(1025.50 125.93)">
+<title>Maintenance &amp; Reliability: Strong backend foundation · action screens needed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Maintenance</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Reliability</text>
+</g>
+<g class="node" data-node="quality" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Quality &amp; Audit. Proposed application package. Show details." transform="translate(1194.44 217.46)">
+<title>Quality &amp; Audit: Real inspection/action foundations · QMS gaps remain</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Quality</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Audit</text>
+</g>
+<g class="node" data-node="service" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="After-sales &amp; Service. Proposed application package. Show details." transform="translate(1304.70 340.77)">
+<title>After-sales &amp; Service: Service APIs exist · complete user journey needed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">After-sales</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Service</text>
+</g>
+<g class="node" data-node="quoting" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Quoting &amp; Costing. Proposed application package. Show details." transform="translate(1343.00 481.00)">
+<title>Quoting &amp; Costing: Standard quotes exist · advanced costing proposed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Quoting</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Costing</text>
+</g>
+<g class="node" data-node="planning" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Advanced Planning. Proposed application package. Show details." transform="translate(1304.70 621.23)">
+<title>Advanced Planning: MRP and scheduling foundations · advanced scope proposed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Advanced</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">Planning</text>
+</g>
+<g class="node" data-node="warehouse" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Warehouse Execution. Proposed application package. Show details." transform="translate(1194.44 744.54)">
+<title>Warehouse Execution: Stock ledger exists · execution features to build</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Warehouse</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">Execution</text>
+</g>
+<g class="node" data-node="projects" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Projects &amp; Engineering. Proposed application package. Show details." transform="translate(1025.50 836.07)">
+<title>Projects &amp; Engineering: BOM foundations · project/change package proposed</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#833c53" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6b9c3" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#833c53"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">APPLICATION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Projects</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Engineering</text>
+</g>
+<g class="node" data-node="factory" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Connected Factory. Specialist option. Show details." transform="translate(818.27 884.77)">
+<title>Connected Factory: Production foundations · physical connectivity unverified</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#32668c" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#b8cddc" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#32668c"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">SPECIALIST OPTION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Connected</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">Factory</text>
+</g>
+<g class="node" data-node="energy" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Energy &amp; Utilities. Specialist option. Show details." transform="translate(597.73 884.77)">
+<title>Energy &amp; Utilities: Proposed · metering and allocation required</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#32668c" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#b8cddc" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#32668c"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">SPECIALIST OPTION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Energy</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Utilities</text>
+</g>
+<g class="node" data-node="safety" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Safety &amp; Permits. Specialist option. Show details." transform="translate(390.50 836.07)">
+<title>Safety &amp; Permits: Proposed · specialist workflow validation required</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#32668c" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#b8cddc" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#32668c"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">SPECIALIST OPTION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Safety</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Permits</text>
+</g>
+<g class="node" data-node="dispatch" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Dispatch &amp; Loading. Specialist option. Show details." transform="translate(221.56 744.54)">
+<title>Dispatch &amp; Loading: Proposed · loading rules and validation required</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#32668c" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#b8cddc" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#32668c"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">SPECIALIST OPTION</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Dispatch</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Loading</text>
+</g>
+<g class="node" data-node="setup" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Setup &amp; Migration. Delivery service. Show details." transform="translate(111.30 621.23)">
+<title>Setup &amp; Migration: Proposed service offer · scoped delivery required</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#78643d" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6cbb5" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#78643d"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">DELIVERY SERVICE</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Setup</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Migration</text>
+</g>
+<g class="node" data-node="integration" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Integration &amp; Data Operations. Delivery service. Show details." transform="translate(73.00 481.00)">
+<title>Integration &amp; Data Operations: Limited connectors exist · managed offer to establish</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#78643d" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6cbb5" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#78643d"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">DELIVERY SERVICE</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Integration</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; Data Operations</text>
+</g>
+<g class="node" data-node="commissioning" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Factory Commissioning. Delivery service. Show details." transform="translate(111.30 340.77)">
+<title>Factory Commissioning: Proposed partner-assisted service</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#78643d" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6cbb5" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#78643d"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">DELIVERY SERVICE</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Factory</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">Commissioning</text>
+</g>
+<g class="node" data-node="support" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Ongoing Support. Delivery service. Show details." transform="translate(221.56 217.46)">
+<title>Ongoing Support: Proposed service offer · staffing and scope required</title>
+<rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#78643d" stroke-width="2" opacity="0"/>
+<rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6cbb5" stroke-width="1.2"/>
+<circle cx="16" cy="16" r="2.5" fill="#78643d"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">DELIVERY SERVICE</text>
+<text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Ongoing</text>
+<text x="15" y="64" font-size="17" font-weight="600" fill="#283749">Support</text>
+</g>
+<g class="node" data-node="ot" role="button" tabindex="0" aria-pressed="false" aria-controls="detail-panel" aria-label="Managed IT and OT Security. Proposed specialist partner service. Show details." transform="translate(390.50 125.93)"><title>Managed IT &amp; OT Security: Proposed specialist partner service</title><rect class="focus-ring" x="-5" y="-5" width="194" height="88" rx="17" fill="none" stroke="#78643d" stroke-width="2" opacity="0"/><rect class="node-card" width="184" height="78" rx="12" fill="#fffefa" stroke="#d6cbb5" stroke-width="1.2"/><circle cx="16" cy="16" r="2.5" fill="#78643d"/><text x="25" y="19" font-size="8.8" font-weight="600" letter-spacing=".9" fill="#647181">DELIVERY SERVICE</text><text x="15" y="43" font-size="17" font-weight="600" fill="#283749">Managed IT</text><text x="15" y="64" font-size="17" font-weight="600" fill="#283749">&amp; OT Security</text></g>
+<text x="800" y="1005" text-anchor="middle" font-size="12" fill="#73634c">New applications can grow around the same ERP foundation.</text></svg>
+    </div>
+    <div class="map-caption"><span><strong>A shared foundation:</strong> business records, identity, permissions and workflows.</span><span class="desktop-hint">Click a node · Tab + Enter works too</span><span class="mobile-hint">Swipe to explore · Use “Fit full map” for an overview</span></div>
+  </section>
+  <section class="detail" id="detail-panel" aria-labelledby="detail-title">
+    <div class="detail-heading"><div><span class="detail-kicker" id="detail-category">Core business workspace</span><h2 id="detail-title" tabindex="-1">XELOR ERP</h2></div><span class="stage" id="detail-stage">Existing ERP foundation · depth varies by workflow</span></div>
+    <div class="detail-columns"><div><h3>What it does</h3><p id="detail-purpose">Runs the everyday business: customers, orders, purchasing, inventory, finance, people and approvals.</p></div><div><h3>How it connects</h3><p id="detail-relationship">The central source of business records. Each add-on connects its specialist work to the relevant ERP records.</p></div><div><h3>Direction</h3><p id="detail-next">Keep the ERP complete and easy to navigate. Add company and industry configuration, and expose existing capabilities through clear workflows.</p></div></div>
+<div class="detail-extras"><div><h3>A complete working journey</h3><p id="detail-workflow">Customer order &gt; material check &gt; purchase or production &gt; delivery &gt; accounts</p><ul class="detail-topics" id="detail-topics"><li>Daily workspaces by role</li><li>Industry configuration &amp; workflow rules</li><li>A complete business transaction chain</li><li>BOM, routing &amp; basic material planning</li><li>Multi-site business views</li><li>Trust &amp; adoption as core requirements</li></ul></div><div><h3>How to offer it</h3><p id="detail-offer">The main product. Keep everyday transactions, routine operator actions, budget controls, internal supplier history, basic reporting and permissions here. Configure industry packs on this shared foundation.</p><a id="detail-feature-link" class="detail-feature-link" href="#research-xelor">Explore 6 research capabilities and source pages &#8595;</a></div></div>
+  </section>
+
+  <section class="research-library" id="research-library" aria-labelledby="research-title">
+    <div class="library-heading"><div><p class="eyebrow">From the two research reports</p><h2 id="research-title">The capabilities behind the connections.</h2><p>Explore 94 capabilities and service components across the ERP and 18 connected offerings. Search by feature, product or research supplier.</p></div><a class="text-button" href="#page-title">Back to diagram &#8593;</a></div>
+    <div class="evidence-note"><p><strong>Read the feature status:</strong> "Foundation exists; extend" means relevant project work exists, with gaps described below. Proposed features and services are ideas to develop. This map describes product direction, not a list of launch-ready products.</p><p><strong>Source key:</strong> <a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf" target="_blank" rel="noopener">R1: Manufacturing Supplier Research (12 pages)</a> <span aria-hidden="true">&#183;</span> <a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf" target="_blank" rel="noopener">R2: Opportunity and Roadmap (24 pages)</a>. Links below open the relevant PDF page. Sources inspire the proposal; current-stage notes come from the project review. The reports retain historical product names.</p></div>
+    <div class="research-controls" id="research-controls" hidden>
+      <div class="search-field"><label for="feature-search">Find a capability</label><input id="feature-search" type="search" placeholder="Try supplier, calibration, costing, offline..." autocomplete="off" aria-controls="research-grid"></div>
+      <div class="filter-field"><label for="category-filter">Show</label><select id="category-filter" aria-controls="research-grid"><option value="all">All offerings</option><option value="core">XELOR core ERP</option><option value="featured">ONYX &amp; AIKYANTRA</option><option value="application">Application add-ons</option><option value="specialist">Specialist applications</option><option value="delivery">Delivery services</option></select></div>
+      <button class="text-button" type="button" id="clear-search">Reset search</button>
+      <p id="search-summary" class="search-summary" role="status" aria-live="polite">Showing 19 offerings and 94 capabilities.</p>
+    </div>
+    <div class="research-grid" id="research-grid"><article class="research-card core" id="research-xelor" data-product="xelor" data-category="core">
+      <div class="research-card-heading"><div><p class="eyebrow">Core business workspace</p><h3 id="research-title-xelor" tabindex="-1">XELOR ERP</h3></div><span class="feature-count">6 features</span></div>
+      <p class="research-stage">Existing ERP foundation · depth varies by workflow</p>
+      <p class="offer"><strong>How to offer it</strong>The main product. Keep everyday transactions, routine operator actions, budget controls, internal supplier history, basic reporting and permissions here. Configure industry packs on this shared foundation.</p>
+      <ul class="feature-list"><li id="feature-xelor-1"><div class="feature-top"><h4>Daily workspaces by role</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Give buyers, operators, finance teams and owners clear task lists, exceptions and direct actions. Surface capabilities that are currently buried in module tabs.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-xelor-2"><div class="feature-top"><h4>Industry configuration &amp; workflow rules</h4><span class="feature-state new">Proposed feature</span></div><p>Offer configurable forms, fields, terminology, approval rules and industry templates. Start with a validated segment; a general configuration builder is still proposed.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=19" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 19; opens PDF in a new tab">R2 p.19</a></span></li><li id="feature-xelor-3"><div class="feature-top"><h4>A complete business transaction chain</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Keep standard quotes, revisions, orders, purchasing, stock and accounts in the core. Complete receipt-to-invoice matching and settlement where the current chain has gaps.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-xelor-4"><div class="feature-top"><h4>BOM, routing &amp; basic material planning</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Make bills of material, approved versions, routing and basic material requirements planning easy to reach in the manufacturing pack.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li><li id="feature-xelor-5"><div class="feature-top"><h4>Multi-site business views</h4><span class="feature-state new">Proposed feature</span></div><p>Plan shared master data with site-level stock, responsibilities and reporting. Multi-site operating workflows need definition and validation.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a></span></li><li id="feature-xelor-6"><div class="feature-top"><h4>Trust &amp; adoption as core requirements</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Preserve permissions, approvals and audit history; verify recovery and offer simple task flows and instructions. Include these in the product foundation.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> RheinBrucke / Epicor; Slooze; the roadmap&#x27;s worker-experience and industry guidance.</p><button type="button" class="text-button" data-show-map="xelor" hidden>View offering overview</button></div>
+    </article><article class="research-card featured" id="research-onyx" data-product="onyx" data-category="featured">
+      <div class="research-card-heading"><div><p class="eyebrow">Existing product · Intelligence</p><h3 id="research-title-onyx" tabindex="-1">ONYX</h3></div><span class="feature-count">6 features</span></div>
+      <p class="research-stage">Existing intelligence foundation · bounded capabilities</p>
+      <p class="offer"><strong>How to offer it</strong>Optional intelligence subscription for XELOR and its add-ons. External-system use is limited to validated connectors and supported actions.</p>
+      <ul class="feature-list"><li id="feature-onyx-1"><div class="feature-top"><h4>RFQ &amp; document assistant</h4><span class="feature-state new">Proposed feature</span></div><p>Draft request fields from enquiries, BOMs and drawings, compare revisions and show the source behind each suggestion for human review. Extraction accuracy needs validation.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-onyx-2"><div class="feature-top"><h4>Explain operational exceptions</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Show the evidence behind a shortage, late job, supplier issue or cash risk, separating known facts from inferred causes. Extend the existing evidence-based assistance.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-onyx-3"><div class="feature-top"><h4>Compare business options</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Explain supplier bids, planning scenarios and cost assumptions using current inputs; identify missing data and let the responsible person choose.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-onyx-4"><div class="feature-top"><h4>Maintenance &amp; knowledge assistance</h4><span class="feature-state new">Proposed feature</span></div><p>Prepare repair summaries and retrieve relevant instructions from approved records. Keep document revision and source references visible.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-onyx-5"><div class="feature-top"><h4>Approved actions with outcome evidence</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Use supported executors and required approvals, re-read the result and record the outcome. Expand task coverage while retaining the existing governance foundation.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-onyx-6"><div class="feature-top"><h4>Freshness &amp; uncertainty in every answer</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Display source time, missing evidence and unsupported actions; provide a manual route when information is stale or access is unavailable.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=15" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 15; opens PDF in a new tab">R2 p.15</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> CommerceCX; Adventis; AnjX; the roadmap&#x27;s governed AI tasks.</p><button type="button" class="text-button" data-show-map="onyx" hidden>View offering overview</button></div>
+    </article><article class="research-card featured" id="research-aikyantra" data-product="aikyantra" data-category="featured">
+      <div class="research-card-heading"><div><p class="eyebrow">Existing product · Supplier network</p><h3 id="research-title-aikyantra" tabindex="-1">AIKYANTRA</h3></div><span class="feature-count">8 features</span></div>
+      <p class="research-stage">Existing supplier workflows · wider network proposed</p>
+      <p class="offer"><strong>How to offer it</strong>A supplier-network product for supplier collaboration, wider discovery and network evidence. Basic purchasing controls and internal supplier performance stay in XELOR. Validate adapters before offering other ERP handoffs.</p>
+      <ul class="feature-list"><li id="feature-aikyantra-1"><div class="feature-top"><h4>Supplier discovery &amp; alternatives</h4><span class="feature-state new">Proposed feature</span></div><p>Build searchable supplier capabilities and alternate-source suggestions using permissioned profiles. Wider network discovery remains an addition to the existing supplier workspace.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a></span></li><li id="feature-aikyantra-2"><div class="feature-top"><h4>Qualification &amp; shared documents</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Collect capability evidence, supplier documents, certificates and review dates; route technical acceptance and compliance checks to an owner.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-3"><div class="feature-top"><h4>BOM-linked RFQs &amp; bid comparison</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Connect requested materials to engineering needs, collect revisioned quotes, compare landed cost and technical acceptance, and carry approved awards into purchase orders.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-4"><div class="feature-top"><h4>Contracts, budgets &amp; approval rules</h4><span class="feature-state new">Proposed feature</span></div><p>Show agreed terms, committed spend, budget exceptions and approval reasons in the buyer workflow, using the ERP as the financial record.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-5"><div class="feature-top"><h4>Order acknowledgements &amp; delivery promises</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Add supplier acknowledgement, confirmed dates, delivery updates and overdue alerts around the existing promised-date foundation.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-6"><div class="feature-top"><h4>Visible supplier performance &amp; risk</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Bring receipt and inspection evidence into the main supplier view: delivery reliability, defects, repeat issues and supporting records. Add cost-volatility signals separately.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-7"><div class="feature-top"><h4>Buyer, finance &amp; supplier workspaces</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Give each participant a focused view of shared requests, decisions, documents and exceptions, with clear ownership and permissions.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=8" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 8; opens PDF in a new tab">R2 p.8</a></span></li><li id="feature-aikyantra-8"><div class="feature-top"><h4>Trade &amp; financing partner options</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Explore customs-document coordination and payment or financing handoffs through suitable partners. Availability and terms require a separate provider arrangement.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Slooze; RheinBrucke / MeRLIN; CommerceCX supplier comparison.</p><button type="button" class="text-button" data-show-map="aikyantra" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-maintenance" data-product="maintenance" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-maintenance" tabindex="-1">Maintenance &amp; Reliability</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Strong backend foundation · action screens needed</p>
+      <p class="offer"><strong>How to offer it</strong>An optional maintenance application for asset-intensive businesses. It needs complete planner and technician journeys before it is a finished standalone package.</p>
+      <ul class="feature-list"><li id="feature-maintenance-1"><div class="feature-top"><h4>Asset register &amp; repair history</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Surface assets, meters, failure history, work performed and accumulated costs in one equipment record. Existing backend foundations can support this journey.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-maintenance-2"><div class="feature-top"><h4>Preventive maintenance schedules</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Provide usable setup for calendar- or meter-based tasks, due-work lists, missed work and completion evidence. Verify the scheduling process end to end.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-maintenance-3"><div class="feature-top"><h4>Technician work orders</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Complete report, assign, start, hold, repair, handback and closure screens around the existing work-order actions.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-maintenance-4"><div class="feature-top"><h4>Spares, labour &amp; maintenance cost</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Record actual parts and labour against the repair, link replenishment to purchasing and distinguish planned parts from confirmed reservations.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-maintenance-5"><div class="feature-top"><h4>Reliability &amp; condition-driven work</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Expose downtime and repair measures first; later connect validated condition alerts to reviewed maintenance requests. Predictive performance needs its own pilot.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax / D3Minds; Adventis / OptiMES; RheinBrucke.</p><button type="button" class="text-button" data-show-map="maintenance" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-quality" data-product="quality" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-quality" tabindex="-1">Quality &amp; Audit</h3></div><span class="feature-count">6 features</span></div>
+      <p class="research-stage">Real inspection/action foundations · QMS gaps remain</p>
+      <p class="offer"><strong>How to offer it</strong>An optional quality-management application. Routine receipt and production inspection remains accessible in the ERP workflow.</p>
+      <ul class="feature-list"><li id="feature-quality-1"><div class="feature-top"><h4>Inspection, containment &amp; CAPA</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Finish action screens for measurement capture, nonconformance, stock disposition and corrective/preventive action using the existing foundations.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-quality-2"><div class="feature-top"><h4>Calibration &amp; gauge validity</h4><span class="feature-state new">Proposed feature</span></div><p>Track gauges, calibration dates and evidence, with warnings or blocks for overdue equipment according to customer rules.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-quality-3"><div class="feature-top"><h4>SPC &amp; FMEA</h4><span class="feature-state new">Proposed feature</span></div><p>Add statistical process control for stable measurements and failure-mode analysis for process risks. These need dedicated workflows beyond inspection lists.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-quality-4"><div class="feature-top"><h4>Audits, controlled documents &amp; skills</h4><span class="feature-state new">Proposed feature</span></div><p>Build document approval/versioning, audit findings, training acknowledgement and skills evidence; current demonstration screens are not completed workflows.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a></span></li><li id="feature-quality-5"><div class="feature-top"><h4>Supplier-to-customer defect loop</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Join supplier defects, internal rework and customer complaints; offer structured 8D responses for segments that need them.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-quality-6"><div class="feature-top"><h4>Lot genealogy &amp; recall evidence</h4><span class="feature-state new">Proposed feature</span></div><p>Trace from a suspect supplier lot to stock, jobs, finished lots and shipments, preserving splits, merges, rework and scrap. Full recall tracing remains proposed.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax / D3Minds; RheinBrucke; the roadmap&#x27;s quality and engineering recommendations.</p><button type="button" class="text-button" data-show-map="quality" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-service" data-product="service" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-service" tabindex="-1">After-sales &amp; Service</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Service APIs exist · complete user journey needed</p>
+      <p class="offer"><strong>How to offer it</strong>An optional after-sales application for equipment makers and service teams. Customer access and daily staff actions still need completion.</p>
+      <ul class="feature-list"><li id="feature-service-1"><div class="feature-top"><h4>Customer issues &amp; service commitments</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Complete reply, assignment, notification and escalation journeys around existing complaint, entitlement and SLA APIs.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-service-2"><div class="feature-top"><h4>Installed equipment &amp; warranty history</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Connect shipped serial or lot records to the customer, warranty entitlement and recurring service history.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-service-3"><div class="feature-top"><h4>Customer portal &amp; self-service</h4><span class="feature-state new">Proposed feature</span></div><p>Offer a focused customer view to submit issues, follow progress and read approved knowledge. A complete customer portal is still to build.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-service-4"><div class="feature-top"><h4>Returns &amp; spare fulfilment</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Track approved returns and spare demand through confirmation, stock movement and delivery; replace placeholder costing or external references with verified flows.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-service-5"><div class="feature-top"><h4>Field visits &amp; failure feedback</h4><span class="feature-state new">Proposed feature</span></div><p>Add field-service scheduling where justified, and route recurring field failures into quality actions and engineering changes.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax customer-quality coverage; roadmap after-delivery service recommendations.</p><button type="button" class="text-button" data-show-map="service" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-quoting" data-product="quoting" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-quoting" tabindex="-1">Quoting &amp; Costing</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Standard quotes exist · advanced costing proposed</p>
+      <p class="offer"><strong>How to offer it</strong>An advanced quoting and costing add-on. Standard quotations, revisions and conversion to orders stay in XELOR.</p>
+      <ul class="feature-list"><li id="feature-quoting-1"><div class="feature-top"><h4>Reviewed enquiry &amp; revision intake</h4><span class="feature-state new">Proposed feature</span></div><p>Extract or enter enquiry requirements, compare drawing/BOM revisions and confirm changes before costing. ONYX assistance is optional.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=7" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 7; opens PDF in a new tab">R2 p.7</a></span></li><li id="feature-quoting-2"><div class="feature-top"><h4>Material, process, labour &amp; tooling costs</h4><span class="feature-state new">Proposed feature</span></div><p>Build an auditable cost sheet with assumptions, quantities, supplier bids and cost ownership. Current standard quoting does not establish this costing engine.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=7" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 7; opens PDF in a new tab">R2 p.7</a></span></li><li id="feature-quoting-3"><div class="feature-top"><h4>Product configuration &amp; pricing rules</h4><span class="feature-state new">Proposed feature</span></div><p>Validate permitted product options, pricing conditions and exceptions; configure approval limits for discounts and margin.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=7" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 7; opens PDF in a new tab">R2 p.7</a></span></li><li id="feature-quoting-4"><div class="feature-top"><h4>Quote-to-order continuity</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Surface existing quotation versions, customer acceptance/rejection and order conversion; keep the accepted revision attached to the commercial commitment.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=7" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 7; opens PDF in a new tab">R2 p.7</a></span></li><li id="feature-quoting-5"><div class="feature-top"><h4>Estimated-versus-actual job margin</h4><span class="feature-state new">Proposed feature</span></div><p>Bring production material, labour, overhead and rework evidence back to the original estimate. Actual production job-cost inputs still need completion.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=7" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 7; opens PDF in a new tab">R2 p.7</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> CommerceCX / ScaleFluidly; RheinBrucke CPQ.</p><button type="button" class="text-button" data-show-map="quoting" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-planning" data-product="planning" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-planning" tabindex="-1">Advanced Planning</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">MRP and scheduling foundations · advanced scope proposed</p>
+      <p class="offer"><strong>How to offer it</strong>An advanced planning application. Basic material requirements planning remains in the manufacturing ERP pack.</p>
+      <ul class="feature-list"><li id="feature-planning-1"><div class="feature-top"><h4>Demand forecasts with a measured baseline</h4><span class="feature-state new">Proposed feature</span></div><p>Use reliable history, hold out evaluation periods and compare against a simple forecast before relying on an advanced model.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li><li id="feature-planning-2"><div class="feature-top"><h4>Inventory versus working capital</h4><span class="feature-state new">Proposed feature</span></div><p>Compare service availability, shortages, replenishment and excess stock together with the cash tied up in materials.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li><li id="feature-planning-3"><div class="feature-top"><h4>Material, machine &amp; people constraints</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Extend existing material and scheduling foundations with validated calendars, resource availability, skills and real supplier lead times.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li><li id="feature-planning-4"><div class="feature-top"><h4>What-if scenarios &amp; explained approval</h4><span class="feature-state new">Proposed feature</span></div><p>Compare a late supplier, machine outage, urgent order or overtime option; record the chosen plan and approval reason.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li><li id="feature-planning-5"><div class="feature-top"><h4>Plan-to-actual feedback</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Make progress, shortages and capacity exceptions visible from actual jobs and receipts. Existing scheduling is a foundation, not a proven advanced optimizer.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=3" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 3; opens PDF in a new tab">R1 p.3</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=9" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 9; opens PDF in a new tab">R2 p.9</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> AnjX; Tomax; RheinBrucke / Epicor.</p><button type="button" class="text-button" data-show-map="planning" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-warehouse" data-product="warehouse" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-warehouse" tabindex="-1">Warehouse Execution</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Stock ledger exists · execution features to build</p>
+      <p class="offer"><strong>How to offer it</strong>A warehouse-execution add-on for scan and task workflows, using XELOR&#x27;s stock ledger for authoritative inventory movements.</p>
+      <ul class="feature-list"><li id="feature-warehouse-1"><div class="feature-top"><h4>Scan-based receiving &amp; put-away</h4><span class="feature-state new">Proposed feature</span></div><p>Validate purchase order, item, lot and quantity, print identifiers and direct goods into the right bin or quality hold.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-warehouse-2"><div class="feature-top"><h4>Cycle counts &amp; replenishment</h4><span class="feature-state new">Proposed feature</span></div><p>Create accountable count and replenishment tasks, with controlled adjustments and visible exceptions.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-warehouse-3"><div class="feature-top"><h4>e-Kanban &amp; job kitting</h4><span class="feature-state new">Proposed feature</span></div><p>Trigger line replenishment, prepare job kits and show missing components, revision and lot checks before controlled issue.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-warehouse-4"><div class="feature-top"><h4>WIP, rework &amp; component history</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Retain lot identity through partial completion, movement, scrap, returns and rework; connect to the proposed quality traceability view.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-warehouse-5"><div class="feature-top"><h4>Reliable mobile picking &amp; packing</h4><span class="feature-state new">Proposed feature</span></div><p>Confirm order, item, lot and quantity with labels and dispatch evidence. Handle duplicate scans, poor connectivity and interrupted work without duplicate stock posting.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax warehouse material; RheinBrucke scanning; the roadmap&#x27;s traceable warehouse workflow.</p><button type="button" class="text-button" data-show-map="warehouse" hidden>View offering overview</button></div>
+    </article><article class="research-card application" id="research-projects" data-product="projects" data-category="application">
+      <div class="research-card-heading"><div><p class="eyebrow">Proposed application package</p><h3 id="research-title-projects" tabindex="-1">Projects &amp; Engineering</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">BOM foundations · project/change package proposed</p>
+      <p class="offer"><strong>How to offer it</strong>An engineering and project-control add-on for project-based or engineer-to-order businesses; choose segment-specific extensions separately.</p>
+      <ul class="feature-list"><li id="feature-projects-1"><div class="feature-top"><h4>Project capacity, dependencies &amp; costs</h4><span class="feature-state new">Proposed feature</span></div><p>Manage milestones, dependencies, resource capacity, timesheets and project cost against customer commitments.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a></span></li><li id="feature-projects-2"><div class="feature-top"><h4>Engineering change requests &amp; orders</h4><span class="feature-state new">Proposed feature</span></div><p>Assess affected BOMs, drawings, quotes, open orders, bought material and work in progress before approving a change.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-projects-3"><div class="feature-top"><h4>Effective revisions &amp; shop-floor acknowledgement</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Set the approved revision and release date, preserve old records and record acknowledgement of changed instructions. Existing BOM versions are only a starting point.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a></span></li><li id="feature-projects-4"><div class="feature-top"><h4>New-product introduction &amp; portfolio gates</h4><span class="feature-state new">Proposed feature</span></div><p>Use concept, feasibility, prototype and production-release reviews, with owners and evidence. Borrow the stage-gate pattern from the research.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a></span></li><li id="feature-projects-5"><div class="feature-top"><h4>Segment-specific engineering extensions</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Assess APQP/PPAP or broader product-lifecycle needs separately. Clinical and cell/gene-therapy operations would require a distinct specialist product strategy.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=11" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 11; opens PDF in a new tab">R2 p.11</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=19" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 19; opens PDF in a new tab">R2 p.19</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax projects; CommerceCX NPI / portfolio patterns; RheinBrucke projects.</p><button type="button" class="text-button" data-show-map="projects" hidden>View offering overview</button></div>
+    </article><article class="research-card specialist" id="research-factory" data-product="factory" data-category="specialist">
+      <div class="research-card-heading"><div><p class="eyebrow">Specialist option</p><h3 id="research-title-factory" tabindex="-1">Connected Factory</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Production foundations · physical connectivity unverified</p>
+      <p class="offer"><strong>How to offer it</strong>A specialist application for machine connectivity, live events and advanced factory visibility. Basic operator transactions stay in the XELOR manufacturing pack; installation and data operations are scoped separately.</p>
+      <ul class="feature-list"><li id="feature-factory-1"><div class="feature-top"><h4>Operator task workspace</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Provide touch-friendly start/finish, material scan, inspection and fault flows with correct instructions and languages appropriate to the site.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=10" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 10; opens PDF in a new tab">R2 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li><li id="feature-factory-2"><div class="feature-top"><h4>Validated machine &amp; sensor events</h4><span class="feature-state new">Proposed feature</span></div><p>Connect supported PLC, SCADA, gateway and sensor sources; map each signal to an asset, job and timestamp. Current simulated paths do not prove physical connectivity.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=10" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 10; opens PDF in a new tab">R2 p.10</a></span></li><li id="feature-factory-3"><div class="feature-top"><h4>OEE, downtime &amp; production visibility</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Expose availability, performance, quality and stop reasons using valid definitions and input coverage. Existing calculations need dependable shop-floor evidence.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=5" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 5; opens PDF in a new tab">R1 p.5</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=10" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 10; opens PDF in a new tab">R2 p.10</a></span></li><li id="feature-factory-4"><div class="feature-top"><h4>Condition &amp; process-quality exceptions</h4><span class="feature-state new">Proposed feature</span></div><p>Correlate equipment or process changes with defects and downtime, then route useful alerts to a responsible person.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a></span></li><li id="feature-factory-5"><div class="feature-top"><h4>Offline capture &amp; recovery</h4><span class="feature-state new">Proposed feature</span></div><p>Provide local buffering or durable task queues, pending/synced status, duplicate handling and supervised conflict resolution for unreliable connections.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=15" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 15; opens PDF in a new tab">R2 p.15</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Tomax; Zeliot / Condense; Adventis / OptiMES; RheinBrucke.</p><button type="button" class="text-button" data-show-map="factory" hidden>View offering overview</button></div>
+    </article><article class="research-card specialist" id="research-energy" data-product="energy" data-category="specialist">
+      <div class="research-card-heading"><div><p class="eyebrow">Specialist option</p><h3 id="research-title-energy" tabindex="-1">Energy &amp; Utilities</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed · metering and allocation required</p>
+      <p class="offer"><strong>How to offer it</strong>A specialist energy and utilities application for plants with reliable metering and a defined cost-allocation method.</p>
+      <ul class="feature-list"><li id="feature-energy-1"><div class="feature-top"><h4>Metering by plant, line &amp; machine</h4><span class="feature-state new">Proposed feature</span></div><p>Capture electricity and relevant utility readings with units, time intervals, missing-data flags and responsible meter owners.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-energy-2"><div class="feature-top"><h4>Consumption &amp; cost per output</h4><span class="feature-state new">Proposed feature</span></div><p>Relate meter intervals to shifts, jobs or production quantity using an agreed allocation rule and visible assumptions.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-energy-3"><div class="feature-top"><h4>Abnormal consumption &amp; idle losses</h4><span class="feature-state new">Proposed feature</span></div><p>Identify unusual use or consumption outside expected operating periods and assign an investigation with supporting readings.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a></span></li><li id="feature-energy-4"><div class="feature-top"><h4>Verified energy improvement</h4><span class="feature-state new">Proposed feature</span></div><p>Compare similar operating conditions and product mix; distinguish estimates from metered reductions and actual cost changes.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=13" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 13; opens PDF in a new tab">R2 p.13</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=22" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 22; opens PDF in a new tab">R2 p.22</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> RheinBrucke connected-factory energy; roadmap maintenance and utilities guidance.</p><button type="button" class="text-button" data-show-map="energy" hidden>View offering overview</button></div>
+    </article><article class="research-card specialist" id="research-safety" data-product="safety" data-category="specialist">
+      <div class="research-card-heading"><div><p class="eyebrow">Specialist option</p><h3 id="research-title-safety" tabindex="-1">Safety &amp; Permits</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed · specialist workflow validation required</p>
+      <p class="offer"><strong>How to offer it</strong>A specialist safety-workflow application; plant safety owners define and approve the required process.</p>
+      <ul class="feature-list"><li id="feature-safety-1"><div class="feature-top"><h4>Hazards, incidents &amp; near misses</h4><span class="feature-state new">Proposed feature</span></div><p>Capture the event, affected assets or area, owner, follow-up action and review date with clear accountability.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-safety-2"><div class="feature-top"><h4>Work permits &amp; checklists</h4><span class="feature-state new">Proposed feature</span></div><p>Manage requests, required checks, authorization, time limits and closure linked to people, maintenance jobs and site assets.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-safety-3"><div class="feature-top"><h4>Training &amp; action evidence</h4><span class="feature-state new">Proposed feature</span></div><p>Keep training acknowledgement, inspection evidence and assigned corrective actions connected to the relevant site work.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-safety-4"><div class="feature-top"><h4>Optional PPE or vision alerts</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Pilot detections only with a specialist and trained human review; measure false alarms and missed detections under actual site conditions.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Adventis Shield / OptiMES; roadmap EHS guidance.</p><button type="button" class="text-button" data-show-map="safety" hidden>View offering overview</button></div>
+    </article><article class="research-card specialist" id="research-dispatch" data-product="dispatch" data-category="specialist">
+      <div class="research-card-heading"><div><p class="eyebrow">Specialist option</p><h3 id="research-title-dispatch" tabindex="-1">Dispatch &amp; Loading</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed · loading rules and validation required</p>
+      <p class="offer"><strong>How to offer it</strong>A loading and logistics add-on for businesses with recurring complex truck or container loads. Routine ERP dispatch remains part of core fulfilment.</p>
+      <ul class="feature-list"><li id="feature-dispatch-1"><div class="feature-top"><h4>Truck or container selection</h4><span class="feature-state new">Proposed feature</span></div><p>Compare required capacity against real item dimensions, weight and shipment quantities.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-dispatch-2"><div class="feature-top"><h4>Mixed-goods loading constraints</h4><span class="feature-state new">Proposed feature</span></div><p>Account for orientation, stackability, irregular goods, unloading order, weight distribution and other physical constraints.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a></span></li><li id="feature-dispatch-3"><div class="feature-top"><h4>3D load plans &amp; exportable instructions</h4><span class="feature-state new">Proposed feature</span></div><p>Provide a visual plan and packing/loading reports for review and execution, backed by constraint checks.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a></span></li><li id="feature-dispatch-4"><div class="feature-top"><h4>Freight &amp; actual loading comparison</h4><span class="feature-state new">Proposed feature</span></div><p>Compare plans with actual execution, space use, labour and freight evidence. Use measured results rather than brochure savings percentages.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=2" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 2; opens PDF in a new tab">R1 p.2</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=12" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 12; opens PDF in a new tab">R2 p.12</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=22" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 22; opens PDF in a new tab">R2 p.22</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> CommerceCX / LogisticCX; roadmap loading and dispatch guidance.</p><button type="button" class="text-button" data-show-map="dispatch" hidden>View offering overview</button></div>
+    </article><article class="research-card delivery" id="research-setup" data-product="setup" data-category="delivery">
+      <div class="research-card-heading"><div><p class="eyebrow">Delivery service</p><h3 id="research-title-setup" tabindex="-1">Setup &amp; Migration</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed service offer · scoped delivery required</p>
+      <p class="offer"><strong>How to offer it</strong>A one-time implementation service with an agreed scope, customer owners, acceptance criteria and separately stated recurring costs.</p>
+      <ul class="feature-list"><li id="feature-setup-1"><div class="feature-top"><h4>Industry discovery &amp; package selection</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Map actual roles, terminology, workflows and bottlenecks, then configure the relevant ERP pack and add-ons. Start with an agreed segment and scope.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=19" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 19; opens PDF in a new tab">R2 p.19</a></span></li><li id="feature-setup-2"><div class="feature-top"><h4>Data cleanup, migration &amp; reconciliation</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Approve master data, map source records, trial imports and reconcile opening quantities and balances before customer acceptance.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a></span></li><li id="feature-setup-3"><div class="feature-top"><h4>Role-based training &amp; practical adoption</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Train a plant champion and daily users with real tasks, instructions and exception handling; include handover and a usable fallback.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=16" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 16; opens PDF in a new tab">R2 p.16</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a></span></li><li id="feature-setup-4"><div class="feature-top"><h4>Pilot acceptance &amp; transparent costs</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Agree workflow, data and value evidence; separate software, implementation, hardware, integration, hosting and support responsibilities and costs.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=18" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 18; opens PDF in a new tab">R2 p.18</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=23" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 23; opens PDF in a new tab">R2 p.23</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> RheinBrucke; Tomax implementation; roadmap delivery model.</p><button type="button" class="text-button" data-show-map="setup" hidden>View offering overview</button></div>
+    </article><article class="research-card delivery" id="research-integration" data-product="integration" data-category="delivery">
+      <div class="research-card-heading"><div><p class="eyebrow">Delivery service</p><h3 id="research-title-integration" tabindex="-1">Integration &amp; Data Operations</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Limited connectors exist · managed offer to establish</p>
+      <p class="offer"><strong>How to offer it</strong>A managed integration service, scoped by source system, version, data direction, operating volume and service responsibility.</p>
+      <ul class="feature-list"><li id="feature-integration-1"><div class="feature-top"><h4>ERP, file &amp; business-system connectors</h4><span class="feature-state extend">Foundation exists; extend</span></div><p>Extend validated adapters with explicitly supported API, file, email or EDI workflows. Existing bounded imports do not establish universal synchronization.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=4" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 4; opens PDF in a new tab">R1 p.4</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=15" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 15; opens PDF in a new tab">R2 p.15</a></span></li><li id="feature-integration-2"><div class="feature-top"><h4>Common asset &amp; event mapping</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Map plant, asset, job, time, units and record identity so events can be joined to the right ERP records across sites.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=15" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 15; opens PDF in a new tab">R2 p.15</a></span></li><li id="feature-integration-3"><div class="feature-top"><h4>Data freshness, retries &amp; reconciliation</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Show last successful transfer, lag, pending records and failures; support safe retry, replay and receiver confirmation with an assigned recovery owner.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=15" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 15; opens PDF in a new tab">R2 p.15</a></span></li><li id="feature-integration-4"><div class="feature-top"><h4>Customer-cloud &amp; streaming options</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Assess managed streaming, governance and customer-cloud deployment where volume warrants them. Scope infrastructure licences and operations separately.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=6" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 6; opens PDF in a new tab">R1 p.6</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Zeliot / Condense; Slooze integration options; RheinBrucke services.</p><button type="button" class="text-button" data-show-map="integration" hidden>View offering overview</button></div>
+    </article><article class="research-card delivery" id="research-commissioning" data-product="commissioning" data-category="delivery">
+      <div class="research-card-heading"><div><p class="eyebrow">Delivery service</p><h3 id="research-title-commissioning" tabindex="-1">Factory Commissioning</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed partner-assisted service</p>
+      <p class="offer"><strong>How to offer it</strong>A scoped on-site engineering service delivered with qualified equipment partners, separate from software subscription and ongoing support.</p>
+      <ul class="feature-list"><li id="feature-commissioning-1"><div class="feature-top"><h4>Plant survey &amp; protocol register</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Record machines, instruments, network connections, available protocols and operating constraints before selecting equipment.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a></span></li><li id="feature-commissioning-2"><div class="feature-top"><h4>Gateway, sensor &amp; instrumentation selection</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Match real interfaces such as RS485/Modbus, MQTT or HTTPS to suitable equipment; confirm local buffering and support needs for the chosen hardware.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=7" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 7; opens PDF in a new tab">R1 p.7</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a></span></li><li id="feature-commissioning-3"><div class="feature-top"><h4>Installation, signal checks &amp; commissioning</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Plan installation windows, verify timestamps and signal meaning, test interruptions and agree customer acceptance with a named owner.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=23" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 23; opens PDF in a new tab">R2 p.23</a></span></li><li id="feature-commissioning-4"><div class="feature-top"><h4>Site documentation &amp; technical handover</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Provide as-installed records, operating instructions, training, warranty boundaries and escalation contacts for the customer and support team.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=17" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 17; opens PDF in a new tab">R2 p.17</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Controlsoft; Adventis gateways; Zeliot industrial connectivity.</p><button type="button" class="text-button" data-show-map="commissioning" hidden>View offering overview</button></div>
+    </article><article class="research-card delivery" id="research-support" data-product="support" data-category="delivery">
+      <div class="research-card-heading"><div><p class="eyebrow">Delivery service</p><h3 id="research-title-support" tabindex="-1">Ongoing Support</h3></div><span class="feature-count">4 features</span></div>
+      <p class="research-stage">Proposed service offer · staffing and scope required</p>
+      <p class="offer"><strong>How to offer it</strong>An ongoing support service with defined hours, scope, escalation and response responsibilities. Staffing and operations must be established.</p>
+      <ul class="feature-list"><li id="feature-support-1"><div class="feature-top"><h4>Service desk &amp; named escalation</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Provide one customer contact, severity handling, support coverage, incident ownership and agreed escalation to application or equipment specialists.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=8" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 8; opens PDF in a new tab">R1 p.8</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=18" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 18; opens PDF in a new tab">R2 p.18</a></span></li><li id="feature-support-2"><div class="feature-top"><h4>Configuration, upgrades &amp; change support</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Manage scoped improvements and upgrades with review, user communication, recovery planning and confirmation of the affected workflow.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=9" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 9; opens PDF in a new tab">R1 p.9</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=18" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 18; opens PDF in a new tab">R2 p.18</a></span></li><li id="feature-support-3"><div class="feature-top"><h4>Adoption &amp; outcome reviews</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Review use, unresolved exceptions and agreed measures such as quote time, delivery, downtime and stock accuracy using comparable evidence.</p><span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=18" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 18; opens PDF in a new tab">R2 p.18</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=22" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 22; opens PDF in a new tab">R2 p.22</a></span></li><li id="feature-support-4"><div class="feature-top"><h4>Recovery, ownership &amp; exit handover</h4><span class="feature-state delivery">Proposed delivery service</span></div><p>Assign backup and recovery responsibilities, rehearse restoration where in scope and document customer data handover and service exit arrangements.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=18" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 18; opens PDF in a new tab">R2 p.18</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=23" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 23; opens PDF in a new tab">R2 p.23</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> Controlsoft; RheinBrucke; CoSol; roadmap operate-and-improve model.</p><button type="button" class="text-button" data-show-map="support" hidden>View offering overview</button></div>
+    </article><article class="research-card delivery" id="research-ot" data-product="ot" data-category="delivery">
+      <div class="research-card-heading"><div><p class="eyebrow">Delivery service</p><h3 id="research-title-ot" tabindex="-1">Managed IT &amp; OT Security</h3></div><span class="feature-count">5 features</span></div>
+      <p class="research-stage">Proposed specialist partner service</p>
+      <p class="offer"><strong>How to offer it</strong>An optional managed infrastructure and OT-security service delivered with a specialist partner. Standard application security remains included in XELOR.</p>
+      <ul class="feature-list"><li id="feature-ot-1"><div class="feature-top"><h4>Factory asset inventory &amp; network map</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Document industrial assets, endpoints and connections with owners and approved changes. Use specialist discovery where required.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-ot-2"><div class="feature-top"><h4>Network segmentation &amp; monitoring</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Assess configurations, prioritize vulnerabilities and design plant network separation and monitoring with an OT specialist.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-ot-3"><div class="feature-top"><h4>Controlled vendor remote access</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Require a named person, purpose, target asset, protocol and time window, with approval, authentication, audit and access revocation.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-ot-4"><div class="feature-top"><h4>Backups, restoration &amp; incident response</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Agree recovery targets, restore exercises, incident contacts and escalation with explicit customer and provider responsibilities.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=14" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 14; opens PDF in a new tab">R2 p.14</a></span></li><li id="feature-ot-5"><div class="feature-top"><h4>Managed infrastructure &amp; equipment terms</h4><span class="feature-state partner">Specialist / partner option</span></div><p>Scope hardware, licences, monitoring, field visits, renewal and exit terms separately from the ERP subscription.</p><span class="source-links"><a href="../output/pdf/01_Manufacturing_Supplier_Research.pdf#page=10" target="_blank" rel="noopener" aria-label="Manufacturing Supplier Research, page 10; opens PDF in a new tab">R1 p.10</a></span></li></ul>
+      <div class="card-foot"><p><strong>Research inspiration:</strong> CoSol / Connectivity and Cisco; roadmap factory security boundaries.</p><button type="button" class="text-button" data-show-map="ot" hidden>View offering overview</button></div>
+    </article></div>
+    <p class="empty-state" id="empty-state" hidden>No matching capabilities. Try a broader word or choose all offerings.</p>
+  </section>
+  <section class="industry-direction" aria-labelledby="industry-title"><div><p class="eyebrow">One ERP, different industry packs</p><h2 id="industry-title">Adapt the workflow to the business.</h2><p>Start with one validated segment, then reuse the shared ERP foundation. These pack combinations are proposed directions from R2, page 19; they do not mean every industry is already supported.</p></div><div class="industry-grid"><article><h3>Precision &amp; job work</h3><p>Quoting, routing, revisions, due dates and lot history.</p></article><article><h3>Machinery &amp; projects</h3><p>Engineering changes, project gates, supplier commitments and job margin.</p></article><article><h3>Repetitive manufacturing</h3><p>Operator tasks, replenishment, kitting, OEE and in-process quality.</p></article><article><h3>Export-heavy businesses</h3><p>Traceable packing, dispatch, trade documents and constrained load planning.</p></article></div><p class="industry-boundary">Process, food and chemical businesses need separate recipe, batch, instrument and safety discovery. Regulated pharma and clinical operations require specialist scope. <span class="source-links"><a href="../output/pdf/02_AIKYANTRA_XELOR_Opportunity_and_Roadmap.pdf#page=19" target="_blank" rel="noopener" aria-label="Opportunity and Roadmap, page 19; opens PDF in a new tab">R2 p.19</a></span></p></section>
+
+  <p class="sr-only" id="selection-announcement" role="status" aria-live="polite" aria-atomic="true">XELOR ERP selected. Details are below the diagram.</p>
+  <noscript><p class="noscript">The diagram and complete feature library work without JavaScript. Enable JavaScript for node selection and search. Source links open the original PDFs; proposed packages still require completion and validation.</p></noscript>
+  <footer class="footer"><p>A product-direction map based on the manufacturing research and current project review. Proposed packages require completion and validation; connections do not imply independent deployment or verified integrations.</p><p class="date">11 September 2026 · Works offline</p></footer>
+</main>
+<script type="application/json" id="ecosystem-data">
+[
+  {
+    "id": "xelor",
+    "name": "XELOR ERP",
+    "category": "core",
+    "categoryLabel": "Core business workspace",
+    "stage": "Existing ERP foundation · depth varies by workflow",
+    "purpose": "Runs the everyday business: customers, orders, purchasing, inventory, finance, people and approvals.",
+    "relationship": "The central source of business records. Each add-on connects its specialist work to the relevant ERP records.",
+    "next": "Keep the ERP complete and easy to navigate. Add company and industry configuration, and expose existing capabilities through clear workflows.",
+    "offer": "The main product. Keep everyday transactions, routine operator actions, budget controls, internal supplier history, basic reporting and permissions here. Configure industry packs on this shared foundation.",
+    "workflow": "Customer order > material check > purchase or production > delivery > accounts",
+    "inspiration": "RheinBrucke / Epicor; Slooze; the roadmap's worker-experience and industry guidance",
+    "features": [
+      {
+        "title": "Daily workspaces by role",
+        "description": "Give buyers, operators, finance teams and owners clear task lists, exceptions and direct actions. Surface capabilities that are currently buried in module tabs.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Industry configuration & workflow rules",
+        "description": "Offer configurable forms, fields, terminology, approval rules and industry templates. Start with a validated segment; a general configuration builder is still proposed.",
+        "state": "new",
+        "refs": [
+          "R1:4",
+          "R2:19"
+        ]
+      },
+      {
+        "title": "A complete business transaction chain",
+        "description": "Keep standard quotes, revisions, orders, purchasing, stock and accounts in the core. Complete receipt-to-invoice matching and settlement where the current chain has gaps.",
+        "state": "extend",
+        "refs": [
+          "R1:9",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "BOM, routing & basic material planning",
+        "description": "Make bills of material, approved versions, routing and basic material requirements planning easy to reach in the manufacturing pack.",
+        "state": "extend",
+        "refs": [
+          "R1:9",
+          "R2:9"
+        ]
+      },
+      {
+        "title": "Multi-site business views",
+        "description": "Plan shared master data with site-level stock, responsibilities and reporting. Multi-site operating workflows need definition and validation.",
+        "state": "new",
+        "refs": [
+          "R1:6",
+          "R1:9"
+        ]
+      },
+      {
+        "title": "Trust & adoption as core requirements",
+        "description": "Preserve permissions, approvals and audit history; verify recovery and offer simple task flows and instructions. Include these in the product foundation.",
+        "state": "extend",
+        "refs": [
+          "R2:14",
+          "R2:16"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "onyx",
+    "name": "ONYX",
+    "lines": [
+      "ONYX"
+    ],
+    "subtitle": "AI intelligence",
+    "category": "featured",
+    "categoryLabel": "Existing product · Intelligence",
+    "stage": "Existing intelligence foundation · bounded capabilities",
+    "purpose": "Explains business evidence, compares supported options and assists with approved decisions.",
+    "relationship": "Adds intelligence to XELOR and its applications. Can use dated evidence from supported external systems and imports.",
+    "next": "Make assistance visible within business tasks. Validate each new capability and connector; existing adapters do not provide universal external write-back.",
+    "offer": "Optional intelligence subscription for XELOR and its add-ons. External-system use is limited to validated connectors and supported actions.",
+    "workflow": "Read business evidence > explain or draft > compare options > obtain approval > record outcome",
+    "inspiration": "CommerceCX; Adventis; AnjX; the roadmap's governed AI tasks",
+    "features": [
+      {
+        "title": "RFQ & document assistant",
+        "description": "Draft request fields from enquiries, BOMs and drawings, compare revisions and show the source behind each suggestion for human review. Extraction accuracy needs validation.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Explain operational exceptions",
+        "description": "Show the evidence behind a shortage, late job, supplier issue or cash risk, separating known facts from inferred causes. Extend the existing evidence-based assistance.",
+        "state": "extend",
+        "refs": [
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Compare business options",
+        "description": "Explain supplier bids, planning scenarios and cost assumptions using current inputs; identify missing data and let the responsible person choose.",
+        "state": "extend",
+        "refs": [
+          "R1:3",
+          "R1:4",
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Maintenance & knowledge assistance",
+        "description": "Prepare repair summaries and retrieve relevant instructions from approved records. Keep document revision and source references visible.",
+        "state": "new",
+        "refs": [
+          "R1:7",
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Approved actions with outcome evidence",
+        "description": "Use supported executors and required approvals, re-read the result and record the outcome. Expand task coverage while retaining the existing governance foundation.",
+        "state": "extend",
+        "refs": [
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Freshness & uncertainty in every answer",
+        "description": "Display source time, missing evidence and unsupported actions; provide a manual route when information is stale or access is unavailable.",
+        "state": "extend",
+        "refs": [
+          "R2:15",
+          "R2:16"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aikyantra",
+    "name": "AIKYANTRA",
+    "lines": [
+      "AIKYANTRA"
+    ],
+    "subtitle": "Supplier network",
+    "category": "featured",
+    "categoryLabel": "Existing product · Supplier network",
+    "stage": "Existing supplier workflows · wider network proposed",
+    "purpose": "Brings suppliers, RFQs, responses, comparisons, tenders and performance evidence into a focused sourcing workspace.",
+    "relationship": "Connects supplier collaboration to XELOR purchasing. Approved awards lead to ERP purchase orders, receipts and stock records.",
+    "next": "Complete acknowledgements and delivery updates, surface supplier performance, then develop consent-based discovery. External-ERP handoffs need validation.",
+    "offer": "A supplier-network product for supplier collaboration, wider discovery and network evidence. Basic purchasing controls and internal supplier performance stay in XELOR. Validate adapters before offering other ERP handoffs.",
+    "workflow": "Discover & qualify > send RFQ > compare bids > approve award > receive delivery updates > review performance",
+    "inspiration": "Slooze; RheinBrucke / MeRLIN; CommerceCX supplier comparison",
+    "features": [
+      {
+        "title": "Supplier discovery & alternatives",
+        "description": "Build searchable supplier capabilities and alternate-source suggestions using permissioned profiles. Wider network discovery remains an addition to the existing supplier workspace.",
+        "state": "new",
+        "refs": [
+          "R1:4"
+        ]
+      },
+      {
+        "title": "Qualification & shared documents",
+        "description": "Collect capability evidence, supplier documents, certificates and review dates; route technical acceptance and compliance checks to an owner.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "BOM-linked RFQs & bid comparison",
+        "description": "Connect requested materials to engineering needs, collect revisioned quotes, compare landed cost and technical acceptance, and carry approved awards into purchase orders.",
+        "state": "extend",
+        "refs": [
+          "R1:2",
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "Contracts, budgets & approval rules",
+        "description": "Show agreed terms, committed spend, budget exceptions and approval reasons in the buyer workflow, using the ERP as the financial record.",
+        "state": "new",
+        "refs": [
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "Order acknowledgements & delivery promises",
+        "description": "Add supplier acknowledgement, confirmed dates, delivery updates and overdue alerts around the existing promised-date foundation.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "Visible supplier performance & risk",
+        "description": "Bring receipt and inspection evidence into the main supplier view: delivery reliability, defects, repeat issues and supporting records. Add cost-volatility signals separately.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "Buyer, finance & supplier workspaces",
+        "description": "Give each participant a focused view of shared requests, decisions, documents and exceptions, with clear ownership and permissions.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R2:8"
+        ]
+      },
+      {
+        "title": "Trade & financing partner options",
+        "description": "Explore customs-document coordination and payment or financing handoffs through suitable partners. Availability and terms require a separate provider arrangement.",
+        "state": "partner",
+        "refs": [
+          "R1:4"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maintenance",
+    "name": "Maintenance & Reliability",
+    "lines": [
+      "Maintenance",
+      "& Reliability"
+    ],
+    "subtitle": "Equipment care",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "Strong backend foundation · action screens needed",
+    "purpose": "Plans preventive servicing, handles breakdowns and retains equipment, repair, downtime and cost history.",
+    "relationship": "Connects assets and maintenance jobs to ERP parts, purchasing, people and costs.",
+    "next": "Complete setup and technician action screens: report, assign, repair, record parts and confirm handback. First focused pilot candidate.",
+    "offer": "An optional maintenance application for asset-intensive businesses. It needs complete planner and technician journeys before it is a finished standalone package.",
+    "workflow": "Register asset > schedule or report fault > assign > repair & record parts > hand back > review reliability",
+    "inspiration": "Tomax / D3Minds; Adventis / OptiMES; RheinBrucke",
+    "features": [
+      {
+        "title": "Asset register & repair history",
+        "description": "Surface assets, meters, failure history, work performed and accumulated costs in one equipment record. Existing backend foundations can support this journey.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R1:7",
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Preventive maintenance schedules",
+        "description": "Provide usable setup for calendar- or meter-based tasks, due-work lists, missed work and completion evidence. Verify the scheduling process end to end.",
+        "state": "extend",
+        "refs": [
+          "R1:7",
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Technician work orders",
+        "description": "Complete report, assign, start, hold, repair, handback and closure screens around the existing work-order actions.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R1:7",
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Spares, labour & maintenance cost",
+        "description": "Record actual parts and labour against the repair, link replenishment to purchasing and distinguish planned parts from confirmed reservations.",
+        "state": "extend",
+        "refs": [
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Reliability & condition-driven work",
+        "description": "Expose downtime and repair measures first; later connect validated condition alerts to reviewed maintenance requests. Predictive performance needs its own pilot.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R1:7",
+          "R2:13"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quality",
+    "name": "Quality & Audit",
+    "lines": [
+      "Quality",
+      "& Audit"
+    ],
+    "subtitle": "Assurance & evidence",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "Real inspection/action foundations · QMS gaps remain",
+    "purpose": "Connects inspections and corrective actions with controlled documents, audits, calibration and training.",
+    "relationship": "Links quality decisions to ERP products, lots, receipts and production. Essential operational inspections stay in the ERP workflow.",
+    "next": "Complete action forms and replace demonstration document, audit and training screens with real workflows before offering the full package.",
+    "offer": "An optional quality-management application. Routine receipt and production inspection remains accessible in the ERP workflow.",
+    "workflow": "Inspect > contain affected stock > investigate > correct > verify effectiveness > retain evidence",
+    "inspiration": "Tomax / D3Minds; RheinBrucke; the roadmap's quality and engineering recommendations",
+    "features": [
+      {
+        "title": "Inspection, containment & CAPA",
+        "description": "Finish action screens for measurement capture, nonconformance, stock disposition and corrective/preventive action using the existing foundations.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R2:11"
+        ]
+      },
+      {
+        "title": "Calibration & gauge validity",
+        "description": "Track gauges, calibration dates and evidence, with warnings or blocks for overdue equipment according to customer rules.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R2:11"
+        ]
+      },
+      {
+        "title": "SPC & FMEA",
+        "description": "Add statistical process control for stable measurements and failure-mode analysis for process risks. These need dedicated workflows beyond inspection lists.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R2:11"
+        ]
+      },
+      {
+        "title": "Audits, controlled documents & skills",
+        "description": "Build document approval/versioning, audit findings, training acknowledgement and skills evidence; current demonstration screens are not completed workflows.",
+        "state": "new",
+        "refs": [
+          "R1:5"
+        ]
+      },
+      {
+        "title": "Supplier-to-customer defect loop",
+        "description": "Join supplier defects, internal rework and customer complaints; offer structured 8D responses for segments that need them.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R2:11"
+        ]
+      },
+      {
+        "title": "Lot genealogy & recall evidence",
+        "description": "Trace from a suspect supplier lot to stock, jobs, finished lots and shipments, preserving splits, merges, rework and scrap. Full recall tracing remains proposed.",
+        "state": "new",
+        "refs": [
+          "R2:11"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "service",
+    "name": "After-sales & Service",
+    "lines": [
+      "After-sales",
+      "& Service"
+    ],
+    "subtitle": "Customer support",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "Service APIs exist · complete user journey needed",
+    "purpose": "Handles customer issues, service commitments, entitlement checks, knowledge and spare requests.",
+    "relationship": "Connects support cases to customers, sold equipment, orders and spare fulfilment in XELOR.",
+    "next": "Build usable replies and assignments, customer access, notifications and confirmed spare fulfilment. Current staff ticket views are read-only.",
+    "offer": "An optional after-sales application for equipment makers and service teams. Customer access and daily staff actions still need completion.",
+    "workflow": "Receive complaint > check entitlement > respond or repair > fulfil spares/return > close > feed learning to quality",
+    "inspiration": "Tomax customer-quality coverage; roadmap after-delivery service recommendations",
+    "features": [
+      {
+        "title": "Customer issues & service commitments",
+        "description": "Complete reply, assignment, notification and escalation journeys around existing complaint, entitlement and SLA APIs.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Installed equipment & warranty history",
+        "description": "Connect shipped serial or lot records to the customer, warranty entitlement and recurring service history.",
+        "state": "extend",
+        "refs": [
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Customer portal & self-service",
+        "description": "Offer a focused customer view to submit issues, follow progress and read approved knowledge. A complete customer portal is still to build.",
+        "state": "new",
+        "refs": [
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Returns & spare fulfilment",
+        "description": "Track approved returns and spare demand through confirmation, stock movement and delivery; replace placeholder costing or external references with verified flows.",
+        "state": "extend",
+        "refs": [
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Field visits & failure feedback",
+        "description": "Add field-service scheduling where justified, and route recurring field failures into quality actions and engineering changes.",
+        "state": "new",
+        "refs": [
+          "R2:11",
+          "R2:12"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quoting",
+    "name": "Quoting & Costing",
+    "lines": [
+      "Quoting",
+      "& Costing"
+    ],
+    "subtitle": "Commercial decisions",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "Standard quotes exist · advanced costing proposed",
+    "purpose": "Adds reviewed enquiry intake, configuration rules, detailed cost assumptions and margin approvals.",
+    "relationship": "Extends standard ERP quotations and their existing revision/order-conversion workflow. ONYX can assist where enabled.",
+    "next": "Build and validate cost sheets, product rules and actual job-margin inputs. Standard quotations and revisions remain ERP capabilities.",
+    "offer": "An advanced quoting and costing add-on. Standard quotations, revisions and conversion to orders stay in XELOR.",
+    "workflow": "Receive enquiry > review revision > build cost sheet > approve margin > send quote > convert order > compare actual cost",
+    "inspiration": "CommerceCX / ScaleFluidly; RheinBrucke CPQ",
+    "features": [
+      {
+        "title": "Reviewed enquiry & revision intake",
+        "description": "Extract or enter enquiry requirements, compare drawing/BOM revisions and confirm changes before costing. ONYX assistance is optional.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:7"
+        ]
+      },
+      {
+        "title": "Material, process, labour & tooling costs",
+        "description": "Build an auditable cost sheet with assumptions, quantities, supplier bids and cost ownership. Current standard quoting does not establish this costing engine.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:7"
+        ]
+      },
+      {
+        "title": "Product configuration & pricing rules",
+        "description": "Validate permitted product options, pricing conditions and exceptions; configure approval limits for discounts and margin.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R1:9",
+          "R2:7"
+        ]
+      },
+      {
+        "title": "Quote-to-order continuity",
+        "description": "Surface existing quotation versions, customer acceptance/rejection and order conversion; keep the accepted revision attached to the commercial commitment.",
+        "state": "extend",
+        "refs": [
+          "R1:2",
+          "R2:7"
+        ]
+      },
+      {
+        "title": "Estimated-versus-actual job margin",
+        "description": "Bring production material, labour, overhead and rework evidence back to the original estimate. Actual production job-cost inputs still need completion.",
+        "state": "new",
+        "refs": [
+          "R1:9",
+          "R2:7"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "planning",
+    "name": "Advanced Planning",
+    "lines": [
+      "Advanced",
+      "Planning"
+    ],
+    "subtitle": "Capacity & scenarios",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "MRP and scheduling foundations · advanced scope proposed",
+    "purpose": "Compares material, capacity and delivery scenarios and supports practical planning decisions.",
+    "relationship": "Uses ERP demand, BOMs, stock, open supply, calendars and actual progress. ONYX can explain the resulting options.",
+    "next": "Validate constraints and scenario workflows. Keep basic material planning in the manufacturing pack; advanced optimization is not yet established.",
+    "offer": "An advanced planning application. Basic material requirements planning remains in the manufacturing ERP pack.",
+    "workflow": "Collect demand > check stock & supply > check capacity > compare scenarios > approve plan > follow actual progress",
+    "inspiration": "AnjX; Tomax; RheinBrucke / Epicor",
+    "features": [
+      {
+        "title": "Demand forecasts with a measured baseline",
+        "description": "Use reliable history, hold out evaluation periods and compare against a simple forecast before relying on an advanced model.",
+        "state": "new",
+        "refs": [
+          "R1:3",
+          "R2:9"
+        ]
+      },
+      {
+        "title": "Inventory versus working capital",
+        "description": "Compare service availability, shortages, replenishment and excess stock together with the cash tied up in materials.",
+        "state": "new",
+        "refs": [
+          "R1:3",
+          "R2:9"
+        ]
+      },
+      {
+        "title": "Material, machine & people constraints",
+        "description": "Extend existing material and scheduling foundations with validated calendars, resource availability, skills and real supplier lead times.",
+        "state": "extend",
+        "refs": [
+          "R1:3",
+          "R1:9",
+          "R2:9"
+        ]
+      },
+      {
+        "title": "What-if scenarios & explained approval",
+        "description": "Compare a late supplier, machine outage, urgent order or overtime option; record the chosen plan and approval reason.",
+        "state": "new",
+        "refs": [
+          "R1:3",
+          "R2:9"
+        ]
+      },
+      {
+        "title": "Plan-to-actual feedback",
+        "description": "Make progress, shortages and capacity exceptions visible from actual jobs and receipts. Existing scheduling is a foundation, not a proven advanced optimizer.",
+        "state": "extend",
+        "refs": [
+          "R1:3",
+          "R2:9"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warehouse",
+    "name": "Warehouse Execution",
+    "lines": [
+      "Warehouse",
+      "Execution"
+    ],
+    "subtitle": "Scan, store & fulfil",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "Stock ledger exists · execution features to build",
+    "purpose": "Organizes scan-based receiving, bin storage, replenishment, picking, kitting and dispatch.",
+    "relationship": "Posts controlled movements through XELOR inventory, retaining one authoritative stock ledger.",
+    "next": "Add scanning, bin and task workflows, safe retries and traceability. Verify that duplicate scans never create duplicate stock movements.",
+    "offer": "A warehouse-execution add-on for scan and task workflows, using XELOR's stock ledger for authoritative inventory movements.",
+    "workflow": "Receive & scan > inspect & locate > replenish > kit & issue > pick & pack > confirm movement",
+    "inspiration": "Tomax warehouse material; RheinBrucke scanning; the roadmap's traceable warehouse workflow",
+    "features": [
+      {
+        "title": "Scan-based receiving & put-away",
+        "description": "Validate purchase order, item, lot and quantity, print identifiers and direct goods into the right bin or quality hold.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R1:9",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Cycle counts & replenishment",
+        "description": "Create accountable count and replenishment tasks, with controlled adjustments and visible exceptions.",
+        "state": "new",
+        "refs": [
+          "R2:12"
+        ]
+      },
+      {
+        "title": "e-Kanban & job kitting",
+        "description": "Trigger line replenishment, prepare job kits and show missing components, revision and lot checks before controlled issue.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "WIP, rework & component history",
+        "description": "Retain lot identity through partial completion, movement, scrap, returns and rework; connect to the proposed quality traceability view.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R2:11",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Reliable mobile picking & packing",
+        "description": "Confirm order, item, lot and quantity with labels and dispatch evidence. Handle duplicate scans, poor connectivity and interrupted work without duplicate stock posting.",
+        "state": "new",
+        "refs": [
+          "R2:12",
+          "R2:16"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "projects",
+    "name": "Projects & Engineering",
+    "lines": [
+      "Projects",
+      "& Engineering"
+    ],
+    "subtitle": "Changes & launches",
+    "category": "application",
+    "categoryLabel": "Proposed application package",
+    "stage": "BOM foundations · project/change package proposed",
+    "purpose": "Coordinates milestones, prototypes, engineering changes, approvals and controlled production release.",
+    "relationship": "Connects project requirements and approved changes to ERP items, BOMs, orders, resources and costs.",
+    "next": "Validate customer needs, then build project and change-control workflows. Existing BOM versions do not establish complete engineering change management.",
+    "offer": "An engineering and project-control add-on for project-based or engineer-to-order businesses; choose segment-specific extensions separately.",
+    "workflow": "Define project > plan milestones > review change > assess impact > approve revision > release to production",
+    "inspiration": "Tomax projects; CommerceCX NPI / portfolio patterns; RheinBrucke projects",
+    "features": [
+      {
+        "title": "Project capacity, dependencies & costs",
+        "description": "Manage milestones, dependencies, resource capacity, timesheets and project cost against customer commitments.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R1:9"
+        ]
+      },
+      {
+        "title": "Engineering change requests & orders",
+        "description": "Assess affected BOMs, drawings, quotes, open orders, bought material and work in progress before approving a change.",
+        "state": "new",
+        "refs": [
+          "R1:5",
+          "R2:11"
+        ]
+      },
+      {
+        "title": "Effective revisions & shop-floor acknowledgement",
+        "description": "Set the approved revision and release date, preserve old records and record acknowledgement of changed instructions. Existing BOM versions are only a starting point.",
+        "state": "extend",
+        "refs": [
+          "R2:11"
+        ]
+      },
+      {
+        "title": "New-product introduction & portfolio gates",
+        "description": "Use concept, feasibility, prototype and production-release reviews, with owners and evidence. Borrow the stage-gate pattern from the research.",
+        "state": "new",
+        "refs": [
+          "R1:2"
+        ]
+      },
+      {
+        "title": "Segment-specific engineering extensions",
+        "description": "Assess APQP/PPAP or broader product-lifecycle needs separately. Clinical and cell/gene-therapy operations would require a distinct specialist product strategy.",
+        "state": "partner",
+        "refs": [
+          "R2:11",
+          "R2:19"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "factory",
+    "name": "Connected Factory",
+    "lines": [
+      "Connected",
+      "Factory"
+    ],
+    "subtitle": "Production visibility",
+    "category": "specialist",
+    "categoryLabel": "Specialist option",
+    "stage": "Production foundations · physical connectivity unverified",
+    "purpose": "Connects operator activity and validated machine signals to production performance and actionable exceptions.",
+    "relationship": "Links factory events with XELOR jobs, assets, material usage and quality records.",
+    "next": "Pilot read-only capture on one line with qualified equipment partners. Current simulated equipment paths do not prove physical machine integration.",
+    "offer": "A specialist application for machine connectivity, live events and advanced factory visibility. Basic operator transactions stay in the XELOR manufacturing pack; installation and data operations are scoped separately.",
+    "workflow": "Capture machine/operator event > link job & asset > validate > show exception > assign action > confirm outcome",
+    "inspiration": "Tomax; Zeliot / Condense; Adventis / OptiMES; RheinBrucke",
+    "features": [
+      {
+        "title": "Operator task workspace",
+        "description": "Provide touch-friendly start/finish, material scan, inspection and fault flows with correct instructions and languages appropriate to the site.",
+        "state": "extend",
+        "refs": [
+          "R1:9",
+          "R2:10",
+          "R2:16"
+        ]
+      },
+      {
+        "title": "Validated machine & sensor events",
+        "description": "Connect supported PLC, SCADA, gateway and sensor sources; map each signal to an asset, job and timestamp. Current simulated paths do not prove physical connectivity.",
+        "state": "new",
+        "refs": [
+          "R1:6",
+          "R1:7",
+          "R2:10"
+        ]
+      },
+      {
+        "title": "OEE, downtime & production visibility",
+        "description": "Expose availability, performance, quality and stop reasons using valid definitions and input coverage. Existing calculations need dependable shop-floor evidence.",
+        "state": "extend",
+        "refs": [
+          "R1:5",
+          "R1:7",
+          "R2:10"
+        ]
+      },
+      {
+        "title": "Condition & process-quality exceptions",
+        "description": "Correlate equipment or process changes with defects and downtime, then route useful alerts to a responsible person.",
+        "state": "new",
+        "refs": [
+          "R1:6",
+          "R1:7"
+        ]
+      },
+      {
+        "title": "Offline capture & recovery",
+        "description": "Provide local buffering or durable task queues, pending/synced status, duplicate handling and supervised conflict resolution for unreliable connections.",
+        "state": "new",
+        "refs": [
+          "R1:7",
+          "R2:15",
+          "R2:16"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "energy",
+    "name": "Energy & Utilities",
+    "lines": [
+      "Energy",
+      "& Utilities"
+    ],
+    "subtitle": "Consumption & cost",
+    "category": "specialist",
+    "categoryLabel": "Specialist option",
+    "stage": "Proposed · metering and allocation required",
+    "purpose": "Makes electricity and other utility consumption visible by plant, line, machine or job.",
+    "relationship": "Relates validated meter evidence to ERP assets, production periods and operational costs.",
+    "next": "Establish reliable meter data and an agreed allocation method before claiming per-job costs or measured savings.",
+    "offer": "A specialist energy and utilities application for plants with reliable metering and a defined cost-allocation method.",
+    "workflow": "Read meters > validate intervals > link assets & jobs > allocate consumption > review deviations > measure change",
+    "inspiration": "RheinBrucke connected-factory energy; roadmap maintenance and utilities guidance",
+    "features": [
+      {
+        "title": "Metering by plant, line & machine",
+        "description": "Capture electricity and relevant utility readings with units, time intervals, missing-data flags and responsible meter owners.",
+        "state": "new",
+        "refs": [
+          "R1:9",
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Consumption & cost per output",
+        "description": "Relate meter intervals to shifts, jobs or production quantity using an agreed allocation rule and visible assumptions.",
+        "state": "new",
+        "refs": [
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Abnormal consumption & idle losses",
+        "description": "Identify unusual use or consumption outside expected operating periods and assign an investigation with supporting readings.",
+        "state": "new",
+        "refs": [
+          "R2:13"
+        ]
+      },
+      {
+        "title": "Verified energy improvement",
+        "description": "Compare similar operating conditions and product mix; distinguish estimates from metered reductions and actual cost changes.",
+        "state": "new",
+        "refs": [
+          "R2:13",
+          "R2:22"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "safety",
+    "name": "Safety & Permits",
+    "lines": [
+      "Safety",
+      "& Permits"
+    ],
+    "subtitle": "Controlled site work",
+    "category": "specialist",
+    "categoryLabel": "Specialist option",
+    "stage": "Proposed · specialist workflow validation required",
+    "purpose": "Tracks hazards, incidents, work permits, required checks and assigned follow-up actions.",
+    "relationship": "Links site work to ERP assets, people and maintenance records, while respecting local operating controls.",
+    "next": "Start with accountable permit and hazard workflows. Camera detection or industrial safety integration requires separate validation and expertise.",
+    "offer": "A specialist safety-workflow application; plant safety owners define and approve the required process.",
+    "workflow": "Record hazard or request permit > review controls > authorize work > track actions > close & review",
+    "inspiration": "Adventis Shield / OptiMES; roadmap EHS guidance",
+    "features": [
+      {
+        "title": "Hazards, incidents & near misses",
+        "description": "Capture the event, affected assets or area, owner, follow-up action and review date with clear accountability.",
+        "state": "new",
+        "refs": [
+          "R1:7",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Work permits & checklists",
+        "description": "Manage requests, required checks, authorization, time limits and closure linked to people, maintenance jobs and site assets.",
+        "state": "new",
+        "refs": [
+          "R1:7",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Training & action evidence",
+        "description": "Keep training acknowledgement, inspection evidence and assigned corrective actions connected to the relevant site work.",
+        "state": "new",
+        "refs": [
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Optional PPE or vision alerts",
+        "description": "Pilot detections only with a specialist and trained human review; measure false alarms and missed detections under actual site conditions.",
+        "state": "partner",
+        "refs": [
+          "R1:7",
+          "R2:14"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dispatch",
+    "name": "Dispatch & Loading",
+    "lines": [
+      "Dispatch",
+      "& Loading"
+    ],
+    "subtitle": "Shipment planning",
+    "category": "specialist",
+    "categoryLabel": "Specialist option",
+    "stage": "Proposed · loading rules and validation required",
+    "purpose": "Groups shipments and plans packing, space, weight and loading arrangements.",
+    "relationship": "Uses ERP delivery requirements, quantities, item dimensions and dispatch records.",
+    "next": "Validate the need with frequent shippers and exporters. Build or integrate a load planner using real constraints and compare plans with actual loading.",
+    "offer": "A loading and logistics add-on for businesses with recurring complex truck or container loads. Routine ERP dispatch remains part of core fulfilment.",
+    "workflow": "Select shipments > confirm dimensions & constraints > compare load plans > review > load & record actual result",
+    "inspiration": "CommerceCX / LogisticCX; roadmap loading and dispatch guidance",
+    "features": [
+      {
+        "title": "Truck or container selection",
+        "description": "Compare required capacity against real item dimensions, weight and shipment quantities.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "Mixed-goods loading constraints",
+        "description": "Account for orientation, stackability, irregular goods, unloading order, weight distribution and other physical constraints.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:12"
+        ]
+      },
+      {
+        "title": "3D load plans & exportable instructions",
+        "description": "Provide a visual plan and packing/loading reports for review and execution, backed by constraint checks.",
+        "state": "new",
+        "refs": [
+          "R1:2"
+        ]
+      },
+      {
+        "title": "Freight & actual loading comparison",
+        "description": "Compare plans with actual execution, space use, labour and freight evidence. Use measured results rather than brochure savings percentages.",
+        "state": "new",
+        "refs": [
+          "R1:2",
+          "R2:12",
+          "R2:22"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setup",
+    "name": "Setup & Migration",
+    "lines": [
+      "Setup",
+      "& Migration"
+    ],
+    "subtitle": "Start with good data",
+    "category": "delivery",
+    "categoryLabel": "Delivery service",
+    "stage": "Proposed service offer · scoped delivery required",
+    "purpose": "Prepares existing records, configures workflows, imports data and trains users.",
+    "relationship": "Establishes the customer's XELOR workspace, relevant industry configuration and selected applications.",
+    "next": "Define discovery, data cleanup, migration reconciliation, training and customer acceptance with a named delivery owner.",
+    "offer": "A one-time implementation service with an agreed scope, customer owners, acceptance criteria and separately stated recurring costs.",
+    "workflow": "Discover needs > choose pack > clean data > migrate & reconcile > train > rehearse > accept & hand over",
+    "inspiration": "RheinBrucke; Tomax implementation; roadmap delivery model",
+    "features": [
+      {
+        "title": "Industry discovery & package selection",
+        "description": "Map actual roles, terminology, workflows and bottlenecks, then configure the relevant ERP pack and add-ons. Start with an agreed segment and scope.",
+        "state": "delivery",
+        "refs": [
+          "R2:17",
+          "R2:19"
+        ]
+      },
+      {
+        "title": "Data cleanup, migration & reconciliation",
+        "description": "Approve master data, map source records, trial imports and reconcile opening quantities and balances before customer acceptance.",
+        "state": "delivery",
+        "refs": [
+          "R1:9",
+          "R2:17"
+        ]
+      },
+      {
+        "title": "Role-based training & practical adoption",
+        "description": "Train a plant champion and daily users with real tasks, instructions and exception handling; include handover and a usable fallback.",
+        "state": "delivery",
+        "refs": [
+          "R1:8",
+          "R1:9",
+          "R2:16",
+          "R2:17"
+        ]
+      },
+      {
+        "title": "Pilot acceptance & transparent costs",
+        "description": "Agree workflow, data and value evidence; separate software, implementation, hardware, integration, hosting and support responsibilities and costs.",
+        "state": "delivery",
+        "refs": [
+          "R2:17",
+          "R2:18",
+          "R2:23"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "integration",
+    "name": "Integration & Data Operations",
+    "lines": [
+      "Integration",
+      "& Data Operations"
+    ],
+    "subtitle": "Reliable connections",
+    "category": "delivery",
+    "categoryLabel": "Delivery service",
+    "stage": "Limited connectors exist · managed offer to establish",
+    "purpose": "Connects business systems, validates incoming records, monitors failures and reconciles data.",
+    "relationship": "Maintains agreed data ownership and handoffs between XELOR, optional applications and external systems.",
+    "next": "Scope each source, version and direction. Add operational monitoring, supported retries and receiver confirmation where transactions cross systems.",
+    "offer": "A managed integration service, scoped by source system, version, data direction, operating volume and service responsibility.",
+    "workflow": "Map source > validate & transform > deliver > confirm receipt > reconcile > monitor & recover",
+    "inspiration": "Zeliot / Condense; Slooze integration options; RheinBrucke services",
+    "features": [
+      {
+        "title": "ERP, file & business-system connectors",
+        "description": "Extend validated adapters with explicitly supported API, file, email or EDI workflows. Existing bounded imports do not establish universal synchronization.",
+        "state": "extend",
+        "refs": [
+          "R1:4",
+          "R1:6",
+          "R2:15"
+        ]
+      },
+      {
+        "title": "Common asset & event mapping",
+        "description": "Map plant, asset, job, time, units and record identity so events can be joined to the right ERP records across sites.",
+        "state": "delivery",
+        "refs": [
+          "R1:6",
+          "R2:15"
+        ]
+      },
+      {
+        "title": "Data freshness, retries & reconciliation",
+        "description": "Show last successful transfer, lag, pending records and failures; support safe retry, replay and receiver confirmation with an assigned recovery owner.",
+        "state": "delivery",
+        "refs": [
+          "R1:6",
+          "R2:15"
+        ]
+      },
+      {
+        "title": "Customer-cloud & streaming options",
+        "description": "Assess managed streaming, governance and customer-cloud deployment where volume warrants them. Scope infrastructure licences and operations separately.",
+        "state": "partner",
+        "refs": [
+          "R1:6"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "commissioning",
+    "name": "Factory Commissioning",
+    "lines": [
+      "Factory",
+      "Commissioning"
+    ],
+    "subtitle": "Connect the physical site",
+    "category": "delivery",
+    "categoryLabel": "Delivery service",
+    "stage": "Proposed partner-assisted service",
+    "purpose": "Surveys machines, selects compatible gateways, installs connections and verifies site data.",
+    "relationship": "Provides the physical delivery work needed for dependable factory-related applications around XELOR.",
+    "next": "Qualify delivery partners and agree site scope, downtime, acceptance and support. Research suppliers are not confirmed partners.",
+    "offer": "A scoped on-site engineering service delivered with qualified equipment partners, separate from software subscription and ongoing support.",
+    "workflow": "Survey site > register protocols > select equipment > install > validate signals > train & hand over",
+    "inspiration": "Controlsoft; Adventis gateways; Zeliot industrial connectivity",
+    "features": [
+      {
+        "title": "Plant survey & protocol register",
+        "description": "Record machines, instruments, network connections, available protocols and operating constraints before selecting equipment.",
+        "state": "delivery",
+        "refs": [
+          "R1:8",
+          "R2:17"
+        ]
+      },
+      {
+        "title": "Gateway, sensor & instrumentation selection",
+        "description": "Match real interfaces such as RS485/Modbus, MQTT or HTTPS to suitable equipment; confirm local buffering and support needs for the chosen hardware.",
+        "state": "partner",
+        "refs": [
+          "R1:7",
+          "R1:8"
+        ]
+      },
+      {
+        "title": "Installation, signal checks & commissioning",
+        "description": "Plan installation windows, verify timestamps and signal meaning, test interruptions and agree customer acceptance with a named owner.",
+        "state": "delivery",
+        "refs": [
+          "R1:8",
+          "R2:17",
+          "R2:23"
+        ]
+      },
+      {
+        "title": "Site documentation & technical handover",
+        "description": "Provide as-installed records, operating instructions, training, warranty boundaries and escalation contacts for the customer and support team.",
+        "state": "delivery",
+        "refs": [
+          "R1:8",
+          "R2:17"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "support",
+    "name": "Ongoing Support",
+    "lines": [
+      "Ongoing",
+      "Support"
+    ],
+    "subtitle": "Keep the system useful",
+    "category": "delivery",
+    "categoryLabel": "Delivery service",
+    "stage": "Proposed service offer · staffing and scope required",
+    "purpose": "Handles incidents, supports configuration and upgrades, and reviews customer outcomes.",
+    "relationship": "Supports the ERP and subscribed applications through a clear customer contact and escalation path.",
+    "next": "Establish support hours, responsibilities, recovery expectations and handover. Service screens do not establish a staffed support operation.",
+    "offer": "An ongoing support service with defined hours, scope, escalation and response responsibilities. Staffing and operations must be established.",
+    "workflow": "Receive request > triage > resolve or escalate > confirm recovery > review recurring issues & value",
+    "inspiration": "Controlsoft; RheinBrucke; CoSol; roadmap operate-and-improve model",
+    "features": [
+      {
+        "title": "Service desk & named escalation",
+        "description": "Provide one customer contact, severity handling, support coverage, incident ownership and agreed escalation to application or equipment specialists.",
+        "state": "delivery",
+        "refs": [
+          "R1:8",
+          "R1:9",
+          "R1:10",
+          "R2:18"
+        ]
+      },
+      {
+        "title": "Configuration, upgrades & change support",
+        "description": "Manage scoped improvements and upgrades with review, user communication, recovery planning and confirmation of the affected workflow.",
+        "state": "delivery",
+        "refs": [
+          "R1:9",
+          "R2:18"
+        ]
+      },
+      {
+        "title": "Adoption & outcome reviews",
+        "description": "Review use, unresolved exceptions and agreed measures such as quote time, delivery, downtime and stock accuracy using comparable evidence.",
+        "state": "delivery",
+        "refs": [
+          "R2:18",
+          "R2:22"
+        ]
+      },
+      {
+        "title": "Recovery, ownership & exit handover",
+        "description": "Assign backup and recovery responsibilities, rehearse restoration where in scope and document customer data handover and service exit arrangements.",
+        "state": "delivery",
+        "refs": [
+          "R1:10",
+          "R2:18",
+          "R2:23"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ot",
+    "name": "Managed IT & OT Security",
+    "lines": [
+      "Managed IT",
+      "& OT Security"
+    ],
+    "subtitle": "Factory infrastructure",
+    "category": "delivery",
+    "categoryLabel": "Delivery service",
+    "stage": "Proposed specialist partner service",
+    "purpose": "Maintains factory network visibility, controlled vendor access, recovery and incident response.",
+    "relationship": "Supports the infrastructure on which XELOR and connected factory applications depend. Application permissions and audit remain part of the ERP foundation.",
+    "next": "Define plant assets, access ownership and recovery requirements with an OT specialist, then agree monitoring and response coverage.",
+    "offer": "An optional managed infrastructure and OT-security service delivered with a specialist partner. Standard application security remains included in XELOR.",
+    "workflow": "Inventory plant assets > assess connections > control access > monitor > respond > restore & review",
+    "inspiration": "CoSol / Connectivity and Cisco; roadmap factory security boundaries",
+    "features": [
+      {
+        "title": "Factory asset inventory & network map",
+        "description": "Document industrial assets, endpoints and connections with owners and approved changes. Use specialist discovery where required.",
+        "state": "partner",
+        "refs": [
+          "R1:10",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Network segmentation & monitoring",
+        "description": "Assess configurations, prioritize vulnerabilities and design plant network separation and monitoring with an OT specialist.",
+        "state": "partner",
+        "refs": [
+          "R1:10",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Controlled vendor remote access",
+        "description": "Require a named person, purpose, target asset, protocol and time window, with approval, authentication, audit and access revocation.",
+        "state": "partner",
+        "refs": [
+          "R1:10",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Backups, restoration & incident response",
+        "description": "Agree recovery targets, restore exercises, incident contacts and escalation with explicit customer and provider responsibilities.",
+        "state": "partner",
+        "refs": [
+          "R1:10",
+          "R2:14"
+        ]
+      },
+      {
+        "title": "Managed infrastructure & equipment terms",
+        "description": "Scope hardware, licences, monitoring, field visits, renewal and exit terms separately from the ERP subscription.",
+        "state": "partner",
+        "refs": [
+          "R1:10"
+        ]
+      }
+    ]
+  }
+]
+</script>
+<script>
+
+(() => {
+  'use strict';
+  const catalog = JSON.parse(document.getElementById('ecosystem-data').textContent);
+  const records = new Map(catalog.map(item => [item.id, item]));
+  const diagram = document.getElementById('ecosystem-map');
+  const viewport = document.getElementById('map-viewport');
+  const fitButton = document.getElementById('fit-button');
+  const search = document.getElementById('feature-search');
+  const category = document.getElementById('category-filter');
+  const cards = Array.from(document.querySelectorAll('[data-product]'));
+  const detailLink = document.getElementById('detail-feature-link');
+  const normalize = value => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const searchable = new Map(catalog.map(item => [item.id, normalize([item.name,item.categoryLabel,item.inspiration,item.offer,...item.features.flatMap(f => [f.title,f.description])].join(' '))]));
+  let selectedId = 'xelor';
+  const fields = {name:'detail-title', categoryLabel:'detail-category', stage:'detail-stage', purpose:'detail-purpose', relationship:'detail-relationship', next:'detail-next', workflow:'detail-workflow', offer:'detail-offer'};
+  function select(id) {
+    const record = records.get(id);
+    if (!record) return;
+    selectedId = id;
+    for (const [key, target] of Object.entries(fields)) document.getElementById(target).textContent = record[key];
+    const topics = record.features.map(feature => { const li = document.createElement('li'); li.textContent = feature.title; return li; });
+    document.getElementById('detail-topics').replaceChildren(...topics);
+    detailLink.setAttribute('href', '#research-' + id);
+    detailLink.textContent = 'Explore ' + record.features.length + ' research capabilities and source pages \u2193';
+    diagram.classList.toggle('has-selection', id !== 'xelor');
+    diagram.querySelectorAll('[data-node]').forEach(node => {
+      const selected = node.dataset.node === id;
+      node.classList.toggle('is-selected', selected);
+      node.setAttribute('aria-pressed', String(selected));
+    });
+    diagram.querySelectorAll('[data-connection]').forEach(line => line.classList.toggle('is-selected', line.dataset.connection === id));
+    cards.forEach(card => card.classList.toggle('is-selected', card.dataset.product === id));
+    document.getElementById('selection-announcement').textContent = record.name + ' selected. ' + record.features.length + ' research capabilities. Details are below the diagram.';
+  }
+  function filterCards() {
+    const words = normalize(search.value.trim()).split(/\s+/).filter(Boolean);
+    let shown = 0, features = 0;
+    cards.forEach(card => {
+      const item = records.get(card.dataset.product);
+      const matches = (category.value === 'all' || item.category === category.value) && words.every(word => searchable.get(item.id).includes(word));
+      card.hidden = !matches;
+      if (matches) { shown++; features += item.features.length; }
+    });
+    document.getElementById('search-summary').textContent = 'Showing ' + shown + ' of ' + catalog.length + ' offerings, containing ' + features + ' capabilities. Search keeps the complete offering visible.';
+    document.getElementById('empty-state').hidden = shown > 0;
+  }
+  function resetSearch() { search.value = ''; category.value = 'all'; filterCards(); }
+  function focusSection(element) { element.focus({preventScroll:true}); element.scrollIntoView({block:'start'}); }
+  diagram.querySelectorAll('[data-node]').forEach(node => {
+    node.addEventListener('click', () => select(node.dataset.node));
+    node.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(node.dataset.node); }
+    });
+  });
+  detailLink.addEventListener('click', event => {
+    event.preventDefault(); resetSearch(); focusSection(document.getElementById('research-title-' + selectedId));
+  });
+  document.querySelectorAll('[data-show-map]').forEach(button => {
+    button.hidden = false;
+    button.addEventListener('click', () => { select(button.dataset.showMap); focusSection(document.getElementById('detail-title')); });
+  });
+  function centreMap() {
+    viewport.scrollLeft = Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2);
+    viewport.scrollTop = Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2);
+  }
+  document.getElementById('core-button').addEventListener('click', () => { select('xelor'); centreMap(); });
+  fitButton.addEventListener('click', () => {
+    const fit = viewport.classList.toggle('is-fit');
+    fitButton.setAttribute('aria-pressed', String(fit));
+    fitButton.textContent = fit ? 'Enlarge labels' : 'Fit full map';
+    requestAnimationFrame(centreMap);
+  });
+  search.addEventListener('input', filterCards);
+  category.addEventListener('change', filterCards);
+  document.getElementById('clear-search').addEventListener('click', () => { resetSearch(); search.focus(); });
+  document.getElementById('research-controls').hidden = false;
+  select('xelor'); filterCards(); requestAnimationFrame(centreMap);
+})();
+</script>
+</body>
+</html>

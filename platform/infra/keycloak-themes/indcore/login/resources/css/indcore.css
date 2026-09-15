@@ -503,7 +503,7 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
   margin: 0;
 }
 
-/* Renders the realm's display name — XELOR. Uppercase, black, and confident: it is the
+/* Renders the shared realm's display name. Uppercase, black, and confident: it is the
    first thing on the page and the only thing above the fold on the paper side. */
 #kc-header-wrapper,
 .pf-v5-c-brand {
@@ -533,14 +533,13 @@ html.pf-v5-theme-dark .pf-v5-c-login__main-footer {
 /*
  * The byline is decorative brand furniture and belongs to the wordmark, not to the form —
  * which is why it is here rather than in the realm's display name. The display name also
- * becomes the browser tab title, and "XELOR BY AIKYANTRA" in a tab is a company shouting
- * in a space meant for wayfinding.
+ * becomes the browser tab title, so the shared product scope stays in this byline.
  *
  * The SECOND SHADE is what carries the hierarchy. No colour is introduced — the pair reads
  * as one identity at two weights rather than as two competing marks.
  */
 #kc-header-wrapper::after {
-  content: "BY AIKYANTRA";
+  content: "ERP · AI · SUPPLIERS";
   display: block;
   margin-top: 0.85rem;
   color: var(--x-ink-soft);

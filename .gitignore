@@ -9,3 +9,11 @@
 .pnpm-store/
 .DS_Store
 archive/
+
+# local database backups (never commit)
+_backup/
+
+# Downloaded Whisper model cache from the video-review tooling (142 MB).
+# Third-party weights that re-download on demand, not research output — the
+# directory carries a CACHEDIR.TAG marking it as a cache. Keep it out of history.
+research/**/video_review/models/

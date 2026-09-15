@@ -215,7 +215,7 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
   version: 1,
   name: "3S factory intelligence recovery",
   description:
-    "Recomputes and explains 3S OEE, validates ONYX at-risk work and its explicit alternate, then pauses before one governed ONYX planning-review request.",
+    "Recomputes and explains 3S OEE, validates factory ERP at-risk work and its explicit alternate, then pauses before one governed planning-review request.",
   maxSteps: 14,
   timeoutSeconds: 300,
   nodes: [
@@ -225,7 +225,7 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Frame the configured 3S mock scenario. ONYX Phase 1 remains the schedule source of truth; no machine or safety controller is in scope.",
+        "Frame the configured 3S mock scenario. The factory ERP remains the schedule source of truth; no machine or safety controller is in scope.",
       dependsOn: [],
     },
     {
@@ -244,7 +244,7 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "AXLE",
       instruction:
-        "Explain ONYX's supplied at-risk jobs and explicit WC-LTH01 to WC-LTH02 alternate. Treat it as a recommendation that ONYX Planning must review, never as an applied schedule.",
+        "Explain the factory ERP's supplied at-risk jobs and explicit WC-LTH01 to WC-LTH02 alternate. Treat it as a recommendation that factory ERP planning must review, never as an applied schedule.",
       dependsOn: ["kiln-factory-intelligence"],
     },
     {
@@ -253,9 +253,9 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
       kind: "verification",
       agentKey: "HEXA",
       checks: [
-        "factory-operations.v1 was read from the registered ONYX HTTP port with explicit mock provenance",
+        "factory-operations.v1 was read from the registered factory ERP HTTP port with explicit mock provenance",
         "OEE was recomputed deterministically from raw Availability, Performance and Quality inputs",
-        "the replan only validates ONYX's explicit alternate and does not create a second schedule source of truth",
+        "the replan only validates the factory ERP's explicit alternate and does not create a second schedule source of truth",
         "no physical-command, auto-publish or schedule-apply capability exists in this graph",
       ],
       dependsOn: ["axle-recommendation"],
@@ -267,12 +267,12 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
       title: "Approve the 3S alternate-work-centre review request",
       risk: "medium",
       proposedAction:
-        "Create one attributable ONYX Planning work item asking a planner to review the configured WC-LTH01 to WC-LTH02 alternate. This does not publish a schedule or contact a machine.",
+        "Create one attributable factory ERP planning work item asking a planner to review the configured WC-LTH01 to WC-LTH02 alternate. This does not publish a schedule or contact a machine.",
       dependsOn: ["hexa-verification"],
     },
     {
       id: "kiln-post-approval-revalidation",
-      name: "KILN revalidates current ONYX evidence after approval",
+      name: "KILN revalidates current factory ERP evidence after approval",
       kind: "capability",
       agentKey: "KILN",
       capabilityKey: "production.factory-intelligence.analyse",
@@ -287,14 +287,14 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
     },
     {
       id: "axle-dispatch-review",
-      name: "AXLE dispatches the approved ONYX review request",
+      name: "AXLE dispatches the approved factory ERP review request",
       kind: "capability",
       agentKey: "AXLE",
       capabilityKey: "agent.action.dispatch",
       input: {
         targetDomain: "onyx.planning",
         actionType: "factory_replan_request",
-        title: "Review 3S WC-LTH01 to WC-LTH02 recovery in ONYX Planning",
+        title: "Review 3S WC-LTH01 to WC-LTH02 recovery in factory ERP planning",
         risk: "medium",
         payload: {
           schemaVersion: "factory-replan-request.v1",
@@ -313,7 +313,7 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
           autoPublish: false,
           physicalCommand: false,
           boundary:
-            "ONYX Planning must re-read evidence and decide whether to apply a schedule change. XELOR did not publish or execute one.",
+            "Factory ERP planning must re-read evidence and decide whether to apply a schedule change. ONYX did not publish or execute one.",
         },
       },
       maxAttempts: 2,
@@ -342,7 +342,7 @@ const FACTORY_INTELLIGENCE_RECOVERY: AgentGraphDefinition = {
       kind: "agent",
       agentKey: "ONYX",
       instruction:
-        "Summarize the approved planning-review request and its immutable evidence. State that ONYX has not yet accepted or applied the recommendation and no physical action occurred.",
+        "Summarize the approved planning-review request and its immutable evidence. State that the factory ERP has not yet accepted or applied the recommendation and no physical action occurred.",
       dependsOn: ["hexa-outcome-verification"],
     },
   ],

@@ -1,20 +1,35 @@
-# Workspace context: AIKYANTRA
+# Current workspace context
 
-Updated 7 September 2026. The user requested four products and a unified professional interface.
+Updated 11 September 2026 from the owner's explicit naming and organization instruction.
 
-- `phase-1-erp`: ONYX, web4001/API4000.
-- `phase-2-ai`: XELOR, web4101/API4100.
-- `phase-3-supplier-network`: SOURCE, web4201/API4200.
-- `phase-4-integrated`: AIKYANTRA, web4301/API4300.
-- `platform/`: the only maintained implementation. Profile folders are launch packages.
-- `archive/five-phase-originals/`: historical source repositories, not active products.
+- XELOR is the manufacturing ERP: folder `XELOR`, phase 1, web 4001 / API 4000.
+- ONYX is the AI intelligence layer: folder `ONYX`, phase 2, web 4101 / API 4100.
+- AIKYANTRA is the supplier network: folder `AIKYANTRA`, phase 3, web 4201 / API 4200.
+- `INTEGRATED` is a neutral combined workspace: phase 4, web 4301 / API 4300.
+- `platform/` is the only maintained application implementation in this workspace.
 
-Read `README.md`, `deliverables/Four-Phase-Product.md` and `docs/00-governance/02-four-product-consolidation.md` before making changes. The new ADR supersedes historical two/five-fork packaging. Preserve the stack and the remaining binding controls in `docs/00-governance/01-binding-platform-decisions-v2.md`: tenant RLS, registered permissions, audit, idempotency and domain-owned writes.
+Project X is the programme name for all of it: the technology spine for Indian
+manufacturing. Six connected packages extend the spine, each its own product:
 
-The local database is `aikyantra_demo`. Legacy databases are separate. Starting a profile must never reset data. Existing applied SQL migrations are immutable; new changes need new numbers. Keep local .env files private.
+- Plant Operations: folder `PLANT-OPERATIONS`, phase 5, web 4401 / API 4400.
+- Quality, Safety & Compliance: folder `QUALITY-SAFETY`, phase 6, web 4501 / API 4500.
+- Warehouse & Dispatch: folder `WAREHOUSE-DISPATCH`, phase 7, web 4601 / API 4600.
+- Planning & Engineering: folder `PLANNING-ENGINEERING`, phase 8, web 4701 / API 4700.
+- Revenue & Service: folder `REVENUE-SERVICE`, phase 9, web 4801 / API 4800.
+- Delivery & Managed Services: folder `DELIVERY-SERVICES`, phase 10, web 4901 / API 4900.
 
-The demonstration company is presented as 3S Precision. Historical tenant identifiers retain Trishul names. The secondary Kaveri tenant is used for isolation tests. Synthetic connection/outcome verification fixtures are labelled and must never be claimed as business savings.
+A package is a separate product, never a bundle containing everything. Each reads and
+writes the same tenant-isolated database through the same API, permission and RLS rules,
+so a change made in one is visible in XELOR and the reverse. No package keeps a second
+copy of stock, ledger or order data, and none introduced a permission or a migration.
+Read `docs/00-governance/04-project-x-architecture.md` before changing that structure.
 
-Connection adapters and grounded questions have explicit limits documented in `platform/docs/07-product/connectivity-contract.md`. Current connection Q&A is deterministic. Supplier deliveries default to preview. Existing managed-services illustrations are not live operational telemetry. The application is responsive web/PWA, with no offline business writes or native mobile binary.
+Read `README.md`, `AGENTS.md`, `LOCAL-HOSTING.md` and `docs/00-governance/03-product-names-and-workspace.md`. Product folders contain definitions and launchers, not separate code copies.
 
-Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm module-check` in platform as appropriate. Use profile builds for production output. Verification evidence and current limitations live in `deliverables/Verification-2026-09-07.md`.
+This checkout is on native Windows. Ignore historical macOS/WSL instructions in archived material. The native launchers use `C:/ORGANISED/xelor-local` tooling and private configuration at `platform/.env`. Keep databases and existing data. Starting a profile must never seed or reset it. Do not copy process ownership records from sibling worktrees.
+
+Existing phase IDs, database names, `ONYX_*` / `SOURCE_*` / `XELOR_*` integration keys, protocol source IDs, auth storage keys and agent identities are compatibility identifiers. Their spelling does not define current product branding. Do not mechanically swap them. Existing SQL migrations remain immutable.
+
+Preserve tenant RLS, registered permissions, domain-owned writes, approvals, audit and idempotency. Connected questions currently use grounded rules; local AI provider configuration is separate. Notifications default to preview and PWA offline support is reconnect-only. Do not overstate those capabilities.
+
+Historical PDFs/reports keep their original names and content. New current product material uses XELOR ERP, ONYX AI intelligence and AIKYANTRA supplier network. The September 7 verification report and September 11 analysis are dated evidence, not proof of tests being rerun now.

@@ -17,7 +17,7 @@
  *
  *   MARK     800 · 0.20em · uppercase   the product name, and the hub that carries it
  *   NAME     700 · 0.20em · uppercase   a department: secondary to the hub, above its own copy
- *   BYLINE   600 · 0.34em · uppercase   the second shade — AIKYANTRA, and the hub's subtitle
+ *   BYLINE   600 · 0.34em · uppercase   the second shade — the product label and hub subtitle
  *   NOTE     600 · 0.14em · uppercase   the smallest thing on screen, and the most restrained
  *
  * WHY UPPERCASE THROUGHOUT. The identity is a wide-tracked capital wordmark; a sentence-case
@@ -31,6 +31,7 @@
  */
 
 import type { CSSProperties } from "react";
+import { PRODUCT_PROFILE } from "../product/profile";
 
 /** The product name, and the ONYX hub that stands in the same relationship to the map. */
 export const MARK: CSSProperties = {
@@ -68,7 +69,7 @@ export const HUB: CSSProperties = {
   lineHeight: 1,
 };
 
-/** The second shade. BY AIKYANTRA under the mark; THE BRAIN under ONYX. */
+/** The second shade. The product label under the mark; THE BRAIN under ONYX. */
 export const BYLINE: CSSProperties = {
   fontWeight: 600,
   letterSpacing: "0.34em",
@@ -98,22 +99,22 @@ export const NOTE: CSSProperties = {
 export function Wordmark(): React.JSX.Element {
   return (
     <div
-      className="pointer-events-none absolute top-[clamp(1.75rem,4vh,3rem)] left-[clamp(1.5rem,3.5vw,3rem)] z-20 select-none"
+      className="pointer-events-none absolute top-[clamp(1.75rem,4vh,3rem)] left-[clamp(1.5rem,3.5vw,3rem)] z-20 max-w-[calc(100vw-3rem)] select-none"
       data-xelor-wordmark
     >
       <div
         className="text-(--void-ink)"
-        style={{ ...MARK, fontSize: "clamp(1.25rem, 1.8vw, 1.75rem)" }}
+        style={{ ...MARK, fontSize: "clamp(1.25rem, 1.8vw, 1.75rem)", lineHeight: 1.2, overflowWrap: "break-word" }}
       >
-        XELOR
+        {PRODUCT_PROFILE.name}
       </div>
       {/* Cool grey rather than charcoal: on a near-black void a charcoal subtitle is not
           understated, it is invisible. This measures about 7:1 against the void. */}
       <div
         className="mt-[0.7rem] text-(--void-ink-soft)"
-        style={{ ...BYLINE, fontSize: "0.6rem" }}
+        style={{ ...BYLINE, fontSize: "0.6rem", lineHeight: 1.5, overflowWrap: "break-word" }}
       >
-        By Aikyantra
+        {PRODUCT_PROFILE.label}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-const CACHE = "aikyantra-shell-v2";
+const CACHE = "aikyantra-shell-v3-palette";
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["/offline.html", "/icons/app.svg"])));
   self.skipWaiting();

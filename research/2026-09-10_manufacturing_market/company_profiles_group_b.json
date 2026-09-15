@@ -1,0 +1,147 @@
+[
+  {
+    "id": "adventis",
+    "title": "Adventis Technologies | OptiMES",
+    "subtitle": "Modular factory operations, maintenance and safety intelligence",
+    "material": "Photos 6–12. Suggested reading order: 6, 8, 7, 10, 9, 11, 12. No visible QR on these pages. Official spelling: Adventis.",
+    "sections": [
+      {
+        "heading": "What it offers",
+        "text": "The brochure presents four connected modules: Nexus for production KPIs, monitoring and reports; Shield for PPE and hazard alerts, work permits and safety tracking; Pulse for maintenance jobs and equipment health; and Stock for inventory movements, hazardous-material alerts and ERP synchronisation. It also advertises a chatbot for questions about operational data. The intended customer is a factory that wants to digitise selected workflows and expand gradually, particularly in hazardous or regulated environments."
+      },
+      {
+        "heading": "What the web confirms",
+        "text": "The official OptiMES page describes adding production visibility, camera-based safety detection and equipment-health analytics to existing SCADA systems, with on-premises deployment. The separate CMMS page confirms maintenance tasks, telemetry dashboards, alerts, PDF/CSV reports and cloud-enabled monitoring. These support the general offering; the four module names and chatbot were not separately demonstrated on the reviewed product page. Its industry page covers power, automotive, water, oil/gas, food and pharma. [B01, B03, B05]"
+      },
+      {
+        "heading": "Integration and delivery",
+        "text": "Adventis also supplies IoT gateways. The published range supports RS485/Modbus sensor connections, MQTT/HTTPS communication, OptiMES, AWS IoT, Azure and custom APIs; a higher model lists local storage. These are relevant building blocks for collecting factory data, but compatibility must be tested against actual machines. Brochure cloud/hybrid options should be confirmed for the chosen modules. Official contact: info@adventis.tech; +91 9176980403; Chennai. [B01, B04]"
+      },
+      {
+        "heading": "Public evidence and limits",
+        "text": "The identifiable LinkedIn company profile links back to adventis.tech, and Controlsoft's public company feed promotes OptiMES. No public licence price, named OptiMES outcome study, model-accuracy result or safety certification was found in reviewed sources. Brochure claims of up to 20% less downtime, 30% less compliance-reporting time and 15% longer asset life remain unverified marketing figures. On-premises hosting alone does not establish security. [B06, B07]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Adopt the clear modular packaging and shared asset data. Start with useful alerts, assigned maintenance work and reliable inventory records, then introduce prediction where data supports it. Consider an Indian gateway/integration partner after a technical pilot. For an MSME, completing the action behind an alert is more valuable than adding another dashboard."
+      }
+    ],
+    "sources": [
+      {"label": "B01 · OptiMES", "url": "https://adventis.tech/optimes/"},
+      {"label": "B03 · CMMS", "url": "https://adventis.tech/cmms/"},
+      {"label": "B04 · Gateway", "url": "https://adventis.tech/iot-gateway/"},
+      {"label": "B05 · Industries", "url": "https://adventis.tech/industry/"},
+      {"label": "B06 · Adventis LinkedIn", "url": "https://www.linkedin.com/company/adventistech"},
+      {"label": "B07 · Controlsoft LinkedIn", "url": "https://in.linkedin.com/company/controlsoft-engineering"}
+    ]
+  },
+  {
+    "id": "controlsoft",
+    "title": "Controlsoft Engineering India",
+    "subtitle": "Factory automation, instrumentation and site implementation",
+    "material": "Photos 3–5, ordered cover → industries → engineering/services. QR: http://www.controlsoftengg.in → HTTP 302 → https://www.controlsoftengg.in/; final HTTP 200.",
+    "sections": [
+      {
+        "heading": "What it offers",
+        "text": "Controlsoft is the Chennai engineering company at controlsoftengg.in, distinct from similarly named overseas vendors. It designs, installs and maintains physical industrial-control systems. Its brochure covers MES/SCADA, DCS/PLC/RTU, digital twins and AIoT, alongside panel assembly, commissioning, maintenance, engineering documents and technical staffing. Advertised sectors include aerospace, automotive, chemicals, consumer goods, food/beverage, metals, oil/gas and water. [B09, B10]"
+      },
+      {
+        "heading": "What the web confirms",
+        "text": "The strongest public evidence is for automation delivery: instrumentation design, datasheets/drawings, DCS and SCADA configuration, field-instrument integration, control-panel supply, installation and commissioning. The site names Siemens, Honeywell/ABB, PcVue, PLCs and RTUs. This supports a practical engineering-service business. Broad AI and digital-twin brochure labels do not by themselves establish a mature reusable software platform. [B09]"
+      },
+      {
+        "heading": "Projects and public activity",
+        "text": "The project page gives concrete scopes for a Siemens PCS7/RTU wastewater system in Kuwait, a tea-extraction line in Kenya, and Rockwell-based utilities/building-control work for Mars Petcare in Thailand. These are vendor-described projects, not independently audited references. Its readable LinkedIn feed discusses OptiMES, an Ambattur facility and the September 2026 Smart Factory Summit in Chennai. No functional social-profile link appeared in the reviewed website HTML; the company LinkedIn identity was cross-checked against its domain. [B07, B11]"
+      },
+      {
+        "heading": "Relationship, contact and limits",
+        "text": "Adventis and Controlsoft publish the same Ambattur address and 044-26242501 telephone number, and Controlsoft promotes OptiMES. A commercial connection is evident, but the reviewed sources do not establish legal ownership or a formal group structure. Keep separate vendor records. Official email: info@controlsoftengg.in. No public project tariff, standard MSME package or production-support SLA was found. Some historical project entries retain old future-tense completion wording; avoid assuming every listed project is complete. [B07, B08, B11, B12]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Add a delivery service around Xelor: plant survey, machine/protocol register, sensor and gateway selection, installation, commissioning, operator training and ongoing support. Qualify local instrumentation partners and keep one accountable delivery owner. Agree planned downtime, rollback and acceptance tests before site changes. This is essential to becoming a technology partner that can make software work in an existing factory."
+      }
+    ],
+    "sources": [
+      {"label": "B09 · Official website", "url": "https://www.controlsoftengg.in/"},
+      {"label": "B10 · Company", "url": "https://www.controlsoftengg.in/about.php"},
+      {"label": "B11 · Projects", "url": "https://www.controlsoftengg.in/project.php"},
+      {"label": "B12 · Contact", "url": "https://www.controlsoftengg.in/contact.php"},
+      {"label": "B07 · LinkedIn", "url": "https://in.linkedin.com/company/controlsoft-engineering"},
+      {"label": "B08 · Adventis contact", "url": "https://adventis.tech/contact-us/"}
+    ]
+  },
+  {
+    "id": "rheinbrucke",
+    "title": "RheinBrücke | Epicor Kinetic",
+    "subtitle": "Manufacturing ERP, connected extensions and implementation services",
+    "material": "Photos 2 → 1. QR: https://go.adobe.io/r/eoblhwd94oR → HTTP 301 → https://www.rheincs.com/contact-us/; final HTTP 200. QR opens a contact page.",
+    "sections": [
+      {
+        "heading": "Who provides what",
+        "text": "RheinBrücke implements and supports enterprise systems; Epicor develops Kinetic. The official partner site describes implementation, migration, upgrades, integrations, training and managed support. The brochure's main idea is to improve an existing manufacturer's systems and connect plant activity with business decisions. Its value proposition includes delivery expertise throughout the software lifecycle. [B13]"
+      },
+      {
+        "heading": "Manufacturing coverage",
+        "text": "The brochure includes bills of material and routings, material planning, finite scheduling, work orders, lot/serial traceability and job costing. Epicor's own page confirms finance, supply chain, planning, production, projects and multi-company/site management, with cloud focus and on-premises/hybrid flexibility. RheinBrücke's extensions include MES, warehouse scanning, inventory optimisation, document workflows, analytics, shipping/labels and integration automation. Extensions are add-ons; do not assume all features are included in one licence. [B14, B15]"
+      },
+      {
+        "heading": "Useful evidence and public channels",
+        "text": "The official-site-linked LinkedIn feed announces a Cold Chain Technologies India Kinetic go-live, including inventory, planning and GST-portal integration. The YouTube catalogue includes customer stories and ERP webinars. This supports an active delivery and education presence; savings were not independently validated and videos were not watched. All five official-linked social profiles were attempted: LinkedIn posts and YouTube catalogue were readable; X returned no readable posts, Instagram failed and Facebook was throttled. [B17, B33, B34]"
+      },
+      {
+        "heading": "Commercial fit and limits",
+        "text": "No public licence/implementation price was found on reviewed pages. Cost and effort depend on modules, users, data migration, connectors, deployment and support. Epicor's headline ROI figures come from commissioned composite research and should not be applied to an MSME. A full ERP may require more process change than a small factory needs initially. Official brochure contact: info@rheincs.com; +91 44 6671 7555; Chennai. [B13–B15]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Connect Xelor's shop-floor facts to material availability, delivery commitments, traceability and actual job margin. Define which system owns each record and reconcile integrations. Offer implementation, training and support as explicit services. Preserve a customer's workable ERP/accounting system where practical; use a qualified ERP partner when replacement is justified. Begin with the client's most expensive bottleneck and expand when the first deployment produces trusted evidence."
+      }
+    ],
+    "sources": [
+      {"label": "B13 · Epicor services", "url": "https://www.rheincs.com/solutions/erp-enterprise-solutions-and-services/epicor/"},
+      {"label": "B14 · Epicor Kinetic", "url": "https://www.epicor.com/en/products/enterprise-resource-planning-erp/epicor-kinetic/"},
+      {"label": "B15 · Extensions", "url": "https://www.rheincs.com/Epicor-companion/"},
+      {"label": "B17 · LinkedIn", "url": "https://www.linkedin.com/company/rheinbr%C3%BCcke-it-consulting"},
+      {"label": "B33 · X (unreadable)", "url": "https://x.com/RheinBruckeIT"},
+      {"label": "B34 · YouTube catalogue", "url": "https://www.youtube.com/@rheinbruckeitconsulting/videos"}
+    ]
+  },
+  {
+    "id": "connectivity",
+    "title": "Connectivity Solutions | CoSol",
+    "subtitle": "Enterprise infrastructure and Cisco industrial cybersecurity",
+    "material": "Photo 23: partial OT-security and contact panels. Identified by exact official-site address and phone match. No visible QR in the supplied crop.",
+    "sections": [
+      {
+        "heading": "Identity and role",
+        "text": "The leaflet matches CoSol's Bengaluru address, No. 1877, 1st Floor, 31st Cross, 10th Main Road, Banashankari Stage II, and telephone 080 2671 6555. Its company LinkedIn uses Connectivity IT Solutions. CoSol provides infrastructure and integration services; Cisco supplies the OT-security technology described in the leaflet. Official website email: info@cosol.in. [B24, B26]"
+      },
+      {
+        "heading": "What it offers",
+        "text": "CoSol's website lists network/endpoint inventories, configuration assessments, network mapping and segmentation, vulnerability prioritisation, cybersecurity, cloud infrastructure, service desk, managed network/security operations, field services, procurement, subscriptions and API integration. The leaflet concentrates on industrial asset visibility, unusual-traffic detection, network separation and controlled remote maintenance. This fills an infrastructure/security role rather than providing manufacturing planning or execution software. [B25]"
+      },
+      {
+        "heading": "Technical cross-check",
+        "text": "Cisco's current Cyber Vision documentation supports industrial asset discovery, threat monitoring, segmentation and secure remote access. Secure Equipment Access restricts access by person, target asset, protocol and time, with MFA/SSO and audit capabilities. Actual functions depend on supported hardware, licences and deployment design; the leaflet does not contain a full equipment list. Alignment with IEC 62443 principles is not certification of an entire factory or a guarantee against attacks. [B27, B28]"
+      },
+      {
+        "heading": "Evidence, social and commercial limits",
+        "text": "The official LinkedIn link initially blocked access, but its regional public version was readable. Posts describe an OT-security testbed with PLCs, industrial drives and security gateways for events on 8–9 September 2026. This shows relevant demonstration activity, not measured production outcomes. The website lists unnamed manufacturing/automotive cases; Cisco hosts a named hospital customer story involving Connectivity. No public MSME price or managed-service SLA was found. Rental/subscription options need clear renewal, hardware, monitoring and exit terms. [B25, B26, B29, B30]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Include a factory infrastructure service: asset inventory, network map, access roles, backup/restore checks, controlled vendor access and a named incident contact. Partner with an OT-security specialist for segmentation, monitoring and response. Xelor's data collection depends on reliable and secure connectivity. Sell this as an ongoing managed service with clear responsibilities, escalation and recovery targets, scaled to the plant's size and risk."
+      }
+    ],
+    "sources": [
+      {"label": "B24 · CoSol website", "url": "https://cosol.in/"},
+      {"label": "B25 · Services", "url": "https://cosol.in/services"},
+      {"label": "B26 · LinkedIn", "url": "https://in.linkedin.com/company/connectivity-it-solutions/"},
+      {"label": "B27 · Cyber Vision", "url": "https://www.cisco.com/c/en/us/products/collateral/security/cyber-vision/cyber-vision-ds.html"},
+      {"label": "B28 · Secure access", "url": "https://www.cisco.com/c/en/us/products/collateral/security/industrial-security/secure-equipment-access/sec-equipment-access-ds.html"},
+      {"label": "B29 · Case studies", "url": "https://cosol.in/case-studies"},
+      {"label": "B30 · Cisco customer story", "url": "https://www.cisco.com/c/dam/m/en_in/events/connectivity-solutions.pdf"}
+    ]
+  }
+]

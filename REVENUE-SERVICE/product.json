@@ -1,0 +1,8 @@
+{
+  "phase": 9,
+  "name": "Revenue & Service — connected package",
+  "description": "The configuration you quote becomes the machine you service: enquiry intake, cost sheets and margin approval, then warranty, spares and field visits.",
+  "source": "../platform",
+  "webPort": 4801,
+  "apiPort": 4800
+}

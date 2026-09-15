@@ -1,8 +1,0 @@
-{
-  "phase": 4,
-  "name": "AIKYANTRA \u2014 Complete manufacturing workspace",
-  "description": "ERP, connected intelligence and supplier commerce share one application, tenant, business records and audit trail.",
-  "source": "../platform",
-  "webPort": 4301,
-  "apiPort": 4300
-}

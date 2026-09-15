@@ -5,10 +5,14 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const phase = process.argv[2] ?? "4";
+const products = { xelor: "1", onyx: "2", aikyantra: "3", integrated: "4", plant: "5", quality: "6", warehouse: "7", planning: "8", revenue: "9", delivery: "10" };
+const selection = (process.argv[2] ?? "integrated").toLowerCase();
+const phase = Object.hasOwn(products, selection) ? products[selection] : selection;
+const productNames = { "1": "XELOR phase 2 ERP", "2": "ONYX AI intelligence", "3": "AIKYANTRA supplier network", "4": "Integrated workspace", "5": "Plant Operations", "6": "Quality, Safety & Compliance", "7": "Warehouse & Dispatch", "8": "Planning & Engineering", "9": "Revenue & Service", "10": "Delivery & Managed Services" };
+const profileLabel = phase === "1" ? "technical profile 1" : `phase ${phase}`;
 const action = process.argv[3] ?? "dev";
-if (!/^[1-4]$/.test(phase) || !["dev", "start", "build", "stop"].includes(action)) {
-  console.error("Usage: node scripts/phase.mjs <1|2|3|4> [dev|start|build|stop]"); process.exit(2);
+if (!/^(?:[1-9]|10)$/.test(phase) || !["dev", "start", "build", "stop"].includes(action)) {
+  console.error("Usage: node scripts/phase.mjs <XELOR|ONYX|AIKYANTRA|INTEGRATED|PLANT|QUALITY|WAREHOUSE|PLANNING|REVENUE|DELIVERY|1-10> [dev|start|build|stop]"); process.exit(2);
 }
 process.chdir(root);
 if (existsSync(".env")) process.loadEnvFile(".env");
@@ -25,7 +29,7 @@ if (action === "stop") {
     for (const pid of JSON.parse(readFileSync(pidFile, "utf8"))) { try { process.kill(pid, "SIGTERM"); } catch {} }
     unlinkSync(pidFile);
   }
-  console.log(`Phase ${phase} stopped.`); process.exit(0);
+  console.log(`${productNames[phase]} (${profileLabel}) stopped.`); process.exit(0);
 }
 
 function command(cmd, args, options = {}) {
@@ -54,7 +58,7 @@ env.NODE_ENV = action === "start" ? "production" : "development";
 const api = spawn(process.execPath, ["apps/api/dist/src/main.js"], { cwd: root, env, stdio: "inherit" });
 const web = spawn(process.execPath, ["apps/web/scripts/run-next.mjs", action === "dev" ? "dev" : "start", "--hostname", "0.0.0.0"], { cwd: root, env: { ...env, PORT: String(webPort) }, stdio: "inherit" });
 writeFileSync(pidFile, JSON.stringify([api.pid, web.pid]));
-console.log(`Phase ${phase}: http://localhost:${webPort} · API ${apiPort}. Data is preserved on every launch.`);
+console.log(`${productNames[phase]} (${profileLabel}): http://localhost:${webPort} · API ${apiPort}. Data is preserved on every launch.`);
 let stopping = false;
 function stop() { if (stopping) return; stopping = true; api.kill("SIGTERM"); web.kill("SIGTERM"); try { unlinkSync(pidFile); } catch {} }
 for (const signal of ["SIGTERM", "SIGINT"]) process.on(signal, stop);

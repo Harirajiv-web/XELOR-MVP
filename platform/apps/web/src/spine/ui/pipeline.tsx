@@ -79,7 +79,7 @@ export const LAYER: Record<
     chip: "chip-grey",
     icon: Database,
     means:
-      "A record read straight out of the ONYX ERP — the system of record. Phase 2 did not change it to read it.",
+      "A record read straight out of XELOR ERP — the system of record. ONYX did not change it to read it.",
   },
   phase2: {
     name: "Phase 2 engine",

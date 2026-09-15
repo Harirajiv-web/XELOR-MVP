@@ -54,7 +54,7 @@ test("ONYX runs the connected nine-agent controlled-autonomy flow", async ({
   if (await page.locator("#username").isVisible()) {
     await page.getByRole("textbox", { name: "Username or email" }).fill("hari");
     await page.getByRole("textbox", { name: "Password" }).fill("1234");
-    await page.getByRole("button", { name: "Enter XELOR" }).click();
+    await page.getByRole("button", { name: "Enter workspace" }).click();
   }
   await expect(brain).toBeVisible();
   await ensureAutomationActive(page);

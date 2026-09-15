@@ -1,0 +1,488 @@
+[
+  {
+    "id": "commercecx",
+    "title": "CommerceCX / ScaleFluidly",
+    "subtitle": "Quotations, commercial workflows, logistics and pharma operations",
+    "material": "Supplied photos 13, 14, 15 and 16; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "CommerceCX combines consulting and software to connect sales, quotations, contracts and orders. Its ScaleFluidly add-ons work around existing CRM, quoting and ERP systems; Salesforce and Conga are named partners. For manufacturing, its strongest relevance is coordinating the commercial decisions before and after production. [C1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "AI RFQ + CPQ: reads quotation requests, BOMs and drawings; compares revisions and supplier bids; proposes material, process, labour and tooling costs; applies pricing/approval rules; and follows quotes into orders/revenue. The brochure also advertises historical learning, an Athena assistant and voice commands. LogisticCX: container selection, mixed-goods loading, 3D plans and exportable reports. Pharma: NPI manages new products; PortfolioCX prioritises programmes; CGTOP coordinates cell/gene therapies; CRO supports clinical research. These are three distinct product families, not one factory module."
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Public product pages confirm quote versions, approvals, partner portals, pricing and order integration. Company LinkedIn confirms RFQ costing, freight/container planning and four pharma pillars. Its LogisticCX post describes irregular-product loading, weight/space balancing and freight analytics. The pharma website gives narrower detail than the brochure, particularly for clinical operations. LinkedIn was readable; X returned 403 and YouTube yielded only a channel shell. Three decoded QR codes reach commercecx.com; the clipped pharma QR could not decode, but its printed pharmaProducts.html page works. [C2–C6]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "No numerical public price was found. Expect a scoped software-and-implementation proposal. LogisticCX's cloud/on-premise options are brochure claims; no deployment specification was reviewed. PriceCX's Salesforce architecture should not automatically be assumed for every offering. Ask which licences, connectors, configuration and support are included. [C2]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Build continuity from enquiry to cost sheet, approved quote, production order and dispatch. Add supplier bid comparison and revision history first; loading optimisation suits customers with meaningful shipment volume. Pharma contributes reusable stage gates and audit history, while clinical workflows need specialists. Brochure figures such as 25–40% space savings, 90% time savings and zero errors are unverified marketing claims. AI drawing accuracy, exact clinical coverage and product-specific security/compliance attestations were not established."
+      }
+    ],
+    "sources": [
+      {
+        "label": "C1 · Company",
+        "url": "https://commercecx.com/"
+      },
+      {
+        "label": "C2 · Product catalogue",
+        "url": "https://commercecx.com/products.html"
+      },
+      {
+        "label": "C3 · Pharma suite",
+        "url": "https://commercecx.com/pharmaProducts.html"
+      },
+      {
+        "label": "C4 · LinkedIn",
+        "url": "https://www.linkedin.com/company/commercecx"
+      },
+      {
+        "label": "C5 · LogisticCX",
+        "url": "https://www.linkedin.com/posts/commercecx_logisticcx-scalefluidly-commercecx-activity-7470364161236070400-o7bC"
+      },
+      {
+        "label": "C6 · Portfolio/NPI",
+        "url": "https://www.linkedin.com/posts/commercecx_biopharmaconclave-portfoliomanagement-activity-7469622950724370432-rWEe"
+      }
+    ]
+  },
+  {
+    "id": "anjx",
+    "title": "AnjX Solutions",
+    "subtitle": "Demand, inventory and production planning for smaller manufacturers",
+    "material": "Video dated 7.11.12 AM: AnjX cover at approximately 0 seconds and interior at 3 seconds; no separate numbered photo.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "AnjX focuses on deciding what to stock, buy and produce. Its Cognitive Engine combines forecasting, inventory decisions and scenario simulation for small and medium enterprises. The public company profile places it in Chennai and identifies automotive and electronics manufacturers as target users. This is a planning proposition, rather than evidence of a complete factory execution system. [A1–A4]"
+      },
+      {
+        "heading": "Main capabilities",
+        "text": "Its solutions page covers demand forecasting, balancing stock availability against cash tied up in inventory, and production scheduling using capacity, people and materials. Scenario simulation lets planners consider changes before committing. In practical terms, the proposed value is fewer shortages, less excess stock and a more achievable production plan. Your video brochure presents a modular cloud offering and continuing support. Those packaging statements are distinct from proven forecast accuracy or measured scheduling improvement. [A2–A3; supplied video]"
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "The official vision page identifies a spare-parts pilot at Bajaj dealerships. Company LinkedIn describes the Cognitive Engine launch at UMAGINE TN 2026, manufacturing-SME positioning and pilot activity. Pilot success is vendor reported, without independent results reviewed. The linked Instagram page was throttled. The video's QR decodes to qrfy.io/TbOEEhO5KR, which redirects to a not-found page and returns 404. The printed anjx.in website works and provides an alternative route. [A1, A3–A5]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "No public numerical price was found. Cloud/modular packaging and 24×7 support appear in the brochure, but a contractual response-time commitment was not verified. Confirm data imports, supported ERP connections, planning limits, implementation effort and what happens when source data is incomplete. A dealership spare-parts pilot does not by itself demonstrate factory scheduling performance."
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Extend Xelor's existing material checks and scheduling with measured scenarios and forecasting where customers have reliable demand history. Connect plans to actual machine availability, stock and work-order progress. Let planners compare scenarios and approve changes with reasons. Evaluate any planning partner on the customer's own history: compare forecasts with a simple baseline, test shortages and capacity conflicts, and measure planner effort. Do not assume that an AI label guarantees better forecasts, lower inventory or dependable delivery dates."
+      }
+    ],
+    "sources": [
+      {
+        "label": "A1 · Company",
+        "url": "https://www.anjx.in/"
+      },
+      {
+        "label": "A2 · Solutions",
+        "url": "https://www.anjx.in/solutions"
+      },
+      {
+        "label": "A3 · Vision and pilot",
+        "url": "https://www.anjx.in/vision"
+      },
+      {
+        "label": "A4 · LinkedIn",
+        "url": "https://in.linkedin.com/company/anjx"
+      },
+      {
+        "label": "A5 · QR destination (404)",
+        "url": "https://qrfy.io/TbOEEhO5KR"
+      }
+    ]
+  },
+  {
+    "id": "slooze",
+    "title": "Slooze",
+    "subtitle": "Procurement, supplier coordination and supply-chain decisions",
+    "material": "Video dated 7.11.34 AM: September 2026 procurement playbooks and Slooze contact material; no separate numbered photo.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Slooze describes itself as AI-based cloud software for supply chains and procurement. Its public LinkedIn lists Coimbatore and a 2025 founding year. It coordinates suppliers, purchasing and decisions shared by procurement, finance and manufacturing teams. These are company descriptions, rather than independently verified delivery results. [S1–S2]"
+      },
+      {
+        "heading": "Main capabilities",
+        "text": "The official site advertises supplier quotation requests, contracts, budgets, payments/financing, customs, compliance and risk workflows. A company-authored manufacturing article adds purchasing linked to bills of material, supplier discovery and alternatives, performance signals, cost-volatility intelligence and common documentation. It connects sourcing with engineering requirements, lead times and production needs. The site names Rule Canvas and Insights Factory, but does not establish the configuration effort required for a customer deployment. [S1, S3]"
+      },
+      {
+        "heading": "Website, social and printed-link checks",
+        "text": "slooze.xyz reaches the live company website; LinkedIn posts were readable. The printed meet.slooze.xyz/cal redirects to a working zcal scheduling page. about.slooze.xyz/news redirects to its public Substack newsletter. Its feed contains nine entries, including three articles matching the filmed guides for procurement chiefs, finance/project teams and owners/risk leaders. These explain spend visibility, governance, returns and procurement risk. Article text was reviewed; full downloadable playbooks were not obtained. playbook@slooze.xyz and hello@slooze.xyz are email addresses. Nothing was booked or submitted. [S1–S2, S4–S6]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "Slooze advertises cloud subscription/on-demand plans, application interfaces, secure file transfer, electronic data exchange and email integration. Named systems include SAP, Oracle, Salesforce, Dynamics 365 and Zoho. No public monetary price was readable. Confirm versions, data direction, setup charges, support and approval controls. Financing/payment features do not establish lending availability or terms. [S1]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Connect suppliers, purchase quotations, bid comparison, budget approvals, delivery promises and supplier-quality exceptions to materials and production jobs. Give buyers, owners and accounts users suitable views of shared records. Start with accountable decisions and overdue alerts. Advertised 13–28% expense reduction, 50x speed and anonymous financial gains lack reviewed customer evidence. The video's AOP / McKinsey & Company association wording remains an unverified vendor claim; newsletter references to industry research do not establish that partnership. Request a complete purchase-cycle demonstration with corrections and exceptions."
+      }
+    ],
+    "sources": [
+      {
+        "label": "S1 · Offering and integrations",
+        "url": "https://www.slooze.xyz/"
+      },
+      {
+        "label": "S2 · LinkedIn",
+        "url": "https://www.linkedin.com/company/slooze"
+      },
+      {
+        "label": "S3 · Manufacturing procurement",
+        "url": "https://www.linkedin.com/pulse/procurement-new-power-lever-manufacturingheres-why-slooze-ptdzc"
+      },
+      {
+        "label": "S4 · Printed meeting link",
+        "url": "https://meet.slooze.xyz/cal"
+      },
+      {
+        "label": "S5 · Printed newsletter link",
+        "url": "https://about.slooze.xyz/news"
+      },
+      {
+        "label": "S6 · Public newsletter articles",
+        "url": "https://sloozexnewsletters.substack.com/feed"
+      }
+    ]
+  },
+  {
+    "id": "tomax",
+    "title": "Tomax Digital / D3Minds",
+    "subtitle": "Connected production, warehouse, quality and engineering applications",
+    "material": "Supplied photos 19, 20, 21 and 22; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Tomax Digital is D3Minds' factory software platform. It connects production, quality, warehouse, planning, assets and engineering projects. Its website targets discrete manufacturers, including automotive, components, heavy industry, electrical and electronics. Its breadth makes it a useful reference for the operational applications a growing manufacturer may need around an ERP. [T1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "Production: scheduling/control, machine condition, OEE, dashboards, traceability and ERP integration. Warehouse: receiving, put-away, replenishment, e-Kanban, kitting, component history, scrap/rework, forklifts and dispatch. Quality: inspections, nonconformance, corrective/preventive action, calibration, FMEA, SPC, audits, complaints, documents, training and skills. Projects: capacity, dependencies, engineering changes, costs and timesheets. The brochure also names AI Studio, an industrial data hub, IIoT, maintenance and Odoo implementation, with SAP/Oracle/Dynamics connections. This extends well beyond monitoring machines."
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Public MES, quality and project pages corroborate substantial workflows. Quality covers suppliers, the factory and customer feedback. The official footer links to D3Minds LinkedIn; that profile and the Tomax showcase are readable. Posts discuss maintenance work orders, calibration, asset history, reliability measures, AI/vision quality, planning and warehouses. The QR in photo 19 opens tomaxdigital.com successfully. Named Amrapali and Howden case-study links lead to contact forms, so no detailed outcome study was obtained through those links. [T2–T6]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "The website explicitly offers cloud, on-premise or hybrid deployment; subscription or perpetual licences; and purchase by module. No numerical price was found. Obtain a proposal separating software, machine connections, ERP work, migration, training and support. Verify offline behaviour and compatibility with the customer's actual controller and ERP versions. A broad integration claim is not proof that a specific plant is ready to connect. [T1]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Prioritise material movement and lot history, inspection-to-corrective-action workflows, preventive maintenance and achievable scheduling. Connect these through common jobs, products and assets. Package training and continuing support alongside modules. Published productivity, downtime, defect and cost reductions remain vendor claims without reviewed baselines. Compliance-support features do not certify a customer. Tomax offers a strong scope comparison, but production maturity and the economics of a small-factory rollout still require a real pilot."
+      }
+    ],
+    "sources": [
+      {
+        "label": "T1 · Platform and deployment",
+        "url": "https://www.tomaxdigital.com/"
+      },
+      {
+        "label": "T2 · MES",
+        "url": "https://www.tomaxdigital.com/products/manufacturing-execution-system"
+      },
+      {
+        "label": "T3 · Quality",
+        "url": "https://www.tomaxdigital.com/products/enterprise-quality-management-system"
+      },
+      {
+        "label": "T4 · Projects",
+        "url": "https://www.tomaxdigital.com/products/manufacturing-project-management.html"
+      },
+      {
+        "label": "T5 · D3Minds LinkedIn",
+        "url": "https://www.linkedin.com/company/d3minds"
+      },
+      {
+        "label": "T6 · Tomax LinkedIn",
+        "url": "https://www.linkedin.com/showcase/tomaxdigital/"
+      }
+    ]
+  },
+  {
+    "id": "zeliot",
+    "title": "Zeliot / Condense",
+    "subtitle": "Live-data infrastructure and custom operational applications",
+    "material": "Supplied photos 17 and 18, originally upside down; numbers refer to the user's original image list.",
+    "sections": [
+      {
+        "heading": "What it does",
+        "text": "Condense is Zeliot's platform for moving, processing and acting on live data. It combines managed Kafka, connectors, transformations, application development, monitoring and governance. Think of it as a foundation connecting operational systems and custom applications. The reviewed material does not establish a complete ready-made ERP, MES or quality suite. [Z1]"
+      },
+      {
+        "heading": "Main capabilities in your material",
+        "text": "The brochures connect legacy machines, PLC/DCS/SCADA, MES, ERP and sensors. They advertise business logic, alerts, workflows, reports and applications across plants and regions. Factory use cases include production/OEE visibility, process-quality correlation, traceability, maintenance anomalies and downtime intelligence. Zeliot also proposes delivery from integration and application development through deployment and operation. The website adds an AI-assisted development environment, custom connectors, roles and audit records. These tools still need useful business workflows and plant-specific configuration. [Z1]"
+      },
+      {
+        "heading": "Website, social and QR checks",
+        "text": "Company LinkedIn is publicly readable and promotes factory integration, real-time dashboards and MQTT messages flowing into Kafka. Its September 2026 Chennai summit post matches the brochure's manufacturing focus. Both photo QR codes reach zeliot.in/events/learn-more-about-condense, a working enquiry form; nothing was submitted. Instagram could not be fetched and the YouTube channel was throttled. A named VECV case study describes connected-vehicle use with customer commentary, providing stronger context than a feature list alone. [Z2–Z4]"
+      },
+      {
+        "heading": "Deployment and buying",
+        "text": "The main model is Bring Your Own Cloud: deployment in the customer's AWS, Azure or Google Cloud account, with Zeliot operating the platform. Public pricing separates licence and cloud infrastructure and depends on workload. The page title's “from $800/month” is not an all-inclusive MSME quote. Estimate throughput, retention and support before judging affordability; a small line may not need an enterprise streaming platform. [Z1, Z5]"
+      },
+      {
+        "heading": "Value for AIKYANTRA and evidence limits",
+        "text": "Adopt reusable machine/ERP connectors, validated event data, alert routing and monitored recovery. Consider Condense as a partner when several systems or plants justify its operating model. AIKYANTRA should still own the customer workflow and installation outcome. VECV's 250,000-plus vehicles and reported 20% cloud-cost/40% effort savings are vendor-published mobility results, not promises for manufacturing MSMEs. Connector compatibility, latency, access controls and total cost need testing against the customer's actual workload. No factory performance benchmark was run during this research. [Z4]"
+      }
+    ],
+    "sources": [
+      {
+        "label": "Z1 · Platform",
+        "url": "https://www.zeliot.in/"
+      },
+      {
+        "label": "Z2 · LinkedIn",
+        "url": "https://www.linkedin.com/company/realzeliot"
+      },
+      {
+        "label": "Z3 · QR enquiry page",
+        "url": "https://www.zeliot.in/events/learn-more-about-condense"
+      },
+      {
+        "label": "Z4 · VECV case",
+        "url": "https://www.zeliot.in/customers/volvo-eicher-commercial-vehicles-connected-vehicles-condense"
+      },
+      {
+        "label": "Z5 · Pricing calculator",
+        "url": "https://www.zeliot.in/pricing"
+      }
+    ]
+  },
+  {
+    "id": "adventis",
+    "title": "Adventis Technologies | OptiMES",
+    "subtitle": "Modular factory operations, maintenance and safety intelligence",
+    "material": "Photos 6–12. Suggested reading order: 6, 8, 7, 10, 9, 11, 12. No visible QR on these pages. Official spelling: Adventis.",
+    "sections": [
+      {
+        "heading": "What it offers",
+        "text": "The brochure presents four connected modules: Nexus for production KPIs, monitoring and reports; Shield for PPE and hazard alerts, work permits and safety tracking; Pulse for maintenance jobs and equipment health; and Stock for inventory movements, hazardous-material alerts and ERP synchronisation. It also advertises a chatbot for questions about operational data. The intended customer is a factory that wants to digitise selected workflows and expand gradually, particularly in hazardous or regulated environments."
+      },
+      {
+        "heading": "What the web confirms",
+        "text": "The official OptiMES page describes adding production visibility, camera-based safety detection and equipment-health analytics to existing SCADA systems, with on-premises deployment. The separate CMMS page confirms maintenance tasks, telemetry dashboards, alerts, PDF/CSV reports and cloud-enabled monitoring. These support the general offering; the four module names and chatbot were not separately demonstrated on the reviewed product page. Its industry page covers power, automotive, water, oil/gas, food and pharma. [B01, B03, B05]"
+      },
+      {
+        "heading": "Integration and delivery",
+        "text": "Adventis also supplies IoT gateways. The published range supports RS485/Modbus sensor connections, MQTT/HTTPS communication, OptiMES, AWS IoT, Azure and custom APIs; a higher model lists local storage. These are relevant building blocks for collecting factory data, but compatibility must be tested against actual machines. Brochure cloud/hybrid options should be confirmed for the chosen modules. Official contact: info@adventis.tech; +91 9176980403; Chennai. [B01, B04]"
+      },
+      {
+        "heading": "Public evidence and limits",
+        "text": "The identifiable LinkedIn company profile links back to adventis.tech, and Controlsoft's public company feed promotes OptiMES. No public licence price, named OptiMES outcome study, model-accuracy result or safety certification was found in reviewed sources. Brochure claims of up to 20% less downtime, 30% less compliance-reporting time and 15% longer asset life remain unverified marketing figures. On-premises hosting alone does not establish security. [B06, B07]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Adopt the clear modular packaging and shared asset data. Start with useful alerts, assigned maintenance work and reliable inventory records, then introduce prediction where data supports it. Consider an Indian gateway/integration partner after a technical pilot. For an MSME, completing the action behind an alert is more valuable than adding another dashboard."
+      }
+    ],
+    "sources": [
+      {
+        "label": "B01 · OptiMES",
+        "url": "https://adventis.tech/optimes/"
+      },
+      {
+        "label": "B03 · CMMS",
+        "url": "https://adventis.tech/cmms/"
+      },
+      {
+        "label": "B04 · Gateway",
+        "url": "https://adventis.tech/iot-gateway/"
+      },
+      {
+        "label": "B05 · Industries",
+        "url": "https://adventis.tech/industry/"
+      },
+      {
+        "label": "B06 · Adventis LinkedIn",
+        "url": "https://www.linkedin.com/company/adventistech"
+      },
+      {
+        "label": "B07 · Controlsoft LinkedIn",
+        "url": "https://in.linkedin.com/company/controlsoft-engineering"
+      }
+    ]
+  },
+  {
+    "id": "controlsoft",
+    "title": "Controlsoft Engineering India",
+    "subtitle": "Factory automation, instrumentation and site implementation",
+    "material": "Photos 3–5, ordered cover → industries → engineering/services. QR: http://www.controlsoftengg.in → HTTP 302 → https://www.controlsoftengg.in/; final HTTP 200.",
+    "sections": [
+      {
+        "heading": "What it offers",
+        "text": "Controlsoft is the Chennai engineering company at controlsoftengg.in, distinct from similarly named overseas vendors. It designs, installs and maintains physical industrial-control systems. Its brochure covers MES/SCADA, DCS/PLC/RTU, digital twins and AIoT, alongside panel assembly, commissioning, maintenance, engineering documents and technical staffing. Advertised sectors include aerospace, automotive, chemicals, consumer goods, food/beverage, metals, oil/gas and water. [B09, B10]"
+      },
+      {
+        "heading": "What the web confirms",
+        "text": "The strongest public evidence is for automation delivery: instrumentation design, datasheets/drawings, DCS and SCADA configuration, field-instrument integration, control-panel supply, installation and commissioning. The site names Siemens, Honeywell/ABB, PcVue, PLCs and RTUs. This supports a practical engineering-service business. Broad AI and digital-twin brochure labels do not by themselves establish a mature reusable software platform. [B09]"
+      },
+      {
+        "heading": "Projects and public activity",
+        "text": "The project page gives concrete scopes for a Siemens PCS7/RTU wastewater system in Kuwait, a tea-extraction line in Kenya, and Rockwell-based utilities/building-control work for Mars Petcare in Thailand. These are vendor-described projects, not independently audited references. Its readable LinkedIn feed discusses OptiMES, an Ambattur facility and the September 2026 Smart Factory Summit in Chennai. No functional social-profile link appeared in the reviewed website HTML; the company LinkedIn identity was cross-checked against its domain. [B07, B11]"
+      },
+      {
+        "heading": "Relationship, contact and limits",
+        "text": "Adventis and Controlsoft publish the same Ambattur address and 044-26242501 telephone number, and Controlsoft promotes OptiMES. A commercial connection is evident, but the reviewed sources do not establish legal ownership or a formal group structure. Keep separate vendor records. Official email: info@controlsoftengg.in. No public project tariff, standard MSME package or production-support SLA was found. Some historical project entries retain old future-tense completion wording; avoid assuming every listed project is complete. [B07, B08, B11, B12]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Add a delivery service around Xelor: plant survey, machine/protocol register, sensor and gateway selection, installation, commissioning, operator training and ongoing support. Qualify local instrumentation partners and keep one accountable delivery owner. Agree planned downtime, rollback and acceptance tests before site changes. This is essential to becoming a technology partner that can make software work in an existing factory."
+      }
+    ],
+    "sources": [
+      {
+        "label": "B09 · Official website",
+        "url": "https://www.controlsoftengg.in/"
+      },
+      {
+        "label": "B10 · Company",
+        "url": "https://www.controlsoftengg.in/about.php"
+      },
+      {
+        "label": "B11 · Projects",
+        "url": "https://www.controlsoftengg.in/project.php"
+      },
+      {
+        "label": "B12 · Contact",
+        "url": "https://www.controlsoftengg.in/contact.php"
+      },
+      {
+        "label": "B07 · LinkedIn",
+        "url": "https://in.linkedin.com/company/controlsoft-engineering"
+      },
+      {
+        "label": "B08 · Adventis contact",
+        "url": "https://adventis.tech/contact-us/"
+      }
+    ]
+  },
+  {
+    "id": "rheinbrucke",
+    "title": "RheinBrücke | Epicor Kinetic",
+    "subtitle": "Manufacturing ERP, connected extensions and implementation services",
+    "material": "Photos 2 → 1. QR: https://go.adobe.io/r/eoblhwd94oR → HTTP 301 → https://www.rheincs.com/contact-us/; final HTTP 200. QR opens a contact page.",
+    "sections": [
+      {
+        "heading": "Who provides what",
+        "text": "RheinBrücke implements and supports enterprise systems; Epicor develops Kinetic. The official partner site describes implementation, migration, upgrades, integrations, training and managed support. The brochure's main idea is to improve an existing manufacturer's systems and connect plant activity with business decisions. Its value proposition includes delivery expertise throughout the software lifecycle. [B13]"
+      },
+      {
+        "heading": "Manufacturing coverage",
+        "text": "The brochure includes bills of material/routings, material planning, finite scheduling, work orders, lot/serial traceability and job costing. Epicor confirms finance, supply chain, planning, production, projects and multi-site management. Extensions include MES, quality/SPC, energy monitoring, connected-worker guidance, CPQ, warehouse scanning, inventory optimisation, analytics and integration automation. These address plant execution and business planning together. They are add-ons: do not assume every feature is included in one licence. [B14, B15; brochure] Separate MeRLIN software adds sourcing, supplier management and procurement analytics. [B16]"
+      },
+      {
+        "heading": "Useful evidence and public channels",
+        "text": "The official-site-linked LinkedIn feed announces a Cold Chain Technologies India Kinetic go-live, including inventory, planning and GST-portal integration. The YouTube catalogue includes customer stories and ERP webinars. This supports an active delivery and education presence; savings were not independently validated and videos were not watched. All five official-linked social profiles were attempted: LinkedIn posts and YouTube catalogue were readable; X returned no readable posts, Instagram failed and Facebook was throttled. [B17, B33, B34]"
+      },
+      {
+        "heading": "Commercial fit and limits",
+        "text": "Cloud, on-premises and hybrid options are advertised. No public licence/implementation price was found. Cost depends on modules, users, migration, connectors, deployment and support. Epicor's headline ROI comes from commissioned composite research, not a specific MSME result. A full ERP can require substantial process change. Brochure contact: info@rheincs.com; +91 44 6671 7555; Chennai. [B13–B15]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Connect Xelor's shop-floor facts to material availability, delivery commitments, traceability and actual job margin. Define which system owns each record and reconcile integrations. Offer implementation, training and support as explicit services. Preserve a customer's workable ERP/accounting system where practical; use a qualified ERP partner when replacement is justified. Begin with the client's most expensive bottleneck and expand when the first deployment produces trusted evidence."
+      }
+    ],
+    "sources": [
+      {
+        "label": "B13 · Epicor services",
+        "url": "https://www.rheincs.com/solutions/erp-enterprise-solutions-and-services/epicor/"
+      },
+      {
+        "label": "B14 · Epicor Kinetic",
+        "url": "https://www.epicor.com/en/products/enterprise-resource-planning-erp/epicor-kinetic/"
+      },
+      {
+        "label": "B15 · Extensions",
+        "url": "https://www.rheincs.com/Epicor-companion/"
+      },
+      {
+        "label": "B17 · LinkedIn",
+        "url": "https://www.linkedin.com/company/rheinbr%C3%BCcke-it-consulting"
+      },
+      {
+        "label": "B33 · X (unreadable)",
+        "url": "https://x.com/RheinBruckeIT"
+      },
+      {
+        "label": "B34 · YouTube catalogue",
+        "url": "https://www.youtube.com/@rheinbruckeitconsulting/videos"
+      },
+      {
+        "label": "B16 · MeRLIN procurement",
+        "url": "https://view.rheincs.com/MeRLIN-eProcurement-FS"
+      }
+    ]
+  },
+  {
+    "id": "connectivity",
+    "title": "Connectivity Solutions | CoSol",
+    "subtitle": "Enterprise infrastructure and Cisco industrial cybersecurity",
+    "material": "Photo 23: partial OT-security and contact panels. Identified by exact official-site address and phone match. No visible QR in the supplied crop.",
+    "sections": [
+      {
+        "heading": "Identity and role",
+        "text": "The leaflet matches CoSol's Bengaluru address, No. 1877, 1st Floor, 31st Cross, 10th Main Road, Banashankari Stage II, and telephone 080 2671 6555. Its company LinkedIn uses Connectivity IT Solutions. CoSol provides infrastructure and integration services; Cisco supplies the OT-security technology described in the leaflet. Official website email: info@cosol.in. [B24, B26]"
+      },
+      {
+        "heading": "What it offers",
+        "text": "CoSol's website lists network/endpoint inventories, configuration assessments, network mapping and segmentation, vulnerability prioritisation, cybersecurity, cloud infrastructure, service desk, managed network/security operations, field services, procurement, subscriptions and API integration. The leaflet concentrates on industrial asset visibility, unusual-traffic detection, network separation and controlled remote maintenance. This fills an infrastructure/security role rather than providing manufacturing planning or execution software. [B25]"
+      },
+      {
+        "heading": "Technical cross-check",
+        "text": "Cisco's current Cyber Vision documentation supports industrial asset discovery, threat monitoring, segmentation and secure remote access. Secure Equipment Access restricts access by person, target asset, protocol and time, with MFA/SSO and audit capabilities. Actual functions depend on supported hardware, licences and deployment design; the leaflet does not contain a full equipment list. Alignment with IEC 62443 principles is not certification of an entire factory or a guarantee against attacks. [B27, B28]"
+      },
+      {
+        "heading": "Evidence, social and commercial limits",
+        "text": "The official LinkedIn link initially blocked access, but its regional public version was readable. Posts describe an OT-security testbed with PLCs, industrial drives and security gateways for events on 8–9 September 2026. This shows relevant demonstration activity, not measured production outcomes. The website lists unnamed manufacturing/automotive cases; Cisco hosts a named hospital customer story involving Connectivity. No public MSME price or managed-service SLA was found. Rental/subscription options need clear renewal, hardware, monitoring and exit terms. [B25, B26, B29, B30]"
+      },
+      {
+        "heading": "Value for AIKYANTRA",
+        "text": "Include a factory infrastructure service: asset inventory, network map, access roles, backup/restore checks, controlled vendor access and a named incident contact. Partner with an OT-security specialist for segmentation, monitoring and response. Xelor's data collection depends on reliable and secure connectivity. Sell this as an ongoing managed service with clear responsibilities, escalation and recovery targets, scaled to the plant's size and risk."
+      }
+    ],
+    "sources": [
+      {
+        "label": "B24 · CoSol website",
+        "url": "https://cosol.in/"
+      },
+      {
+        "label": "B25 · Services",
+        "url": "https://cosol.in/services"
+      },
+      {
+        "label": "B26 · LinkedIn",
+        "url": "https://in.linkedin.com/company/connectivity-it-solutions/"
+      },
+      {
+        "label": "B27 · Cyber Vision",
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/cyber-vision/cyber-vision-ds.html"
+      },
+      {
+        "label": "B28 · Secure access",
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/industrial-security/secure-equipment-access/sec-equipment-access-ds.html"
+      },
+      {
+        "label": "B29 · Case studies",
+        "url": "https://cosol.in/case-studies"
+      },
+      {
+        "label": "B30 · Cisco customer story",
+        "url": "https://www.cisco.com/c/dam/m/en_in/events/connectivity-solutions.pdf"
+      }
+    ]
+  }
+]

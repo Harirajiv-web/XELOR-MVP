@@ -135,14 +135,14 @@ export default function FactoryIntelligenceScreen(
   }
 
   if (query.loading && !data) {
-    return <Loading label="Reading the 3S ONYX factory projection…" />;
+    return <Loading label="Reading the 3S factory ERP projection…" />;
   }
   if (query.error) return <ErrorState error={query.error} onRetry={query.reload} />;
   if (!data) {
     return (
       <Empty
         title="Factory Intelligence evidence is unavailable"
-        body="Configure the fail-closed ONYX HTTP adapter before requesting a 3S recovery review."
+        body="Connect the factory ERP before requesting a 3S recovery review."
       />
     );
   }
@@ -151,7 +151,7 @@ export default function FactoryIntelligenceScreen(
     <div className="flex flex-col gap-6">
       <PageHeader
         title="3S Factory Intelligence"
-        subtitle="A deterministic POC explanation of ONYX factory evidence: OEE components, current work and operator assignments, constrained jobs, and one human-governed planning review."
+        subtitle="ONYX explains the factory ERP evidence in this deterministic POC: OEE components, current work and operator assignments, constrained jobs, and one human-governed planning review."
         meta={[
           { label: "Evidence mode", value: "Configured mock" },
           { label: "Customer", value: data.customer.name },
@@ -205,17 +205,17 @@ export default function FactoryIntelligenceScreen(
             disabled={query.loading}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${query.loading ? "animate-spin" : ""}`} aria-hidden />
-            Refresh ONYX evidence
+            Refresh factory evidence
           </button>
         </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Factory summary">
-        <SummaryCard icon={Factory} label="Machines" value={String(data.summary.machineCount)} note="ONYX-bound mock assets" />
+        <SummaryCard icon={Factory} label="Machines" value={String(data.summary.machineCount)} note="ERP-bound mock assets" />
         <SummaryCard icon={AlertTriangle} label="Constrained" value={String(data.summary.constrainedMachineCount)} note="Deterministic state rule" tone="risk" />
         <SummaryCard icon={UserRoundCheck} label="Assigned jobs" value={String(data.summary.assignedJobCount)} note="Job + operator evidence" />
         <SummaryCard icon={Clock3} label="At-risk work" value={String(data.summary.atRiskJobCount)} note="Linked to constrained assets" tone="risk" />
-        <SummaryCard icon={Gauge} label="Average OEE" value={pct(data.summary.recomputedAverageOeePct)} note="Recomputed in XELOR" tone="ai" />
+        <SummaryCard icon={Gauge} label="Average OEE" value={pct(data.summary.recomputedAverageOeePct)} note="Recomputed by ONYX" tone="ai" />
       </section>
 
       <section aria-labelledby="oee-heading">
@@ -224,7 +224,7 @@ export default function FactoryIntelligenceScreen(
             Explainable OEE
           </h2>
           <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
-            XELOR independently recomputes every component from ONYX raw inputs. An upstream anomaly remains visible; it is not silently clipped at transport.
+            ONYX independently recomputes every component from the factory ERP raw inputs. An upstream anomaly remains visible; it is not silently clipped at transport.
           </p>
         </div>
         <div className="grid gap-4 xl:grid-cols-2">
@@ -269,7 +269,7 @@ export default function FactoryIntelligenceScreen(
                   <Raw label="Ideal cycle" value={seconds(item.analysis.rawInputs.idealCycleSeconds)} />
                   <Raw label="Actual cycle evidence" value={seconds(item.actualCycleSeconds)} />
                   <Raw label="Total / good / reject" value={`${item.analysis.rawInputs.totalCount ?? "—"} / ${item.analysis.rawInputs.goodCount ?? "—"} / ${item.analysis.rawInputs.rejectCount ?? "—"}`} />
-                  <Raw label="ONYX A / P / Q / OEE" value={`${pct(item.upstream.availabilityPct)} / ${pct(item.upstream.performancePct)} / ${pct(item.upstream.qualityPct)} / ${pct(item.upstream.oeePct)}`} />
+                  <Raw label="ERP A / P / Q / OEE" value={`${pct(item.upstream.availabilityPct)} / ${pct(item.upstream.performancePct)} / ${pct(item.upstream.qualityPct)} / ${pct(item.upstream.oeePct)}`} />
                   <Raw label="Composite" value={item.analysis.formulas.oee} />
                   <Raw label="Evidence window" value={item.analysis.window.label} />
                   <Raw label="Observed" value={dateTime(item.observedAt)} />
@@ -282,7 +282,7 @@ export default function FactoryIntelligenceScreen(
                       <li key={`${item.assetCode}-${warning.code}`}>• {warning.message}</li>
                     ))}
                     {item.upstream.warnings.map((warning) => (
-                      <li key={`${item.assetCode}-upstream-${warning}`}>• ONYX: {warning}</li>
+                      <li key={`${item.assetCode}-upstream-${warning}`}>• Factory ERP: {warning}</li>
                     ))}
                   </ul>
                 ) : null}
@@ -299,14 +299,14 @@ export default function FactoryIntelligenceScreen(
               Current operator and job assignments
             </h2>
             <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
-              Configured ONYX mock assignments, not inferred people tracking.
+              Configured factory ERP mock assignments, not inferred people tracking.
             </p>
           </div>
           <div className="grid gap-3">
             {data.assignments.length === 0 ? (
               <Empty
                 title="No configured assignments"
-                body="ONYX supplied no current operator-and-job assignment evidence for this mock snapshot."
+                body="The factory ERP supplied no current operator-and-job assignment evidence for this mock snapshot."
               />
             ) : null}
             {data.assignments.map((assignment) => (
@@ -339,14 +339,14 @@ export default function FactoryIntelligenceScreen(
               Constraint and breakdown impact
             </h2>
             <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
-              State rules identify the constraint; linked ONYX assignments identify the work at risk.
+              State rules identify the constraint; linked factory ERP assignments identify the work at risk.
             </p>
           </div>
           <div className="grid gap-3">
             {data.constraints.length === 0 && data.atRiskWork.length === 0 ? (
               <Empty
                 title="No active factory constraint"
-                body="The current ONYX snapshot has no constrained machine or linked work at risk. Refresh after a new simulator observation."
+                body="The current factory ERP snapshot has no constrained machine or linked work at risk. Refresh after a new simulator observation."
               />
             ) : null}
             {data.constraints.map((constraint) => (
@@ -395,7 +395,7 @@ export default function FactoryIntelligenceScreen(
             </h2>
           </div>
           <p className="mt-1 text-[10.5px] text-[var(--text-secondary)]">
-            XELOR validates ONYX&apos;s supplied proposal against the qualified, available routing alternate. It does not originate or apply a schedule.
+            ONYX validates the factory ERP&apos;s supplied proposal against the qualified, available routing alternate. It does not originate or apply a schedule.
           </p>
         </div>
         <div className="p-4">
@@ -403,11 +403,11 @@ export default function FactoryIntelligenceScreen(
             <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
               <WorkCentre label="Current constrained centre" code={data.replan.recommendation.fromWorkCenterCode} tone="risk" />
               <ArrowRight className="mx-auto h-5 w-5 rotate-90 text-[var(--ai-text)] lg:rotate-0" aria-hidden />
-              <WorkCentre label="ONYX explicit alternate" code={data.replan.recommendation.toWorkCenterCode} tone="good" />
+              <WorkCentre label="ERP explicit alternate" code={data.replan.recommendation.toWorkCenterCode} tone="good" />
             </div>
           ) : (
             <div className="rounded-[10px] border border-[var(--status-rejected-border)] bg-[var(--status-rejected-bg)] p-3 text-[11px] text-[var(--bad-ink)]">
-              No ONYX proposal matched a qualified, available alternate. The graph cannot dispatch a planning-review request.
+              No factory ERP proposal matched a qualified, available alternate. The graph cannot dispatch a planning-review request.
             </div>
           )}
           <p className="mt-3 text-[11px] leading-5 text-[var(--text-secondary)]">
@@ -515,7 +515,7 @@ export default function FactoryIntelligenceScreen(
               </p>
               <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
                 {actions.length === 0
-                  ? "No work item dispatched. Rejection or a pending gate leaves ONYX unchanged."
+                  ? "No work item dispatched. Rejection or a pending gate leaves the factory ERP unchanged."
                   : `${actions.length} approval-linked ${actions[0]?.actionType ?? "work item"} recorded for ${actions[0]?.targetDomain ?? "ONYX"}.`}
               </p>
             </div>

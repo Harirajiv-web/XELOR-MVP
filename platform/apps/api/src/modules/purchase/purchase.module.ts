@@ -5,6 +5,7 @@ import { GrnController } from "./grn.controller.js";
 import { RfqController } from "./rfq.controller.js";
 import { RfqService } from "./rfq.service.js";
 import { PurchaseService } from "./purchase.service.js";
+import { VendorPerformanceService } from "./vendor-performance.service.js";
 import { PURCHASE_SUPPLY } from "../../ports/planning-inputs.port.js";
 import { PURCHASE_ORDER_WRITER } from "../../ports/fulfilment-docs.port.js";
 import { SOURCING_QUOTE_SINK } from "../../ports/sourcing.port.js";
@@ -26,6 +27,7 @@ import { SOURCING_QUOTE_SINK } from "../../ports/sourcing.port.js";
   // is a phone call, not a database write.
   providers: [
     PurchaseService,
+    VendorPerformanceService,
     RfqService,
     { provide: PURCHASE_SUPPLY, useExisting: PurchaseService },
     { provide: PURCHASE_ORDER_WRITER, useExisting: PurchaseService },

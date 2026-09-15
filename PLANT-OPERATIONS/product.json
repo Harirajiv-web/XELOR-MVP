@@ -1,0 +1,8 @@
+{
+  "phase": 5,
+  "name": "Plant Operations — connected package",
+  "description": "Machine signals, maintenance and energy on one asset register: operator jobs, OEE and downtime, preventive schedules, technician work orders and consumption by line.",
+  "source": "../platform",
+  "webPort": 4401,
+  "apiPort": 4400
+}

@@ -2,7 +2,7 @@ import { evidenceSchema, type Evidence, type ConnectionSettings, type Credential
 import { connectorRequest } from "./connector-security.js";
 
 export const CONNECTOR_CATALOG = [
-  { kind: "native", name: "ONYX ERP", transport: "Tenant-scoped database reader", mode: "read_only", description: "Orders, unreserved accepted stock and supplier masters from this product.", documentationUrl: null },
+  { kind: "native", name: "XELOR ERP", transport: "Tenant-scoped database reader", mode: "read_only", description: "Orders, unreserved accepted stock and supplier masters from XELOR ERP.", documentationUrl: null },
   { kind: "odoo", name: "Odoo", transport: "Odoo 19 JSON-2", mode: "read_only", description: "API key and external API entitlement required. Reads sales lines, products, stock and suppliers.", documentationUrl: "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html" },
   { kind: "tally", name: "TallyPrime", transport: "XML over HTTP", mode: "read_only", description: "Reads stock-item closing balances from a loaded company. Closing stock is labelled unknown availability because reservations are not supplied.", documentationUrl: "https://help.tallysolutions.com/xml-integration/" },
   { kind: "sap", name: "SAP S/4HANA", transport: "OData V2 / V4", mode: "read_only", description: "Configured read-only OData entity using a bearer token or basic authentication. Choose the entity mapping before importing.", documentationUrl: "https://help.sap.com/docs/SAP_S4HANA_CLOUD/3c916ef10fc240c9afc594b346ffaf77/85043858ea0f9244e10000000a4450e5.html" },

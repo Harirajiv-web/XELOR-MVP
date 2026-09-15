@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Errors } from "@ind-core/platform";
 import { RequirePermission } from "../../common/permission.guard.js";
 import { PurchaseService } from "./purchase.service.js";
+import { VendorPerformanceService } from "./vendor-performance.service.js";
 
 const createVendorSchema = z.object({
   code: z.string().min(1).max(60),
@@ -25,7 +26,15 @@ const listQuerySchema = z.object({
 
 @Controller("purchase/vendors")
 export class VendorController {
-  constructor(private readonly purchase: PurchaseService) {}
+  constructor(private readonly purchase: PurchaseService, private readonly performance: VendorPerformanceService) {}
+
+  @Get(":id/performance")
+  @RequirePermission("purchase.vendor.read")
+  async vendorPerformance(@Param("id") id: string) {
+    const parsed = z.string().uuid().safeParse(id);
+    if (!parsed.success) throw Errors.validation([{ field: "id", message: "expected a vendor UUID" }]);
+    return this.performance.get(parsed.data);
+  }
 
   @Post()
   @RequirePermission("purchase.vendor.create")

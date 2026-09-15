@@ -189,7 +189,7 @@ export class CapabilityRegistryService {
         key: "production.factory-intelligence.analyse",
         name: "Analyse the configured 3S factory recovery",
         description:
-          "Reads factory-operations.v1 through the ONYX HTTP port, recomputes explainable OEE and validates ONYX's supplied alternate-work-centre proposal without publishing a schedule or issuing a machine command.",
+          "Reads factory-operations.v1 through the factory ERP HTTP port, recomputes explainable OEE and validates the factory ERP's supplied alternate-work-centre proposal without publishing a schedule or issuing a machine command.",
         mode: "analyse",
         requiredPermission: "production.factory-connect.read",
         allowedAgents: ["KILN"],

@@ -43,10 +43,16 @@
     "**/*.tsx",
     ".next/phase-1/types/**/*.ts",
     ".next/phase-2/types/**/*.ts",
+    ".next/phase-3/types/**/*.ts",
     ".next/phase-4/types/**/*.ts",
+    ".next/phase-5/types/**/*.ts",
+    ".next/phase-6/types/**/*.ts",
+    ".next/phase-7/types/**/*.ts",
+    ".next/phase-8/types/**/*.ts",
+    ".next/phase-9/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",
-    ".next/phase-3/types/**/*.ts"
+    ".next/phase-10/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

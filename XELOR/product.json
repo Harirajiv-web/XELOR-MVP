@@ -1,0 +1,9 @@
+{
+  "phase": 1,
+  "name": "XELOR phase 2 — Manufacturing ERP",
+  "edition": "phase 2",
+  "description": "XELOR phase 2 ERP: role-based workspaces, saved industry layout presets, core transactions, internal supplier performance, material planning, inspections, people and accounts. Technical launch profile remains 1.",
+  "source": "../platform",
+  "webPort": 4001,
+  "apiPort": 4000
+}

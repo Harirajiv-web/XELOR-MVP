@@ -1,0 +1,8 @@
+{
+  "phase": 7,
+  "name": "Warehouse & Dispatch — connected package",
+  "description": "One handling unit from gate to truck: scan receiving and put-away, bins, cycle counts, kitting, mobile picking, packing and loading.",
+  "source": "../platform",
+  "webPort": 4601,
+  "apiPort": 4600
+}

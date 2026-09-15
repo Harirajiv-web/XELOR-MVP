@@ -1,6 +1,6 @@
-# Sourcing, supplier network and tenders
+# AIKYANTRA: supplier network and tenders
 
-The integrated product uses ordinary ERP purchase orders for RFQ and tender awards. A tender groups 1–100 RFQ lines. Publish opens bidding, close stops bidding and begins evaluation, and award selects exactly one approved quote for every remaining line. All award lines and their draft purchase orders commit together. Purchase-order approval remains a separate existing ERP control.
+AIKYANTRA owns supplier profiles, invitations, RFQs, responses and tenders. In the Integrated workspace, it connects with ONYX intelligence and uses ordinary XELOR ERP purchase orders for RFQ and tender awards. A tender groups 1–100 RFQ lines. Publish opens bidding, close stops bidding and begins evaluation, and award selects exactly one approved quote for every remaining line. All award lines and their draft purchase orders commit together. Purchase-order approval remains a separate existing ERP control.
 
 A second person must award an RFQ or tender raised by the buyer. Awards require a passed technical gate or a recorded conditional deviation, a confirmed date no later than the need date, an MOQ within the requested quantity, and an unexpired price where validity is supplied. A buyer cannot hide a late supplier promise by typing an earlier purchase-order date.
 
@@ -43,6 +43,8 @@ Configure the template to match its actual approved placeholder sequence. See [M
 Live delivery requires `NOTIFY_ENCRYPTION_KEY`, 32 random bytes encoded as 64 hexadecimal characters. Full message body, variables and invitation URL are AES-256-GCM encrypted at rest, bound to tenant and outbox ID. Keep the encryption key in the deployment secret store and preserve it across restarts. The invitation table itself stores only a token hash. Preview without an encryption key deliberately retains readable links, so its database must be protected as containing bearer credentials. Authorized staff can inspect rendered outbox messages.
 
 `SOURCE_PORTAL_BASE_URL` must be the supplier-accessible web origin. `SOURCE_BUYER_WHATSAPP` is optional; a buyer alert is created only when an actual destination is configured. `SOURCE_INVITE_TTL_HOURS` is capped at 336 hours and the bid deadline.
+
+The `SOURCE_*` deployment variables remain compatibility identifiers for AIKYANTRA; they do not denote a separate product.
 
 Delivery claims commit before network I/O. Concurrent workers cannot send the same pending row. Provider errors remain visible. Timeouts, unreadable receipts and server errors become `delivery_unknown`; a crashed sender can remain `sending`. Neither state is automatically retried because the message may already have reached the provider. An operator must reconcile it with the provider receipt before any resend. Provider acceptance is recorded as sent; delivered/read webhooks are not yet implemented.
 

@@ -1,0 +1,8 @@
+{
+  "phase": 3,
+  "name": "AIKYANTRA \u2014 Supplier network",
+  "description": "Supplier discovery and onboarding, RFQs, multi-line tenders, supplier quote links, technical evaluation, governed awards and delivery evidence.",
+  "source": "../platform",
+  "webPort": 4201,
+  "apiPort": 4200
+}

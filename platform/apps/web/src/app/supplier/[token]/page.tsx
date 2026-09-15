@@ -26,12 +26,9 @@ import { use, useCallback, useEffect, useState } from "react";
  *   NO ACCOUNT, EVER. The link is the identity. There is no password to forget, and nothing
  *   on this page asks them to create one.
  *
- * ON THE FIXED COLOURS, which break this repository's usual rule on purpose: every ERP screen
- * uses theme tokens so it follows the viewer's light/dark choice. This page has no viewer with
- * a choice — it is opened from a WhatsApp message by somebody who has never seen this product
- * and never will again, and it must look identical in every screenshot, on every phone, to
- * everyone. So it commits to one light appearance and states it here, rather than inheriting a
- * theme that has no meaning outside the application shell. Do not "fix" this to tokens.
+ * The supplier page shares the product palette and semantic status colours with the buyer
+ * workspace. Theme tokens keep quotation details and input states readable in light and dark
+ * appearances, while the product chrome identifies the supplier network.
  */
 
 interface CardPayload {
@@ -153,10 +150,10 @@ export default function SupplierQuotePage({
   if (loadError) {
     return (
       <Shell>
-        <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-          <p className="text-lg font-semibold text-slate-900">This link does not work</p>
-          <p className="mt-2 text-sm text-slate-600">{loadError}</p>
-          <p className="mt-4 text-xs text-slate-500">
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 text-center shadow-sm">
+          <p className="text-lg font-semibold text-[var(--text-primary)]">This link does not work</p>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">{loadError}</p>
+          <p className="mt-4 text-xs text-[var(--text-muted)]">
             Invitation links expire. Ask the buyer to send you a new one.
           </p>
         </div>
@@ -167,8 +164,8 @@ export default function SupplierQuotePage({
   if (!invite) {
     return (
       <Shell>
-        <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-          <p className="text-sm text-slate-500">Opening the request…</p>
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 text-center shadow-sm">
+          <p className="text-sm text-[var(--text-muted)]">Opening the request…</p>
         </div>
       </Shell>
     );
@@ -179,16 +176,16 @@ export default function SupplierQuotePage({
   return (
     <Shell>
       {/* The request. Read-only, and first — the decision to quote is made here. */}
-      <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
-        <header className="bg-[#0b3b2e] px-5 py-4 text-white">
-          <p className="text-[11px] uppercase tracking-wider opacity-80">Request for quotation</p>
+      <section className="overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] shadow-sm">
+        <header className="bg-[var(--chrome)] px-5 py-4 text-[var(--chrome-ink)]">
+          <p className="text-[11px] uppercase tracking-wider text-[var(--chrome-ink-muted)]">Request for quotation</p>
           <h1 className="mt-0.5 text-lg font-semibold leading-snug">{c.itemLabel ?? "Material request"}</h1>
-          <p className="mt-1 text-[13px] opacity-90">
+          <p className="mt-1 text-[13px] text-[var(--chrome-ink-soft)]">
             from {c.buyerName ?? "the buyer"} · {c.rfqNo}
           </p>
         </header>
 
-        <dl className="grid grid-cols-2 gap-px bg-slate-200">
+        <dl className="grid grid-cols-2 gap-px bg-[var(--border-subtle)]">
           <Fact label="Quantity" value={`${tidyQty(c.qty)} ${c.uom ?? ""}`} strong />
           <Fact label="Needed by" value={niceDate(c.needDate)} strong />
           <Fact label="Drawing revision" value={c.drawingRev ?? "Not specified"} />
@@ -196,39 +193,39 @@ export default function SupplierQuotePage({
         </dl>
 
         {c.notes ? (
-          <p className="border-t border-slate-200 bg-amber-50 px-5 py-3 text-[13px] leading-relaxed text-amber-900">
+          <p className="border-t border-[var(--border-subtle)] bg-[var(--warn-soft)] px-5 py-3 text-[13px] leading-relaxed text-[var(--warn-ink)]">
             {c.notes}
           </p>
         ) : null}
-        <p className="border-t border-slate-200 px-5 py-3 text-[12px] text-slate-500">
-          Please reply by <b className="text-slate-700">{niceDate(c.quoteDeadline)}</b>.
+        <p className="border-t border-[var(--border-subtle)] px-5 py-3 text-[12px] text-[var(--text-muted)]">
+          Please reply by <b className="text-[var(--text-secondary)]">{niceDate(c.quoteDeadline)}</b>.
         </p>
       </section>
 
       {sent ? (
-        <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-2xl">✓</div>
-          <p className="mt-3 text-lg font-semibold text-slate-900">Your price has been sent</p>
-          <p className="mt-1 text-sm text-slate-600">
+        <section className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 text-center shadow-sm">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[var(--good-bg)] text-2xl text-[var(--good-fg)]">✓</div>
+          <p className="mt-3 text-lg font-semibold text-[var(--text-primary)]">Your price has been sent</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             {invite.supplierName} — {c.buyerName ?? "the buyer"} can see it now and will be in touch.
           </p>
           {invite.submitted ? (
-            <p className="mt-3 text-[13px] text-slate-500">
-              You quoted <b className="text-slate-800">₹{invite.submitted.landedCost}</b> landed
+            <p className="mt-3 text-[13px] text-[var(--text-muted)]">
+              You quoted <b className="text-[var(--text-primary)]">₹{invite.submitted.landedCost}</b> landed
               {invite.submitted.promisedDate ? `, delivering ${niceDate(invite.submitted.promisedDate)}` : ""}.
             </p>
           ) : (
-            <p className="mt-3 text-[13px] text-slate-500">
-              You quoted <b className="text-slate-800">{money(landed)}</b> landed
+            <p className="mt-3 text-[13px] text-[var(--text-muted)]">
+              You quoted <b className="text-[var(--text-primary)]">{money(landed)}</b> landed
               {promisedDate ? `, delivering ${niceDate(promisedDate)}` : ""}.
             </p>
           )}
-          <p className="mt-4 text-xs text-slate-400">You can close this page.</p>
+          <p className="mt-4 text-xs text-[var(--text-muted)]">You can close this page.</p>
         </section>
       ) : (
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-900">Send your price</h2>
-          <p className="mt-0.5 text-[13px] text-slate-500">
+        <section className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Send your price</h2>
+          <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">
             Only the price is required. No account, no sign-up.
           </p>
 
@@ -247,19 +244,19 @@ export default function SupplierQuotePage({
             </div>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-medium text-slate-700">
+              <span className="text-[13px] font-medium text-[var(--text-secondary)]">
                 When can you deliver?
               </span>
               <input
                 type="date"
                 value={promisedDate}
                 onChange={(e) => setPromisedDate(e.target.value)}
-                className="h-12 rounded-xl border border-slate-300 px-3 text-[15px] text-slate-900 focus:border-emerald-600 focus:outline-none"
+                className="h-12 rounded-xl border border-[var(--border-input)] bg-[var(--surface-data)] px-3 text-[15px] text-[var(--text-primary)] focus:border-[var(--border-focus)] focus:outline-none"
               />
               {/* Said plainly, and it does not block them. A supplier who can only make a late
                   date should still answer — the buyer would rather know than guess. */}
               {late ? (
-                <span className="text-[12px] text-amber-700">
+                <span className="text-[12px] text-[var(--warn-ink)]">
                   That is after the {niceDate(c.needDate)} they need it. You can still send it —
                   they may split the order or move the date.
                 </span>
@@ -267,41 +264,41 @@ export default function SupplierQuotePage({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-medium text-slate-700">Anything they should know</span>
+              <span className="text-[13px] font-medium text-[var(--text-secondary)]">Anything they should know</span>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 placeholder="Material grade, minimum order, certification…"
-                className="rounded-xl border border-slate-300 p-3 text-[15px] text-slate-900 focus:border-emerald-600 focus:outline-none"
+                className="rounded-xl border border-[var(--border-input)] bg-[var(--surface-data)] p-3 text-[15px] text-[var(--text-primary)] focus:border-[var(--border-focus)] focus:outline-none"
               />
             </label>
           </div>
 
           {/* What the buyer will actually compare, shown before they commit to it. */}
-          <div className="mt-4 rounded-xl bg-slate-50 p-4">
+          <div className="mt-4 rounded-xl bg-[var(--surface-sunken)] p-4">
             <div className="flex items-baseline justify-between">
-              <span className="text-[13px] text-slate-600">Total landed price</span>
-              <span className="text-xl font-semibold text-slate-900">{money(landed)}</span>
+              <span className="text-[13px] text-[var(--text-secondary)]">Total landed price</span>
+              <span className="text-xl font-semibold text-[var(--text-primary)]">{money(landed)}</span>
             </div>
-            <p className="mt-1 text-[12px] text-slate-500">
+            <p className="mt-1 text-[12px] text-[var(--text-muted)]">
               Price plus tooling and freight — this is the figure the buyer compares.
             </p>
           </div>
 
           {failure ? (
-            <p className="mt-3 rounded-xl bg-red-50 p-3 text-[13px] text-red-700">{failure}</p>
+            <p className="mt-3 rounded-xl bg-[var(--bad-soft)] p-3 text-[13px] text-[var(--bad-ink)]">{failure}</p>
           ) : null}
 
           <button
             type="button"
             onClick={submit}
             disabled={price <= 0 || sending}
-            className="mt-4 h-14 w-full rounded-xl bg-emerald-700 text-[16px] font-semibold text-white disabled:bg-slate-300"
+            className="mt-4 h-14 w-full rounded-xl border border-[var(--action-border)] bg-[var(--action)] text-[16px] font-semibold text-[var(--action-ink)] transition-colors hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:border-[var(--border-subtle)] disabled:bg-[var(--surface-sunken)] disabled:text-[var(--text-disabled)]"
           >
             {sending ? "Sending…" : "Send my price"}
           </button>
-          <p className="mt-2 text-center text-[12px] text-slate-400">
+          <p className="mt-2 text-center text-[12px] text-[var(--text-muted)]">
             Sent securely to {c.buyerName ?? "the buyer"}. Your price is not shown to other suppliers.
           </p>
         </section>
@@ -316,11 +313,11 @@ export default function SupplierQuotePage({
  */
 function Shell({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6">
+    <main className="min-h-screen bg-[var(--bg)] px-4 py-6">
       <div className="mx-auto flex w-full max-w-[30rem] flex-col gap-4">
         {children}
-        <p className="pb-4 text-center text-[11px] text-slate-400">
-          Sent through XELOR Source · you were invited to this request
+        <p className="pb-4 text-center text-[11px] text-[var(--text-muted)]">
+          Sent through AIKYANTRA · you were invited to this request
         </p>
       </div>
     </main>
@@ -337,9 +334,9 @@ function Fact({
   strong?: boolean;
 }): React.JSX.Element {
   return (
-    <div className="bg-white px-5 py-3">
-      <dt className="text-[11px] uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className={strong ? "text-[15px] font-semibold text-slate-900" : "text-[14px] text-slate-700"}>
+    <div className="bg-[var(--surface)] px-5 py-3">
+      <dt className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">{label}</dt>
+      <dd className={strong ? "text-[15px] font-semibold text-[var(--text-primary)]" : "text-[14px] text-[var(--text-secondary)]"}>
         {value}
       </dd>
     </div>
@@ -363,22 +360,22 @@ function Field({
 }): React.JSX.Element {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[13px] font-medium text-slate-700">
+      <span className="text-[13px] font-medium text-[var(--text-secondary)]">
         {label}
-        {required ? <span className="text-red-600"> *</span> : null}
+        {required ? <span className="text-[var(--bad-ink)]"> *</span> : null}
       </span>
-      <div className="flex items-center rounded-xl border border-slate-300 focus-within:border-emerald-600">
-        {prefix ? <span className="pl-3 text-[15px] text-slate-500">{prefix}</span> : null}
+      <div className="flex items-center rounded-xl border border-[var(--border-input)] bg-[var(--surface-data)] focus-within:border-[var(--border-focus)]">
+        {prefix ? <span className="pl-3 text-[15px] text-[var(--text-muted)]">{prefix}</span> : null}
         <input
           // `decimal` rather than `number`: it brings up the numeric keypad on a phone
           // without the spinner arrows a thumb hits by accident.
           inputMode="decimal"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-12 w-full rounded-xl bg-transparent px-3 text-[15px] text-slate-900 focus:outline-none"
+          className="h-12 w-full rounded-xl bg-transparent px-3 text-[15px] text-[var(--text-primary)] focus:outline-none"
         />
       </div>
-      {hint ? <span className="text-[12px] text-slate-500">{hint}</span> : null}
+      {hint ? <span className="text-[12px] text-[var(--text-muted)]">{hint}</span> : null}
     </label>
   );
 }

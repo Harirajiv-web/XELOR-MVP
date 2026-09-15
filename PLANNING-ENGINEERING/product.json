@@ -1,0 +1,8 @@
+{
+  "phase": 8,
+  "name": "Planning & Engineering — connected package",
+  "description": "One bill of materials and capacity model: demand, constraints and what-if scenarios alongside engineering change control and new-product gates.",
+  "source": "../platform",
+  "webPort": 4701,
+  "apiPort": 4700
+}

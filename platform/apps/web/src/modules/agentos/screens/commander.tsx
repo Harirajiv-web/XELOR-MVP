@@ -228,7 +228,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
           <section className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]" aria-labelledby="intelligence-loop-title">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[9px] font-extrabold uppercase tracking-[.12em] text-[var(--ai-text)]">How XELOR learns safely</p>
+                <p className="text-[9px] font-extrabold uppercase tracking-[.12em] text-[var(--ai-text)]">How ONYX learns safely</p>
                 <h2 id="intelligence-loop-title" className="mt-1 text-[16px] font-extrabold text-[var(--text-primary)]">One visible decision-intelligence loop</h2>
               </div>
               <span className="rounded-full bg-[var(--ok-soft)] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.06em] text-[var(--ok-ink)]">Live MVP</span>
@@ -263,7 +263,7 @@ export default function CommanderScreen(_props: ScreenProps): React.JSX.Element 
 
             <article className="rounded-[16px] border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
               <Heading icon={History} text="Organizational memory" />
-              <p className="mt-2 text-[10.5px] leading-4.5 text-[var(--text-secondary)]">XELOR remembers only governed work and measured results—not private reasoning or an invented success story.</p>
+              <p className="mt-2 text-[10.5px] leading-4.5 text-[var(--text-secondary)]">ONYX remembers only governed work and measured results—not private reasoning or an invented success story.</p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <MiniMetric value={data.memory.summary.decisionsRemembered} label="Missions remembered" />
                 <MiniMetric value={data.memory.summary.withVerifiedOutcome} label="Verified results" />

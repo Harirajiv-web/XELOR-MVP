@@ -13,7 +13,7 @@ export const fulfilmentManifest: ModuleManifest = {
   key: "fulfilment",
   name: "Autonomous Fulfilment",
   summary:
-    "Give XELOR an approved order and it plans, commits, watches and verifies the whole fulfilment — asking a person only where authority is genuinely required.",
+    "Give ONYX an approved order and it plans, commits, watches and verifies the whole fulfilment — asking a person only where authority is genuinely required.",
   department: "ONYX",
   icon: "Target",
   licenceKey: "aiops",

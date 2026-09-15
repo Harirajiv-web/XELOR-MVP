@@ -4,7 +4,7 @@ export const aiControlManifest: ModuleManifest = {
   key: "aicontrol",
   name: "AI Control Center",
   summary:
-    "Choose how independently XELOR's agents may work, stop all automation instantly, and see every live step, wait and approval.",
+    "Choose how independently ONYX's agents may work, stop all automation instantly, and see every live step, wait and approval.",
   department: "ONYX",
   icon: "ShieldAlert",
   licenceKey: "aiops",

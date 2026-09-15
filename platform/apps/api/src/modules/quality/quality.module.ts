@@ -4,6 +4,8 @@ import { QualityService } from "./quality.service.js";
 import { INSPECTION_GATE } from "../../ports/inspection.port.js";
 import { QmsWorkflowController } from "./qms-workflow.controller.js";
 import { QmsWorkflowService } from "./qms-workflow.service.js";
+import { VendorQualityService } from "./vendor-quality.service.js";
+import { VENDOR_QUALITY_EVIDENCE } from "../../ports/vendor-quality.port.js";
 
 /**
  * INSPECTION / QMS (KILN, Module 06) — the quality system of record.
@@ -18,7 +20,7 @@ import { QmsWorkflowService } from "./qms-workflow.service.js";
 @Global()
 @Module({
   controllers: [QualityController, QmsWorkflowController],
-  providers: [QualityService, QmsWorkflowService, { provide: INSPECTION_GATE, useExisting: QualityService }],
-  exports: [QualityService, INSPECTION_GATE],
+  providers: [QualityService, QmsWorkflowService, VendorQualityService, { provide: INSPECTION_GATE, useExisting: QualityService }, { provide: VENDOR_QUALITY_EVIDENCE, useExisting: VendorQualityService }],
+  exports: [QualityService, INSPECTION_GATE, VENDOR_QUALITY_EVIDENCE],
 })
 export class QualityModule {}
