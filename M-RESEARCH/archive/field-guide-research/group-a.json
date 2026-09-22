@@ -1,0 +1,1654 @@
+[
+  {
+    "id": "cooling",
+    "title": "AI liquid-cooling systems",
+    "shortTitle": "AI cooling",
+    "sector": "AI infrastructure",
+    "plain": "Powerful computer racks produce more heat than ordinary fans can remove. This factory makes tested fluid assemblies that carry coolant safely between cooling equipment and the racks.",
+    "analogy": "A carefully controlled radiator network for computers, with each joint and branch checked before delivery.",
+    "product": "OEM-approved stainless-steel rack manifolds, hose/tube assemblies and pump/filter fluid modules, supplied with inspection records.",
+    "does": "Distributes coolant evenly, keeps the loop clean and allows an integrator to install a repeatable assembly.",
+    "customers": [
+      "Cooling-system OEMs",
+      "AI server and rack integrators",
+      "Approved data-centre mechanical contractors",
+      "Industrial power-electronics cooling suppliers"
+    ],
+    "whyNow": "Schneider launched a Motivair liquid-cooling factory in Bengaluru in February 2026. OCP is developing shared cooling interfaces and requirements. These establish a real ecosystem, not an order for this factory. [S1] [S2]",
+    "firstProduct": "One customer-approved family of supply/return rack manifolds and associated pump/filter modules for single-phase water/glycol loops. Select material, interfaces and rated operating conditions with the customer before machine purchase.",
+    "notIncluded": "No GPU chip manufacture, package-specific microchannel cold plates, proprietary quick-disconnect valves, complete megawatt CDU or semiconductor UHP gas system in the starter scope.",
+    "entry": "Recruit a fluid-system manufacturing lead and win a paid prototype programme from a cooling OEM. Manufacture tubes, weldments and assemblies; buy approved pumps, couplings, sensors and controls. Outsource passivation and specialist corrosion/thermal qualification initially.",
+    "capacity": "Planning assumption after qualification: 240 manifold sets and 60 small fluid modules per year, one 8-hour shift over 250 days. Product mix and test time must be measured during pilot builds.",
+    "budget": {
+      "basis": "INR crore on a September 2026 planning basis. Leased existing industrial shell; land purchase and new-building civil works excluded. Recoverable GST excluded, working capital separate, no subsidy deducted. Includes fixed equipment and stated pre-operative launch allowances; not an accounting classification or vendor quotation.",
+      "items": [
+        {
+          "name": "Tube preparation and welding equipment",
+          "low": 0.8,
+          "high": 1.4,
+          "note": "Saw, end preparation, bending tools, orbital/TIG stations and fixtures; planning allowance."
+        },
+        {
+          "name": "Cleaning and controlled assembly",
+          "low": 0.5,
+          "high": 0.9,
+          "note": "Wash/rinse/dry equipment, filtered benches and capped storage; no fab-grade cleanroom assumed."
+        },
+        {
+          "name": "Hydraulic test and inspection",
+          "low": 0.65,
+          "high": 1.2,
+          "note": "Pressure/leak/flow rigs, weld inspection and calibrated instruments."
+        },
+        {
+          "name": "Shell fit-out and utilities",
+          "low": 0.75,
+          "high": 1.3,
+          "note": "Electrical installation, ventilation, drainage segregation and handling routes."
+        },
+        {
+          "name": "Tooling, CAD and traceability",
+          "low": 0.3,
+          "high": 0.55,
+          "note": "Customer fixtures, gauges, drawings and serialised test records."
+        },
+        {
+          "name": "Engineering and pilot qualification",
+          "low": 0.75,
+          "high": 1.3,
+          "note": "Prototype development, external tests and launch engineering; separate from later operating payroll."
+        },
+        {
+          "name": "Commissioning and training",
+          "low": 0.25,
+          "high": 0.45,
+          "note": "Installation, welder training and initial consumables."
+        },
+        {
+          "name": "Contingency",
+          "low": 0.6,
+          "high": 1.1,
+          "note": "Allowance for installation changes and first-product rework; not extra capacity."
+        }
+      ],
+      "workingLow": 1.5,
+      "workingHigh": 3,
+      "workingNote": "Separate opening reserve for purchased pumps/couplings, raw material, operating payroll and receivables. Assumes staged pilots, roughly two months of materials and 60–90-day customer collections; deposits or longer approvals change the requirement.",
+      "landNote": "Land purchase and greenfield building excluded. Lease deposit and initial rent provision sit in fit-out/launch allowances and require local confirmation.",
+      "confidence": "Pre-feasibility estimate with substantial uncertainty. Obtain three equipment RFQs, a shell survey and a buyer-agreed qualification plan."
+    },
+    "site": {
+      "builtup": "Assumed 12,000–16,000 sq ft, about 1,115–1,486 m², in a leased shell.",
+      "plot": "If greenfield is chosen, screen 0.6–0.9 acre for access, setbacks, utilities and expansion. This is not an approved layout.",
+      "power": "Screen 125–200 kVA connected requirement. Recalculate from selected welding, pumps, cleaning heaters and HVAC; no sanctioned supply is assumed.",
+      "water": "Screen 1–3 m³/day for washing, rinsing and domestic use, plus initial test-loop fill. Recirculate test fluid; final water balance and effluent route need engineering.",
+      "conditions": [
+        "Segregate cutting/welding from final cleaned assembly.",
+        "Use dedicated tools and traceable materials to control contamination.",
+        "Provide bunded cleaning/fluid storage and a lawful waste route.",
+        "Design long-part handling and pressure-test isolation before leasing."
+      ],
+      "areas": [
+        {
+          "name": "Receiving and tube stores",
+          "share": 15,
+          "why": "Keep material lots identified and protected."
+        },
+        {
+          "name": "Cutting and preparation",
+          "share": 25,
+          "why": "Prepare tube and fittings."
+        },
+        {
+          "name": "Welding",
+          "share": 15,
+          "why": "Fixture and join assemblies."
+        },
+        {
+          "name": "Cleaning and test",
+          "share": 20,
+          "why": "Flush, inspect and validate."
+        },
+        {
+          "name": "Final assembly and packing",
+          "share": 15,
+          "why": "Install purchased parts and seal."
+        },
+        {
+          "name": "Engineering and utilities",
+          "share": 10,
+          "why": "Documentation, staff and services."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant/programme lead",
+        "count": 1,
+        "why": "Own delivery and customer acceptance."
+      },
+      {
+        "role": "Fluid and manufacturing engineers",
+        "count": 2,
+        "why": "Translate the approved loop into a build process."
+      },
+      {
+        "role": "Welding/quality specialist",
+        "count": 1,
+        "why": "Qualify procedures and operators."
+      },
+      {
+        "role": "CAD and production planners",
+        "count": 2,
+        "why": "Manage drawings and routing."
+      },
+      {
+        "role": "Tube preparation and welding operators",
+        "count": 4,
+        "why": "Prepare and join parts."
+      },
+      {
+        "role": "Assembly and test technicians",
+        "count": 5,
+        "why": "Build modules and operate rigs."
+      },
+      {
+        "role": "Quality inspectors",
+        "count": 3,
+        "why": "Inspect dimensions, welds and records."
+      },
+      {
+        "role": "Purchasing and stores",
+        "count": 2,
+        "why": "Control approved parts and lots."
+      },
+      {
+        "role": "Customer development",
+        "count": 1,
+        "why": "Manage technical enquiries and programmes."
+      },
+      {
+        "role": "Administration/accounts",
+        "count": 1,
+        "why": "Run office and cash controls."
+      }
+    ],
+    "teamNote": "22 people at one-shift steady operation. External corrosion laboratories, commissioning specialists and contract EHS advice are outside this count; launch hiring is phased.",
+    "machines": [
+      {
+        "name": "Tube saw and end-facing tools",
+        "quantity": "1 preparation cell",
+        "purpose": "Make square, repeatable tube ends.",
+        "spec": "Select tube diameter/wall range from the first drawings; control burrs and squareness.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Tube bending and fixture station",
+        "quantity": "1 cell",
+        "purpose": "Form routed tubes without unwanted distortion.",
+        "spec": "Select bend radius, ovality limits and tooling by the approved material.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Orbital/TIG welding stations",
+        "quantity": "2 station sets",
+        "purpose": "Join stainless assemblies consistently.",
+        "spec": "Require qualified weld procedures, purge control and record capture; automation does not replace qualification.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Weld inspection kit",
+        "quantity": "1 shared kit",
+        "purpose": "Inspect accessible internal and external welds.",
+        "spec": "Borescope, visual standards and sample coupons matched to joint geometry.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Aqueous wash/rinse/dry line",
+        "quantity": "1 modular line",
+        "purpose": "Remove manufacturing residues.",
+        "spec": "Trial the chemistry, tank size, rinse quality and drying cycle on actual materials.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "name": "Flushing and filtration skid",
+        "quantity": "1 recirculating skid",
+        "purpose": "Clean internal flow paths.",
+        "spec": "Customer-defined particle/residue criteria, filter grade and documented cleaning endpoints.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Pressure/leak/flow test rigs",
+        "quantity": "2 configurable rigs",
+        "purpose": "Verify integrity and hydraulic behaviour.",
+        "spec": "Rated pressure, test method, guarded fixtures, calibrated sensors and uncertainty specified by engineering.",
+        "sourceIds": [
+          "S2",
+          "S3"
+        ]
+      },
+      {
+        "name": "Controlled assembly benches",
+        "quantity": "3 benches",
+        "purpose": "Install pumps, couplings and controls.",
+        "spec": "Torque tools, capped connections, clean handling and serialised test records.",
+        "sourceIds": [
+          "S2"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Freeze the customer interface",
+        "plain": "Agree what must connect and perform.",
+        "detail": "Approved drawing, fluid specification and acceptance plan become the controlled build pack.",
+        "check": "Customer signs interfaces and qualification responsibilities.",
+        "machine": "CAD and traceability tools",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Receive approved material",
+        "plain": "Check metal and purchased components.",
+        "detail": "Match tube heats, seals, pumps and couplings to the approved BOM.",
+        "check": "Certificates, dimensions and lot identity accepted.",
+        "machine": "Receiving gauges",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Prepare tubes and fixtures",
+        "plain": "Cut, deburr and position parts.",
+        "detail": "Produce clean, square ends and a repeatable joint layout.",
+        "check": "Dimensions and joint preparation meet drawing.",
+        "machine": "Tube saw and fixture station",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Join and inspect",
+        "plain": "Weld under a controlled procedure.",
+        "detail": "Record weld identity; inspect joints and required coupons.",
+        "check": "Procedure, operator and weld acceptance recorded.",
+        "machine": "Welding stations and inspection kit",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Clean internal paths",
+        "plain": "Wash and flush away residue.",
+        "detail": "Separate dirty processing from the final clean loop; dry or preserve as specified.",
+        "check": "Customer-defined cleanliness endpoint met.",
+        "machine": "Wash line and flushing skid",
+        "sourceIds": [
+          "S3",
+          "S5"
+        ]
+      },
+      {
+        "name": "Assemble and prove performance",
+        "plain": "Fit components and test the module.",
+        "detail": "Check leak integrity, pressure drop, flow balance and control/alarm function where included.",
+        "check": "Signed test report against agreed limits.",
+        "machine": "Assembly benches and test rigs",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Preserve and ship",
+        "plain": "Protect the cleaned assembly.",
+        "detail": "Cap ports, identify coolant/preservation condition and attach traceability records.",
+        "check": "Packing and storage method approved.",
+        "machine": "Controlled packing bench",
+        "sourceIds": [
+          "S3"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Supply manifold",
+        "meaning": "Distributes cool fluid to several branches."
+      },
+      {
+        "name": "Return manifold",
+        "meaning": "Collects warmed fluid."
+      },
+      {
+        "name": "Branch connections",
+        "meaning": "Connect approved hoses to each cooled load."
+      },
+      {
+        "name": "Pump module",
+        "meaning": "Moves fluid through the selected circuit."
+      },
+      {
+        "name": "Filter",
+        "meaning": "Captures particles before they travel onward."
+      },
+      {
+        "name": "Sensors and isolation",
+        "meaning": "Measure conditions and enable controlled shutdown."
+      },
+      {
+        "name": "Test station",
+        "meaning": "Checks the assembly before shipment; educational model only."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Customer and scope",
+        "duration": "Months 0–2",
+        "actions": "Secure sample drawings, hire the technical lead and agree a prototype programme.",
+        "gate": "Written interfaces and acceptance plan."
+      },
+      {
+        "phase": "Prototype and site",
+        "duration": "Months 2–4",
+        "actions": "Use partner facilities for first weldments and validate shell/utility needs.",
+        "gate": "Accepted prototype route and costed equipment RFQs."
+      },
+      {
+        "phase": "Install and qualify",
+        "duration": "Months 4–7",
+        "actions": "Install cells, qualify procedures and train operators.",
+        "gate": "Repeatable weld, cleanliness and test records."
+      },
+      {
+        "phase": "Pilot supply",
+        "duration": "Months 7–10",
+        "actions": "Deliver small lots and resolve integration failures.",
+        "gate": "Customer accepts pilot lots and release controls."
+      },
+      {
+        "phase": "Controlled ramp",
+        "duration": "Months 10–15",
+        "actions": "Increase output only against orders and measured yields.",
+        "gate": "Stable delivery, field feedback and funded working capital."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Weld integrity",
+        "detail": "Use customer-approved procedure and operator qualification; ASME IX is applicable only when required by the contract/design.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "title": "Fluid/material compatibility",
+        "detail": "Validate metals, elastomers, cleaners and coolant together; no universal coolant recipe is assumed.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "title": "Leak and hydraulic performance",
+        "detail": "Verify the specified pressure envelope, flow and pressure drop; thresholds come from the customer design.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "title": "Clean delivery",
+        "detail": "Document flushing, preservation, capped shipping and lot traceability.",
+        "sourceIds": [
+          "S3"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Tube weldments and manifolds",
+        "route": "Make in India",
+        "detail": "Cut, form, join, clean and test locally."
+      },
+      {
+        "part": "Frames and standard tubing",
+        "route": "Buy Indian",
+        "detail": "Use approved material grades and certificates."
+      },
+      {
+        "part": "Quick disconnects, specialist pumps and sensors",
+        "route": "Import initially",
+        "detail": "Use the OEM-approved source; seek qualified Indian alternatives later."
+      },
+      {
+        "part": "Passivation and specialist qualification",
+        "route": "Outsource",
+        "detail": "Use approved processors/labs with controlled return cleanliness."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS eligibility screen",
+        "status": "No grant assumed for this starter factory.",
+        "detail": "Being useful to AI hardware does not automatically make a cooling assembly an eligible notified product. Obtain product-specific confirmation; the estimate includes no incentive.",
+        "sourceIds": [
+          "S7"
+        ]
+      }
+    ],
+    "network": "Use the stated network to reach cooling OEM procurement and engineering teams, secure a paid qualification programme and arrange technical introductions. An introduction is not an order, product approval or available licence.",
+    "risks": [
+      {
+        "risk": "OEM buys a complete imported rack",
+        "response": "Identify the party that selects the manifold/module and its actual sourcing boundary."
+      },
+      {
+        "risk": "Leak or contamination causes a field failure",
+        "response": "Agree a qualification plan and maintain serialised process/test records."
+      },
+      {
+        "risk": "Long approval cycle ties up cash",
+        "response": "Negotiate paid development and staged procurement."
+      },
+      {
+        "risk": "Product scope expands into full CDU design",
+        "response": "Price a separate engineering and warranty programme."
+      }
+    ],
+    "first90": [
+      "Obtain two specific OEM drawings or development briefs.",
+      "Hire the fluid/welding lead and agree qualification ownership.",
+      "Build one representative prototype through qualified partners.",
+      "Collect equipment, shell and purchased-component RFQs.",
+      "Prepare cash flow using real payment terms before leasing a full plant."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "Motivair liquid-cooling factory launched in Bengaluru",
+        "url": "https://www.se.com/in/en/about-us/newsroom/news/press-releases/Schneider-Electric-launches-Motivair-liquid-cooling-solutions-factory-to-accelerate-India%E2%80%99s-highdensity-AI-infrastructure-699493fd07a7fbd2c30cbafa/",
+        "publisher": "Schneider Electric",
+        "date": "18 February 2026; previously reviewed 19 September 2026",
+        "supports": "Local manufacturing ecosystem only; not a comparable startup cost or supplier invitation.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "Cold Plate project and cooling interfaces",
+        "url": "https://www.opencompute.org/community/cold-plate",
+        "publisher": "Open Compute Project",
+        "date": "Accessed 2026-09-20",
+        "supports": "Scope includes manifolds, tubing, quick disconnects and CDUs; the starter process is our engineering synthesis.",
+        "type": "Industry"
+      },
+      {
+        "id": "S3",
+        "title": "Modular Technology Cooling Systems guidance",
+        "url": "https://www.opencompute.org/documents/ocp-modular-tcs-rev-1-final-2025-pdf",
+        "publisher": "Open Compute Project",
+        "date": "Accessed 2026-09-20",
+        "supports": "Modular offsite assembly, documentation, flushing and controlled delivery; no startup budget supplied.",
+        "type": "Industry"
+      },
+      {
+        "id": "S4",
+        "title": "Orbital welding training and qualification",
+        "url": "https://www.swagelok.com/en/engineering-services/training/orbital-welding",
+        "publisher": "Swagelok",
+        "date": "Accessed 2026-09-20",
+        "supports": "Controlled orbital welding and optional ASME IX qualification; quantity/cost are our assumptions.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "Elmasystem Core cleaning modules",
+        "url": "https://www.elma-ultrasonic.com/en/elmasystem-core",
+        "publisher": "Elma",
+        "date": "Accessed 2026-09-20",
+        "supports": "Cleaning, rinsing and drying modules require material/application trials; not a recommended brand or quote.",
+        "type": "Company"
+      },
+      {
+        "id": "S6",
+        "title": "GoCool 3 MW CDU shipping announcement",
+        "url": "https://www.deltapowersolutions.com/en/mcis/news-2026-gocool-3mw-cdu-now-shipping-powering-the-next-generation-of-ai-data-centers.php",
+        "publisher": "Delta",
+        "date": "24 March 2026; previously reviewed 19 September 2026",
+        "supports": "Existing full-system competitor; its capacity is not this starter factory's output.",
+        "type": "Company"
+      },
+      {
+        "id": "S7",
+        "title": "ECMS operational guidelines",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "26 April 2025; reused from policy audit dated 19 September 2026",
+        "supports": "Eligibility is limited to defined products and conditions; no blanket cooling grant inferred.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Process/equipment sources checked on 20 September 2026; market/policy evidence explicitly reused where dated. All costs, output, staffing, footprint, utilities and timing are analyst planning assumptions. No RFQs, customer approval or certified facility design obtained. The 3D illustration must show function, not fabrication dimensions."
+  },
+  {
+    "id": "semiconductor-equipment",
+    "title": "Precision parts for semiconductor equipment",
+    "shortTitle": "Semiconductor equipment",
+    "sector": "Semiconductor supply chain",
+    "plain": "Make carefully measured metal parts that fit inside the machines used to manufacture chips. Begin with selected mechanical parts, then earn approval for more demanding assemblies.",
+    "analogy": "Supply the accurately fitted bones and joints of a machine that makes chips.",
+    "product": "Customer-drawing aluminium and stainless-steel brackets, mounting plates, supports and selected clean mechanical assemblies, with inspection and material records.",
+    "does": "Gives equipment makers a qualified Indian source for repeat parts, engineering changes and local service stock.",
+    "customers": [
+      "Semiconductor equipment OEMs and their approved contract manufacturers",
+      "Indian manufacturers building equipment or subsystems",
+      "Overseas equipment suppliers developing Indian sourcing",
+      "Equipment service companies with authorised replacement-part drawings"
+    ],
+    "whyNow": "Applied Materials describes expanding its India engineering and innovation presence. This supports an equipment ecosystem, but a research centre is not proof of an open purchase order for machined parts. UCT shows how specialised manufacturing and contamination control fit into the equipment supply chain. [S1] [S5]",
+    "firstProduct": "One customer-approved family of non-process-contact brackets and mounting plates, initially within an assumed 500 mm part envelope. The RFQ must define material, datums, tolerances and finish; there is no universal semiconductor tolerance.",
+    "notIncluded": "No wafer fabrication, complete deposition or etch machine, plasma-exposed chamber parts, quartz/ceramics, critical gas valves, proprietary coatings or guaranteed ultra-high-purity capability.",
+    "entry": "Hire an equipment-sector manufacturing lead; secure drawing access, supplier requirements and paid sample work. Machine in-house. Use approved external vendors for anodising, passivation, heat treatment and specialist analytical testing until volumes justify internal investment.",
+    "capacity": "Planning basis: four CNC machines, one eight-hour shift and 250 working days give 8,000 scheduled machine-hours/year. Budget 4,500–5,500 productive cutting hours after setups and downtime; piece output depends on actual cycle times.",
+    "budget": {
+      "basis": "INR crore on a September 2026 planning basis. Leased existing industrial shell; land purchase and new-building civil works excluded. Recoverable GST excluded, working capital separate, no subsidy deducted. Includes fixed equipment and stated pre-operative launch allowances; not an accounting classification or vendor quotation.",
+      "items": [
+        {
+          "name": "CNC machining cell",
+          "low": 3.4,
+          "high": 5.8,
+          "note": "Two three-axis machining centres, one five-axis centre and one turning centre; option, origin and installation dependent."
+        },
+        {
+          "name": "Sawing, deburring and tool preparation",
+          "low": 0.35,
+          "high": 0.65,
+          "note": "Cut stock and prepare edges and tools; does not include wet coatings."
+        },
+        {
+          "name": "Dimensional inspection laboratory",
+          "low": 0.9,
+          "high": 1.7,
+          "note": "CMM, surface and dimensional instruments, environment control and calibration."
+        },
+        {
+          "name": "Cleaning and controlled packing",
+          "low": 0.65,
+          "high": 1.1,
+          "note": "Aqueous wash/rinse/dry equipment and segregated packing zone; cleanliness class to customer specification."
+        },
+        {
+          "name": "Fixtures, cutting tools and CAD/CAM",
+          "low": 0.6,
+          "high": 1,
+          "note": "Part-specific fixtures, programming licences and launch tooling."
+        },
+        {
+          "name": "Leased-shell fitout and utilities",
+          "low": 1,
+          "high": 1.7,
+          "note": "Electrical distribution, foundations if needed, compressed air and segregated material flow."
+        },
+        {
+          "name": "Engineering and sample qualification",
+          "low": 0.8,
+          "high": 1.4,
+          "note": "Initial engineering, pilot scrap, outside processing and customer first-article submissions."
+        },
+        {
+          "name": "Contingency",
+          "low": 1,
+          "high": 1.7,
+          "note": "Planning reserve for tooling, commissioning and unresolved scope."
+        }
+      ],
+      "workingLow": 2,
+      "workingHigh": 4,
+      "workingNote": "Assumes roughly two months of materials/outside processing, operating payroll and 60–90 day receivables during ramp. Qualification delays can require more cash. Launch engineering is in the project allowance; ongoing operations use working capital.",
+      "landNote": "Leasehold basis. Land purchase and construction of a new factory are excluded; the alternate plot range is only a site-screening assumption.",
+      "confidence": "Pre-feasibility estimate, not a vendor quotation. Customer tolerances, machine configuration, imported equipment costs and approved cleaning methods remain unpriced."
+    },
+    "site": {
+      "builtup": "Assume 18,000–24,000 sq ft (approximately 1,672–2,230 m²) in an existing industrial shell.",
+      "plot": "If greenfield: screen approximately 0.8–1.2 acres; validate setbacks, roads, utilities and expansion through a site plan.",
+      "power": "Assume 200–315 kVA connected/supply planning range; confirm simultaneous spindle, compressor and HVAC demand.",
+      "water": "Assume 2–4 m³/day for washing and domestic use, with recirculation where suitable. Water quality and effluent treatment depend on the accepted cleaning route.",
+      "conditions": [
+        "Separate stock cutting and deburring from final clean packing.",
+        "Provide stable temperature and vibration control for dimensional measurement.",
+        "No wet coating line in the starter scope; qualify outside vendors.",
+        "Control coolant, wash chemistry and waste through an engineered site plan."
+      ],
+      "areas": [
+        {
+          "name": "Receiving and stock",
+          "share": 10,
+          "why": "Trace material heats and keep alloys separate."
+        },
+        {
+          "name": "CNC machining",
+          "share": 40,
+          "why": "Machine access, fixtures and tool movement."
+        },
+        {
+          "name": "Deburring and washing",
+          "share": 15,
+          "why": "Remove edges and residues without contaminating finished parts."
+        },
+        {
+          "name": "Metrology",
+          "share": 10,
+          "why": "Stable inspection environment."
+        },
+        {
+          "name": "Clean assembly and packing",
+          "share": 10,
+          "why": "Preserve accepted surfaces."
+        },
+        {
+          "name": "Engineering, utilities and support",
+          "share": 15,
+          "why": "Programming, maintenance and staff functions."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant and customer-quality lead",
+        "count": 1,
+        "why": "Own delivery, process discipline and qualification."
+      },
+      {
+        "role": "Manufacturing/customer engineers",
+        "count": 3,
+        "why": "Translate drawings into controlled production."
+      },
+      {
+        "role": "CAM programmers",
+        "count": 2,
+        "why": "Develop toolpaths, fixtures and revisions."
+      },
+      {
+        "role": "CNC setup specialists and operators",
+        "count": 8,
+        "why": "Set and run four machines."
+      },
+      {
+        "role": "Finishing, cleaning and assembly technicians",
+        "count": 4,
+        "why": "Deburr, wash, assemble and pack."
+      },
+      {
+        "role": "Metrology and quality staff",
+        "count": 4,
+        "why": "Inspect parts and maintain records."
+      },
+      {
+        "role": "Procurement and stores",
+        "count": 2,
+        "why": "Control materials and outside processing."
+      },
+      {
+        "role": "Administration",
+        "count": 2,
+        "why": "Finance and operating support."
+      },
+      {
+        "role": "Technical sales",
+        "count": 1,
+        "why": "Develop approved customer programmes."
+      },
+      {
+        "role": "Maintenance technician",
+        "count": 1,
+        "why": "Maintain machines and utilities."
+      }
+    ],
+    "teamNote": "28 people for the assumed one-shift operation. External calibration, specialist process engineering and customer auditors are outside this count.",
+    "machines": [
+      {
+        "name": "Three-axis vertical machining centres",
+        "quantity": "2",
+        "purpose": "Machine faces, pockets and holes.",
+        "spec": "Travel, spindle, thermal stability and probing selected from actual drawings; published machine capability is not proof of part capability.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Five-axis machining centre",
+        "quantity": "1",
+        "purpose": "Reach several faces while reducing refixturing.",
+        "spec": "Require a representative part trial; choose indexed or simultaneous machining according to need.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "CNC turning centre",
+        "quantity": "1",
+        "purpose": "Produce circular spacers, shafts and sleeves.",
+        "spec": "Diameter, length, workholding and material capability from RFQ.",
+        "sourceIds": []
+      },
+      {
+        "name": "Bandsaw and stock-preparation station",
+        "quantity": "1",
+        "purpose": "Cut traceable billets before machining.",
+        "spec": "Safe handling, alloy segregation and minimum cut allowance.",
+        "sourceIds": []
+      },
+      {
+        "name": "Deburring and tool-preparation stations",
+        "quantity": "1 cell",
+        "purpose": "Remove sharp edges and prepare repeatable cutting tools.",
+        "spec": "Drawing-specific edge condition; no uncontrolled blasting on sensitive surfaces.",
+        "sourceIds": []
+      },
+      {
+        "name": "CMM and dimensional metrology laboratory",
+        "quantity": "1 laboratory",
+        "purpose": "Check geometry, dimensions and surface characteristics.",
+        "spec": "Measurement uncertainty and probe access must suit the tolerance; external calibration required.",
+        "sourceIds": [
+          "S3",
+          "S6"
+        ]
+      },
+      {
+        "name": "Aqueous wash, rinse and drying line",
+        "quantity": "1",
+        "purpose": "Remove accepted process residues.",
+        "spec": "Chemistry, rinse quality, drying and validation matched to material and customer cleanliness requirement.",
+        "sourceIds": [
+          "S4",
+          "S5"
+        ]
+      },
+      {
+        "name": "Controlled assembly and packing benches",
+        "quantity": "2",
+        "purpose": "Preserve cleanliness after final acceptance.",
+        "spec": "Segregation, compatible gloves and approved packing; cleanroom classification only if specified.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "name": "CAD/CAM and inspection-programming workstations",
+        "quantity": "3",
+        "purpose": "Control machining and inspection revisions.",
+        "spec": "Licensed software, drawing security and revision traceability.",
+        "sourceIds": []
+      }
+    ],
+    "process": [
+      {
+        "name": "Agree the drawing and acceptance plan",
+        "plain": "Decide exactly what the customer will accept.",
+        "detail": "Select a narrow part family and record material, datums, tolerances, surfaces and cleanliness obligations.",
+        "check": "Written drawing revision, inspection plan and approved special-process vendors.",
+        "machine": "Engineering workstations",
+        "sourceIds": []
+      },
+      {
+        "name": "Receive traceable material",
+        "plain": "Check the metal before cutting it.",
+        "detail": "Match alloy, certificates and heat identity to the order; quarantine doubtful stock.",
+        "check": "Material and certificate match; maintain lot identity.",
+        "machine": "Receiving and stock-preparation station",
+        "sourceIds": []
+      },
+      {
+        "name": "Program and prove the setup",
+        "plain": "Plan cuts and hold the part securely.",
+        "detail": "Design fixtures and cutting sequence; simulate and prove out on sample stock.",
+        "check": "Collision checks, first setup approval and tool plan.",
+        "machine": "CAD/CAM and CNC cell",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Machine the part",
+        "plain": "Remove metal to make the required shape.",
+        "detail": "Use controlled offsets and intermediate measurements; preserve revision and lot records.",
+        "check": "Key dimensions checked before the next operation.",
+        "machine": "Three-axis, five-axis or turning centre",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Deburr and inspect",
+        "plain": "Remove unwanted edges and measure the result.",
+        "detail": "Use specified edge treatment, then CMM and other suitable gauges.",
+        "check": "First-article report; measurements within agreed uncertainty and tolerance.",
+        "machine": "Deburring cell and metrology laboratory",
+        "sourceIds": [
+          "S3",
+          "S6"
+        ]
+      },
+      {
+        "name": "Complete approved outside processes",
+        "plain": "Apply required surface treatments through qualified suppliers.",
+        "detail": "Send only to approved anodising, passivation or heat-treatment sources; recheck affected dimensions.",
+        "check": "Correct process certificate, surface condition and dimensional result.",
+        "machine": "Approved external processor",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "name": "Clean, assemble and pack",
+        "plain": "Protect the part from production residues.",
+        "detail": "Use the accepted cleaning recipe and packing materials; assemble only authorised subassemblies.",
+        "check": "Customer-specified residue, particle and visual checks; specialist analysis outsourced.",
+        "machine": "Wash/rinse/dry line and clean benches",
+        "sourceIds": [
+          "S4",
+          "S5"
+        ]
+      },
+      {
+        "name": "Release the documented batch",
+        "plain": "Send the part with evidence of conformity.",
+        "detail": "Compile material, processing, inspection and revision records; control changes after approval.",
+        "check": "Customer first-article acceptance and final release authorisation.",
+        "machine": "Quality records and packing station",
+        "sourceIds": [
+          "S5"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Metal billet",
+        "meaning": "The traceable starting material."
+      },
+      {
+        "name": "Machined mounting plate",
+        "meaning": "A flat component with specified holes and surfaces."
+      },
+      {
+        "name": "Support bracket",
+        "meaning": "Holds another equipment component in position."
+      },
+      {
+        "name": "Datum surfaces",
+        "meaning": "Reference faces used to locate and measure the part."
+      },
+      {
+        "name": "Measuring probe",
+        "meaning": "Illustrates dimensional inspection."
+      },
+      {
+        "name": "Clean protective pack",
+        "meaning": "Preserves the condition achieved during cleaning."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Define the customer part family",
+        "duration": "Months 0–3",
+        "actions": "Obtain drawings, identify a technical lead and audit available outside processors.",
+        "gate": "A customer-sponsored sample programme with measurable acceptance criteria."
+      },
+      {
+        "phase": "Prove sample economics",
+        "duration": "Months 3–5",
+        "actions": "Use qualified subcontract capacity to test manufacturability; obtain machine and metrology quotations.",
+        "gate": "Accepted sample route and credible cycle-time/cost sheet."
+      },
+      {
+        "phase": "Install and establish capability",
+        "duration": "Months 5–9",
+        "actions": "Fit out the leased shell, install machines and validate measurement systems.",
+        "gate": "Demonstrated process capability on the selected family."
+      },
+      {
+        "phase": "Customer qualification",
+        "duration": "Months 9–15",
+        "actions": "Submit first articles, close audit findings and stabilise outside processes.",
+        "gate": "Written production approval; timetable remains customer dependent."
+      },
+      {
+        "phase": "Controlled production ramp",
+        "duration": "Months 15–24",
+        "actions": "Increase accepted volume, track yield and delivery, then add adjacent part families.",
+        "gate": "Repeat orders and margins before another machine or cleaner process scope."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Dimensional evidence",
+        "detail": "Select instruments with suitable measurement uncertainty, validate fixtures and report drawing-defined dimensions. A five-axis machine alone does not establish precision.",
+        "sourceIds": [
+          "S2",
+          "S3",
+          "S6"
+        ]
+      },
+      {
+        "title": "Material and revision traceability",
+        "detail": "Link stock heat, operations, outside treatment and inspection to the shipped lot. Customer qualification determines the required management-system certificates.",
+        "sourceIds": []
+      },
+      {
+        "title": "Surface and cleanliness control",
+        "detail": "Define what contamination matters for each part. Semiconductor service cleaning illustrates the specialised controls needed; do not claim process-contact cleanliness from an ordinary wash.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "title": "Change control",
+        "detail": "Obtain required approval before changing material, tool route, treatment supplier or cleaning chemistry after qualification.",
+        "sourceIds": []
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Machining, fixtures and inspection",
+        "route": "Make in India",
+        "detail": "Local engineering and conversion create the principal manufacturing value."
+      },
+      {
+        "part": "Approved stock and outside processing",
+        "route": "Buy Indian / Outsource",
+        "detail": "Use Indian suppliers where alloy traceability and customer approval permit; origin must be documented."
+      },
+      {
+        "part": "Machine tools and measurement systems",
+        "route": "Import initially / Buy Indian",
+        "detail": "Choose capability through trials and quotations; no domestic-origin assumption for the plant BOM."
+      },
+      {
+        "part": "Special coatings and contamination analysis",
+        "route": "Outsource",
+        "detail": "Keep high-risk processes with approved specialists until demand and capability justify investment."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS",
+        "status": "Policy audit reused from 19 September 2026; product classification required.",
+        "detail": "Only notified eligible products qualify. Category D has a ₹10 crore minimum eligible investment and a 25% capital incentive, with applications scheduled through 30 April 2027. This project's total cost is not automatically eligible investment; obtain a written classification and do not budget a grant. The same eligible cost cannot receive duplicate central support.",
+        "sourceIds": [
+          "S7"
+        ]
+      },
+      {
+        "name": "Semicon 2.0 equipment support",
+        "status": "Starter project below the stated equipment-scheme scale.",
+        "detail": "The equipment route audited in September 2026 includes ₹300 crore minimum investment and ₹120 crore applicant revenue conditions, with 30% support. This starter factory is not assumed eligible; larger supported factories may create a customer ecosystem.",
+        "sourceIds": [
+          "S8"
+        ]
+      }
+    ],
+    "network": "Use the founder's network for introductions to equipment OEM sourcing teams, Applied Materials' India ecosystem, experienced supplier-quality leaders and CMTI metrology expertise. Obtain drawings and qualification access, not an assumed government purchase order.",
+    "risks": [
+      {
+        "risk": "A promising ecosystem produces no accessible drawings or orders.",
+        "response": "Secure a named customer qualification owner and paid sample scope before ordering all four CNC machines."
+      },
+      {
+        "risk": "A low-priced part needs costly cleanliness or surface processing.",
+        "response": "Cost the complete approved process and rework yield before quoting."
+      },
+      {
+        "risk": "Customer qualification consumes cash for many months.",
+        "response": "Stage equipment purchases and keep working capital separate from machine finance."
+      },
+      {
+        "risk": "Rework and measurement disagreement destroy margins.",
+        "response": "Agree datum strategy, measurement uncertainty and first-article evidence early."
+      }
+    ],
+    "first90": [
+      "Recruit a lead with actual equipment-supplier qualification experience.",
+      "Seek three narrow part-family RFQs and identify which parts are non-process-contact.",
+      "Make representative samples through audited subcontractors and measure the complete cost.",
+      "Obtain comparable machine, metrology, cleaning and leased-site quotations.",
+      "Decide whether customer-approved demand supports a four-machine cell or a smaller first phase."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "A new chapter for Applied Materials India",
+        "url": "https://www.appliedmaterials.com/us/en/newsroom/blogs/a-new-chapter-for-applied-materials-india.html",
+        "publisher": "Applied Materials",
+        "date": "Accessed 2026-09-20",
+        "supports": "India engineering and innovation ecosystem; does not establish demand for this starter's parts.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "UMC-500SS five-axis machining centre",
+        "url": "https://www.haascnc.com/machines/vertical-mills/universal-machine/models/umc-500SS.html",
+        "publisher": "Haas Automation",
+        "date": "Accessed 2026-09-20",
+        "supports": "Indexed and simultaneous five-axis machining functions; no Indian installed price or achieved customer tolerance.",
+        "type": "Company"
+      },
+      {
+        "id": "S3",
+        "title": "Industrial measuring systems",
+        "url": "https://www.zeiss.com/metrology/en/systems.html",
+        "publisher": "ZEISS",
+        "date": "Accessed 2026-09-20",
+        "supports": "Dimensional and surface metrology equipment categories; no prescribed starter-lab configuration.",
+        "type": "Company"
+      },
+      {
+        "id": "S4",
+        "title": "Elmasystem Core",
+        "url": "https://www.elma-ultrasonic.com/en/elmasystem-core",
+        "publisher": "Elma",
+        "date": "Accessed 2026-09-20",
+        "supports": "Modular industrial cleaning, rinsing and drying equipment; customer-specific cleaning validation still required.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "Semiconductor equipment and specialised cleaning services",
+        "url": "https://www.uct.com/services/cleaning/default.aspx",
+        "publisher": "Ultra Clean Holdings",
+        "date": "Accessed 2026-09-20",
+        "supports": "Specialised cleaning and contamination-control capabilities in semiconductor equipment servicing; does not make every machined part equally demanding.",
+        "type": "Company"
+      },
+      {
+        "id": "S6",
+        "title": "Precision metrology and calibration",
+        "url": "https://cmti.res.in/precision-metrology-calibration/",
+        "publisher": "Central Manufacturing Technology Institute",
+        "date": "Accessed 2026-09-20",
+        "supports": "Bengaluru dimensional/metrology calibration ecosystem; confirm current scope and availability.",
+        "type": "Government"
+      },
+      {
+        "id": "S7",
+        "title": "ECMS guidelines, 26 April 2025",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "Published 2025-04-26; policy status checked in parent audit 2026-09-19",
+        "supports": "Eligible product categories, Category D conditions and restrictions on duplicate central support; policy interpretation reused from parent audit.",
+        "type": "Government"
+      },
+      {
+        "id": "S8",
+        "title": "Semicon 2.0 notified scheme",
+        "url": "https://egazette.gov.in/WriteReadData/2026/275860.pdf",
+        "publisher": "Government of India",
+        "date": "Policy audit 2026-09-19",
+        "supports": "Equipment support conditions, including scale and revenue thresholds; parent audit reused, not a new approval finding.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Primary equipment and process pages were checked on 20 September 2026; scheme interpretation reuses the parent policy audit. All capacity, cost, area, utility, headcount and schedule numbers are analyst pre-feasibility assumptions. No customer drawings, quotations, approved supplier status or technology licence has been obtained. The 3D teaching model is not customer CAD or a manufacturing drawing."
+  },
+  {
+    "id": "power-distribution",
+    "title": "AI-facility power distribution",
+    "shortTitle": "Power distribution",
+    "sector": "AI and industrial infrastructure",
+    "plain": "Build the electrical assemblies that divide incoming power safely among equipment circuits. Begin with AC distribution panels for data centres and industrial facilities.",
+    "analogy": "A carefully protected set of main roads and junctions that routes electricity to the right destination.",
+    "product": "Engineered low-voltage AC distribution boards with formed copper busbars, approved protection devices, labelled wiring and test documentation.",
+    "does": "Routes and protects electrical supplies while giving operators clear isolation, monitoring and maintenance points.",
+    "customers": [
+      "Data-centre electrical EPC contractors",
+      "Approved switchboard OEMs seeking manufacturing partners",
+      "Colocation and enterprise data-centre operators through their consultants",
+      "Industrial facilities and semiconductor-factory electrical contractors"
+    ],
+    "whyNow": "ABB's announced India manufacturing expansion includes critical infrastructure products. NVIDIA's 800 VDC roadmap shows rising AI power-system demands, but it is a future architecture and a separate qualification problem. The starter sells defined AC distribution assemblies, not an assumed compatible 800 VDC system. [S1] [S2]",
+    "firstProduct": "Indoor 415 VAC distribution-board families, with an initial assumed 630–2,500 A range under an established, verified assembly design platform. Each contract specifies prospective fault current, enclosure, protection, environment and maintainability.",
+    "notIncluded": "No utility transformer, UPS power electronics, GPU power shelf, proprietary circuit breaker or complete 800 VDC system. Standalone busway is a separate product scope with its own applicable standard and verification.",
+    "entry": "Secure an appropriate OEM assembly-system agreement and an experienced panel-design lead. Form and finish approved copper busbars, assemble and wire in-house. Buy approved devices and outsource sheet-metal manufacture, coating, plating and high-power verification initially.",
+    "capacity": "Planning basis: 120–180 cubicles/year after qualification, one eight-hour shift and 250 working days. A complete distribution board may contain several cubicles; this is not a commitment to 180 complete switchboards.",
+    "budget": {
+      "basis": "INR crore on a September 2026 planning basis. Leased existing industrial shell; land purchase and new-building civil works excluded. Recoverable GST excluded, working capital separate, no subsidy deducted. Includes fixed equipment and stated pre-operative launch allowances; not an accounting classification or vendor quotation.",
+      "items": [
+        {
+          "name": "Busbar processing cell",
+          "low": 0.4,
+          "high": 0.8,
+          "note": "Cutting, punching and bending equipment, tooling and handling."
+        },
+        {
+          "name": "Mechanical assembly and wiring tools",
+          "low": 0.35,
+          "high": 0.65,
+          "note": "Benches, crimping, wire preparation and controlled torque tooling."
+        },
+        {
+          "name": "Routine electrical verification equipment",
+          "low": 0.45,
+          "high": 0.9,
+          "note": "Suitable dielectric, insulation, continuity, low-resistance and functional-test instruments."
+        },
+        {
+          "name": "Leased-shell fitout and utilities",
+          "low": 0.65,
+          "high": 1.2,
+          "note": "Segregated test bay, electrical supply, stores, fire provisions and handling."
+        },
+        {
+          "name": "Design platform, CAD and fixtures",
+          "low": 0.3,
+          "high": 0.6,
+          "note": "Engineering software, tooling and initial design-system arrangements; commercial agreement requires quotation."
+        },
+        {
+          "name": "External design verification allowance",
+          "low": 0.65,
+          "high": 1.25,
+          "note": "Representative testing, transport, expert support and possible retests; actual programme follows the selected design."
+        },
+        {
+          "name": "Launch engineering and pilots",
+          "low": 0.5,
+          "high": 0.9,
+          "note": "Initial design work, prototype assemblies, training and documentation."
+        },
+        {
+          "name": "Contingency",
+          "low": 0.5,
+          "high": 0.9,
+          "note": "Allowance for unresolved test scope and commissioning."
+        }
+      ],
+      "workingLow": 3,
+      "workingHigh": 6,
+      "workingNote": "Assumes substantial breaker/copper inventory and 60–90 day project receivables, with staged customer advances where negotiated. Bought-out equipment can dominate cash needs; guarantees, retention and longer EPC terms require separate provision.",
+      "landNote": "Land purchase and a new building are excluded. Budget assumes a leased suitable shell; greenfield plot size is only an alternate screening figure.",
+      "confidence": "Pre-feasibility allowance, not OEM pricing or a laboratory quotation. Protection-device mix, design rights and actual verification programme may materially change capital and working cash."
+    },
+    "site": {
+      "builtup": "Assume 12,000–18,000 sq ft (approximately 1,115–1,672 m²) in an existing industrial building.",
+      "plot": "If greenfield: screen approximately 0.6–1.0 acre, subject to loading access, setbacks and expansion plan.",
+      "power": "Assume 100–160 kVA screening range for tools and ordinary routine verification. Short-circuit and major temperature-rise testing are outsourced and are not covered by this load.",
+      "water": "Assume 1–2 m³/day, mainly domestic use. No in-house plating or wet-coating line in this scope.",
+      "conditions": [
+        "Provide physically controlled electrical-test bays and isolation procedures.",
+        "Keep copper fabrication debris away from completed electrical assemblies.",
+        "Provide dry storage and lifting routes for heavy cubicles.",
+        "Check floor loading, dispatch clearances and emergency access before leasing."
+      ],
+      "areas": [
+        {
+          "name": "Incoming materials and stores",
+          "share": 20,
+          "why": "Protect bought-out devices and segregate orders."
+        },
+        {
+          "name": "Busbar fabrication",
+          "share": 20,
+          "why": "Cut, form and deburr copper."
+        },
+        {
+          "name": "Mechanical assembly",
+          "share": 25,
+          "why": "Mount enclosure structure, supports and devices."
+        },
+        {
+          "name": "Wiring",
+          "share": 15,
+          "why": "Complete identified power and control wiring."
+        },
+        {
+          "name": "Verification and dispatch",
+          "share": 10,
+          "why": "Test safely and preserve finished panels."
+        },
+        {
+          "name": "Engineering and support",
+          "share": 10,
+          "why": "Drawings, documentation and operating facilities."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant lead",
+        "count": 1,
+        "why": "Own capacity, delivery and quality."
+      },
+      {
+        "role": "Electrical/design engineers",
+        "count": 4,
+        "why": "Prepare verified configurations, drawings and protection interfaces."
+      },
+      {
+        "role": "Busbar operators",
+        "count": 3,
+        "why": "Cut, punch, bend and inspect copper."
+      },
+      {
+        "role": "Mechanical assembly technicians",
+        "count": 6,
+        "why": "Build cubicles and fit devices."
+      },
+      {
+        "role": "Wiring technicians",
+        "count": 4,
+        "why": "Terminate and label power/control circuits."
+      },
+      {
+        "role": "Test and quality engineers",
+        "count": 3,
+        "why": "Conduct routine verification and customer FAT."
+      },
+      {
+        "role": "Procurement and stores",
+        "count": 2,
+        "why": "Manage device lead times and traceability."
+      },
+      {
+        "role": "Administration and sales coordination",
+        "count": 1,
+        "why": "Coordinate project records and commercial follow-up."
+      }
+    ],
+    "teamNote": "24 people for one shift. The design-platform licensor, accredited test laboratory and site-installation contractor are additional outside resources.",
+    "machines": [
+      {
+        "name": "Hydraulic busbar cutting, punching and bending cell",
+        "quantity": "1",
+        "purpose": "Form rigid copper conductors to controlled drawings.",
+        "spec": "Cross-section range, bend radius, hole quality and tooling selected for approved busbar system.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Drilling and edge-finishing station",
+        "quantity": "1",
+        "purpose": "Prepare supports and remove sharp copper edges.",
+        "spec": "No burrs or metal debris allowed in final assemblies; avoid unapproved changes to verified geometry.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Wire cutting, stripping and crimping tools",
+        "quantity": "1 cell",
+        "purpose": "Prepare consistent cable and control-wire terminations.",
+        "spec": "Terminal, conductor and crimp tooling compatibility follows device instructions.",
+        "sourceIds": []
+      },
+      {
+        "name": "Assembly benches and controlled torque tools",
+        "quantity": "4 benches",
+        "purpose": "Build supports and tighten electrical joints repeatably.",
+        "spec": "Use specified fasteners, joint surfaces and torque; maintain calibration.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Electrical design and drawing workstations",
+        "quantity": "3",
+        "purpose": "Manage single-line diagrams, BOMs and wiring revisions.",
+        "spec": "Use the selected assembly platform's design limits and device coordination data.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Dielectric, insulation and continuity instrument set",
+        "quantity": "1 set",
+        "purpose": "Carry out applicable routine electrical verification.",
+        "spec": "Test method, voltage and sequence from applicable standard and approved instructions; not generic fixed settings.",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Low-resistance and functional test instrument set",
+        "quantity": "1 set",
+        "purpose": "Check selected joints and protection/control functions.",
+        "spec": "Micro-ohmmeter and injection/test accessories matched to the ordered devices and inspection plan.",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Handling and dispatch equipment",
+        "quantity": "1 set",
+        "purpose": "Move and pack completed cubicles safely.",
+        "spec": "Rated trolleys, lifting fixtures and packing designed around product mass.",
+        "sourceIds": []
+      }
+    ],
+    "process": [
+      {
+        "name": "Translate the site requirement",
+        "plain": "Agree what the panel must supply and protect.",
+        "detail": "Obtain single-line diagram, load schedule, fault level, ambient conditions and consultant specifications.",
+        "check": "Approved technical specification and responsibility matrix.",
+        "machine": "Design workstations",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Select a verified configuration",
+        "plain": "Stay within a proven assembly design.",
+        "detail": "Choose enclosure, conductors, supports, devices and cooling arrangement under the original manufacturer's instructions.",
+        "check": "Evidence covering the actual configuration; deviations require further verification.",
+        "machine": "Design platform and CAD",
+        "sourceIds": [
+          "S3",
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Inspect incoming materials",
+        "plain": "Check copper, supports and devices.",
+        "detail": "Match dimensions, ratings and certificates; keep substituted components out of the approved BOM.",
+        "check": "Traceable accepted materials and correct device variants.",
+        "machine": "Incoming inspection station",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Form the copper conductors",
+        "plain": "Cut, punch and bend the electrical paths.",
+        "detail": "Produce geometry from controlled drawings; remove burrs and outsource any required plating.",
+        "check": "Dimensions, surface condition and joint locations match approved design.",
+        "machine": "Busbar processing cell",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Build the mechanical assembly",
+        "plain": "Fit devices and their supports.",
+        "detail": "Maintain clearances and conductor support arrangement; apply approved fasteners and joints.",
+        "check": "Mounting, separation and documented joint torque.",
+        "machine": "Assembly benches and torque tools",
+        "sourceIds": [
+          "S3",
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Wire and identify circuits",
+        "plain": "Connect controls, meters and outgoing circuits.",
+        "detail": "Use approved terminal methods, wire sizes, protection settings and durable labels.",
+        "check": "Drawing-to-wire check and correct identification.",
+        "machine": "Wire-preparation tools and benches",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Perform routine verification and FAT",
+        "plain": "Check the finished assembly before shipping.",
+        "detail": "Follow the applicable routine-verification plan; demonstrate ordered controls and records to the customer.",
+        "check": "Signed test results and closed defects; design verification remains a separate obligation.",
+        "machine": "Electrical and functional test instruments",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "name": "Preserve, dispatch and support installation",
+        "plain": "Deliver the assembly with usable documentation.",
+        "detail": "Pack for transport; provide lifting, installation, settings and maintenance information.",
+        "check": "Release pack, serial identity and installation responsibilities agreed.",
+        "machine": "Handling and dispatch station",
+        "sourceIds": [
+          "S3"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Incoming breaker",
+        "meaning": "Connects and protects the board's incoming supply."
+      },
+      {
+        "name": "Main copper busbars",
+        "meaning": "Carry power along the board."
+      },
+      {
+        "name": "Outgoing protective devices",
+        "meaning": "Protect individual downstream circuits."
+      },
+      {
+        "name": "Insulating supports",
+        "meaning": "Hold live conductors in their verified positions."
+      },
+      {
+        "name": "Protective earth bar",
+        "meaning": "Provides the intended protective bonding connection."
+      },
+      {
+        "name": "Metering and control section",
+        "meaning": "Shows operating status and supports agreed controls."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Confirm application and design partner",
+        "duration": "Months 0–2",
+        "actions": "Choose AC product family, identify assembly-platform terms and obtain three target project specifications.",
+        "gate": "Named technical authority and a feasible approved configuration."
+      },
+      {
+        "phase": "Prototype and cost the complete BOM",
+        "duration": "Months 2–4",
+        "actions": "Obtain device, copper, enclosure and laboratory quotes; build a representative prototype.",
+        "gate": "Credible product cost and verification plan with design rights resolved."
+      },
+      {
+        "phase": "Install and verify",
+        "duration": "Months 4–7",
+        "actions": "Set up the cell, train staff and complete the necessary design-verification programme.",
+        "gate": "Applicable evidence for the actual assembly family and trained test personnel."
+      },
+      {
+        "phase": "Pilot customer deliveries",
+        "duration": "Months 7–10",
+        "actions": "Produce controlled batches, conduct FATs and record installation feedback.",
+        "gate": "Accepted deliveries and closed quality issues."
+      },
+      {
+        "phase": "Ramp repeat configurations",
+        "duration": "Months 10–15",
+        "actions": "Improve purchasing and assembly flow; extend configurations only within verified limits.",
+        "gate": "Repeat orders, cash collection and field reliability justify expansion."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Assembly-level verification",
+        "detail": "IEC 61439-1 gives general rules and is used with the relevant product part; IEC 61439-2 covers power switchgear and controlgear assemblies. Device certificates alone do not verify a finished board.",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "title": "Design changes",
+        "detail": "Maintain the original manufacturer's permitted configurations. Changing a breaker, busbar support or ventilation detail may affect the verification evidence.",
+        "sourceIds": [
+          "S3",
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "title": "Routine testing and safe FAT",
+        "detail": "Verify each completed assembly using the applicable standard and agreed inspection plan. Protect personnel through controlled access, isolation and suitable instruments.",
+        "sourceIds": [
+          "S5",
+          "S6"
+        ]
+      },
+      {
+        "title": "External high-power testing",
+        "detail": "Discuss required tests, laboratory scope, sample configuration and scheduling with a capable accredited facility such as CPRI. Laboratory presence does not establish certification or an available test slot.",
+        "sourceIds": [
+          "S7"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Copper busbar fabrication, assembly and wiring",
+        "route": "Make in India",
+        "detail": "Own local design execution, conversion, testing and service documentation."
+      },
+      {
+        "part": "Enclosures and coating",
+        "route": "Outsource / Buy Indian",
+        "detail": "Use approved Indian fabricators while preserving required geometry and finish."
+      },
+      {
+        "part": "Breakers, relays and meters",
+        "route": "Buy Indian / Import initially",
+        "detail": "Purchase approved variants; local brand presence does not prove Indian origin of each SKU."
+      },
+      {
+        "part": "High-power verification",
+        "route": "Outsource",
+        "detail": "Avoid building a dedicated short-circuit laboratory for the first plant."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS and manufacturing incentives",
+        "status": "No blanket eligibility assumed for an electrical-panel factory.",
+        "detail": "The notified product category and eligible investment must match the application. General data-centre growth does not make every power-distribution product eligible. Obtain product-specific written advice; no subsidy is deducted from this budget and the same central eligible cost must not be claimed twice.",
+        "sourceIds": [
+          "S8"
+        ]
+      }
+    ],
+    "network": "Use introductions to data-centre EPC procurement, electrical consultants, approved assembly-platform OEMs and Karnataka industrial projects. The strongest early network outcome is inclusion in a technically suitable vendor list and a paid pilot order; a political connection does not remove technical approvals or procurement rules.",
+    "risks": [
+      {
+        "risk": "Project opportunities require approvals the new supplier does not hold.",
+        "response": "Enter through a qualified assembly partner and agree the exact responsibility for design evidence."
+      },
+      {
+        "risk": "Copper and protection-device purchases consume cash before customer payment.",
+        "response": "Negotiate advances, milestone billing and procurement against approved drawings."
+      },
+      {
+        "risk": "A configuration change invalidates existing evidence.",
+        "response": "Control BOM and drawings and require engineering sign-off on every substitution."
+      },
+      {
+        "risk": "The AI power roadmap changes faster than the initial product.",
+        "response": "Sell the defined AC range first; treat 800 VDC as a separately funded partner programme."
+      }
+    ],
+    "first90": [
+      "Select a single AC assembly family and hire an experienced design authority.",
+      "Meet three EPC/consultant sourcing teams and request actual specification packs.",
+      "Get assembly-platform terms plus comparable breaker, copper and enclosure quotations.",
+      "Agree the representative verification programme and obtain laboratory quotations.",
+      "Build and cost one pilot configuration before committing to the full factory."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "ABB invests $75 million in India to expand manufacturing and R&D",
+        "url": "https://www.abb.com/global/en/news/133972/abb-invests-75-million-in-india-to-expand-manufacturing-and-rd-for-critical-segments",
+        "publisher": "ABB",
+        "date": "2026 announcement; evidence reused from 2026-09-19 research",
+        "supports": "India manufacturing investment and critical-infrastructure ecosystem; does not establish customer access or pricing.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "800 VDC power architecture for AI factories",
+        "url": "https://blogs.nvidia.com/blog/800-vdc-power-architecture-ai-factory/",
+        "publisher": "NVIDIA",
+        "date": "2026 announcement; evidence reused from 2026-09-19 research",
+        "supports": "AI power-architecture direction and roadmap; not a design certification for the starter product.",
+        "type": "Company"
+      },
+      {
+        "id": "S3",
+        "title": "Power distribution systems",
+        "url": "https://www.rittal.com/us-en_US/Solutions-Home/Industrial-Products/Power-distribution",
+        "publisher": "Rittal",
+        "date": "Accessed 2026-09-20",
+        "supports": "Established assembly-system approach and components; no available partnership or blanket certification assumed.",
+        "type": "Company"
+      },
+      {
+        "id": "S4",
+        "title": "Hydraulic tools for conductor fabrication",
+        "url": "https://www.nvent.com/en-me/eriflex/products/hydraulic-tools",
+        "publisher": "nVent ERIFLEX",
+        "date": "Accessed 2026-09-20",
+        "supports": "Cutting, punching and bending tooling for busbars; no installed-price evidence.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "IEC 61439-1:2020",
+        "url": "https://webstore.iec.ch/en/publication/32338",
+        "publisher": "International Electrotechnical Commission",
+        "date": "Accessed 2026-09-20",
+        "supports": "General rules and verification framework for low-voltage assemblies; public catalogue reviewed, full standard not reproduced.",
+        "type": "Standard"
+      },
+      {
+        "id": "S6",
+        "title": "IEC 61439-2:2020",
+        "url": "https://webstore.iec.ch/en/publication/30043",
+        "publisher": "International Electrotechnical Commission",
+        "date": "Accessed 2026-09-20",
+        "supports": "Power switchgear/controlgear assembly scope; application requires the full applicable standard.",
+        "type": "Standard"
+      },
+      {
+        "id": "S7",
+        "title": "High Power Laboratory",
+        "url": "https://www.cpri.res.in/index.php/en/High-Power-Laboratory-HPL",
+        "publisher": "Central Power Research Institute",
+        "date": "Accessed 2026-09-20",
+        "supports": "Bengaluru high-power testing ecosystem; exact test scope, accreditation and booking need confirmation.",
+        "type": "Government"
+      },
+      {
+        "id": "S8",
+        "title": "ECMS guidelines, 26 April 2025",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "Published 2025-04-26; policy status checked in parent audit 2026-09-19",
+        "supports": "Incentives apply to notified eligible categories and expenditure, not all infrastructure products; parent policy audit reused.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Fresh primary machine, assembly-system and standards catalogue checks were made on 20 September 2026; demand and policy evidence identified above is reused from prior research. Costs, capacity, staffing, site, utility and schedule ranges are analyst assumptions. No OEM agreement, vendor quotation, customer order or certification has been secured. The educational 3D assembly is not an electrical design or installation guide."
+  }
+]

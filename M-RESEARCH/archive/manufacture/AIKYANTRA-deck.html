@@ -1,0 +1,827 @@
+<title>AIKYANTRA</title>
+<style>
+:root{
+  --ink:#0D2340; --paper:#F5F7FA; --surface:#FFFFFF;
+  --line:#D3DCE6; --line-2:#E6ECF3;
+  --text:#0D2340; --text-2:#37506E; --text-3:#5D7290;
+  --accent:#8F7112; --accent-br:#C9A227; --accent-on:#17233A; --accent-soft:#FBF4DE;
+  --cool:#1E4E7F; --cool-soft:#E6EEF7;
+  --good:#1F7A55; --good-soft:#E8F4EF; --bad:#B03A2E; --bad-soft:#FBEDEB;
+  --grid:rgba(13,35,64,.045);
+  --plant:rgba(13,35,64,.13); --plant-fill:rgba(13,35,64,.03);
+  --shadow:0 1px 2px rgba(13,35,64,.07),0 8px 24px rgba(13,35,64,.07);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#081426; --surface:#102138; --ink:#F2F6FA;
+    --line:#27405C; --line-2:#1B3149;
+    --text:#EDF2F8; --text-2:#B7C7DA; --text-3:#889CB4;
+    --accent:#E2BC5B; --accent-br:#E2BC5B; --accent-on:#1A1403; --accent-soft:#2A2310;
+    --cool:#79ADDD; --cool-soft:#0F2740;
+    --good:#3FBE86; --good-soft:#0F2D22; --bad:#E4645A; --bad-soft:#2E1614;
+    --grid:rgba(242,246,250,.035);
+    --plant:rgba(242,246,250,.15); --plant-fill:rgba(242,246,250,.035);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#081426; --surface:#102138; --ink:#F2F6FA;
+  --line:#27405C; --line-2:#1B3149;
+  --text:#EDF2F8; --text-2:#B7C7DA; --text-3:#889CB4;
+  --accent:#E2BC5B; --accent-br:#E2BC5B; --accent-on:#1A1403; --accent-soft:#2A2310;
+  --cool:#79ADDD; --cool-soft:#0F2740;
+  --good:#3FBE86; --good-soft:#0F2D22; --bad:#E4645A; --bad-soft:#2E1614;
+  --grid:rgba(242,246,250,.035);
+  --plant:rgba(242,246,250,.15); --plant-fill:rgba(242,246,250,.035);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+p,dd,li,h1,h2,h3,td,th{overflow-wrap:break-word}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--text);
+  font-family:var(--sans); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:64px 64px;
+}
+img{max-width:100%} svg{display:block}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.plant{position:fixed;inset:auto 0 0 0;height:min(44vh,400px);z-index:0;pointer-events:none;opacity:.5;
+  -webkit-mask-image:linear-gradient(to top,#000 20%,transparent 100%);mask-image:linear-gradient(to top,#000 20%,transparent 100%)}
+.plant svg{width:100%;height:100%}
+.plant .st{fill:none;stroke:var(--plant);stroke-width:1.35}
+.plant .sf{fill:var(--plant-fill)}
+
+.topbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:60;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px clamp(14px,3vw,28px);background:var(--surface);
+  border-bottom:1px solid var(--line-2)}
+.bmark{font-family:var(--mono);font-weight:700;letter-spacing:-.04em;font-size:17px;color:var(--text)}
+.bmark span{color:var(--accent-br)}
+.blabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+@media(max-width:560px){.blabel{display:none}}
+.topbar .sep{flex:1}
+.tnav{display:flex;gap:6px;flex-wrap:wrap}
+.tnav a{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;text-decoration:none;
+  border:1px solid var(--line);color:var(--text-2);padding:7px 11px;border-radius:3px}
+.tnav a:hover{border-color:var(--accent);color:var(--accent)}
+.tnav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:700px){.tnav{display:none}}
+
+.deck{position:relative;z-index:1}
+.slide{min-height:100vh;display:flex;flex-direction:column;
+  padding:clamp(84px,9vh,112px) clamp(16px,5vw,76px) clamp(52px,7vh,88px);
+  border-bottom:1px solid var(--line-2)}
+.wrap{width:100%;max-width:1220px;margin:auto}
+.wrap.wide{max-width:1400px}
+.eyebrow{font-family:var(--mono);font-size:clamp(12px,1.35vw,16px);font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:13px;margin:0 0 20px}
+.eyebrow::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--accent-br);flex-shrink:0}
+.eyebrow::after{content:"";flex:1;height:1.5px;background:var(--line);max-width:150px}
+.cover .eyebrow{justify-content:center}
+.cover .eyebrow::before{display:none}
+h1{font-size:clamp(38px,7vw,88px);line-height:1;letter-spacing:-.035em;font-weight:800;margin:0 0 16px;text-wrap:balance}
+h2{font-size:clamp(28px,4.4vw,56px);line-height:1.05;letter-spacing:-.03em;font-weight:850;margin:0 0 18px;text-wrap:balance;max-width:20ch}
+h3{font-size:clamp(16.5px,1.5vw,20px);font-weight:750;margin:0 0 8px;letter-spacing:-.014em;line-height:1.3}
+p{font-size:clamp(14.5px,1.25vw,17px);line-height:1.62;color:var(--text-2);margin:0 0 14px;max-width:60ch}
+.lede{font-size:clamp(16px,1.6vw,21px);color:var(--text-2);line-height:1.5;max-width:54ch;text-wrap:pretty}
+strong{color:var(--text);font-weight:650}
+.note{font-size:12.5px;color:var(--text-3);line-height:1.5;max-width:70ch}
+
+.grid{display:grid;gap:15px;align-items:stretch}
+.g2{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(248px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:clamp(15px,1.5vw,22px);
+  box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);display:block;margin-bottom:9px}
+.card p{font-size:clamp(13.5px,1.1vw,15px);line-height:1.6;margin:0;max-width:none}
+.card p + p{margin-top:9px}
+.card.lit{border-color:var(--accent-br)}
+.card ul{margin:0;padding-left:18px}
+.card li{font-size:clamp(13.5px,1.1vw,15px);line-height:1.6;color:var(--text-2);margin-bottom:8px}
+.card li:last-child{margin-bottom:0}
+.card li b{color:var(--text);font-weight:650}
+.stat{font-family:var(--mono);font-size:clamp(24px,3.2vw,38px);font-weight:700;letter-spacing:-.03em;color:var(--accent);line-height:1.05;display:block}
+.stat-l{font-size:13px;line-height:1.45;color:var(--text-2);margin-top:10px;display:block}
+
+.cover{align-items:center;text-align:center;justify-content:center}
+.mark{font-family:var(--mono);font-size:clamp(40px,11vw,140px);font-weight:700;letter-spacing:-.055em;line-height:.88;color:var(--text);margin:0}
+.mark span{color:var(--accent-br)}
+.rule{height:1px;background:var(--line);margin:26px auto;max-width:520px}
+.by{font-family:var(--mono);font-size:clamp(10px,1.4vw,13px);letter-spacing:.4em;text-transform:uppercase;color:var(--text-3)}
+.cover p{margin-left:auto;margin-right:auto}
+.stackline{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:28px}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);
+  border-radius:999px;padding:7px 14px;color:var(--text-3);background:var(--surface)}
+.pill.hot{border-color:var(--accent-br);color:var(--accent);background:var(--accent-soft)}
+
+.flow{display:grid;gap:13px;grid-template-columns:repeat(5,1fr);margin-bottom:6px}
+.flow.four{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1080px){.flow,.flow.four{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.flow,.flow.four{grid-template-columns:1fr}}
+.fx{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 14px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px}
+.fx .fn{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.fx h4{margin:0;font-size:15px;font-weight:750;letter-spacing:-.015em;color:var(--text)}
+.fx p{margin:0;font-size:13px;line-height:1.55;color:var(--text-2);max-width:none}
+.fx .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);
+  border-top:1px dashed var(--line-2);padding-top:7px;margin-top:auto}
+.fx.gold{border-color:var(--accent-br);background:var(--accent-soft)}
+
+.band{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:15px}
+.bd{border:1px dashed var(--line);border-radius:5px;padding:13px 15px;background:var(--surface)}
+.bd .t{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);display:block;margin-bottom:5px}
+.bd .v{font-size:13.5px;color:var(--text-2);line-height:1.5}
+.bd.ok{border-style:solid;border-color:var(--good);background:var(--good-soft)}
+.bd.ok .t{color:var(--good)}
+.bd.no{border-style:solid;border-color:var(--bad);background:var(--bad-soft)}
+.bd.no .t{color:var(--bad)}
+
+figure{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:clamp(14px,2vw,24px);box-shadow:var(--shadow);color:var(--text-2)}
+figure svg{width:100%;height:auto;max-width:100%}
+figcaption{font-size:13.5px;color:var(--text-3);line-height:1.55;margin-top:12px;border-top:1px solid var(--line-2);padding-top:11px}
+figcaption b{color:var(--text-2)}
+.dg .body{fill:var(--paper);stroke:currentColor;stroke-width:1.5}
+.dg .face{fill:var(--surface);stroke:currentColor;stroke-width:1.5}
+.dg .hot .body,.dg .hot .face{fill:var(--accent-soft);stroke:var(--accent-br);stroke-width:2}
+.dg .axis{stroke:currentColor;stroke-width:1;stroke-dasharray:6 6;opacity:.45}
+.dg .lead{stroke:currentColor;stroke-width:1;opacity:.5}
+.dg .bub{fill:var(--accent-br)}
+.dg .bubt{fill:var(--accent-on);font-family:var(--mono);font-size:12px;font-weight:700;text-anchor:middle}
+.dg text{fill:var(--text-2);font-family:var(--sans);font-size:14px}
+.dg .lbl{font-weight:650;fill:var(--text)}
+.dg .sub{font-size:12px;fill:var(--text-3)}
+.dg .pin{fill:var(--accent-soft);stroke:var(--accent-br);stroke-width:1.6}
+.dg .box{fill:var(--surface);stroke:currentColor;stroke-width:1.6}
+.dg .box.mine{fill:var(--accent-soft);stroke:var(--accent-br);stroke-width:2.2}
+.dg .arr{stroke:currentColor;stroke-width:1.6;fill:none}
+.dg .arr.warm{stroke:var(--bad)}
+.dg .arr.cold{stroke:var(--cool)}
+.dg .cap{font-size:12px;fill:var(--text-3)}
+
+.ladder{display:flex;flex-direction:column;gap:10px}
+.rung{display:grid;grid-template-columns:62px 1.25fr 1.5fr 0.9fr;gap:16px;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:14px 16px;box-shadow:var(--shadow)}
+@media(max-width:900px){.rung{grid-template-columns:62px 1fr;row-gap:8px}}
+.rung .lv{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent-on);background:var(--accent-br);border-radius:4px;padding:8px 0;text-align:center}
+.rung .nm{font-size:16px;font-weight:750;color:var(--text);letter-spacing:-.015em}
+.rung .nm small{display:block;font-weight:500;font-size:12.5px;color:var(--text-3);margin-top:3px;letter-spacing:0}
+.rung .mk{font-size:13.5px;color:var(--text-2);line-height:1.55}
+.rung .sz{font-size:13px;color:var(--accent);text-align:right;line-height:1.45}
+@media(max-width:900px){.rung .sz{text-align:left}}
+.rung.soft .lv{background:var(--line);color:var(--text-3)}
+.rung.soft .sz{color:var(--text-3)}
+
+table.plain{width:100%;border-collapse:collapse;font-size:14.5px}
+.plain th,.plain td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.plain th{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-3);font-weight:700}
+.plain td b{color:var(--text)}
+.plain tr:last-child td{border-bottom:none}
+
+.rail{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px}
+.rail button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--line);background:transparent;cursor:pointer;transition:all .25s}
+.rail button[aria-current=true]{background:var(--accent-br);border-color:var(--accent-br);transform:scale(1.45)}
+.rail button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.pager{position:fixed;left:18px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  color:var(--text-3);background:var(--surface);border:1px solid var(--line);padding:5px 10px;border-radius:3px}
+@media(max-width:900px){.rail{display:none}.pager{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="bmark">AIKY<span>A</span>NTRA</div>
+  <div class="blabel">Manufacturing concept · Bengaluru</div>
+  <div class="sep"></div>
+  <nav class="tnav" aria-label="Sections">
+    <a href="#s2">Idea 1 · Socket</a>
+    <a href="#s5">Idea 2 · Cooling</a>
+  </nav>
+</header>
+
+<div class="plant" aria-hidden="true">
+  <svg viewBox="0 0 1400 420" preserveAspectRatio="xMidYMax meet">
+    <path class="sf" d="M0 300h180v120H0z"/><path class="st" d="M0 300h180v120H0z"/>
+    <path class="st" d="M20 300v-40h40v40M80 300v-60h40v60"/>
+    <path class="sf" d="M180 250h260v170H180z"/><path class="st" d="M180 250h260v170H180z"/>
+    <path class="st" d="M180 250l45-45 45 45M270 250l45-45 45 45M360 250l45-45 45 45"/>
+    <path class="st" d="M215 320h50v60h-50zM305 320h50v60h-50z"/>
+    <path class="sf" d="M440 285h210v135H440z"/><path class="st" d="M440 285h210v135H440z"/>
+    <path class="st" d="M470 315h40v40h-40zM540 315h40v40h-40zM470 375h110"/>
+    <path class="st" d="M600 285v-95h26v95M613 190v-26"/>
+    <path class="sf" d="M650 320h190v100H650z"/><path class="st" d="M650 320h190v100H650z"/>
+    <path class="st" d="M680 350h130M680 380h130"/>
+    <path class="sf" d="M840 240h250v180H840z"/><path class="st" d="M840 240h250v180H840z"/>
+    <path class="st" d="M840 240l55-50 55 50M950 240l55-50 55 50"/>
+    <path class="st" d="M875 300h60v70h-60zM975 300h60v70h-60z"/>
+    <path class="st" d="M1090 300v-120h30v120M1105 180v-30"/>
+    <path class="sf" d="M1120 330h280v90h-280z"/><path class="st" d="M1120 330h280v90h-280z"/>
+    <path class="st" d="M1155 360h50v40h-50zM1240 360h50v40h-50zM1320 360h50v40h-50z"/>
+    <path class="st" d="M0 420h1400"/>
+  </svg>
+</div>
+
+<main class="deck">
+
+<section class="slide cover" id="s1">
+  <div class="wrap">
+    <p class="eyebrow">Two small parts, made in India</p>
+    <h1 class="mark">AIKY<span>A</span>NTRA</h1>
+    <div class="rule"></div>
+    <p class="lede" style="max-width:46ch">We want to make two things in Bengaluru: the charging socket on electric vehicles, and the metal parts that stop machines from overheating.</p>
+    <p style="max-width:58ch;margin-top:16px">
+      Both are ordinary-looking parts. Both are bought from other countries today.
+      And for both, the government has now told Indian vehicle makers that these parts have to be made here.
+      This deck explains what they are, why now, and exactly how we would do it.
+    </p>
+    <div class="stackline">
+      <span class="pill hot">Idea 1 — the charging socket</span>
+      <span class="pill hot">Idea 2 — cooling parts</span>
+      <span class="pill">One factory · two products</span>
+    </div>
+    <p class="by" style="margin-top:34px">Eight pages · plain language</p>
+  </div>
+</section>
+
+<section class="slide" id="s2">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea one · what we would make</p>
+    <h2>The socket on the vehicle.</h2>
+    <p class="lede" style="margin-bottom:22px">
+      Think of charging your phone. The charger has a pin. The phone has a hole.
+      An electric bus works the same way: the charging gun is the pin, and the socket built into the bus is the hole.
+      <strong>We make the hole.</strong>
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 980 470" class="dg" role="img" aria-label="A charging socket taken apart into seven pieces: cap, plastic body, rubber seal, pin holder, silver coated metal pins, heat sensor with lock, and the back body where the vehicle wires connect">
+        <line class="axis" x1="30" y1="250" x2="950" y2="250"/>
+
+        <g><path class="body" d="M80 174 L106 174 A18 76 0 0 1 106 326 L80 326 A18 76 0 0 0 80 174 Z"/>
+           <ellipse class="face" cx="80" cy="250" rx="18" ry="76"/></g>
+        <line class="lead" x1="93" y1="174" x2="93" y2="126"/>
+        <circle class="bub" cx="93" cy="112" r="12"/><text class="bubt" x="93" y="116">1</text>
+        <text class="lbl" x="93" y="86" text-anchor="middle">The lid</text>
+        <text class="sub" x="93" y="66" text-anchor="middle">keeps rain and dust out</text>
+
+        <g><path class="body" d="M210 174 L236 174 A18 76 0 0 1 236 326 L210 326 A18 76 0 0 0 210 174 Z"/>
+           <ellipse class="face" cx="210" cy="250" rx="18" ry="76"/></g>
+        <line class="lead" x1="223" y1="326" x2="223" y2="372"/>
+        <circle class="bub" cx="223" cy="386" r="12"/><text class="bubt" x="223" y="390">2</text>
+        <text class="lbl" x="223" y="418" text-anchor="middle">The outer body</text>
+        <text class="sub" x="223" y="438" text-anchor="middle">hard plastic, shaped in a mould</text>
+
+        <g><path class="body" d="M340 174 L360 174 A14 76 0 0 1 360 326 L340 326 A14 76 0 0 0 340 174 Z"/>
+           <ellipse class="face" cx="340" cy="250" rx="14" ry="76"/></g>
+        <line class="lead" x1="350" y1="174" x2="350" y2="126"/>
+        <circle class="bub" cx="350" cy="112" r="12"/><text class="bubt" x="350" y="116">3</text>
+        <text class="lbl" x="350" y="86" text-anchor="middle">Rubber ring</text>
+        <text class="sub" x="350" y="66" text-anchor="middle">stops water getting in</text>
+
+        <g><path class="body" d="M470 174 L500 174 A18 76 0 0 1 500 326 L470 326 A18 76 0 0 0 470 174 Z"/>
+           <ellipse class="face" cx="470" cy="250" rx="18" ry="76"/></g>
+        <line class="lead" x1="485" y1="326" x2="485" y2="372"/>
+        <circle class="bub" cx="485" cy="386" r="12"/><text class="bubt" x="485" y="390">4</text>
+        <text class="lbl" x="485" y="418" text-anchor="middle">The holder</text>
+        <text class="sub" x="485" y="438" text-anchor="middle">keeps each pin in its place</text>
+
+        <g class="hot"><path class="body" d="M600 174 L636 174 A18 76 0 0 1 636 326 L600 326 A18 76 0 0 0 600 174 Z"/>
+           <ellipse class="face" cx="600" cy="250" rx="18" ry="76"/></g>
+        <circle class="pin" cx="618" cy="206" r="9"/>
+        <circle class="pin" cx="618" cy="252" r="13"/>
+        <circle class="pin" cx="618" cy="300" r="13"/>
+        <line class="lead" x1="618" y1="174" x2="618" y2="126"/>
+        <circle class="bub" cx="618" cy="112" r="12"/><text class="bubt" x="618" y="116">5</text>
+        <text class="lbl" x="618" y="86" text-anchor="middle">The metal pins</text>
+        <text class="sub" x="618" y="66" text-anchor="middle">copper, coated with a thin layer of silver</text>
+
+        <g><path class="body" d="M750 194 L774 194 A16 56 0 0 1 774 306 L750 306 A16 56 0 0 0 750 194 Z"/>
+           <ellipse class="face" cx="750" cy="250" rx="16" ry="56"/></g>
+        <line class="lead" x1="762" y1="306" x2="762" y2="372"/>
+        <circle class="bub" cx="762" cy="386" r="12"/><text class="bubt" x="762" y="390">6</text>
+        <text class="lbl" x="762" y="418" text-anchor="middle">Heat sensor and lock</text>
+        <text class="sub" x="762" y="438" text-anchor="middle">stops charging if it gets too hot</text>
+
+        <g><path class="body" d="M880 184 L916 184 A18 66 0 0 1 916 316 L880 316 A18 66 0 0 0 880 184 Z"/>
+           <ellipse class="face" cx="880" cy="250" rx="18" ry="66"/></g>
+        <line class="lead" x1="898" y1="184" x2="898" y2="126"/>
+        <circle class="bub" cx="898" cy="112" r="12"/><text class="bubt" x="898" y="116">7</text>
+        <text class="lbl" x="898" y="86" text-anchor="middle">The back cover</text>
+        <text class="sub" x="898" y="66" text-anchor="middle">where the vehicle's wires are joined</text>
+      </svg>
+      <figcaption>The socket opened up, piece by piece. Seven small pieces go in; we put them together, seal them and test them.
+        <b>Piece number 5 is the one that matters.</b> Electricity passes through those metal pins, and a very thin coat of silver on each pin is what stops them heating up. If that coating is uneven anywhere, the socket fails.</figcaption>
+    </figure>
+
+    <div class="grid g3" style="margin-top:6px">
+      <div class="card">
+        <span class="tag">There are two kinds</span>
+        <ul>
+          <li><b>The slow one.</b> Used overnight, like charging your phone while you sleep. Small pins.</li>
+          <li><b>The fast one.</b> Fills a bus battery in a short break, so far more electricity has to pass through. It has two extra thick pins for that.</li>
+          <li>Buses need both. The fast one is worth roughly what a good phone costs.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">Why it is not easy to make</span>
+        <ul>
+          <li><b>It gets hot.</b> A lot of electricity through a small metal pin creates heat. The pin has to stay cooler than boiling water, or it damages the vehicle.</li>
+          <li><b>It gets used roughly.</b> It must survive being plugged in and pulled out about ten thousand times without going loose.</li>
+          <li><b>It lives outdoors.</b> Buses are washed with water jets and driven through rain, dust and heat. Nothing may get inside.</li>
+        </ul>
+      </div>
+      <div class="card lit">
+        <span class="tag">And that is exactly why we want it</span>
+        <p>If a part were easy, a hundred workshops would already make it and the price would be pushed to nothing.</p>
+        <p>This one is hard, so very few make it. India makes the cable and the charging gun well. <strong>The socket still comes from abroad</strong> — and the one skill holding us back is the silver coating on the pins. That can be learnt.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s3">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea one · why now</p>
+    <h2>Why this is the right moment.</h2>
+    <p class="lede" style="margin-bottom:22px">
+      Three things have come together: a new rule that forces this part to be made in India,
+      buyers sitting close to us, and hardly anyone here who makes it.
+    </p>
+
+    <div class="grid g4" style="margin-bottom:18px">
+      <div class="card"><span class="stat">24.5 lakh</span><span class="stat-l">Electric vehicles were sold in India last year. Every single one of them needs a socket.</span></div>
+      <div class="card"><span class="stat">More than half</span><span class="stat-l">Of these sockets are still bought from other countries.</span></div>
+      <div class="card"><span class="stat">4,500</span><span class="stat-l">Electric buses are coming to Bengaluru alone, and each one needs two sockets.</span></div>
+      <div class="card"><span class="stat">A handful</span><span class="stat-l">Of Indian companies actually make this part today.</span></div>
+    </div>
+
+    <div class="grid g3">
+      <div class="card lit">
+        <span class="tag">1 · A rule now protects us</span>
+        <p>The government helps pay for electric buses. In return it says: certain parts of that bus must be made in India.</p>
+        <p><strong>The charging socket is on that list.</strong></p>
+        <p>This matters because it is a rule, not a grant. Nobody has to release money for it to apply — the bus maker simply has to buy the part from an Indian supplier.</p>
+      </div>
+      <div class="card lit">
+        <span class="tag">2 · The buyers are our neighbours</span>
+        <p>Only a handful of companies build electric buses in India. Two of them are close to us: <strong>Tata at Dharwad</strong>, and <strong>Ashok Leyland at Hosur</strong>, less than an hour from Bengaluru.</p>
+        <p>Few buyers sounds risky, but for a small factory it is easier — we can visit all of them, and each one buys the same part again and again.</p>
+      </div>
+      <div class="card lit">
+        <span class="tag">3 · Hardly anyone makes it here</span>
+        <p>India is good at making the cable and the charging gun. The socket is the piece still coming from Germany, Japan, the US and China.</p>
+        <p>The big foreign companies sell in India, but they do not build here. So the moment a bus maker needs an Indian supplier, there are very few names to call.</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="bd"><span class="t">What it sells for</span><span class="v">One fast socket for a bus is worth about the price of a good phone. A scooter socket is worth a few hundred rupees — which is why we start with buses.</span></div>
+      <div class="bd ok"><span class="t">Why the customer stays</span><span class="v">Changing this part means testing the whole vehicle again. So once we are approved, they keep buying from us for years.</span></div>
+      <div class="bd no"><span class="t">The honest catch</span><span class="v">It takes two to three years of testing and approvals before the first steady order. This is a patient business.</span></div>
+      <div class="bd"><span class="t">What we can do meanwhile</span><span class="v">Sell simpler versions and spare sockets to bus depots while the big approvals are going on.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s4">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea one · exactly what we do</p>
+    <h2>How we make it, and how we sell it.</h2>
+
+    <div class="flow" style="margin-bottom:8px">
+      <div class="fx"><span class="fn">Step 01</span><h4>Buy the pieces</h4>
+        <p>Copper pins, plastic granules, rubber rings, a small heat sensor and a tiny lock motor.</p>
+        <span class="who">All available in India</span></div>
+      <div class="fx gold"><span class="fn">Step 02</span><h4>Coat the pins</h4>
+        <p>Each pin gets a thin, even layer of silver. This is the step that decides whether the socket passes or fails.</p>
+        <span class="who">The skill we must own</span></div>
+      <div class="fx"><span class="fn">Step 03</span><h4>Shape the body</h4>
+        <p>Hot plastic is pressed into a steel mould to form the outer body. The mould is made once and used for years.</p>
+        <span class="who">Made in Bengaluru</span></div>
+      <div class="fx"><span class="fn">Step 04</span><h4>Put it together</h4>
+        <p>Pins go into the holder, wires are joined, rubber rings are fitted, lid and sensor added.</p>
+        <span class="who">Our workers</span></div>
+      <div class="fx"><span class="fn">Step 05</span><h4>Test every piece</h4>
+        <p>Every socket is checked for heat, water and a proper electrical connection. Each one gets a number, so we can trace it later.</p>
+        <span class="who">Our test bench</span></div>
+    </div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card">
+        <span class="tag">Where the materials come from</span>
+        <ul>
+          <li><b>The pins</b> — cut and shaped by Indian metal press workshops, from our drawing.</li>
+          <li><b>The silver coating</b> — done by an outside specialist at first. Later we bring it in-house, because it is the hardest and most valuable step.</li>
+          <li><b>The plastic</b> — a standard engineering plastic, sold openly in India.</li>
+          <li><b>Sensor and lock motor</b> — small bought-in items, as every maker does.</li>
+          <li><b>The mould</b> — made once by a Bengaluru tool room, then used for thousands of parts.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">How the orders come</span>
+        <ul>
+          <li><b>First, samples.</b> We make ten by hand. No big factory needed for this.</li>
+          <li><b>Then, government testing.</b> A national lab heats it, freezes it, sprays water on it and plugs it in thousands of times. Passing this is what makes us a real supplier.</li>
+          <li><b>Then, a factory visit.</b> The bus maker inspects how we work and keep records.</li>
+          <li><b>Then, a trial batch.</b> They measure our first pieces closely and approve them.</li>
+          <li><b>Then regular orders</b> — plus spare sockets for depots, which repeat on their own.</li>
+        </ul>
+      </div>
+      <div class="card lit">
+        <span class="tag">How we start, in three sizes</span>
+        <p><strong>Small — about ₹1.5 to 3 crore.</strong> We buy the pins and bodies ready-made and only assemble, seal and test. We start earning and learning quickly.</p>
+        <p><strong>Full — about ₹8 to 15 crore.</strong> Our own mould, our own assembly line and test room. This is the version bus makers approve.</p>
+        <p><strong>Later — our own coating line.</strong> The step India is missing. Then other companies come to us for it too, not just our own product.</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="bd"><span class="t">First few months</span><span class="v">Drawings, samples, and getting the mould made</span></div>
+      <div class="bd"><span class="t">Months 4 to 8</span><span class="v">Testing at a government-approved lab</span></div>
+      <div class="bd"><span class="t">Months 9 to 15</span><span class="v">Setting up proper records, then the factory inspection</span></div>
+      <div class="bd"><span class="t">Months 15 to 24</span><span class="v">Trial batch checked and approved by a bus maker</span></div>
+      <div class="bd ok"><span class="t">After that</span><span class="v">Regular monthly orders begin</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s5">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea two · the cooling business</p>
+    <h2>A company that keeps machines cool.</h2>
+    <p class="lede" style="margin-bottom:20px">
+      Start with something everyone has felt: <strong>a phone gets warm when you use it heavily.</strong>
+      Every machine that uses electricity does the same thing — it turns some of that electricity into heat.
+      The bigger the machine, the bigger the heat.
+    </p>
+
+    <div class="grid g3" style="margin-bottom:20px">
+      <div class="card">
+        <span class="tag">First, why fans stopped working</span>
+        <p>A laptop has a fan. That is enough for a laptop.</p>
+        <p>But today's computer chips are far more powerful. One chip can give off as much heat as a room heater — from a piece the size of a postcard. A fan blowing air over it is like blowing on hot tea: it helps a little, and then it stops helping.</p>
+      </div>
+      <div class="card">
+        <span class="tag">So the world switched to liquid</span>
+        <p>Water carries heat away far better than air. That is why a car engine has a radiator with coolant running through it, not just a fan.</p>
+        <p>Computers, batteries and chargers are now cooled the same way: liquid is carried right up to the hot part, picks up the heat, and takes it outside.</p>
+      </div>
+      <div class="card lit">
+        <span class="tag">Where our factory fits in</span>
+        <p>We do not make the chip, the battery or the pump. Those are somebody else's business.</p>
+        <p>We make <strong>the metal that carries the liquid</strong>: the flat plate that sits on the hot part, the pipes, and the block that splits one pipe into many.</p>
+        <p>It is careful, accurate metalwork that must never leak. That is the whole business.</p>
+      </div>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 1000 330" class="dg" role="img" aria-label="How liquid cooling works: liquid picks up heat from the hot part through a cold plate, travels through a junction block to a pump, the heat leaves outside, and the cooled liquid comes back">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect class="box" x="30" y="60" width="150" height="96" rx="6"/>
+        <text class="lbl" x="105" y="98" text-anchor="middle">The hot part</text>
+        <text class="sub" x="105" y="120" text-anchor="middle">a chip, a battery,</text>
+        <text class="sub" x="105" y="138" text-anchor="middle">a motor or a charger</text>
+
+        <rect class="box mine" x="240" y="60" width="150" height="96" rx="6"/>
+        <text class="lbl" x="315" y="98" text-anchor="middle">Metal plate</text>
+        <text class="sub" x="315" y="120" text-anchor="middle">sits on the hot part</text>
+        <text class="sub" x="315" y="138" text-anchor="middle">and takes its heat</text>
+
+        <rect class="box mine" x="450" y="60" width="150" height="96" rx="6"/>
+        <text class="lbl" x="525" y="98" text-anchor="middle">Junction block</text>
+        <text class="sub" x="525" y="120" text-anchor="middle">splits the liquid</text>
+        <text class="sub" x="525" y="138" text-anchor="middle">between many pipes</text>
+
+        <rect class="box" x="660" y="60" width="150" height="96" rx="6"/>
+        <text class="lbl" x="735" y="98" text-anchor="middle">Pump unit</text>
+        <text class="sub" x="735" y="120" text-anchor="middle">keeps the liquid moving</text>
+        <text class="sub" x="735" y="138" text-anchor="middle">and hands the heat on</text>
+
+        <rect class="box" x="870" y="60" width="100" height="96" rx="6"/>
+        <text class="lbl" x="920" y="102" text-anchor="middle">Outside</text>
+        <text class="sub" x="920" y="124" text-anchor="middle">heat leaves</text>
+
+        <line class="arr warm" x1="184" y1="108" x2="234" y2="108" marker-end="url(#ah)"/>
+        <line class="arr warm" x1="394" y1="108" x2="444" y2="108" marker-end="url(#ah)"/>
+        <line class="arr warm" x1="604" y1="108" x2="654" y2="108" marker-end="url(#ah)"/>
+        <line class="arr warm" x1="814" y1="108" x2="864" y2="108" marker-end="url(#ah)"/>
+        <text class="cap" x="209" y="94" text-anchor="middle">heat</text>
+        <text class="cap" x="419" y="94" text-anchor="middle">warm</text>
+        <text class="cap" x="629" y="94" text-anchor="middle">warm</text>
+        <text class="cap" x="839" y="94" text-anchor="middle">out</text>
+
+        <polyline class="arr cold" points="735,160 735,214 315,214 315,162" marker-end="url(#ah)"/>
+        <text class="cap" x="525" y="234" text-anchor="middle">the cooled liquid comes back and goes round again, all day</text>
+
+        <rect class="box mine" x="30" y="276" width="26" height="18" rx="3"/>
+        <text class="sub" x="66" y="290">What we make: the plates, the pipes and the junction blocks</text>
+        <rect class="box" x="600" y="276" width="26" height="18" rx="3"/>
+        <text class="sub" x="636" y="290">Not our job: pumps, controls, and the machine itself</text>
+      </svg>
+      <figcaption>It is the same simple loop everywhere — in an electric bus, in a fast charger, and in a room full of computers.
+        <b>Only the metal changes:</b> aluminium for vehicles, steel for computer rooms, copper for chips.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="slide" id="s6">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea two · exactly what we do</p>
+    <h2>Four jobs, done properly.</h2>
+    <p class="lede" style="margin-bottom:20px">
+      This factory is not complicated. Every part we make is the same four jobs, done accurately every time.
+      Learn them once, and the same workshop can serve buses, cars, chargers, tractors and computer rooms.
+    </p>
+
+    <div class="flow four" style="margin-bottom:18px">
+      <div class="fx"><span class="fn">Job 01</span><h4>Cut and bend the pipe</h4>
+        <p>Metal pipe is cut to length and bent to the exact shape the customer has drawn.</p>
+        <span class="who">Pipe bending machine</span></div>
+      <div class="fx"><span class="fn">Job 02</span><h4>Drill the block</h4>
+        <p>A solid block of metal is drilled and shaped so every pipe fits into it perfectly.</p>
+        <span class="who">Computer-controlled machines</span></div>
+      <div class="fx"><span class="fn">Job 03</span><h4>Join it together</h4>
+        <p>The joints are welded so they are as strong as the metal around them.</p>
+        <span class="who">Trained welders</span></div>
+      <div class="fx gold"><span class="fn">Job 04</span><h4>Prove it never leaks</h4>
+        <p>A gas is pushed inside and a machine sniffs for a leak far too small for the eye to see. Every single piece is checked.</p>
+        <span class="who">This is what we are really selling</span></div>
+    </div>
+
+    <div class="grid g3">
+      <div class="card">
+        <span class="tag">Where the materials come from</span>
+        <ul>
+          <li><b>Aluminium and steel pipe and plate</b> — ordinary sizes, bought from Indian suppliers.</li>
+          <li><b>Fittings and rubber hoses</b> — bought in, from the list the customer approves.</li>
+          <li>No rare material, no import permission, no chemicals. That simplicity is a strength.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">How the orders come</span>
+        <ul>
+          <li><b>We do not go to the bus companies.</b> We go to the companies that make the cooling system for them.</li>
+          <li>Those companies already buy these exact parts from outside, so we are not asking them to change how they work.</li>
+          <li>They take <b>under a year</b> to approve a new supplier, where a vehicle maker takes two.</li>
+          <li>Then it is simple: make it to their drawing, deliver on time, never leak. That is how the next order comes.</li>
+        </ul>
+      </div>
+      <div class="card lit">
+        <span class="tag">Three ways to start</span>
+        <p><strong>Small — ₹1 to 1.5 crore.</strong> Bending pipes and making brackets for others. Money starts coming in within a year, though the profit per piece is small.</p>
+        <p><strong>Proper — ₹2.5 to 4 crore.</strong> We make the junction blocks and pipe sets ourselves and do our own leak testing. This is the one I would choose.</p>
+        <p><strong>Bigger, later — ₹8 to 15 crore.</strong> The plates that touch the hot part. Harder to make, and they sell to vehicles, batteries and computer rooms alike.</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="bd ok"><span class="t">Why customers stay</span><span class="v">A leak in the field is a disaster for them. Once a supplier has proved it never leaks, they stop looking elsewhere.</span></div>
+      <div class="bd"><span class="t">What changes between industries</span><span class="v">Only the metal, and how clean it has to be. The machines and the skills stay the same.</span></div>
+      <div class="bd no"><span class="t">The honest catch</span><span class="v">Each piece earns little. This business makes money by repeating well, not by selling one expensive part.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s7">
+  <div class="wrap wide">
+    <p class="eyebrow">Idea two · where we can sell</p>
+    <h2>Six kinds of customer, one workshop.</h2>
+    <p class="lede" style="margin-bottom:22px">
+      We do not go after all of them at once. We start with the easiest, become good at it, then add the next.
+      Each new industry means fresh approvals — but the same four jobs.
+    </p>
+
+    <div class="ladder">
+      <div class="rung">
+        <span class="lv">Start</span>
+        <span class="nm">Electric buses and trucks<small>Our way in</small></span>
+        <span class="mk">Pipe sets and junction blocks for the companies that build bus cooling systems. A rule is already pushing this work to Indian suppliers.</span>
+        <span class="sz">Small to begin with, but it opens the door</span>
+      </div>
+      <div class="rung">
+        <span class="lv">Bread</span>
+        <span class="nm">Tractors, generators, earth movers<small>Ordinary machines, huge numbers</small></span>
+        <span class="mk">Radiator pipes, hoses and brackets. Nothing new or fashionable — but India built over eleven lakh tractors last year, and every one needs cooling.</span>
+        <span class="sz">Steady work that keeps the workshop busy</span>
+      </div>
+      <div class="rung">
+        <span class="lv">Grow</span>
+        <span class="nm">Electric cars and battery banks<small>Same metal, more of it</small></span>
+        <span class="mk">Cooling plates and pipe sets for car batteries, and for the big battery rooms now being built to store electricity.</span>
+        <span class="sz">Volumes get much larger</span>
+      </div>
+      <div class="rung">
+        <span class="lv">Grow</span>
+        <span class="nm">Chargers and power equipment<small>They run hot too</small></span>
+        <span class="mk">Cooling plates for fast chargers and the boxes that convert electricity. A growing market, and the rules favour Indian-made parts.</span>
+        <span class="sz">Good profit, familiar work</span>
+      </div>
+      <div class="rung">
+        <span class="lv">Prize</span>
+        <span class="nm">Computer rooms for AI<small>Where the best money is</small></span>
+        <span class="mk">Steel pipe runs and junction blocks for the rooms full of AI computers now being built across India. One global company already makes this equipment in Bengaluru.</span>
+        <span class="sz">Fastest growing, best paying</span>
+      </div>
+      <div class="rung soft">
+        <span class="lv">Later</span>
+        <span class="nm">Chip factories<small>Hardest of all</small></span>
+        <span class="mk">Extremely clean pipework for factories that make computer chips. It needs a dust-free room and specially trained welders.</span>
+        <span class="sz">A decision for much later</span>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:20px">
+      <div class="card lit">
+        <span class="tag">The whole point of this page</span>
+        <p>Buses alone are too small a market to build a company on.</p>
+        <p>But the <strong>same workshop, the same machines and the same people</strong> can serve all six. That is what turns a small parts shop into a real business.</p>
+      </div>
+      <div class="card">
+        <span class="tag">One rule we will follow</span>
+        <p>One industry at a time. Each new one brings fresh approvals and paperwork, not just a fresh customer. Trying to serve all six in year one is how small factories fail.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Where scooters fit in</span>
+        <p>They don't, and it is better to say so. Scooter and auto batteries are cooled by plain air, so India's biggest electric segment buys nothing from this factory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s8">
+  <div class="wrap wide">
+    <p class="eyebrow">What it takes to set up</p>
+    <h2>The people, the shed and the paperwork.</h2>
+    <p class="lede" style="margin-bottom:20px">
+      This is what the cooling parts factory actually looks like on day one:
+      about twenty people, a rented shed of roughly six thousand square feet, and a short list of registrations.
+      Nothing exotic — but each piece has to be in place before the first order can be delivered.
+    </p>
+
+    <div class="card" style="margin-bottom:15px">
+      <span class="tag">The team · about 19 people to begin with</span>
+      <div class="scroll">
+        <table class="plain">
+          <tr><th>Who</th><th>How many</th><th>What they do</th><th>Pay a month</th></tr>
+          <tr><td><b>Production head</b></td><td>1</td><td>Runs the floor and owns quality. The most important hire in the whole plan.</td><td>₹1.5–2.5 lakh</td></tr>
+          <tr><td><b>Quality engineer</b></td><td>1</td><td>Checks every part against the drawing and keeps the records customers audit.</td><td>₹50,000–75,000</td></tr>
+          <tr><td><b>Customer engineer</b></td><td>1</td><td>Handles drawings, quotations and customer visits. Our face outside the factory.</td><td>₹60,000–90,000</td></tr>
+          <tr><td><b>Welders (certified)</b></td><td>3</td><td>Make the joints that must never leak. Hardest people to find, so pay them properly.</td><td>₹35,000–55,000 each</td></tr>
+          <tr><td><b>Machine operators</b></td><td>2</td><td>Run the computer-controlled machines that shape the metal blocks.</td><td>₹20,000–25,000 each</td></tr>
+          <tr><td><b>Cutting and bending operators</b></td><td>2</td><td>Cut pipe to length and bend it to shape.</td><td>₹18,000–22,000 each</td></tr>
+          <tr><td><b>Leak test technician</b></td><td>1</td><td>Tests every finished piece and signs it off before it leaves.</td><td>₹25,000–30,000</td></tr>
+          <tr><td><b>Assembly and cleaning helpers</b></td><td>3</td><td>Clean, assemble and pack. Cleanliness matters as much as the welding.</td><td>₹15,000–18,000 each</td></tr>
+          <tr><td><b>Store keeper</b></td><td>1</td><td>Receives material, issues it to the floor, keeps count.</td><td>₹18,000–22,000</td></tr>
+          <tr><td><b>Maintenance and tooling</b></td><td>1</td><td>Keeps the machines running and the fixtures in shape.</td><td>₹22,000–28,000</td></tr>
+          <tr><td><b>Accounts and compliance</b></td><td>1</td><td>Bills, salaries, GST and returns. Can be part-time at the start.</td><td>₹25,000–35,000</td></tr>
+          <tr><td><b>Housekeeping and security</b></td><td>2</td><td>Usually hired through a contractor.</td><td>₹15,000 each</td></tr>
+          <tr><td colspan="3"><b>Total salary bill</b></td><td><b>About ₹7.5 lakh a month, or roughly ₹1 crore a year including provident fund</b></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-bottom:15px">
+      <div class="card">
+        <span class="tag">The shed · about 6,000 to 7,000 sq ft, rented</span>
+        <div class="scroll">
+          <table class="plain">
+            <tr><th>Area</th><th>Roughly</th><th>What happens there</th></tr>
+            <tr><td><b>Machining</b></td><td>1,200 sq ft</td><td>The machines that shape metal blocks</td></tr>
+            <tr><td><b>Cutting and bending</b></td><td>900 sq ft</td><td>Pipe is cut and bent to shape</td></tr>
+            <tr><td><b>Welding bays</b></td><td>900 sq ft</td><td>Three separate bays, screened off</td></tr>
+            <tr><td><b>Cleaning and leak testing</b></td><td>700 sq ft</td><td>Kept clean and dust-free, the heart of the factory</td></tr>
+            <tr><td><b>Assembly and packing</b></td><td>700 sq ft</td><td>Final fitting and boxing</td></tr>
+            <tr><td><b>Raw material store</b></td><td>600 sq ft</td><td>Pipe, plate and bought-in fittings</td></tr>
+            <tr><td><b>Finished goods and dispatch</b></td><td>450 sq ft</td><td>Ready parts, loading area</td></tr>
+            <tr><td><b>Inspection room</b></td><td>250 sq ft</td><td>Measuring instruments, kept at steady temperature</td></tr>
+            <tr><td><b>Office and records</b></td><td>400 sq ft</td><td>Drawings, certificates, customer files</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag">What the building must have</span>
+        <ul>
+          <li><b>Electricity</b> — a three-phase connection of about 100 to 150 kVA, and a backup generator so a power cut does not spoil a weld halfway through.</li>
+          <li><b>Height and a hoist</b> — about 6 metres of clear height and a small overhead crane, because metal blocks and finished assemblies are heavy.</li>
+          <li><b>Compressed air</b> — used by almost every machine and for cleaning.</li>
+          <li><b>Clean water</b> — a small purifying setup for the final wash, so nothing is left inside the pipes.</li>
+          <li><b>A proper floor</b> — level and strong enough for machines that must not shake.</li>
+          <li><b>No chemicals, no plating</b> — which keeps the pollution clearance simple and the neighbours happy.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid g3">
+      <div class="card">
+        <span class="tag">Registrations and paperwork</span>
+        <ul>
+          <li>Company registration, GST, and small-enterprise (Udyam) registration — the last one legally requires customers to pay us within 45 days.</li>
+          <li>Factory licence and fire clearance.</li>
+          <li>Pollution board consent — the simple category, since we use no chemicals.</li>
+          <li>Provident fund and employee insurance registration.</li>
+          <li>Insurance for fire, machine breakdown and product liability.</li>
+          <li><b>ISO 9001</b> in the first year — the basic quality certificate every customer asks to see. The stricter vehicle-industry certificate comes later.</li>
+        </ul>
+      </div>
+      <div class="card lit">
+        <span class="tag">Where the money goes</span>
+        <ul>
+          <li><b>Machines</b> — ₹1.6 to 2.2 crore</li>
+          <li><b>Testing and measuring equipment</b> — ₹50 to 80 lakh. This is what customers are really paying for.</li>
+          <li><b>Shed deposit, wiring, air, crane, fit-out</b> — ₹30 to 50 lakh</li>
+          <li><b>First year's salaries and material money</b> — ₹60 lakh to ₹1 crore</li>
+          <li><b>Total: roughly ₹3 to 4.5 crore</b> to be properly running, with money left to survive slow payments.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">If we build the socket factory instead</span>
+        <ul>
+          <li><b>Smaller shed</b> — 3,000 to 4,000 sq ft is enough, because the parts are small.</li>
+          <li><b>Fewer people</b> — about 12 to 15, but more of them on assembly and electrical testing than on welding.</li>
+          <li><b>One rare specialist</b> — someone who understands metal coating. Without that person, this business does not work.</li>
+          <li><b>Cleaner room</b> — small parts, fine seals, so dust matters even more.</li>
+          <li>The plastic moulding is done outside at first, so we do not buy that machinery on day one.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="bd ok"><span class="t">Hire this person first</span><span class="v">The production head. Everything else — machines, customers, approvals — is chosen better once that person is in the room.</span></div>
+      <div class="bd"><span class="t">Doubling output is cheap</span><span class="v">A second shift adds operators, not machines. Capacity can nearly double for the cost of a few more salaries.</span></div>
+      <div class="bd"><span class="t">Where the shed should be</span><span class="v">Just outside Bengaluru — Kolar, Malur, Harohalli or Tumakuru. Rent is lower, and the state gives a bigger subsidy there than inside the city.</span></div>
+      <div class="bd no"><span class="t">Keep this much aside</span><span class="v">Customers pay in 60 to 120 days. We need three to four months of salaries and material money sitting in the bank, separate from the machines.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s9">
+  <div class="wrap">
+    <p class="eyebrow">Putting the two together</p>
+    <h2>Two ideas, one decision.</h2>
+    <div class="card" style="margin-bottom:18px">
+      <div class="scroll">
+        <table class="plain">
+          <tr><th></th><th>Idea 1 — the socket</th><th>Idea 2 — cooling parts</th></tr>
+          <tr><td><b>Money needed to start</b></td><td>₹8–15 crore for the full version</td><td><b>₹2.5–4 crore</b></td></tr>
+          <tr><td><b>When money starts coming in</b></td><td>Two to three years</td><td><b>Within about a year</b></td></tr>
+          <tr><td><b>Earning per piece</b></td><td><b>High</b> — one bus socket is worth about a good phone</td><td>Low, but repeated many times over</td></tr>
+          <tr><td><b>Is a rule helping us</b></td><td><b>Yes</b> — the socket is named in the government's list</td><td>Yes, but less directly</td></tr>
+          <tr><td><b>Who else we can sell to</b></td><td>Only vehicle makers</td><td><b>Many</b> — tractors, chargers, computer rooms, chip factories</td></tr>
+          <tr><td><b>Special person we must hire</b></td><td><b>Yes</b> — someone who understands metal coating</td><td>A good welding and testing supervisor</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card lit"><span class="tag">Step one</span><p>Start the <strong>cooling parts</strong> business. It is cheaper, it starts earning within a year, and it teaches us the welding and leak-testing skill that everything else depends on.</p></div>
+      <div class="card lit"><span class="tag">Step two</span><p>While that runs, quietly push the <strong>socket</strong> through its testing and approvals. The first business pays for the second one.</p></div>
+      <div class="card lit"><span class="tag">Step three</span><p>Then own the two things almost nobody in India owns: <strong>silver coating for high-power pins</strong>, and <strong>cooling plates that never leak</strong>.</p></div>
+    </div>
+    <p class="note" style="margin-top:22px">
+      The figures in this deck are research estimates for India, gathered in September 2026. They are meant to show the size and shape of the opportunity, not to serve as final costs or guaranteed returns.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<nav class="rail" id="rail" aria-label="Pages"></nav>
+<div class="pager" id="pager">01 / 09</div>
+
+<script>
+(function(){
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var rail = document.getElementById("rail");
+  var pager = document.getElementById("pager");
+  slides.forEach(function(s, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", "Page " + (i + 1));
+    b.addEventListener("click", function(){ s.scrollIntoView({behavior:"smooth", block:"start"}); });
+    rail.appendChild(b);
+  });
+  function mark(){
+    var mid = window.innerHeight / 2, cur = 0;
+    slides.forEach(function(s, i){
+      var r = s.getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) cur = i;
+    });
+    Array.prototype.forEach.call(rail.children, function(b, i){
+      b.setAttribute("aria-current", i === cur ? "true" : "false");
+    });
+    pager.textContent = ("0" + (cur + 1)).slice(-2) + " / " + ("0" + slides.length).slice(-2);
+  }
+  window.addEventListener("scroll", mark, {passive:true});
+  window.addEventListener("resize", mark);
+  mark();
+})();
+</script>

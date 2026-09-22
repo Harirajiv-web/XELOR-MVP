@@ -1,0 +1,2 @@
+# Preserve original source snapshots exactly, including their line endings.
+archive/** -text

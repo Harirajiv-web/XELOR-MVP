@@ -1,0 +1,1684 @@
+[
+  {
+    "id": "uhp-delivery",
+    "title": "Ultra-high-purity gas delivery assemblies",
+    "shortTitle": "UHP gas delivery",
+    "sector": "Semiconductor facilities and equipment",
+    "plain": "Make the pipes and valve panels that carry exceptionally clean gas into chipmaking tools. A microscopic leak or contamination can spoil a manufacturing process, so the product includes proof of cleanliness and traceable testing.",
+    "analogy": "Like a hospital's sterile fluid line, with each joint tracked and checked before use.",
+    "product": "Customer-approved inert-gas valve manifold panels, small distribution boxes and orbital-welded tube-spool kits, with test records and installation support.",
+    "does": "Divides and controls nitrogen or argon supply without adding particles, moisture or avoidable leaks; connects the facility distribution system to a tool's approved interface.",
+    "customers": [
+      "Fab or OSAT facilities engineering teams",
+      "Semiconductor tool manufacturers and their subsystem suppliers",
+      "Process-utility EPC contractors",
+      "Industrial-gas suppliers delivering semiconductor facility projects"
+    ],
+    "whyNow": "India has operating semiconductor plants and further approved facilities; these require utilities, extensions and maintenance. Swagelok and Exyte identify high-purity fluid assemblies and off-site utility modules as established supply categories [S1,S4]. This supports a specific vendor-qualification route, not a verified unawarded Indian order book.",
+    "firstProduct": "An engineered 4- to 8-outlet nitrogen/argon valve manifold family, using customer-approved electropolished stainless tube and diaphragm valves, plus matching prefabricated tube spools. Tube size, pressure and outlet count follow the customer's approved specification.",
+    "notIncluded": "No gas generation or chemical synthesis; no initial toxic, pyrophoric or corrosive-gas cabinet; no mass-flow-controller or diaphragm-valve manufacture; no complete fab utility EPC. Liquid chemical/PFA assemblies would require a separate qualified process.",
+    "entry": "Recruit a semiconductor fluid-systems engineering lead and licensed orbital-welding trainer. Qualify first as an assembly supplier to a tool OEM or utility contractor. Obtain the buyer's approved component list and test specification before tooling; obtain the design licence if supplying a partner's proprietary panel.",
+    "capacity": "Planning assumption: 150-250 small manifold panels and 1,000-2,000 tube spools per year after qualification, one 8-hour shift for 250 days. Weld count and purity-test duration, rather than panel count alone, determine capacity.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility allowances for a leased industrial shell. Recoverable GST, land purchase and new shell construction excluded; freight/installation included in equipment allowances. Working capital separate; no subsidy deducted. Not supplier quotations.",
+      "items": [
+        {
+          "name": "Clean assembly zone and controlled fit-out",
+          "low": 3,
+          "high": 5,
+          "note": "ISO7 background with qualified local ISO5 workstations is a proposed design, not a guaranteed customer requirement."
+        },
+        {
+          "name": "Orbital welding systems and training tooling",
+          "low": 2,
+          "high": 3.5,
+          "note": "Multiple power supplies, heads, purge monitoring and validation coupons."
+        },
+        {
+          "name": "Tube preparation, bending and fabrication",
+          "low": 1,
+          "high": 1.8,
+          "note": "Precision facing, cutting, bending and fixtures; enclosure cutting initially outsourced."
+        },
+        {
+          "name": "Leak, pressure and functional-test equipment",
+          "low": 2,
+          "high": 3.5,
+          "note": "Two leak-test benches, clean test-gas supply and interlocked pressure fixtures."
+        },
+        {
+          "name": "Cleanliness and analytical verification",
+          "low": 1.5,
+          "high": 3,
+          "note": "Moisture/oxygen instruments, inspection, clean packaging and specialist lab setup."
+        },
+        {
+          "name": "Controls, traceability and calibration",
+          "low": 0.8,
+          "high": 1.5,
+          "note": "Panel-control rigs, weld traceability and instrument calibration."
+        },
+        {
+          "name": "Engineering transfer and qualification launch",
+          "low": 1.2,
+          "high": 2,
+          "note": "Engineering documentation, welding procedures and initial non-saleable samples."
+        },
+        {
+          "name": "Installation and contingency reserve",
+          "low": 2,
+          "high": 3.2,
+          "note": "Allowance for clean-service connections, redesign and commissioning."
+        }
+      ],
+      "workingLow": 4,
+      "workingHigh": 8,
+      "workingNote": "Separate allowance for long-lead imported valves/fittings, pilot payroll and 90-150-day project receivables; actual terms can increase this materially.",
+      "landNote": "Lease deposit included only within working-capital planning. Purchased land and new civil shell are additional project costs.",
+      "confidence": "Planning estimate; requires an anchor specification, at least three equipment RFQs and a site utility survey.",
+      "totalLow": 13.5,
+      "totalHigh": 23.5,
+      "totalWithWorkingLow": 17.5,
+      "totalWithWorkingHigh": 31.5
+    },
+    "site": {
+      "builtup": "Assume 16,000-24,000 sq ft (about 1,490-2,230 sq m). The proposed classified cleanroom subset is 3,000-5,000 sq ft within the larger welding/assembly and test/packing departments; the remaining departmental area supports preparation, handling and non-classified activities.",
+      "plot": "If greenfield: screen 0.8-1.3 acres for a single-storey shell, setbacks, loading and utilities; not an approved layout.",
+      "power": "Screen 200-400 kVA connected load; demand, backup and HVAC redundancy require engineering.",
+      "water": "Screen 2-5 kL/day for staff and approved cleaning. Final electropolishing/passivation outsourced initially; no bulk chemical cleaning line assumed.",
+      "conditions": [
+        "Separate dusty metal work from clean assembly with controlled material transfer.",
+        "Provide nitrogen/argon and helium test supplies, ventilation and oxygen-deficiency monitoring appropriate to inert-gas use.",
+        "Prefer Peenya/Dabaspet engineering access; validate permitted activity, vibration, air quality and expansion space."
+      ],
+      "areas": [
+        {
+          "name": "Tube preparation and fixtures",
+          "share": 20,
+          "why": "Cut, face and form tubing away from clean work."
+        },
+        {
+          "name": "Controlled welding and assembly",
+          "share": 30,
+          "why": "Protect open fluid paths and preserve component cleanliness."
+        },
+        {
+          "name": "Testing and clean packing",
+          "share": 20,
+          "why": "Complete acceptance checks and seal finished assemblies."
+        },
+        {
+          "name": "Stores and receiving",
+          "share": 15,
+          "why": "Quarantine and trace customer-approved materials."
+        },
+        {
+          "name": "Engineering and support",
+          "share": 15,
+          "why": "Design, records, training and staff facilities."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Operations and quality leadership",
+        "count": 4,
+        "why": "Own customer commitments and the quality system."
+      },
+      {
+        "role": "Fluid/mechanical engineers",
+        "count": 5,
+        "why": "Translate customer interfaces into controlled drawings."
+      },
+      {
+        "role": "Qualified orbital-welding technicians",
+        "count": 8,
+        "why": "Prepare and weld traceable joints."
+      },
+      {
+        "role": "Assembly technicians",
+        "count": 6,
+        "why": "Fit valves, supports, tubing and enclosures."
+      },
+      {
+        "role": "QA, leak and analytical technicians",
+        "count": 6,
+        "why": "Verify cleanliness, leaks and documentation."
+      },
+      {
+        "role": "Controls and field-service engineers",
+        "count": 3,
+        "why": "Test interlocks and support installation."
+      },
+      {
+        "role": "Purchasing and stores",
+        "count": 3,
+        "why": "Manage approved vendors and long-lead inventory."
+      },
+      {
+        "role": "Administration and maintenance",
+        "count": 3,
+        "why": "Support the site and instrument uptime."
+      }
+    ],
+    "teamNote": "38 people assumed for one shift and a small mobile service team. External welding trainer, specialist gas-safety review and accredited laboratory support are not included as full-time staff.",
+    "machines": [
+      {
+        "name": "Orbital GTAW power supply and closed weld heads",
+        "quantity": "3-4 stations",
+        "purpose": "Makes repeatable joints around a tube circumference.",
+        "spec": "RFQ tube diameter/wall range, weld-head clearance, purge control and electronic weld logs.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Precision tube cutter and facing tools",
+        "quantity": "2 preparation cells",
+        "purpose": "Creates square clean ends before welding.",
+        "spec": "Specify burr control, material segregation, tube support and verified preparation procedure.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Tube benders and spool fixtures",
+        "quantity": "2 benders; modular fixtures",
+        "purpose": "Forms bends and keeps outlet geometry repeatable.",
+        "spec": "RFQ diameter range, bend radius, ovality and fixture verification.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Controlled assembly workstations",
+        "quantity": "4-6 local work zones",
+        "purpose": "Keeps open components protected during fitment.",
+        "spec": "Proposed ISO5 work zones; final cleanliness class and airflow agreed with buyer.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Helium leak-detection benches",
+        "quantity": "2 benches",
+        "purpose": "Finds leaks too small for ordinary pressure checks.",
+        "spec": "Buyer-defined leak limit, background correction, calibration leak and fixtures; no universal acceptance value asserted.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Clean-gas pressure and functional rig",
+        "quantity": "2 rigs",
+        "purpose": "Checks pressure integrity, switching and outlet behaviour.",
+        "spec": "Design to the approved service pressure and safe proof procedure, with remote/interlocked operation.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Moisture, oxygen and particle-verification instruments",
+        "quantity": "1 shared analytical suite",
+        "purpose": "Checks whether assemblies contaminate the gas path.",
+        "spec": "Detection limits, purge duration and sampling arrangement set by customer specification.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "name": "Borescope, weld inspection and serialisation station",
+        "quantity": "1-2 stations",
+        "purpose": "Inspects accessible welds and links each joint to its record.",
+        "spec": "Include coupon preparation, weld maps, component serial/batch capture and protected clean packing.",
+        "sourceIds": [
+          "S2"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Agree the fluid specification",
+        "plain": "Define what gas flows where.",
+        "detail": "Freeze gas, purity, flow, pressure, interface and approved BOM with the buyer.",
+        "check": "Signed design and acceptance plan.",
+        "machine": "Engineering/traceability station",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Receive approved components",
+        "plain": "Check every part before opening it.",
+        "detail": "Verify material certificates, tube finish, valve serials and sealed packaging; quarantine discrepancies.",
+        "check": "Released incoming inspection.",
+        "machine": "Stores and inspection station",
+        "sourceIds": [
+          "S1",
+          "S5"
+        ]
+      },
+      {
+        "name": "Prepare tubing",
+        "plain": "Cut and face each tube accurately.",
+        "detail": "Form approved spools without contaminating internal surfaces; transfer capped parts to clean work.",
+        "check": "Dimensions, end condition and traceability accepted.",
+        "machine": "Tube preparation and bending",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Weld in the controlled zone",
+        "plain": "Join the clean tube sections.",
+        "detail": "Use qualified weld procedures, purge control and operator records; inspect representative coupons.",
+        "check": "Approved weld record and visual/coupon checks.",
+        "machine": "Orbital GTAW systems",
+        "sourceIds": [
+          "S1",
+          "S2"
+        ]
+      },
+      {
+        "name": "Assemble valves and controls",
+        "plain": "Build the complete distribution panel.",
+        "detail": "Fit purchased valves/regulators, supports and approved seals; add controls where required.",
+        "check": "BOM, torque and interface checklist.",
+        "machine": "Controlled assembly workstations",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Test integrity and cleanliness",
+        "plain": "Prove that the gas path stays clean and sealed.",
+        "detail": "Execute agreed pressure/leak tests and purge/analytical checks using appropriate clean inert test media.",
+        "check": "Buyer-specific leak, purity and functional limits passed.",
+        "machine": "Leak and analytical benches",
+        "sourceIds": [
+          "S3",
+          "S5"
+        ]
+      },
+      {
+        "name": "Pack and qualify on site",
+        "plain": "Preserve the result until installation.",
+        "detail": "Seal/cap, label and release the data pack; repeat agreed site acceptance after transport/connection.",
+        "check": "Customer FAT/SAT sign-off and record retention.",
+        "machine": "Clean packing and field instruments",
+        "sourceIds": [
+          "S2",
+          "S4"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Inlet tube",
+        "meaning": "Brings clean inert gas into the panel."
+      },
+      {
+        "name": "Pressure regulator",
+        "meaning": "Purchased device controlling downstream pressure."
+      },
+      {
+        "name": "Isolation valves",
+        "meaning": "Open or close individual flow paths."
+      },
+      {
+        "name": "Outlet manifold",
+        "meaning": "Divides one supply into approved branches."
+      },
+      {
+        "name": "Weld joints",
+        "meaning": "Permanent joins with traceable inspection records."
+      },
+      {
+        "name": "Sensor/control section",
+        "meaning": "Measures conditions and operates permitted interlocks."
+      },
+      {
+        "name": "Test bench",
+        "meaning": "Checks the finished assembly before shipment."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Customer definition",
+        "duration": "Months 0-2",
+        "actions": "Obtain two target drawings and approved BOMs; recruit the technical lead; select inert-gas scope.",
+        "gate": "One paid development scope or buyer-sponsored qualification plan."
+      },
+      {
+        "phase": "Process transfer",
+        "duration": "Months 2-5",
+        "actions": "Qualify weld procedures, approved suppliers and sample test method with the partner.",
+        "gate": "Accepted weld coupons and design review."
+      },
+      {
+        "phase": "Factory installation",
+        "duration": "Months 4-9",
+        "actions": "Fit out clean zones, install tools and train staff; audit outsourced surface-treatment suppliers.",
+        "gate": "Site and measurement-system acceptance."
+      },
+      {
+        "phase": "Pilot approval",
+        "duration": "Months 9-15",
+        "actions": "Produce sample panels/spools; run FAT and customer site trials; correct transport contamination issues.",
+        "gate": "Written product/vendor qualification."
+      },
+      {
+        "phase": "Controlled production",
+        "duration": "Months 15-24",
+        "actions": "Release repeat orders, spares and service kits; add a shift only after test capacity is stable.",
+        "gate": "Repeat customer acceptance with measured yield and delivery performance."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Controlled environment",
+        "detail": "Agree operating-state cleanliness and verify local work zones; one ISO class is not proof of component purity.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "title": "Weld quality and traceability",
+        "detail": "Customer-approved procedure/operator qualification, coupons, weld logs and joint identification; no generic weld recipe substituted for qualification.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "title": "Leak and functional acceptance",
+        "detail": "Use calibrated instruments and the actual gas-panel specification; test pressure, leak limit and interlock behaviour are product-specific.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "title": "Material and purity preservation",
+        "detail": "Control wetted materials, surface-treatment certificates, caps and packing; qualify external cleaning separately.",
+        "sourceIds": [
+          "S5"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Spool geometry, welds, panel integration and records",
+        "route": "Make in India",
+        "detail": "Indian engineering, tube preparation, welding, assembly, testing and service."
+      },
+      {
+        "part": "Enclosures, support frames and general electrical panels",
+        "route": "Buy Indian",
+        "detail": "Local qualified suppliers; surface finish and cleanliness still audited."
+      },
+      {
+        "part": "UHP diaphragm valves, regulators, sensors and selected tubing",
+        "route": "Import initially",
+        "detail": "Use buyer-approved grades/brands; Indian distribution does not prove Indian manufacture."
+      },
+      {
+        "part": "Electropolishing, passivation and specialist contamination analysis",
+        "route": "Outsource",
+        "detail": "Qualified local capability if accepted; otherwise approved overseas route. Do not add an unqualified acid-cleaning process at launch."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "Semicon2.0 machinery/materials",
+        "status": "Policy snapshot 19 September 2026; conditional direct eligibility.",
+        "detail": "Equipment/subassembly manufacturing category has ₹300 crore minimum capital investment, ₹120 crore prior revenue and 30% eligible capex support. This smaller starter factory should not assume direct eligibility; supplying beneficiaries is the primary scheme-linked opportunity.",
+        "sourceIds": [
+          "S6"
+        ]
+      },
+      {
+        "name": "ECMS CategoryD",
+        "status": "Portal lists window to 30 April 2027; classification unconfirmed for this product.",
+        "detail": "₹10 crore minimum and 25% capex apply only if approved as covered electronics capital goods/supply chain. Obtain written classification; do not count the same cost under another central incentive.",
+        "sourceIds": [
+          "S7"
+        ]
+      }
+    ],
+    "network": "Use the stated connection for introductions to MeitY/ISM ecosystem officers, semiconductor facilities heads, utility EPC procurement teams and an experienced gas-system technology partner. Ask for a qualification sponsor, approved drawing and sample order; government access is not a purchase order.",
+    "risks": [
+      {
+        "risk": "An established buyer will not accept a new gas-path supplier.",
+        "response": "Start with a narrowly specified inert-gas subsystem under an approved integrator and qualify before broad investment."
+      },
+      {
+        "risk": "A leak-free assembly still adds contamination.",
+        "response": "Treat material condition, purge performance, sampling and packing as separate acceptance gates."
+      },
+      {
+        "risk": "Imported approved components tie up cash.",
+        "response": "Negotiate customer-funded long-lead materials and non-cancellable BOM releases."
+      },
+      {
+        "risk": "Expanding into hazardous gases changes the engineering obligation.",
+        "response": "Require a separate licensed design, safety review and qualification programme rather than adapting the inert panel informally."
+      }
+    ],
+    "first90": [
+      "Interview three actual subsystem buyers and obtain an approved component list.",
+      "Hire the technical lead and audit one welding/cleaning partner.",
+      "Build costed drawings for one inert manifold and one spool kit.",
+      "Request RFQs for welding, leak testing and controlled assembly fit-out.",
+      "Secure a customer-approved acceptance protocol and pilot commercial terms before ordering the full line."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "Semiconductor fluid components and orbital welding",
+        "url": "https://www.swagelok.com/en/industries/semiconductor",
+        "publisher": "Swagelok",
+        "date": "Accessed 20 September 2026",
+        "supports": "Technical product families and assembly processes; not startup equipment prices or capacity.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "Cleanroom fabricated UHP assemblies",
+        "url": "https://allentown.swagelok.com/en/services/swagelok-custom-solutions/cleanroom-fabricated-assemblies",
+        "publisher": "Swagelok Allentown",
+        "date": "Accessed 20 September 2026",
+        "supports": "Real controlled assembly/welding/testing/packing example; its ISO5 arrangement is an example, not a universal requirement.",
+        "type": "Company"
+      },
+      {
+        "id": "S3",
+        "title": "Semiconductor measurement and leak detection",
+        "url": "https://www.inficon.com/en/markets/semiconductor-idm-and-foundry",
+        "publisher": "INFICON",
+        "date": "Accessed 20 September 2026",
+        "supports": "Leak detection and gas/process sensing instrument families; no assumed leak limit or quote.",
+        "type": "Company"
+      },
+      {
+        "id": "S4",
+        "title": "Off-site manufacturing for high-tech facilities",
+        "url": "https://www.exyte.net/Services/Off-site-Manufacturing",
+        "publisher": "Exyte",
+        "date": "Accessed 20 September 2026",
+        "supports": "Utility skids and prefabricated assemblies are an established supply model.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "Ultrahigh and high-purity tubing",
+        "url": "https://www.chicago.swagelok.com/products/tubing/ultrahigh-and-high-purity-tubing",
+        "publisher": "Swagelok Chicago",
+        "date": "Accessed 20 September 2026",
+        "supports": "Tubing metallurgy, electropolishing, cleaning and capped preparation matter.",
+        "type": "Company"
+      },
+      {
+        "id": "S6",
+        "title": "Semicon2.0 machines and materials",
+        "url": "https://ism.gov.in/schemes/semicon2.0/machines-and-materials",
+        "publisher": "India Semiconductor Mission",
+        "date": "Policy checked 19 September 2026",
+        "supports": "Current direct-beneficiary thresholds and capex support, not automatic supplier grants.",
+        "type": "Government"
+      },
+      {
+        "id": "S7",
+        "title": "ECMS portal and guidelines",
+        "url": "https://ecms.meity.gov.in/",
+        "publisher": "MeitY",
+        "date": "Policy checked 19 September 2026",
+        "supports": "CategoryD window and covered-supply-chain route; exact product classification unresolved.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Process families verified from primary manufacturers; every budget, staffing, utility, area, capacity and schedule figure is an author planning assumption. No customer order, vendor quotation, final pressure rating, purity limit or supplier approval was obtained. Educational model is not a fabrication drawing.",
+    "researchDate": "2026-09-20",
+    "policySnapshotDate": "2026-09-19",
+    "teamTotal": 38
+  },
+  {
+    "id": "cleanrooms",
+    "title": "Modular cleanrooms and controlled-environment modules",
+    "shortTitle": "Modular cleanrooms",
+    "sector": "Semiconductor and electronics facilities",
+    "plain": "Build rooms that keep airborne dust and operating conditions within an agreed specification. The factory makes wall, ceiling and air-distribution modules and integrates purchased filtration and climate-control equipment at the customer's site.",
+    "analogy": "A carefully controlled room inside a larger factory, with its own filtered-air circulation.",
+    "product": "Designed, fabricated and installed modular ISO7/8 suites for electronics assembly, inspection and suitable OSAT support operations, supplied with documented commissioning.",
+    "does": "Gives the buyer a repeatable controlled environment and a faster modular installation; makes later extensions and maintenance easier when interfaces are designed correctly.",
+    "customers": [
+      "Electronics and semiconductor-equipment assembly plants",
+      "OSAT support/inspection areas with matching environmental requirements",
+      "Facility EPC contractors buying a cleanroom package",
+      "Precision engineering and photonics assembly laboratories"
+    ],
+    "whyNow": "Semiconductor and electronics manufacturing expansion creates controlled-environment work, but the precise classification and process demand vary. Exyte describes off-site modules and coordinated facilities delivery [S4]; Tata Projects has an actual awarded Indian semiconductor facility contract [S5]. This starter product targets smaller repeatable suites rather than treating all fab capex as accessible demand.",
+    "firstProduct": "A configurable 250-750 sq m ISO7/8 modular suite with steel-skinned panels, sealed doors/windows, a designed ceiling/support system and purchased HEPA/FFU or terminal-filter/HVAC modules. Final class, occupancy state and environmental limits are contractual.",
+    "notIncluded": "No complete leading-edge wafer-fab EPC, process-gas/chemical distribution, ultra-pure-water plant, lithography vibration-control foundation or semiconductor tool installation. No initial manufacture of HEPA media, chillers or precision FFU motors. Not a pharmaceutical aseptic-validation offer.",
+    "entry": "Build an engineering-and-fabrication company with an experienced cleanroom HVAC lead, structural reviewer and commissioning team. Start as a specialist subcontractor or direct supplier on a defined room package, with a qualified filtration/HVAC partner. Manufacture panel skins, frames and ducts; outsource coatings and initially buy certified core materials and filters.",
+    "capacity": "Assume 5-8 customer packages per year after ramp-up, totalling approximately 3,000-5,000 sq m of floor area, on one fabrication shift. Installation crews work at customer sites; square metres are a planning measure, not a booked order forecast.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility estimate for a leased shell; equipment installation included, recoverable GST excluded. Land/new shell excluded; working capital separate; no subsidy deducted. This is a component-fabrication and integration shop, not the cost of building a semiconductor fab.",
+      "items": [
+        {
+          "name": "Sheet cutting, bending and metal fabrication",
+          "low": 2.5,
+          "high": 4.5,
+          "note": "Laser/punch capability, press brake, saws and welding fixtures."
+        },
+        {
+          "name": "Panel assembly fixtures and tooling",
+          "low": 1.5,
+          "high": 2.8,
+          "note": "Controlled adhesive/assembly tooling and repeatable dimensional checks; core production excluded."
+        },
+        {
+          "name": "Duct and frame fabrication equipment",
+          "low": 1,
+          "high": 2.2,
+          "note": "Duct seams, flanges, frames, seal application and handling."
+        },
+        {
+          "name": "Demonstration cleanroom and HVAC test section",
+          "low": 1.5,
+          "high": 3,
+          "note": "Validates the chosen modular interfaces, leakage and airflow arrangement."
+        },
+        {
+          "name": "Commissioning and metrology equipment",
+          "low": 1,
+          "high": 2,
+          "note": "Particle counters, aerosol photometry, airflow balancing and calibrated environmental logging."
+        },
+        {
+          "name": "Factory services and fit-out",
+          "low": 1,
+          "high": 2,
+          "note": "Power distribution, compressed air, clean packing and material movement."
+        },
+        {
+          "name": "Engineering, prototype and certification launch",
+          "low": 1.3,
+          "high": 2.5,
+          "note": "Design library, structural/fire evidence, prototype qualification and installation training."
+        },
+        {
+          "name": "Contingency and integration reserve",
+          "low": 1.7,
+          "high": 3,
+          "note": "Design changes, field tools, commissioning and initial rework."
+        }
+      ],
+      "workingLow": 5,
+      "workingHigh": 10,
+      "workingNote": "Allows purchased HVAC/filter packages, site labour and 90-180-day project cash cycles including retention. Mobilisation advances and milestone payments are essential assumptions.",
+      "landNote": "Purchased land and new shell/civil work are additional. Customer-site construction is priced in each customer contract, not included as the factory's own fixed capex.",
+      "confidence": "Planning estimate; RFQs, fire/structural review and at least two detailed customer layouts required.",
+      "totalLow": 11.5,
+      "totalHigh": 22,
+      "totalWithWorkingLow": 16.5,
+      "totalWithWorkingHigh": 32
+    },
+    "site": {
+      "builtup": "Assume 25,000-40,000 sq ft (about 2,320-3,720 sq m), including a 1,500-2,500 sq ft demonstration/test suite and long-panel storage.",
+      "plot": "If greenfield: screen 1.2-2.0 acres for factory, truck access, panel storage and setbacks; not an approved layout.",
+      "power": "Screen 300-600 kVA connected load; welding/laser and demonstration HVAC determine peak demand.",
+      "water": "Screen 3-8 kL/day for staff and shop support. Surface coating/wet pretreatment outsourced; customer-site HVAC water demand is a separate design.",
+      "conditions": [
+        "Keep grinding/welding separate from panel bonding, clean finishing and packing.",
+        "Check crane/handling access and whether trucks can move long panels safely.",
+        "Design the demonstration suite's support structure independently; never assume the leased roof can carry a customer's walkable ceiling."
+      ],
+      "areas": [
+        {
+          "name": "Metal/duct fabrication",
+          "share": 30,
+          "why": "Cut and form skins, frames and air-distribution parts."
+        },
+        {
+          "name": "Panel assembly and packing",
+          "share": 25,
+          "why": "Assemble and protect modular components."
+        },
+        {
+          "name": "Stores and dispatch",
+          "share": 20,
+          "why": "Handle large skins, cores and purchased HVAC parts."
+        },
+        {
+          "name": "Demonstration and testing",
+          "share": 10,
+          "why": "Validate interfaces and train installation teams."
+        },
+        {
+          "name": "Engineering and support",
+          "share": 15,
+          "why": "Coordinate drawings, commissioning and customer projects."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Operations and project leadership",
+        "count": 4,
+        "why": "Manage package boundaries, contracts and delivery."
+      },
+      {
+        "role": "HVAC, structural and design engineers",
+        "count": 8,
+        "why": "Design air balance, supports and modular interfaces."
+      },
+      {
+        "role": "Fabrication and assembly technicians",
+        "count": 14,
+        "why": "Make frames, panels, ducts and subassemblies."
+      },
+      {
+        "role": "Quality and commissioning specialists",
+        "count": 5,
+        "why": "Inspect fabrication and verify site performance."
+      },
+      {
+        "role": "Installation and service team",
+        "count": 12,
+        "why": "Build rooms, seal interfaces and maintain systems."
+      },
+      {
+        "role": "Procurement and stores",
+        "count": 3,
+        "why": "Coordinate long-lead purchased equipment."
+      },
+      {
+        "role": "Administration and maintenance",
+        "count": 2,
+        "why": "Support staff and factory reliability."
+      }
+    ],
+    "teamNote": "48 core people assumed: one fabrication shift and two small mobile installation crews. Licensed structural/fire reviewers and peak construction labour remain project subcontract costs.",
+    "machines": [
+      {
+        "name": "Sheet-metal laser or turret punch",
+        "quantity": "1 cell",
+        "purpose": "Cuts skins, supports and access openings.",
+        "spec": "RFQ sheet material/thickness, maximum panel size and burr control; no universal machine power specified.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "CNC press brake and frame saws",
+        "quantity": "1 brake; 2 saws",
+        "purpose": "Folds skins and cuts frame sections.",
+        "spec": "Tool length, bend repeatability and handling based on the chosen panel system.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Panel bonding and assembly fixtures",
+        "quantity": "2-3 stations",
+        "purpose": "Keeps panels flat and repeatable during assembly.",
+        "spec": "Choose compatible core, adhesive/cure process and fire-tested construction with the technical partner.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Duct seam/flange forming line",
+        "quantity": "1 small line",
+        "purpose": "Fabricates air-distribution parts.",
+        "spec": "Specify metal grade, leakage class, joint design and cleaning requirement.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Demonstration air-handling/filtration loop",
+        "quantity": "1 suite",
+        "purpose": "Proves airflow and interface behaviour before customer delivery.",
+        "spec": "Purchased AHU/FFU, filters and controls sized from a real prototype heat/air-load calculation.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Particle counter and aerosol filter-test kit",
+        "quantity": "2 field kits",
+        "purpose": "Verifies airborne particles and installed filter integrity.",
+        "spec": "Select measurement range and calibration to the agreed ISO test plan; trained operation required.",
+        "sourceIds": [
+          "S3",
+          "S6"
+        ]
+      },
+      {
+        "name": "Airflow balancing and environmental instruments",
+        "quantity": "2 field kits",
+        "purpose": "Measures airflow, pressure, temperature and humidity.",
+        "spec": "Calibrated anemometry/balometer, differential pressure and logging; required uncertainty set by contract.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Dimensional inspection, seal and electrical-test tools",
+        "quantity": "1 factory set plus field sets",
+        "purpose": "Checks fit, sealed joints and safe control-panel operation.",
+        "spec": "Include traceable dimensional tools and checks appropriate to the electrical installation.",
+        "sourceIds": [
+          "S1",
+          "S2"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Freeze user requirements",
+        "plain": "Define the room's job before sizing equipment.",
+        "detail": "Record particle class, occupancy, heat/process loads, people/material flow, humidity and pressure relationships.",
+        "check": "Customer-signed room data sheets and scope boundary.",
+        "machine": "Engineering/design workstation",
+        "sourceIds": [
+          "S7"
+        ]
+      },
+      {
+        "name": "Coordinate the design",
+        "plain": "Make the room, airflow and structure work together.",
+        "detail": "Prepare layout, HVAC balance, support calculations, access and service interfaces.",
+        "check": "Design review with buyer, structural and HVAC leads.",
+        "machine": "Design/BIM and mock-up suite",
+        "sourceIds": [
+          "S4",
+          "S7"
+        ]
+      },
+      {
+        "name": "Fabricate modular parts",
+        "plain": "Make the panel skins, frames and duct sections.",
+        "detail": "Cut/form parts, outsource specified coatings, assemble approved cores and inspect interfaces.",
+        "check": "Dimensions, finish and relevant material/fire certificates accepted.",
+        "machine": "Metal and panel assembly cells",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Build a trial module",
+        "plain": "Fit a representative section before shipping.",
+        "detail": "Check doors, ceilings, filter housings, service penetrations and maintenance access.",
+        "check": "Prototype fit and seal review passed.",
+        "machine": "Demonstration suite",
+        "sourceIds": [
+          "S1",
+          "S2"
+        ]
+      },
+      {
+        "name": "Install and connect",
+        "plain": "Assemble the clean envelope at the buyer's factory.",
+        "detail": "Install approved supports, sealed panels, ducts, filters, HVAC and controls; manage cleanliness during construction.",
+        "check": "Installation checklist and concealed-work release.",
+        "machine": "Mobile installation tools",
+        "sourceIds": [
+          "S4",
+          "S7"
+        ]
+      },
+      {
+        "name": "Balance and commission",
+        "plain": "Measure performance under agreed conditions.",
+        "detail": "Tune airflow and pressure; verify filters, particles and specified temperature/humidity in the contractual occupancy state.",
+        "check": "Documented agreed acceptance criteria, including deviations closed.",
+        "machine": "Field metrology/test kits",
+        "sourceIds": [
+          "S3",
+          "S6"
+        ]
+      },
+      {
+        "name": "Handover and maintain",
+        "plain": "Keep the room performing after acceptance.",
+        "detail": "Provide drawings, filter/change procedures, operator training and periodic verification plan.",
+        "check": "Signed handover and defined maintenance responsibilities.",
+        "machine": "Service instruments and asset records",
+        "sourceIds": [
+          "S7"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Wall panel",
+        "meaning": "Sealed smooth surface separating the controlled room from the factory."
+      },
+      {
+        "name": "Door and airlock",
+        "meaning": "Controls entry and reduces contamination transfer."
+      },
+      {
+        "name": "Ceiling/support frame",
+        "meaning": "Holds approved room components and service access."
+      },
+      {
+        "name": "HEPA filter/FFU",
+        "meaning": "Purchased element removing airborne particles."
+      },
+      {
+        "name": "Supply and return paths",
+        "meaning": "Moves filtered air through the required route."
+      },
+      {
+        "name": "Pressure and climate sensors",
+        "meaning": "Monitors the room's agreed operating conditions."
+      },
+      {
+        "name": "Commissioning station",
+        "meaning": "Measures whether the installed room meets the specification."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Define the first package",
+        "duration": "Months 0-2",
+        "actions": "Find one 250-750 sq m electronics project and obtain its user requirement specification.",
+        "gate": "Approved package boundary and buyer-funded design phase."
+      },
+      {
+        "phase": "Prototype the system",
+        "duration": "Months 2-5",
+        "actions": "Develop modular details, supplier BOM, structural/fire evidence and installation method.",
+        "gate": "Prototype module accepted and independent design issues closed."
+      },
+      {
+        "phase": "Set up fabrication",
+        "duration": "Months 4-8",
+        "actions": "Install metal/panel tools, demonstration suite and measurement system; train crews.",
+        "gate": "Factory trial build with repeatable dimensions and test records."
+      },
+      {
+        "phase": "Deliver the first room",
+        "duration": "Months 8-14",
+        "actions": "Install one customer suite and commission in the agreed occupancy state.",
+        "gate": "Customer acceptance with documented residual conditions."
+      },
+      {
+        "phase": "Repeat and extend",
+        "duration": "Months 14-24",
+        "actions": "Standardise interfaces and service contracts; add higher-spec packages only after reference performance.",
+        "gate": "Repeat orders with stable site labour, retention and warranty costs."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Classification is a measurement",
+        "detail": "ISO14644-1 classifies airborne particles; it does not certify a whole semiconductor process or sterile product.",
+        "sourceIds": [
+          "S6"
+        ]
+      },
+      {
+        "title": "Commissioning states and methods",
+        "detail": "Define whether acceptance is as-built, at-rest or operational; measure the relevant airflow, pressure, filter and environmental performance.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "title": "Design and construction control",
+        "detail": "Use a documented requirements-to-handover process, including maintainability and interface changes.",
+        "sourceIds": [
+          "S7"
+        ]
+      },
+      {
+        "title": "Fire, structure and electrical requirements",
+        "detail": "The panel/core system, ceiling loading and site electrical installation require applicable engineering/code review; ISO particle classification is not a substitute.",
+        "sourceIds": [
+          "S1",
+          "S7"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Panel skins, frames, duct modules and assembly",
+        "route": "Make in India",
+        "detail": "Local metal fabrication, modular engineering, installation and commissioning."
+      },
+      {
+        "part": "Steel, core panels, cables and suitable HVAC equipment",
+        "route": "Buy Indian",
+        "detail": "Select actual manufacturers with required test evidence; factory origin verified separately."
+      },
+      {
+        "part": "Selected filters, FFUs, precision sensors and controls",
+        "route": "Import initially",
+        "detail": "Use approved Indian or international products; no claim of full domestic BOM."
+      },
+      {
+        "part": "Coating, specialised fire testing and structural review",
+        "route": "Outsource",
+        "detail": "Qualified specialist services; keep approved construction identical to tested configuration."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "Semiconductor investment programmes",
+        "status": "Demand support, not an automatic cleanroom-contractor grant.",
+        "detail": "An approved customer's eligible facility expenditure may receive its project's support. Legacy pipeline sanctions and new2.0 rates differ. Contractor invoices are subject to procurement and cost eligibility; supplier awards are not guaranteed.",
+        "sourceIds": [
+          "S8"
+        ]
+      },
+      {
+        "name": "Karnataka/ECMS manufacturing routes",
+        "status": "Project/product classification required; no incentive included in budget.",
+        "detail": "A generic cleanroom EPC service or panel factory is not assumed eligible for semiconductor capital-equipment subsidies. Seek a written determination of the actual manufactured product and relevant state policy.",
+        "sourceIds": [
+          "S8"
+        ]
+      }
+    ],
+    "network": "Request introductions to OSAT facilities teams, electronics plant expansion leaders, qualified HVAC/filter partners and EPC package managers. Use a reference room and measurable commissioning results to enter approved supplier lists; a ministerial introduction cannot waive environmental performance.",
+    "risks": [
+      {
+        "risk": "Room classification passes while humidity, pressure or process heat control fails.",
+        "response": "Use a complete contractual requirements and load model; do not sell only an ISO class."
+      },
+      {
+        "risk": "Project scope grows through unpriced utility interfaces.",
+        "response": "Freeze interface drawings and variation rules before fabrication."
+      },
+      {
+        "risk": "Site delays and retention consume cash.",
+        "response": "Use advance, dispatch and commissioning milestones with clear responsibility for buyer readiness."
+      },
+      {
+        "risk": "A modular panel change invalidates fire or structural evidence.",
+        "response": "Maintain a controlled approved BOM and require engineering review of substitutions."
+      }
+    ],
+    "first90": [
+      "Obtain two genuine room requirement specifications and understand who owns procurement.",
+      "Recruit an experienced HVAC/commissioning lead.",
+      "Select a panel construction and filter/HVAC partners; obtain technical and fire evidence.",
+      "Build and cost a representative corner/door/ceiling module.",
+      "Negotiate first-project payment stages and acceptance conditions before major equipment orders."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "Modular cleanroom manufacturing",
+        "url": "https://www.mecart-cleanrooms.com/",
+        "publisher": "MECART",
+        "date": "Accessed 20 September 2026",
+        "supports": "Real modular-panel/HVAC integration model; no Indian project price or staffing benchmark.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "CleanSeal Integrity terminal housing",
+        "url": "https://www.camfil.com/tr-tr/products/housings-frames--louvers/terminal-housing/cleanseal/cleanseal-integrity-_-67985",
+        "publisher": "Camfil",
+        "date": "Accessed 20 September 2026",
+        "supports": "Filter housing and in-situ testing features; product example rather than mandated brand.",
+        "type": "Company"
+      },
+      {
+        "id": "S3",
+        "title": "ISO14644-3 test methods",
+        "url": "https://www.iso.org/standard/60598.html",
+        "publisher": "ISO",
+        "date": "Accessed 20 September 2026",
+        "supports": "Commissioning methods and occupancy states; full purchased standard not reproduced.",
+        "type": "Standard"
+      },
+      {
+        "id": "S4",
+        "title": "Off-site manufacturing",
+        "url": "https://www.exyte.net/Services/Off-site-Manufacturing",
+        "publisher": "Exyte",
+        "date": "Accessed 20 September 2026",
+        "supports": "Facility module and interface coordination model.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "Awarded Micron construction contract",
+        "url": "https://www.tataprojects.com/web/node/1793",
+        "publisher": "Tata Projects",
+        "date": "23 September 2023",
+        "supports": "Actual Indian facility contract, not an available small-company order.",
+        "type": "Company"
+      },
+      {
+        "id": "S6",
+        "title": "ISO14644-1 particle classification",
+        "url": "https://www.iso.org/standard/53394.html",
+        "publisher": "ISO",
+        "date": "Accessed 20 September 2026",
+        "supports": "Classification scope and limits, not process-quality certification.",
+        "type": "Standard"
+      },
+      {
+        "id": "S7",
+        "title": "ISO14644-4 design, construction and start-up",
+        "url": "https://www.iso.org/standard/72379.html",
+        "publisher": "ISO",
+        "date": "Accessed 20 September 2026",
+        "supports": "Documented cleanroom project lifecycle.",
+        "type": "Standard"
+      },
+      {
+        "id": "S8",
+        "title": "Semicon2.0 manufacturing programme",
+        "url": "https://ism.gov.in/",
+        "publisher": "India Semiconductor Mission",
+        "date": "Policy checked 19 September 2026",
+        "supports": "Project-specific scheme framework; no universal cleanroom supplier grant.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "The modular product and commissioning principles are sourced. Cost, workforce, throughput, area, utilities and schedule are author pre-feasibility assumptions. No buyer layout, fire test report for a proposed panel, structural calculation, RFQ or order has been obtained. Educational 3D model is not construction documentation.",
+    "researchDate": "2026-09-20",
+    "policySnapshotDate": "2026-09-19",
+    "teamTotal": 48
+  },
+  {
+    "id": "advanced-packaging",
+    "title": "Advanced packaging JV: wafer-level chip-scale packages",
+    "shortTitle": "Advanced packaging JV",
+    "sector": "Semiconductor manufacturing",
+    "plain": "Take already fabricated semiconductor wafers and add tiny electrical connections, then test and separate the finished devices. This factory packages chips; it does not fabricate the transistors inside them.",
+    "analogy": "A specialist finishing and testing plant that turns a wafer of delicate circuits into individually usable components.",
+    "product": "Qualified 300mm wafer-level chip-scale packaging services with a defined redistribution-layer and solder-interconnect process, wafer probe, singulation and tape-and-reel delivery.",
+    "does": "Moves a chip's contact points to a board-compatible arrangement and delivers electrically tested compact devices for an anchor chip company.",
+    "customers": [
+      "Fabless analog/power-management semiconductor companies",
+      "IDMs outsourcing a qualified wafer-level package",
+      "Sensor and mixed-signal chip suppliers with suitable die designs",
+      "Established OSAT companies seeking a qualified Indian production partner"
+    ],
+    "whyNow": "Semicon2.0 explicitly includes wafer-level chip-scale packaging in its advanced category, subject to a ₹1,000 crore minimum capital investment and technology/financial criteria [S8]. Amkor demonstrates WLCSP as a commercial packaging route for analog, power-management and other chips [S1]. This is a technology-JV opportunity; Indian policy does not provide customer designs, yield know-how or committed utilisation.",
+    "firstProduct": "One licensed 300mm fan-in WLCSP family for an anchor analog/PMIC or compatible sensor product, initially one or two copper redistribution layers with customer-approved bump pitch and dielectric stack. Begin with one die family and a frozen process design kit.",
+    "notIncluded": "No leading-edge GPU die fabrication, HBM stacking, silicon interposer/TSV line, hybrid bonding, fan-out panel packaging or universal OSAT portfolio. A small WLCSP package is not a GPU package. Automotive qualification is a later customer-specific programme.",
+    "entry": "Form a funded Indian JV with an operating packaging technology owner. Secure transfer of the process, package-design rules, customer test programme and experienced resident team. Obtain binding commercial arrangements for wafer supply, qualification lots, liability and capacity before ordering the production line.",
+    "capacity": "Planning assumption: initially qualify and load 1,000-2,000 300mm wafer-equivalents/month, progressing towards 3,000-5,000 only after bottleneck validation. Operate three shifts, six days/week; device output varies enormously with die size and yield. This is not a vendor-guaranteed nameplate.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility allowance for a long-term leased/leased-to-spec industrial shell. Advanced cleanroom/process fit-out included; purchased land, new base shell/civil construction and recoverable GST excluded. No subsidy deducted. Equipment and technology configuration could materially change this range.",
+      "items": [
+        {
+          "name": "Process cleanroom, subfab and controlled utilities fit-out",
+          "low": 240,
+          "high": 400,
+          "note": "Clean areas, air handling, gas/chemical distribution, UPW and wastewater handling; shell excluded."
+        },
+        {
+          "name": "RDL lithography, deposition and wet-process tools",
+          "low": 360,
+          "high": 580,
+          "note": "Coat/develop, exposure, seed deposition, plating and associated process control."
+        },
+        {
+          "name": "Solder-interconnect formation and reflow",
+          "low": 90,
+          "high": 140,
+          "note": "Qualified ball/bump process, cleaning and optical checks."
+        },
+        {
+          "name": "Wafer thinning, handling and singulation",
+          "low": 100,
+          "high": 160,
+          "note": "Backgrind, tape/carrier handling, dicing and die sorting."
+        },
+        {
+          "name": "Electrical test and probing systems",
+          "low": 100,
+          "high": 160,
+          "note": "Product-specific ATE, probers, probe cards and temperature capability."
+        },
+        {
+          "name": "Metrology, failure analysis and reliability lab",
+          "low": 60,
+          "high": 100,
+          "note": "Thickness/overlay inspection, microscopy and package/board-level reliability capability."
+        },
+        {
+          "name": "Automation, facility redundancy and information systems",
+          "low": 100,
+          "high": 160,
+          "note": "Material tracking, statistical control, tool integration, critical backups and maintenance spares."
+        },
+        {
+          "name": "Technology transfer, engineering and pilot qualification",
+          "low": 100,
+          "high": 180,
+          "note": "Partner transfer, resident expertise, masks and non-saleable pilot lots; not all expenditure necessarily incentive eligible."
+        },
+        {
+          "name": "Project integration and contingency",
+          "low": 150,
+          "high": 220,
+          "note": "Installation, schedule/FX allowance and process changes; this is not a quoted contingency requirement."
+        }
+      ],
+      "workingLow": 100,
+      "workingHigh": 180,
+      "workingNote": "Assumes customer-owned consigned wafers, 12-18-month qualification/ramp reserve, consumables/spares and receivables. Buying wafers or bearing replacement liability can require much more cash; insurance and liability terms must be priced.",
+      "landNote": "New base building, land, off-site water/power reinforcement and financing interest during construction are additional unless separately agreed in the lease/project structure.",
+      "confidence": "Low-confidence pre-feasibility range for a JV-scale plant; a licensed process owner must produce the tool list, mass balance and bankable DPR.",
+      "totalLow": 1300,
+      "totalHigh": 2100,
+      "totalWithWorkingLow": 1400,
+      "totalWithWorkingHigh": 2280
+    },
+    "site": {
+      "builtup": "Screen 180,000-260,000 sq ft (about 16,720-24,150 sq m), with process clean areas, test, utilities, chemicals, metrology and support separated. A generic warehouse is not automatically suitable.",
+      "plot": "If greenfield: screen 12-20 acres for building, utility/chemical yards, wastewater treatment, access, setbacks and expansion; environmental/industrial siting review controls the final plot.",
+      "power": "Screen 8-15 MVA connected load with engineered quality and backup for critical tools; sanction and feeder reliability unverified.",
+      "water": "Screen 200-600 kL/day raw-water demand before recycling design. Wet-process recipes, tool utilisation, UPW recovery and effluent segregation can change this substantially; obtain a process water balance.",
+      "conditions": [
+        "Require contamination control, vibration review and segregated clean/chemical/service circulation.",
+        "Evaluate reliable power/water, permitted chemical storage and effluent treatment before land commitment.",
+        "Tumakuru/Mysuru or another Karnataka industrial site is conditional on utilities and talent transport; no location has been pre-approved."
+      ],
+      "areas": [
+        {
+          "name": "Wafer process cleanrooms",
+          "share": 40,
+          "why": "Run coating, patterning, metallisation and interconnect processing."
+        },
+        {
+          "name": "Electrical test and singulation",
+          "share": 15,
+          "why": "Probe, separate and sort finished devices."
+        },
+        {
+          "name": "Utilities and environmental services",
+          "share": 20,
+          "why": "Maintain process water, power, air, exhaust and wastewater systems."
+        },
+        {
+          "name": "Materials and dispatch",
+          "share": 10,
+          "why": "Control wafers, chemicals, consumables and finished lots."
+        },
+        {
+          "name": "Reliability and metrology",
+          "share": 5,
+          "why": "Investigate defects and prove process consistency."
+        },
+        {
+          "name": "Engineering, training and staff support",
+          "share": 10,
+          "why": "Run qualification, planning and factory operations."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "JV leadership and technology-transfer managers",
+        "count": 10,
+        "why": "Own the licensed process, investment gates and customer commitments."
+      },
+      {
+        "role": "Package design and test engineers",
+        "count": 25,
+        "why": "Adapt layouts and test programmes to customer devices."
+      },
+      {
+        "role": "Process and equipment engineers",
+        "count": 45,
+        "why": "Stabilise each process module and repair tools."
+      },
+      {
+        "role": "Quality, metrology and reliability engineers/technicians",
+        "count": 40,
+        "why": "Control defects, qualification and customer audits."
+      },
+      {
+        "role": "Production operators and shift supervisors",
+        "count": 150,
+        "why": "Operate the line across three shifts."
+      },
+      {
+        "role": "Facilities, environmental and maintenance specialists",
+        "count": 30,
+        "why": "Keep utilities stable and manage chemical/effluent systems."
+      },
+      {
+        "role": "Supply chain, planning and stores",
+        "count": 20,
+        "why": "Schedule consigned wafers and qualified materials."
+      },
+      {
+        "role": "Finance, HR, IT and administration",
+        "count": 15,
+        "why": "Support commercial, workforce and data controls."
+      }
+    ],
+    "teamNote": "335 core people assumed at initial three-shift operation. Partner expatriate/resident specialists may be included among engineering leads; construction/EPC labour and external qualification laboratories are additional. Final staffing follows the licensed line's automation.",
+    "machines": [
+      {
+        "name": "Coat/develop tracks and exposure tools",
+        "quantity": "1 process line; number set by cycle-time model",
+        "purpose": "Patterns polymer and redistribution features across wafers.",
+        "spec": "RFQ wafer size, overlay, resist/dielectric compatibility and agreed line/space; do not assume a semiconductor-fab lithography tool is required.",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Seed-layer deposition and plating tools",
+        "quantity": "1 matched module set",
+        "purpose": "Forms the conductive layer and plated copper features.",
+        "spec": "Metal stack, uniformity, contamination limits and wafer handling require the licensed process.",
+        "sourceIds": [
+          "S1",
+          "S3"
+        ]
+      },
+      {
+        "name": "Wet clean/strip and controlled-cure systems",
+        "quantity": "1 matched module set",
+        "purpose": "Cleans and conditions wafers between process steps.",
+        "spec": "Chemistry compatibility, exhaust, wastewater segregation and defect-control recipe owned by the process partner.",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Ball placement/bump formation and reflow",
+        "quantity": "1-2 matched cells",
+        "purpose": "Creates the solder contacts used by the final board.",
+        "spec": "Choose one approved interconnect route, pitch and alloy; qualify solder geometry and board reliability.",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Wafer handling, grinding and dicing cells",
+        "quantity": "2-4 tools initially; bottleneck dependent",
+        "purpose": "Thins and separates fragile processed wafers.",
+        "spec": "Wafer thickness, protective handling, die streets and chipping limits set by product design.",
+        "sourceIds": [
+          "S4"
+        ]
+      },
+      {
+        "name": "Wafer probers and product-specific ATE",
+        "quantity": "2-4 test cells initially",
+        "purpose": "Checks electrical behaviour and sorts good devices.",
+        "spec": "Channel count, voltage/current, temperature and test time depend on the anchor product; high-end GPU test is excluded.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "name": "Optical/thickness and defect-inspection systems",
+        "quantity": "3-5 measurement stations",
+        "purpose": "Checks alignment, feature dimensions and process defects.",
+        "spec": "Sampling and automated inspection sensitivity defined through yield engineering.",
+        "sourceIds": [
+          "S2",
+          "S3"
+        ]
+      },
+      {
+        "name": "Reliability and failure-analysis instruments",
+        "quantity": "1 lab plus external specialist access",
+        "purpose": "Investigates failures and validates package/board behaviour.",
+        "spec": "Customer-agreed qualification plan; include thermal cycling, humidity and cross-section analysis as applicable.",
+        "sourceIds": [
+          "S6"
+        ]
+      },
+      {
+        "name": "Die sort and tape-and-reel systems",
+        "quantity": "2-3 cells",
+        "purpose": "Packs accepted devices with lot traceability.",
+        "spec": "Pocket/tape design, orientation, inspection and ESD control matched to the shipped product.",
+        "sourceIds": [
+          "S1"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Co-design and incoming wafer release",
+        "plain": "Agree the package before receiving production wafers.",
+        "detail": "Use licensed design rules, incoming wafer maps and customer ownership/liability terms.",
+        "check": "Package design review and incoming wafer acceptance.",
+        "machine": "Design tools and metrology",
+        "sourceIds": [
+          "S1",
+          "S5"
+        ]
+      },
+      {
+        "name": "Prepare and coat the wafer",
+        "plain": "Apply the agreed protective/insulating layers.",
+        "detail": "Clean wafer and run the licensed dielectric process without exposing it to uncontrolled contamination.",
+        "check": "Film thickness and defect checks.",
+        "machine": "Wet-process and coat/cure tools",
+        "sourceIds": [
+          "S3"
+        ]
+      },
+      {
+        "name": "Pattern the connections",
+        "plain": "Define where new electrical routes will sit.",
+        "detail": "Expose/develop the agreed pattern aligned to the original device contacts.",
+        "check": "Overlay and patterned-feature acceptance.",
+        "machine": "Lithography line",
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      {
+        "name": "Build the redistribution metal",
+        "plain": "Create the copper pathways and contact foundations.",
+        "detail": "Run qualified deposition/plating/strip sequence; repeat only for the approved layer count.",
+        "check": "Thickness, resistance and defect control.",
+        "machine": "Deposition and plating modules",
+        "sourceIds": [
+          "S1",
+          "S3"
+        ]
+      },
+      {
+        "name": "Form solder interconnects",
+        "plain": "Add the contacts that connect to a circuit board.",
+        "detail": "Apply the selected bump/ball route and reflow under the licensed recipe.",
+        "check": "Bump geometry and interconnect checks.",
+        "machine": "Bump/ball and reflow cells",
+        "sourceIds": [
+          "S1"
+        ]
+      },
+      {
+        "name": "Thin and electrically test",
+        "plain": "Prepare the wafer and identify good devices.",
+        "detail": "Use the qualified handling/grinding sequence and customer test programme; exact ordering follows the process flow.",
+        "check": "Wafer map, electrical yield and thickness accepted.",
+        "machine": "Grinding, prober and ATE",
+        "sourceIds": [
+          "S4",
+          "S5"
+        ]
+      },
+      {
+        "name": "Singulate and pack",
+        "plain": "Separate good devices and protect them for shipment.",
+        "detail": "Dice, inspect and sort according to wafer map; pack with orientation and lot identity.",
+        "check": "Chipping, visual and traceability acceptance.",
+        "machine": "Dicing, sort and tape-and-reel",
+        "sourceIds": [
+          "S1",
+          "S4"
+        ]
+      },
+      {
+        "name": "Release and monitor reliability",
+        "plain": "Confirm the process remains suitable over time.",
+        "detail": "Execute customer qualification/monitoring plan and investigate excursions before releasing affected lots.",
+        "check": "Customer qualification and controlled lot disposition.",
+        "machine": "Metrology and reliability lab",
+        "sourceIds": [
+          "S6"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Incoming silicon wafer",
+        "meaning": "Customer's already-fabricated circuits, before this factory adds the package connections."
+      },
+      {
+        "name": "Dielectric layer",
+        "meaning": "Insulating layer protecting the wafer surface."
+      },
+      {
+        "name": "Redistribution metal",
+        "meaning": "Tiny copper routes moving contact positions."
+      },
+      {
+        "name": "Solder contacts",
+        "meaning": "Connections between chip and circuit board."
+      },
+      {
+        "name": "Wafer probe",
+        "meaning": "Tests each circuit before shipment."
+      },
+      {
+        "name": "Dicing station",
+        "meaning": "Separates the wafer into individual devices."
+      },
+      {
+        "name": "Finished tape-and-reel",
+        "meaning": "Protects accepted parts for automated board assembly."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Form a bankable JV",
+        "duration": "Months 0-6",
+        "actions": "Agree licensed technology, anchor product, customer-funded qualification, wafer responsibility and equity funding.",
+        "gate": "Signed partner/customer framework with independent commercial review."
+      },
+      {
+        "phase": "Engineer and sanction",
+        "duration": "Months 6-12",
+        "actions": "Complete tool list, mass balance, site/environmental studies, utility commitments and relevant incentive application.",
+        "gate": "Approved investment decision based on unsubsidised cash needs and conditional sanction terms."
+      },
+      {
+        "phase": "Build and install",
+        "duration": "Months 12-26",
+        "actions": "Prepare cleanroom/utilities, install and accept equipment, deploy partner engineers and train shifts.",
+        "gate": "Facility/tool acceptance with contamination and measurement controls."
+      },
+      {
+        "phase": "Qualify the product",
+        "duration": "Months 24-36",
+        "actions": "Run engineering wafers, package/board reliability and customer audits; fix yield loss.",
+        "gate": "Written production approval for the specific package/product."
+      },
+      {
+        "phase": "Ramp then expand",
+        "duration": "Months 36-48",
+        "actions": "Increase loaded wafers against orders, track actual cost/yield and add products selectively.",
+        "gate": "Stable customer yield, delivery and utilisation before further technology expansion."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Package versus chip performance",
+        "detail": "Packaging acceptance does not guarantee the customer's circuit design; preserve wafer maps and test responsibility boundaries.",
+        "sourceIds": [
+          "S5"
+        ]
+      },
+      {
+        "title": "Process control",
+        "detail": "Monitor coating, overlay, metal thickness and defects; customer-qualified process limits govern, not generic brochure specifications.",
+        "sourceIds": [
+          "S2",
+          "S3"
+        ]
+      },
+      {
+        "title": "Package and board reliability",
+        "detail": "Select applicable JEDEC/customer tests for thermal, moisture, mechanical and board-level performance; automotive approval is separate.",
+        "sourceIds": [
+          "S1",
+          "S6"
+        ]
+      },
+      {
+        "title": "Traceability and change control",
+        "detail": "Connect each incoming wafer to tool history, materials, test map and shipped reel; obtain customer permission before approved-process changes.",
+        "sourceIds": [
+          "S5"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Package process engineering, RDL/bump processing, test and singulation",
+        "route": "Make in India",
+        "detail": "Substantial local semiconductor back-end manufacturing, with transferred process know-how."
+      },
+      {
+        "part": "Processed silicon wafers",
+        "route": "Import initially",
+        "detail": "Often customer-consigned from an overseas foundry; local packaging does not establish domestic transistor fabrication."
+      },
+      {
+        "part": "Core process tools, selected chemicals and probe hardware",
+        "route": "Import initially",
+        "detail": "Qualified global equipment/materials likely required at launch; spares and export/service access matter."
+      },
+      {
+        "part": "Facility modules, civil services and suitable mechanical/electrical parts",
+        "route": "Buy Indian",
+        "detail": "Localise to approved specifications without assuming all utility/process components are domestic."
+      },
+      {
+        "part": "Specialist failure analysis and selected reliability tests",
+        "route": "Outsource",
+        "detail": "Use qualified external labs until volume justifies every advanced instrument."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "Semicon2.0 advanced ATMP/OSAT",
+        "status": "Policy snapshot 19 September 2026; direct-beneficiary application conditional.",
+        "detail": "WLCSP is named in the advanced category: ₹1,000 crore minimum capital investment, ₹200 crore qualifying prior revenue including permitted group/JV basis, production-grade owned/licensed technology, and 35% eligible capex support. Total budget above the threshold is not proof every cost is eligible or approval is assured.",
+        "sourceIds": [
+          "S8"
+        ]
+      },
+      {
+        "name": "Karnataka project package",
+        "status": "Requires a separate site/project-specific determination.",
+        "detail": "Do not assume a blanket central top-up or stack multiple state policies. Budget and finance gross costs until written eligibility, ceiling and payment conditions are established.",
+        "sourceIds": [
+          "S7"
+        ]
+      }
+    ],
+    "network": "Use introductions to secure a real technology owner, an anchor fabless/IDM customer and MeitY/ISM application guidance. Ask the partner to commit resident yield engineers and customer introductions, not merely permission to use a brand. MHI access alone does not award a semiconductor subsidy.",
+    "risks": [
+      {
+        "risk": "Factory starts without enough qualified wafer volume.",
+        "response": "Stage investment against binding qualification and volume arrangements with sensible cancellation terms."
+      },
+      {
+        "risk": "Yield loss destroys valuable customer wafers.",
+        "response": "Negotiate consignment/liability terms, insure where possible and require partner-backed process transfer and controlled pilots."
+      },
+      {
+        "risk": "A licence does not include practical production know-how.",
+        "response": "Specify recipes, design rules, engineering presence, acceptance criteria and ongoing support in the technology agreement."
+      },
+      {
+        "risk": "Utilities or imported tool service delays prevent ramp-up.",
+        "response": "Secure site service commitments and long-term tool support before construction."
+      },
+      {
+        "risk": "Subsidy approval or reimbursement timing differs from the model.",
+        "response": "Fund the gross project and treat incentives as conditional, with milestone-based cash-flow scenarios."
+      }
+    ],
+    "first90": [
+      "Select an actual chip family and its anchor buyer; request wafer maps, electrical-test needs and target package.",
+      "Screen two operating WLCSP technology partners for transfer rights and production track record.",
+      "Commission a preliminary tool/cycle-time model, utility balance and independently reviewed project economics.",
+      "Screen Karnataka sites using power/water/effluent capability before land purchase.",
+      "Agree customer-wafer liability, qualification payments and funding structure before scheme-dependent commitments."
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "title": "Commercial WLCSP technology and process scope",
+        "url": "https://amkor.com/packaging/wafer-level-packaging/wlcsp/",
+        "publisher": "Amkor Technology",
+        "date": "Accessed 20 September 2026",
+        "supports": "WLCSP product, RDL/bumping, test, singulation and relevant device types; no startup cost benchmark.",
+        "type": "Company"
+      },
+      {
+        "id": "S2",
+        "title": "Packaging lithography equipment",
+        "url": "https://www.suss.com/en/products-solutions/imaging-solutions/mask-alignment/ma300-gen3",
+        "publisher": "SUSS",
+        "date": "Accessed 20 September 2026",
+        "supports": "Example of commercial wafer-level packaging exposure equipment; RFQ must use the licensed process.",
+        "type": "Company"
+      },
+      {
+        "id": "S3",
+        "title": "Advanced packaging process capabilities",
+        "url": "https://www.evgroup.com/technologies/",
+        "publisher": "EV Group",
+        "date": "Accessed 20 September 2026",
+        "supports": "Coating/lithography/bonding/metrology process families; specific starter recipe is an engineering assumption.",
+        "type": "Company"
+      },
+      {
+        "id": "S4",
+        "title": "Thin-wafer handling and dicing process",
+        "url": "https://disco.co.jp/eg/solution/library/dbg/dbg_process.html",
+        "publisher": "DISCO",
+        "date": "Accessed 20 September 2026",
+        "supports": "Wafer thinning/separation risks and tool families; DBG is one available route, not a mandatory starter sequence.",
+        "type": "Company"
+      },
+      {
+        "id": "S5",
+        "title": "Automated semiconductor test roles",
+        "url": "https://www.advantest.com/en/semiconductor-basics/automated-test-equipment/",
+        "publisher": "Advantest",
+        "date": "Accessed 20 September 2026",
+        "supports": "Wafer/die/package test stages and known-good-device importance.",
+        "type": "Company"
+      },
+      {
+        "id": "S6",
+        "title": "Semiconductor reliability testing",
+        "url": "https://www.keccorp.com/en/quality/reliability.asp",
+        "publisher": "KEC",
+        "date": "Accessed 20 September 2026",
+        "supports": "Manufacturer's reliability-test families and standards references; actual customer plan still required.",
+        "type": "Company"
+      },
+      {
+        "id": "S7",
+        "title": "Karnataka Industrial Policy operative guidelines",
+        "url": "https://investkarnataka.co.in/wp-content/uploads/2026/04/Karnataka.pdf",
+        "publisher": "Government of Karnataka",
+        "date": "Policy checked 19 September 2026",
+        "supports": "State-policy selection and route-specific treatment of other assistance; no project-specific packaging sanction verified.",
+        "type": "Government"
+      },
+      {
+        "id": "S8",
+        "title": "Semicon2.0 ATMP/OSAT conditions",
+        "url": "https://ism.gov.in/schemes/semicon2.0/atmp-osat",
+        "publisher": "India Semiconductor Mission",
+        "date": "Policy checked 19 September 2026",
+        "supports": "Advanced packaging categories, threshold, technology/revenue conditions and35% support.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "The specified starter is fan-in WLCSP, an advanced packaging category with less scope than GPU/HBM assembly. All capex, headcount, layout, utilities, throughput and time ranges are author planning assumptions, not vendor quotes or a DPR. Technical partner, customer volume, land, utilities and subsidy are uncommitted. Educational model is not process/CAD documentation.",
+    "researchDate": "2026-09-20",
+    "policySnapshotDate": "2026-09-19",
+    "teamTotal": 335
+  }
+]

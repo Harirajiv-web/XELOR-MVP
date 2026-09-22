@@ -1,0 +1,2111 @@
+[
+  {
+    "id": "connectors",
+    "title": "High-voltage connectors and cable assemblies",
+    "shortTitle": "HV connectors",
+    "sector": "EV and industrial electrical components",
+    "plain": "This factory makes detachable electrical joints between an EV battery, its DC power-distribution system and the input of its power controller. Its first product combines a sealed connector with a short heavy-duty cable.",
+    "analogy": "A rugged plug and socket for the much larger electrical loads inside an electric vehicle.",
+    "product": "A licensed two-pole connector pair, panel receptacle and customer-specific cable jumper, supplied with serialised inspection records.",
+    "does": "Allows high-current equipment to be assembled and serviced while keeping the connection insulated, sealed and mechanically secure.",
+    "customers": [
+      "Battery-pack and power-distribution-unit manufacturers",
+      "Electric bus, truck and specialist vehicle manufacturers",
+      "Traction-inverter and industrial converter manufacturers",
+      "Tier-1 harness suppliers buying a qualified connector family"
+    ],
+    "whyNow": "Established suppliers offer shielded HV connectors with interlock circuits for batteries, inverters and power distribution [CON1]. Indian manufacturing already exists [CON5]; the opportunity is a buyer-approved alternative for particular imported part numbers, with local engineering and shorter replenishment.",
+    "firstProduct": "One two-pole, shielded, sealed connector platform with a high-voltage interlock, targeting up to 1,000 V DC and roughly 150–250 A. These are development targets: the released rating must follow cable size, ambient-temperature derating and qualification.",
+    "notIncluded": "CCS vehicle charging inlets, signal/data connectors, relays, switches, complete vehicle wiring looms and in-house electroplating. The licence must cover the exact chosen design; catalogue examples are not permission to copy it.",
+    "entry": "Recruit a connector design/process leader and license a proven platform, including drawings, material specifications, crimp tooling and qualification support. Secure one customer programme before ordering production moulds. Make insulating inserts and turned contacts locally; purchase approved spring contacts initially and outsource plating.",
+    "capacity": "Planning case: 50,000 connector-and-jumper sets annually at maturity, one eight-hour shift over 250 working days. The target is 200 sets per day; customer variants and test time determine actual output.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility planning allowances for a leased industrial shell. Land purchase, new building construction and recoverable GST excluded. No subsidy deducted; working capital separate.",
+      "items": [
+        {
+          "name": "Contact machining and auxiliary equipment",
+          "low": 1.4,
+          "high": 2.6,
+          "note": "Two CNC turning centres, handling and basic finishing; planning allowance."
+        },
+        {
+          "name": "Moulding equipment and initial mould family",
+          "low": 1.6,
+          "high": 3,
+          "note": "Two small moulding presses, dryers, chiller and outsourced precision moulds."
+        },
+        {
+          "name": "Cable preparation and assembly cells",
+          "low": 0.8,
+          "high": 1.5,
+          "note": "Cutting, shield preparation, monitored crimping and assembly fixtures."
+        },
+        {
+          "name": "Inspection and product validation equipment",
+          "low": 0.8,
+          "high": 1.6,
+          "note": "Electrical, dimensional and crimp inspection; specialised external validation also needed."
+        },
+        {
+          "name": "Shell fit-out, utilities and traceability",
+          "low": 0.8,
+          "high": 1.4,
+          "note": "Electrical distribution, compressed air, segregated areas and serialisation."
+        },
+        {
+          "name": "Technology access and launch engineering",
+          "low": 0.8,
+          "high": 1.8,
+          "note": "Provisional licence, training, trials and validation allowance; no partner quotation obtained."
+        },
+        {
+          "name": "Contingency",
+          "low": 0.9,
+          "high": 1.7,
+          "note": "Design changes, commissioning and initial tooling corrections."
+        }
+      ],
+      "workingLow": 2,
+      "workingHigh": 4,
+      "workingNote": "Separate allowance for copper, resins, purchased contacts, pilot scrap and receivables during ramp-up; model customer payment terms before commitment.",
+      "landNote": "Lease deposit is within launch/site allowances. Buying land or constructing a new shell requires a separate site-specific budget.",
+      "confidence": "Planning estimate only. Machine RFQs, a licensed design and customer validation plan are needed to narrow the range.",
+      "totalLow": 7.1,
+      "totalHigh": 13.6,
+      "fundingLow": 9.1,
+      "fundingHigh": 17.6
+    },
+    "site": {
+      "builtup": "Assume 20,000 sq ft, approximately 1,860 sq m, of usable industrial space.",
+      "plot": "If greenfield: screen roughly 1–1.5 acres for a comparable first phase, subject to setbacks, parking and utility layout.",
+      "power": "Screen a 200–350 kVA connection; obtain the supplier load list and diversity calculation before applying for sanctioned power.",
+      "water": "Assume 2–4 kilolitres daily for people and cooling-system make-up; mould cooling recirculates. No wet plating line is included.",
+      "conditions": [
+        "Separate machining chips and oils from connector assembly.",
+        "Dry and identify resins; control dust around contact assembly.",
+        "Provide inspection lighting, compressed air and safe electrical-test enclosures."
+      ],
+      "areas": [
+        {
+          "name": "Machining",
+          "share": 20,
+          "why": "Turn contacts and inspect intermediate dimensions."
+        },
+        {
+          "name": "Moulding",
+          "share": 20,
+          "why": "Make insulating inserts and handle moulds."
+        },
+        {
+          "name": "Cable and connector assembly",
+          "share": 25,
+          "why": "Prepare cables and assemble the finished connection."
+        },
+        {
+          "name": "Quality laboratory",
+          "share": 12,
+          "why": "Electrical, dimensional and crimp checks."
+        },
+        {
+          "name": "Stores and dispatch",
+          "share": 13,
+          "why": "Segregate approved material and finished goods."
+        },
+        {
+          "name": "Utilities and offices",
+          "share": 10,
+          "why": "Support services and engineering."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant and programme leadership",
+        "count": 2,
+        "why": "Own delivery, costs and customer changes."
+      },
+      {
+        "role": "Product and process engineers",
+        "count": 4,
+        "why": "Manage drawings, moulding, contacts and assembly."
+      },
+      {
+        "role": "Quality and validation",
+        "count": 4,
+        "why": "Inspect product and maintain customer evidence."
+      },
+      {
+        "role": "Tool setters and maintenance",
+        "count": 4,
+        "why": "Set moulds, maintain machines and fixtures."
+      },
+      {
+        "role": "Machining and moulding operators",
+        "count": 6,
+        "why": "Run the two production areas."
+      },
+      {
+        "role": "Assembly and electrical-test operators",
+        "count": 12,
+        "why": "Prepare cables and build/test connectors."
+      },
+      {
+        "role": "Stores and planning",
+        "count": 2,
+        "why": "Control lots, materials and shipments."
+      },
+      {
+        "role": "Sales, purchasing and administration",
+        "count": 3,
+        "why": "Support customer programmes and operations."
+      }
+    ],
+    "teamNote": "37 people at the stated one-shift maturity case; temporary licensor specialists and external test laboratories are additional.",
+    "machines": [
+      {
+        "name": "CNC turning centres",
+        "quantity": "2",
+        "purpose": "Machine copper-alloy contacts.",
+        "spec": "RFQ against contact drawings, material machinability, surface finish and tolerance capability.",
+        "sourceIds": [
+          "CON1"
+        ]
+      },
+      {
+        "name": "Injection-moulding cells",
+        "quantity": "2",
+        "purpose": "Mould insulating inserts.",
+        "spec": "Choose shot size and clamping force from the licensed mould and engineering resin; include drying and cooling.",
+        "sourceIds": [
+          "CON3"
+        ]
+      },
+      {
+        "name": "Cable preparation station",
+        "quantity": "1 modular cell",
+        "purpose": "Cut cable and remove the required insulation and shield.",
+        "spec": "Cable diameter, shield construction and supported preparation methods are customer-specific.",
+        "sourceIds": [
+          "CON2"
+        ]
+      },
+      {
+        "name": "Monitored crimp press",
+        "quantity": "1–2",
+        "purpose": "Join the cable conductor to its contact.",
+        "spec": "Use matched applicators with force monitoring and validated cable-contact combinations.",
+        "sourceIds": [
+          "CON2"
+        ]
+      },
+      {
+        "name": "Connector assembly fixtures",
+        "quantity": "4 benches",
+        "purpose": "Install seals, inserts, housing and interlock parts.",
+        "spec": "Error-proof orientation, controlled torque and recorded part identity.",
+        "sourceIds": [
+          "CON1",
+          "CON2"
+        ]
+      },
+      {
+        "name": "Electrical and leak-test stations",
+        "quantity": "2",
+        "purpose": "Check the completed assembly.",
+        "spec": "Specify resistance, insulation, withstand, interlock continuity and leak methods from the customer test plan.",
+        "sourceIds": [
+          "CON4"
+        ]
+      },
+      {
+        "name": "Crimp and dimensional laboratory",
+        "quantity": "1 set",
+        "purpose": "Inspect crimp strength, sections and critical dimensions.",
+        "spec": "Pull tester, microsection preparation, microscope and optical dimensional equipment.",
+        "sourceIds": [
+          "CON2",
+          "CON4"
+        ]
+      },
+      {
+        "name": "Temperature-rise and cycling equipment",
+        "quantity": "1 development set",
+        "purpose": "Check heating and ageing of sample assemblies.",
+        "spec": "Current source, temperature channels and chamber capacity matched to sample size; outsource vibration and specialist ingress tests initially.",
+        "sourceIds": [
+          "CON4"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Freeze the customer interface",
+        "plain": "Agree exactly what must connect.",
+        "detail": "Turn mating drawings, cable size and environment into a controlled product specification.",
+        "check": "Customer and licensor approve the interface and test plan.",
+        "machine": "Engineering tools and drawings",
+        "sourceIds": [
+          "CON1",
+          "CON4"
+        ]
+      },
+      {
+        "name": "Make contacts and insulators",
+        "plain": "Shape the metal and insulating parts.",
+        "detail": "Turn contact blanks and mould inserts; approved suppliers plate contacts and supply housing parts.",
+        "check": "Critical dimensions, resin identity and plating certificates accepted.",
+        "machine": "CNC turning centres; injection-moulding cells",
+        "sourceIds": [
+          "CON1",
+          "CON3"
+        ]
+      },
+      {
+        "name": "Prepare and terminate cable",
+        "plain": "Cut and join the cable.",
+        "detail": "Remove insulation and shield in the specified geometry, then crimp with matched tooling.",
+        "check": "Crimp force, periodic pull tests and sections meet the released limits.",
+        "machine": "Cable preparation station; monitored crimp press",
+        "sourceIds": [
+          "CON2"
+        ]
+      },
+      {
+        "name": "Assemble the connection",
+        "plain": "Fit the parts in the right order.",
+        "detail": "Add seals, housing, interlock and secondary locks; record assembly identity.",
+        "check": "Presence, orientation and torque checks pass.",
+        "machine": "Connector assembly fixtures",
+        "sourceIds": [
+          "CON2"
+        ]
+      },
+      {
+        "name": "Test every assembly",
+        "plain": "Find manufacturing defects before shipping.",
+        "detail": "Apply the approved electrical and seal-screening sequence.",
+        "check": "All results linked to the product serial number.",
+        "machine": "Electrical and leak-test stations",
+        "sourceIds": [
+          "CON4"
+        ]
+      },
+      {
+        "name": "Validate and release the batch",
+        "plain": "Confirm it survives the intended use.",
+        "detail": "Use sample environmental and temperature-rise tests, review traceability and package accepted goods.",
+        "check": "Customer qualification and batch-release requirements satisfied.",
+        "machine": "Temperature-rise equipment; quality laboratory",
+        "sourceIds": [
+          "CON4"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Outer housing",
+        "meaning": "Protects and aligns the connection."
+      },
+      {
+        "name": "Insulating insert",
+        "meaning": "Separates the live metal parts."
+      },
+      {
+        "name": "Power contacts",
+        "meaning": "Carry the electrical current."
+      },
+      {
+        "name": "Seal",
+        "meaning": "Limits water and dust entry when correctly assembled."
+      },
+      {
+        "name": "Interlock loop",
+        "meaning": "Signals whether the high-voltage connector is properly engaged."
+      },
+      {
+        "name": "Cable and shield",
+        "meaning": "Carry power and manage electromagnetic interference."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Define a customer programme",
+        "duration": "Months 0–2",
+        "actions": "Select one mating interface and identify the imported part being replaced.",
+        "gate": "Buyer specification and qualification route agreed."
+      },
+      {
+        "phase": "Secure design rights",
+        "duration": "Months 2–4",
+        "actions": "Negotiate licence scope and build outsourced samples.",
+        "gate": "Design rights and sample acceptance established."
+      },
+      {
+        "phase": "Install the pilot factory",
+        "duration": "Months 4–8",
+        "actions": "Order moulds and equipment, prepare the shell and train operators.",
+        "gate": "Machine capability and safe operation demonstrated."
+      },
+      {
+        "phase": "Qualify the product",
+        "duration": "Months 8–14",
+        "actions": "Run environmental, electrical and durability tests and customer production trials.",
+        "gate": "Written customer release; timing may extend."
+      },
+      {
+        "phase": "Ramp a repeatable family",
+        "duration": "Months 14–18+",
+        "actions": "Increase output and qualify a second customer using the same platform.",
+        "gate": "Stable yield, field performance and repeat orders."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Connector test specification",
+        "detail": "Use relevant IEC 60512 methods with the customer's product-specific severity and acceptance limits; the generic standard is not a product approval.",
+        "sourceIds": [
+          "CON4"
+        ]
+      },
+      {
+        "title": "Automotive release",
+        "detail": "Where requested, complete the OEM's design validation, process approval and traceability requirements. Any ingress rating applies only to the tested mating condition.",
+        "sourceIds": [
+          "CON1",
+          "CON4"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Contacts and insulating inserts",
+        "route": "Make in India",
+        "detail": "Local turning and moulding create manufacturing depth."
+      },
+      {
+        "part": "Housing, cable and packaging",
+        "route": "Buy Indian",
+        "detail": "Qualify domestic sources against the licensed specification."
+      },
+      {
+        "part": "Plating and specialised environmental tests",
+        "route": "Outsource",
+        "detail": "Use approved external facilities initially."
+      },
+      {
+        "part": "Contact springs, special resin grades and selected machines",
+        "route": "Import initially",
+        "detail": "Replace only after equivalent material and process qualification."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS connector category",
+        "status": "Application window closed as displayed by the portal on 20 September 2026.",
+        "detail": "The connector category's minimum investment is much larger than this starter scope. No ECMS receipt is included; an approved partner project requires separate eligibility review.",
+        "sourceIds": [
+          "CON6",
+          "CON7"
+        ]
+      }
+    ],
+    "network": "Use the stated network for introductions to OEM platform engineering, supplier development and accredited test facilities. Request an approved drawing, nominated buyer and sample programme; introductions cannot replace technical approval or create a government purchase order.",
+    "risks": [
+      {
+        "risk": "The mating design is protected or proprietary.",
+        "response": "Obtain clear manufacturing and sales rights before tooling."
+      },
+      {
+        "risk": "Contact resistance rises after vibration or ageing.",
+        "response": "Validate the complete contact, plating, cable and seal combination."
+      },
+      {
+        "risk": "Too many customer variants consume tooling cash.",
+        "response": "Launch one platform with controlled variants."
+      },
+      {
+        "risk": "Local assembly still contains expensive imported parts.",
+        "response": "Track Indian value addition by bill of material, not product labels."
+      }
+    ],
+    "first90": [
+      "Obtain specifications and sample acceptance criteria from two potential buyers.",
+      "Shortlist a licensor and agree what IP and process training transfer.",
+      "Request moulding, turning, plating and validation quotations against the same design.",
+      "Build a costed bill of material and samples before committing production capex."
+    ],
+    "sources": [
+      {
+        "id": "CON1",
+        "title": "PowerLok G1 300/500 Series",
+        "url": "https://amphenol-aipg.com/product/powerlok-g1-300-500-series/",
+        "publisher": "Amphenol Industrial",
+        "date": "Accessed 20 September 2026",
+        "supports": "Existing shielded HV connector product class, application and rating variables; not a licence or a price quotation.",
+        "type": "Company"
+      },
+      {
+        "id": "CON2",
+        "title": "Automated assembly of high-voltage cables",
+        "url": "https://www.komaxgroup.com/en/expertise/high-voltage",
+        "publisher": "Komax",
+        "date": "Accessed 20 September 2026",
+        "supports": "Configurable cable preparation, assembly automation, quality monitoring and traceability.",
+        "type": "Company"
+      },
+      {
+        "id": "CON3",
+        "title": "Customer Center: electronics moulding applications",
+        "url": "https://www.arburg.com/en/tw/technology-days-info-material/customer-center/",
+        "publisher": "ARBURG",
+        "date": "Accessed 20 September 2026",
+        "supports": "Injection-moulding applications for connector housings and related insulating components; not assumed machine price.",
+        "type": "Company"
+      },
+      {
+        "id": "CON4",
+        "title": "IEC 60512-1:2018",
+        "url": "https://webstore.iec.ch/en/publication/26491",
+        "publisher": "International Electrotechnical Commission",
+        "date": "22 October 2018; accessed 20 September 2026",
+        "supports": "Connector testing framework and need for product-specific acceptance requirements.",
+        "type": "Standard"
+      },
+      {
+        "id": "CON5",
+        "title": "Amphenol High Speed Technology India ISO 9001 certificate",
+        "url": "https://www.amphenol-cs.com/media/wysiwyg/files/documentation/certification/ahst-india-iso9001.pdf",
+        "publisher": "Amphenol",
+        "date": "23 October 2025; reviewed in earlier evidence audit",
+        "supports": "Existing connector manufacturing in Electronic City; does not identify the proposed HV SKU.",
+        "type": "Company"
+      },
+      {
+        "id": "CON6",
+        "title": "ECMS scheme guidelines",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "2025; accessed 20 September 2026",
+        "supports": "Category-specific investment and incentive conditions; no grant assumed.",
+        "type": "Government"
+      },
+      {
+        "id": "CON7",
+        "title": "ECMS application portal",
+        "url": "https://ecms.meity.gov.in/",
+        "publisher": "MeitY",
+        "date": "Accessed 20 September 2026",
+        "supports": "A/B/C/E window closed 30 September 2025; D window runs to 30 April 2027.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Product and process examples are supported by primary sources. The selected factory, capacity, budget, staffing, utility ranges and schedule are our planning assumptions, not supplier quotations. No buyer commitment, licensor offer or niche import percentage is established.",
+    "teamTotal": 37,
+    "factoryNote": "This is a proposed starter-factory configuration, not a vendor-engineered plant. Product ratings, permits, layout and utility connections must be confirmed before investment."
+  },
+  {
+    "id": "production-test-machines",
+    "title": "Battery-pack production test machines",
+    "shortTitle": "Production test machines",
+    "sector": "EV manufacturing equipment",
+    "plain": "This factory builds the machines that check a battery pack before it leaves its production line. It sells an engineered test station, its software and ongoing service.",
+    "analogy": "A factory checkout desk that verifies a battery's identity, electrical health and assembly before dispatch.",
+    "product": "A modular end-of-line test station with a guarded fixture, electrical instruments, battery communication software, leak-test option and traceable results.",
+    "does": "Helps a battery manufacturer catch assembly faults, document each shipped pack and change test recipes as products evolve.",
+    "customers": [
+      "EV battery-pack manufacturers",
+      "Commercial-vehicle OEM battery plants",
+      "Stationary energy-storage pack manufacturers",
+      "Production-line integrators needing an Indian test-station partner"
+    ],
+    "whyNow": "Ador Digatron already offers modular battery-pack EOL testing in India [TST1], and Chroma publishes a configurable production-test platform [TST2]. This validates a real equipment category and existing competition. A new supplier must win on a defined pack programme, integration capability, delivery and service.",
+    "firstProduct": "One configurable 200–800 V battery-pack EOL platform, with a roughly 60 kW bidirectional test-power option, BMS communication, insulation/withstand testing and customer-specified leak testing. Voltage, current and throughput remain engineering targets for the selected pack.",
+    "notIncluded": "Battery manufacturing, destructive abuse testing, complete cell formation plants, accredited battery certification services and production of the power semiconductor instruments inside the station.",
+    "entry": "Hire an experienced automation/test lead and collaborate with an established instrument supplier. Own the station architecture, fixtures, electrical panels, test sequencing, traceability and service. Purchase calibrated power stages and measurement instruments; outsource sheet-metal and precision fixture manufacture initially.",
+    "capacity": "Planning case: 24 stations per year after ramp-up, one shift, two parallel assembly/commissioning bays. This is a project-delivery assumption, not an order forecast or battery-testing throughput.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility estimate for a leased industrial shell; land, new building construction and recoverable GST excluded. No subsidy netted. Customer machines being built are funded through separate working capital.",
+      "items": [
+        {
+          "name": "Reference power and battery-emulation equipment",
+          "low": 0.8,
+          "high": 1.5,
+          "note": "Reusable development and factory-acceptance equipment, not every delivered customer's power rack."
+        },
+        {
+          "name": "Electrical instruments and calibration references",
+          "low": 0.4,
+          "high": 0.8,
+          "note": "Insulation, voltage/current, data acquisition and reference measurement."
+        },
+        {
+          "name": "Panel assembly and mechanical build tools",
+          "low": 0.3,
+          "high": 0.6,
+          "note": "Wire preparation, crimping, controlled torque, lifting and workbenches."
+        },
+        {
+          "name": "Guarded test bays and utilities",
+          "low": 0.5,
+          "high": 1,
+          "note": "Power distribution, isolation, enclosures and approved ventilation/fire arrangements."
+        },
+        {
+          "name": "Software platform and engineering launch",
+          "low": 0.6,
+          "high": 1.1,
+          "note": "Reusable sequencing, data handling, mechanical/electrical design and prototype work."
+        },
+        {
+          "name": "Demonstrator, qualification and field launch",
+          "low": 0.5,
+          "high": 0.9,
+          "note": "First demonstration machine, outside reviews and initial commissioning capability."
+        },
+        {
+          "name": "Contingency",
+          "low": 0.5,
+          "high": 0.9,
+          "note": "Integration changes, tooling rework and commissioning allowance."
+        }
+      ],
+      "workingLow": 2.5,
+      "workingHigh": 5,
+      "workingNote": "Assume several customer stations overlap in build. Cover bought-in instruments, customer-specific fixtures, payroll and receivables; seek engineering and dispatch milestones rather than financing whole projects unsecured.",
+      "landNote": "New land/buildings excluded; modest lease deposit within site/launch allowances.",
+      "confidence": "Planning estimate; needs a defined test recipe, instrument quotations and customer payment milestones.",
+      "totalLow": 3.6,
+      "totalHigh": 6.8,
+      "fundingLow": 6.1,
+      "fundingHigh": 11.8
+    },
+    "site": {
+      "builtup": "Assume 15,000 sq ft, about 1,390 sq m, for engineering, two build bays and controlled testing.",
+      "plot": "Greenfield alternative: screen 0.75–1.25 acres, subject to access, setbacks and the battery-test hazard assessment.",
+      "power": "Screen 200–350 kVA. Regenerative test equipment requires a utility and power-quality review; regeneration does not remove connection or protection requirements.",
+      "water": "Assume 1–3 kilolitres daily for people and limited closed-loop cooling make-up; no wet manufacturing process.",
+      "conditions": [
+        "Separate live battery testing from panel assembly and offices.",
+        "Provide interlocked enclosures, isolation and emergency response designed for the actual customer packs.",
+        "Use pack simulators for routine development; establish a controlled area for customer packs and suspect returns."
+      ],
+      "areas": [
+        {
+          "name": "Machine assembly",
+          "share": 30,
+          "why": "Build and wire two customer projects."
+        },
+        {
+          "name": "Guarded test bays",
+          "share": 20,
+          "why": "Commission and verify equipment."
+        },
+        {
+          "name": "Engineering and software",
+          "share": 20,
+          "why": "Design the reusable product platform."
+        },
+        {
+          "name": "Instrument and panel benches",
+          "share": 12,
+          "why": "Wire, inspect and calibrate subsystems."
+        },
+        {
+          "name": "Stores and dispatch",
+          "share": 10,
+          "why": "Control expensive project material."
+        },
+        {
+          "name": "Utilities and support",
+          "share": 8,
+          "why": "Maintain services and staff facilities."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Programme and operations leadership",
+        "count": 2,
+        "why": "Own schedules, contracts and delivery."
+      },
+      {
+        "role": "Test software and data engineers",
+        "count": 5,
+        "why": "Build recipes, communication and traceability."
+      },
+      {
+        "role": "Electrical and controls engineers",
+        "count": 5,
+        "why": "Design panels, protection and automation."
+      },
+      {
+        "role": "Mechanical and fixture engineers",
+        "count": 3,
+        "why": "Adapt the station to the pack."
+      },
+      {
+        "role": "Assembly and wiring technicians",
+        "count": 8,
+        "why": "Build panels and complete machines."
+      },
+      {
+        "role": "Quality and calibration",
+        "count": 3,
+        "why": "Verify measurements and acceptance records."
+      },
+      {
+        "role": "Field commissioning and service",
+        "count": 4,
+        "why": "Install and support customer equipment."
+      },
+      {
+        "role": "Purchasing, planning and administration",
+        "count": 4,
+        "why": "Control bought-in equipment and project cash."
+      }
+    ],
+    "teamNote": "34 people for one-shift assembly and a small field-service team. Specialist safety reviews and accredited calibration services are additional.",
+    "machines": [
+      {
+        "name": "Engineering and software workstations",
+        "quantity": "8–10 shared workstations",
+        "purpose": "Design the station and test sequences.",
+        "spec": "Electrical CAD, mechanical CAD, version control and test-software licensing sized to the team.",
+        "sourceIds": [
+          "TST1",
+          "TST2"
+        ]
+      },
+      {
+        "name": "Wire preparation and panel benches",
+        "quantity": "2 build cells",
+        "purpose": "Prepare wiring and assemble electrical cabinets.",
+        "spec": "Supported conductor sizes, calibrated crimp tooling, torque logging and drawing control.",
+        "sourceIds": [
+          "TST3"
+        ]
+      },
+      {
+        "name": "Mechanical assembly tools and lifting aids",
+        "quantity": "2 bays",
+        "purpose": "Assemble outsourced frames and fixtures.",
+        "spec": "Working envelope and lifting ratings matched to the machine and pack; no full machining shop assumed.",
+        "sourceIds": []
+      },
+      {
+        "name": "Regenerative power reference rack",
+        "quantity": "1–2 development units",
+        "purpose": "Exercise and verify station power functions.",
+        "spec": "Select voltage, current, transient response and grid interface from the first customer specification.",
+        "sourceIds": [
+          "TST2"
+        ]
+      },
+      {
+        "name": "Insulation and measurement instrument set",
+        "quantity": "2 sets",
+        "purpose": "Measure electrical parameters and verify test channels.",
+        "spec": "Accuracy, uncertainty, isolation and traceable calibration; protected measurement circuits.",
+        "sourceIds": [
+          "TST2",
+          "TST3"
+        ]
+      },
+      {
+        "name": "Leak-test reference and master parts",
+        "quantity": "1 set",
+        "purpose": "Develop and verify the optional leak test.",
+        "spec": "Pressure range, sensitivity and reference leaks agreed with the pack customer.",
+        "sourceIds": [
+          "TST1"
+        ]
+      },
+      {
+        "name": "Battery/BMS simulator and communication bench",
+        "quantity": "2 benches",
+        "purpose": "Test software before connecting a real pack.",
+        "spec": "Customer CAN/diagnostic definitions, permitted fault simulation and version-controlled interfaces.",
+        "sourceIds": [
+          "TST1",
+          "TST2"
+        ]
+      },
+      {
+        "name": "Guarded factory-acceptance bay",
+        "quantity": "2 bays",
+        "purpose": "Test the complete machine before shipment.",
+        "spec": "Interlocks, isolation, safe discharge, emergency stops and site-specific risk assessment.",
+        "sourceIds": [
+          "TST3"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Agree the test contract",
+        "plain": "Define what a good pack must pass.",
+        "detail": "Receive the pack drawing, communication definitions, takt target and factory interfaces.",
+        "check": "Buyer signs the test matrix and acceptance criteria.",
+        "machine": "Engineering workstations",
+        "sourceIds": [
+          "TST1"
+        ]
+      },
+      {
+        "name": "Design the station",
+        "plain": "Translate the checks into a machine.",
+        "detail": "Specify instruments, fixture, protection, software and result records.",
+        "check": "Design and safety review completed before long-lead orders.",
+        "machine": "Engineering workstations",
+        "sourceIds": [
+          "TST2",
+          "TST3"
+        ]
+      },
+      {
+        "name": "Build the hardware",
+        "plain": "Assemble the frame, panels and test fixture.",
+        "detail": "Inspect outsourced mechanical parts and integrate bought-in equipment.",
+        "check": "Wiring, torque, protective bonding and component identity verified.",
+        "machine": "Panel benches; mechanical assembly bays",
+        "sourceIds": [
+          "TST3"
+        ]
+      },
+      {
+        "name": "Develop the test sequence",
+        "plain": "Teach the machine the approved checks.",
+        "detail": "Use a simulator to exercise BMS messages, recipe handling and traceability.",
+        "check": "Known pass and fail cases produce the correct result.",
+        "machine": "BMS simulator and engineering workstations",
+        "sourceIds": [
+          "TST1",
+          "TST2"
+        ]
+      },
+      {
+        "name": "Calibrate and prove the machine",
+        "plain": "Show that its measurements are trustworthy.",
+        "detail": "Verify measurement uncertainty, repeatability, interlocks and the customer's golden samples.",
+        "check": "Factory-acceptance record signed against the contract.",
+        "machine": "Instrument set; guarded test bay",
+        "sourceIds": [
+          "TST2",
+          "TST3"
+        ]
+      },
+      {
+        "name": "Commission and support",
+        "plain": "Install it on the buyer's line.",
+        "detail": "Connect the approved factory interfaces, train operators and establish spares and software support.",
+        "check": "Site acceptance and repeatable production cycle demonstrated.",
+        "machine": "Complete delivered test station",
+        "sourceIds": [
+          "TST1"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Pack fixture",
+        "meaning": "Holds and connects the battery under test."
+      },
+      {
+        "name": "Power rack",
+        "meaning": "Charges or discharges the pack during the agreed checks."
+      },
+      {
+        "name": "Measurement cabinet",
+        "meaning": "Measures electrical values and insulation."
+      },
+      {
+        "name": "Communication controller",
+        "meaning": "Talks to the battery's management system."
+      },
+      {
+        "name": "Guarded enclosure",
+        "meaning": "Separates people from live testing."
+      },
+      {
+        "name": "Results terminal",
+        "meaning": "Links the verdict to a pack serial number."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Choose the first programme",
+        "duration": "Months 0–2",
+        "actions": "Obtain the pack specification and paid engineering or prototype scope.",
+        "gate": "Test contract and customer decision owner identified."
+      },
+      {
+        "phase": "Build the architecture",
+        "duration": "Months 2–4",
+        "actions": "Select instrument partners and prototype software using a simulator.",
+        "gate": "Design review and instrument quotations accepted."
+      },
+      {
+        "phase": "Build a demonstrator",
+        "duration": "Months 4–7",
+        "actions": "Fit out the bays and assemble the first machine.",
+        "gate": "Known faults are detected and measurements are repeatable."
+      },
+      {
+        "phase": "Complete first customer acceptance",
+        "duration": "Months 7–10",
+        "actions": "Perform factory and site acceptance; train the customer.",
+        "gate": "Signed acceptance and initial service evidence."
+      },
+      {
+        "phase": "Repeat the platform",
+        "duration": "Months 10–15+",
+        "actions": "Reuse validated modules on further customer variants.",
+        "gate": "Predictable build hours, service response and project margins."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Measurement capability",
+        "detail": "Specify calibration, uncertainty and repeatability for every important channel. A calibrated instrument alone does not validate the assembled station.",
+        "sourceIds": [
+          "TST2",
+          "TST3"
+        ]
+      },
+      {
+        "title": "Equipment safety",
+        "detail": "Determine applicable IEC 61010 requirements and any machinery-specific requirements with the conformity specialist. Validate guards, isolation and safe failure behaviour for the finished system.",
+        "sourceIds": [
+          "TST3"
+        ]
+      },
+      {
+        "title": "Customer acceptance",
+        "detail": "Pass factory and site acceptance using agreed reference packs and known defects; establish software-change control and retrievable records.",
+        "sourceIds": [
+          "TST1",
+          "TST2"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Machine architecture, software, panels and integration",
+        "route": "Make in India",
+        "detail": "Core engineering and service value is created locally."
+      },
+      {
+        "part": "Frames, cabinets and fixtures",
+        "route": "Outsource",
+        "detail": "Use Indian sheet-metal and machining suppliers."
+      },
+      {
+        "part": "Regenerative converters and precision instruments",
+        "route": "Import initially",
+        "detail": "Qualify Indian substitutes where performance is equivalent; no claim of fully indigenous instruments."
+      },
+      {
+        "part": "Cables, standard panels and support items",
+        "route": "Buy Indian",
+        "detail": "Purchase qualified local parts where specifications permit."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS capital equipment category",
+        "status": "Category D application window shown open until 30 April 2027 as checked on 20 September 2026.",
+        "detail": "Electronics-manufacturing equipment eligibility must be confirmed for the exact product. The ₹10 crore minimum eligible investment exceeds this starter fixed-investment estimate; do not assume a grant or count working capital towards it.",
+        "sourceIds": [
+          "TST4",
+          "TST5"
+        ]
+      }
+    ],
+    "network": "Seek introductions to pack manufacturing engineering, plant quality and sourcing teams, plus ARAI or other relevant test experts. The useful outcome is a paid engineering project with a signed acceptance specification; political access does not validate a machine.",
+    "risks": [
+      {
+        "risk": "Every order becomes a new engineering project.",
+        "response": "Limit the launch to one voltage/application family and reuse modules."
+      },
+      {
+        "risk": "A missed defect causes customer losses.",
+        "response": "Contract the test coverage, validate known failures and control software changes."
+      },
+      {
+        "risk": "Imported instruments delay delivery.",
+        "response": "Freeze the bill of material early and qualify alternate channels."
+      },
+      {
+        "risk": "Receivables absorb the company's cash.",
+        "response": "Use engineering, factory-acceptance and shipment milestones."
+      }
+    ],
+    "first90": [
+      "Obtain two real pack test matrices and compare their common requirements.",
+      "Recruit an experienced test architect and confirm instrument support in India.",
+      "Build a simulator-based demonstration of diagnosis and serialised results.",
+      "Quote a paid pilot with explicit acceptance criteria and milestones."
+    ],
+    "sources": [
+      {
+        "id": "TST1",
+        "title": "EOL testing modules and packs",
+        "url": "https://adordigatron.com/eol-testing-modules-packs/",
+        "publisher": "Ador Digatron",
+        "date": "Accessed 20 September 2026",
+        "supports": "Existing Indian offering of modular electrical, leak and BMS testing with production traceability; not a price benchmark.",
+        "type": "Company"
+      },
+      {
+        "id": "TST2",
+        "title": "Battery Pack Automated Test System 8720",
+        "url": "https://www.chromausa.com/product/battery-pack-ats-model-8720/",
+        "publisher": "Chroma Systems Solutions",
+        "date": "Accessed 20 September 2026",
+        "supports": "Commercial EOL test architecture and configurable battery electrical/communication checks; proposed rating remains our scope choice.",
+        "type": "Company"
+      },
+      {
+        "id": "TST3",
+        "title": "IEC 61010-1:2010",
+        "url": "https://webstore.iec.ch/en/publication/4279",
+        "publisher": "International Electrotechnical Commission",
+        "date": "10 June 2010; accessed 20 September 2026",
+        "supports": "Safety framework for electrical measurement and control equipment; detailed applicability requires the current applicable editions.",
+        "type": "Standard"
+      },
+      {
+        "id": "TST4",
+        "title": "ECMS guidelines",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "2025; accessed 20 September 2026",
+        "supports": "Capital equipment category and investment conditions; the proposed business has not obtained approval.",
+        "type": "Government"
+      },
+      {
+        "id": "TST5",
+        "title": "ECMS application portal",
+        "url": "https://ecms.meity.gov.in/",
+        "publisher": "MeitY",
+        "date": "Accessed 20 September 2026",
+        "supports": "Current category D application-window notice.",
+        "type": "Government"
+      },
+      {
+        "id": "TST6",
+        "title": "Five technical challenges for battery-pack EOL test stations",
+        "url": "https://www.chroma.com.cn/cn/blog/application_note_battery_pack_eol_test",
+        "publisher": "Chroma ATE",
+        "date": "22 June 2022; accessed 20 September 2026",
+        "supports": "Distinction between cell/module/in-line and finished-pack testing; no full formation-line scope assumed.",
+        "type": "Company"
+      }
+    ],
+    "researchNote": "Sources establish equipment functions and existing suppliers. The factory layout, team, budget, capacity and timeline are planning assumptions. No customer test recipe, purchase order, instrument quotation or certification scope has been obtained.",
+    "teamTotal": 34,
+    "factoryNote": "This is a proposed starter-factory configuration, not a vendor-engineered plant. Product ratings, permits, layout and utility connections must be confirmed before investment."
+  },
+  {
+    "id": "advanced-pcb",
+    "title": "Multilayer and entry-HDI printed circuit boards",
+    "shortTitle": "Advanced PCBs",
+    "sector": "Electronics manufacturing",
+    "plain": "This factory makes the bare boards on which electronic components are later mounted. Copper tracks and small plated holes connect several layers inside each board.",
+    "analogy": "A multilayer road network for electrical signals, with tiny vertical connections between the floors.",
+    "product": "Customer-designed, electrically tested 8–12-layer rigid boards, including one sequential HDI build-up where needed.",
+    "does": "Gives electronics manufacturers a qualified Indian source for compact, controlled-impedance boards and local support when designs change.",
+    "customers": [
+      "Telecom and industrial electronics manufacturers",
+      "Server auxiliary-board and interface-board manufacturers",
+      "EMS companies purchasing customer-approved bare boards",
+      "Power and embedded-system OEMs needing multilayer boards"
+    ],
+    "whyNow": "Equipment and chemistry suppliers support integrated HDI manufacturing [PCB1–PCB3]. AT&S reports continuing HDI qualification at Nanjangud [PCB5], demonstrating a Karnataka manufacturing base. This is a selective replacement of imported board designs, not proof that every advanced board is imported or that all AI server boards fit this line.",
+    "firstProduct": "8–12-layer rigid controlled-impedance PCBs, with an optional 1+N+1 construction: one additional fine-interconnect layer on each side of a multilayer core. Start with industrial, telecom and server auxiliary/interface applications on a small set of approved materials.",
+    "notIncluded": "IC package substrates, ABF or glass-core substrates, flagship GPU baseboards requiring substantially higher layer counts, any-layer smartphone HDI, flexible boards and component assembly. Expanding to those products requires another capability and investment assessment.",
+    "entry": "Form a technical partnership with an experienced bare-PCB operator, not only an equipment seller. Transfer stack-up design, chemical control, yield improvement and customer qualification methods. Secure several repeat board programmes before freezing line capacity.",
+    "capacity": "Planning case: approximately 4,000 square metres of saleable finished boards per month at maturity, two shifts over roughly 250 production days yearly. Panel utilisation, layer count, product mix and yield determine the true output.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility allowances for a leased, structurally suitable industrial shell. Land, new building construction and recoverable GST excluded. No incentives netted; working capital separate.",
+      "items": [
+        {
+          "name": "Inner/outer-layer preparation, etching and handling",
+          "low": 12,
+          "high": 23,
+          "note": "Integrated wet-process and resist-handling equipment; planning range."
+        },
+        {
+          "name": "Imaging, drilling and registration",
+          "low": 20,
+          "high": 36,
+          "note": "Direct imaging, mechanical and laser drilling, registration and automation."
+        },
+        {
+          "name": "Vacuum lamination system",
+          "low": 7,
+          "high": 12,
+          "note": "Pressing, lay-up and supporting thermal equipment."
+        },
+        {
+          "name": "Desmear and copper metallisation/plating",
+          "low": 14,
+          "high": 25,
+          "note": "Critical wet chemistry and copper-build process."
+        },
+        {
+          "name": "Solder mask, finishing and profiling",
+          "low": 9,
+          "high": 16,
+          "note": "Mask coating/imaging/cure, OSP finishing and routing; specialist precious-metal finishing outsourced initially."
+        },
+        {
+          "name": "Inspection and reliability laboratory",
+          "low": 5,
+          "high": 9,
+          "note": "AOI, electrical test, impedance measurement, microsections and process laboratory."
+        },
+        {
+          "name": "Environmental systems and shell fit-out",
+          "low": 14,
+          "high": 25,
+          "note": "Effluent treatment, water reuse, extraction, DI water, HVAC, power and chemical segregation."
+        },
+        {
+          "name": "Technology transfer, trials and launch",
+          "low": 6,
+          "high": 12,
+          "note": "Engineering team mobilisation, process trials and customer qualification; unquoted provisional allowance."
+        },
+        {
+          "name": "Contingency",
+          "low": 12,
+          "high": 22,
+          "note": "Integration, commissioning and yield-ramp changes."
+        }
+      ],
+      "workingLow": 12,
+      "workingHigh": 25,
+      "workingNote": "Separate allowance for laminates, copper, chemicals, trial scrap and receivables. Early yield losses and lengthy customer approvals require a detailed cash-flow model.",
+      "landNote": "No land purchase or new shell construction included. Suitable chemical-processing premises may require more civil work than this allowance; approve the site before signing a lease.",
+      "confidence": "Low-to-medium confidence screening estimate, not a bankable project cost. Obtain an integrated line quotation, mass/water balance and customer product mix.",
+      "totalLow": 99,
+      "totalHigh": 180,
+      "fundingLow": 111,
+      "fundingHigh": 205
+    },
+    "site": {
+      "builtup": "Assume 90,000 sq ft, approximately 8,360 sq m, of suitable industrial space.",
+      "plot": "Greenfield alternative: screen 3–5 acres; treatment plant, chemicals, setbacks and future expansion determine the final area.",
+      "power": "Screen 1.5–3 MVA connected/supply capacity. Presses, wet lines, extraction, chillers and HVAC require a detailed load study.",
+      "water": "Screen 50–120 kilolitres/day of fresh make-up at mature output with engineered reuse; actual circulation is higher. Confirm source-water quality and a vendor water balance before site selection.",
+      "conditions": [
+        "Segregate corrosive wet processing, clean imaging and dry drilling areas.",
+        "Provide bunded chemical storage, extracted process lines and an engineered effluent-treatment/reuse system.",
+        "Obtain the applicable environmental consents and disposal arrangements before operating chemical processes.",
+        "Plan corrosion-resistant services, maintenance access and material flow around large process lines."
+      ],
+      "areas": [
+        {
+          "name": "Wet chemical processing",
+          "share": 28,
+          "why": "Etch, clean, metallise and plate panels."
+        },
+        {
+          "name": "Imaging and clean handling",
+          "share": 15,
+          "why": "Protect fine circuit patterns."
+        },
+        {
+          "name": "Lamination and drilling",
+          "share": 18,
+          "why": "Build and connect the layers."
+        },
+        {
+          "name": "Mask, profiling and testing",
+          "share": 14,
+          "why": "Finish and inspect boards."
+        },
+        {
+          "name": "Utilities and environmental treatment",
+          "share": 15,
+          "why": "Supply water/air and treat waste."
+        },
+        {
+          "name": "Stores, engineering and support",
+          "share": 10,
+          "why": "Control materials and customer jobs."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant, production and programme leadership",
+        "count": 4,
+        "why": "Coordinate two shifts and customer deliveries."
+      },
+      {
+        "role": "Process and manufacturing engineers",
+        "count": 12,
+        "why": "Control imaging, lamination, drilling and wet chemistry."
+      },
+      {
+        "role": "CAM and customer engineering",
+        "count": 6,
+        "why": "Convert designs into producible panels and stack-ups."
+      },
+      {
+        "role": "Quality and laboratory staff",
+        "count": 12,
+        "why": "Inspect layers, test boards and analyse defects."
+      },
+      {
+        "role": "Production operators",
+        "count": 56,
+        "why": "Run the line across two shifts."
+      },
+      {
+        "role": "Maintenance and utilities",
+        "count": 10,
+        "why": "Maintain equipment and treatment systems."
+      },
+      {
+        "role": "Environment, chemistry and safety",
+        "count": 6,
+        "why": "Manage chemicals, waste and permits."
+      },
+      {
+        "role": "Stores, purchasing, sales and administration",
+        "count": 10,
+        "why": "Manage materials and customer programmes."
+      }
+    ],
+    "teamNote": "116 people at two-shift maturity, including day-shift engineering and support. The technology partner's setup specialists and construction contractors are additional.",
+    "machines": [
+      {
+        "name": "Direct imaging and resist-processing line",
+        "quantity": "2 imaging systems plus shared preparation/etch equipment",
+        "purpose": "Create the copper circuit patterns.",
+        "spec": "Panel format, minimum feature size, registration and resist system selected for the approved board family.",
+        "sourceIds": [
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Automatic optical inspection",
+        "quantity": "2 systems",
+        "purpose": "Find circuit-pattern defects before layers are buried.",
+        "spec": "Resolution, defect library and panel handling matched to the design rules.",
+        "sourceIds": [
+          "PCB4"
+        ]
+      },
+      {
+        "name": "Vacuum lamination system",
+        "quantity": "1 press line",
+        "purpose": "Bond copper and insulating layers into a stack.",
+        "spec": "Press area, heating/cooling uniformity and material-qualified cycle; no universal temperature recipe.",
+        "sourceIds": [
+          "PCB3"
+        ]
+      },
+      {
+        "name": "Mechanical and laser drilling with registration",
+        "quantity": "2 mechanical drill systems, 1 laser system, 1 registration unit",
+        "purpose": "Make through holes and small blind connections.",
+        "spec": "Hole sizes, aspect ratios, layer alignment and panel throughput must be demonstrated on the actual laminate.",
+        "sourceIds": [
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Desmear, metallisation and copper-plating lines",
+        "quantity": "1 integrated process set",
+        "purpose": "Clean holes and create reliable copper connections.",
+        "spec": "Chemistry compatibility, bath monitoring, throwing power and via-fill capability against approved test coupons.",
+        "sourceIds": [
+          "PCB1"
+        ]
+      },
+      {
+        "name": "Outer pattern, solder-mask and finishing line",
+        "quantity": "1 set",
+        "purpose": "Protect the circuit and prepare exposed pads.",
+        "spec": "Mask registration and cure, OSP compatibility; outsource qualified ENIG/ENEPIG finishing initially.",
+        "sourceIds": [
+          "PCB1",
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Routing and electrical-test systems",
+        "quantity": "1 router and 2 test systems",
+        "purpose": "Separate boards and check electrical networks.",
+        "spec": "Flying-probe versus dedicated fixtures chosen by mix; include controlled-impedance coupons.",
+        "sourceIds": [
+          "PCB2",
+          "PCB4"
+        ]
+      },
+      {
+        "name": "Microsection and process laboratory",
+        "quantity": "1 laboratory",
+        "purpose": "Inspect internal copper joints and monitor chemistry.",
+        "spec": "Sample preparation, microscopy, analytical equipment and outsourced specialist reliability tests.",
+        "sourceIds": [
+          "PCB4"
+        ]
+      },
+      {
+        "name": "DI water, extraction and effluent-treatment systems",
+        "quantity": "1 engineered utility set",
+        "purpose": "Support the wet processes and manage waste.",
+        "spec": "Supplier mass balance, local discharge conditions, chemical inventory and water reuse determine size.",
+        "sourceIds": [
+          "PCB1"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Engineer the customer's board",
+        "plain": "Check that the design can be made reliably.",
+        "detail": "Create the stack-up, panel layout, tooling data and inspection coupons.",
+        "check": "Customer approves materials, impedance and fabrication rules.",
+        "machine": "CAM engineering tools",
+        "sourceIds": [
+          "PCB4"
+        ]
+      },
+      {
+        "name": "Pattern and inspect inner layers",
+        "plain": "Make the copper tracks inside the board.",
+        "detail": "Image and etch copper-clad cores; inspect before covering them.",
+        "check": "No unacceptable opens, shorts or pattern defects.",
+        "machine": "Direct imaging line; automatic optical inspection",
+        "sourceIds": [
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Build the multilayer stack",
+        "plain": "Press the layers together.",
+        "detail": "Align copper layers and insulating sheets, then laminate under a qualified cycle.",
+        "check": "Thickness, registration and bond integrity accepted.",
+        "machine": "Vacuum lamination system",
+        "sourceIds": [
+          "PCB3"
+        ]
+      },
+      {
+        "name": "Create vertical connections",
+        "plain": "Drill holes between selected layers.",
+        "detail": "Use mechanical and laser drilling; the HDI build-up repeats the relevant lamination/interconnect stages.",
+        "check": "Hole geometry and alignment satisfy the process window.",
+        "machine": "Drilling and registration systems",
+        "sourceIds": [
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Clean and metallise the holes",
+        "plain": "Make the holes electrically conductive.",
+        "detail": "Remove drilling residue and deposit/build copper using the qualified chemistry.",
+        "check": "Copper coverage, thickness and coupon sections accepted.",
+        "machine": "Desmear, metallisation and plating lines",
+        "sourceIds": [
+          "PCB1"
+        ]
+      },
+      {
+        "name": "Complete and protect the outer circuit",
+        "plain": "Finish the board's surface.",
+        "detail": "Form outer tracks, inspect, apply solder mask and the approved pad finish.",
+        "check": "Mask, surface finish and external features meet the drawing.",
+        "machine": "Outer pattern and finishing line",
+        "sourceIds": [
+          "PCB1",
+          "PCB2"
+        ]
+      },
+      {
+        "name": "Test, profile and release",
+        "plain": "Check the finished board and cut its outline.",
+        "detail": "Test networks, sample impedance and reliability coupons; profile and pack accepted boards.",
+        "check": "Customer quality class and lot records satisfied.",
+        "machine": "Electrical-test systems; router; laboratory",
+        "sourceIds": [
+          "PCB4"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "Copper layers",
+        "meaning": "Carry signals and power."
+      },
+      {
+        "name": "Insulating layers",
+        "meaning": "Keep copper networks separated."
+      },
+      {
+        "name": "Through hole",
+        "meaning": "Connects layers through the full board."
+      },
+      {
+        "name": "Blind microvia",
+        "meaning": "Connects a surface layer to a nearby inner layer."
+      },
+      {
+        "name": "Solder mask",
+        "meaning": "Protects most of the outer copper."
+      },
+      {
+        "name": "Exposed contact pads",
+        "meaning": "Receive components during later assembly."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Secure products and technical partner",
+        "duration": "Months 0–4",
+        "actions": "Obtain repeat board designs, approved materials and a partner-led feasibility study.",
+        "gate": "Credible utilisation plan and defined process capability."
+      },
+      {
+        "phase": "Approve site and line design",
+        "duration": "Months 4–8",
+        "actions": "Complete permits, utility balance, supplier trials and integrated RFQs.",
+        "gate": "Site can support chemical processes and treatment."
+      },
+      {
+        "phase": "Install and commission",
+        "duration": "Months 8–16",
+        "actions": "Fit out the shell, install utilities and qualify equipment.",
+        "gate": "Stable process coupons across the intended design rules."
+      },
+      {
+        "phase": "Qualify customer programmes",
+        "duration": "Months 16–24",
+        "actions": "Produce engineering lots and reliability evidence.",
+        "gate": "Written customer approval and commercial production release."
+      },
+      {
+        "phase": "Raise yield and utilisation",
+        "duration": "Months 24–30+",
+        "actions": "Improve repeatability and add compatible board programmes.",
+        "gate": "Sustained yield, delivery and cash performance."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Board qualification",
+        "detail": "Agree the applicable IPC-6012 requirements, revision and product class with the customer; a general factory certificate does not approve every board.",
+        "sourceIds": [
+          "PCB4"
+        ]
+      },
+      {
+        "title": "Hidden connections",
+        "detail": "Use coupons, microsections and relevant thermal/reflow reliability tests to validate plated holes and microvias before volume release.",
+        "sourceIds": [
+          "PCB4"
+        ]
+      },
+      {
+        "title": "Signal integrity and process consistency",
+        "detail": "Verify the specified impedance and material stack-up; maintain lot traceability and controlled chemical/process records.",
+        "sourceIds": [
+          "PCB1",
+          "PCB4"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Bare-board processing",
+        "route": "Make in India",
+        "detail": "Imaging, lamination, drilling, plating and test create the board locally."
+      },
+      {
+        "part": "Fixtures and utility fabrication",
+        "route": "Buy Indian",
+        "detail": "Qualify local engineering suppliers."
+      },
+      {
+        "part": "Specialty surface finishes",
+        "route": "Outsource",
+        "detail": "Use an approved finishing partner until volumes justify another chemical line."
+      },
+      {
+        "part": "Advanced laminates, selected chemistry and key machines",
+        "route": "Import initially",
+        "detail": "Domestic board production still depends on upstream materials and equipment."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "ECMS multilayer/HDI PCB categories",
+        "status": "Relevant A/B/C/E application windows displayed as closed on 20 September 2026.",
+        "detail": "Do not assume a new standalone PCB application can use the still-open category D window. An approved partner project's scope and any future reopening require official confirmation; no incentive is booked.",
+        "sourceIds": [
+          "PCB6",
+          "PCB7"
+        ]
+      }
+    ],
+    "network": "Use Karnataka and industry connections to meet electronics OEM design owners, EMS sourcing teams, technology partners and industrial-site authorities. The decisive outputs are approved fabrication specifications, qualification lots and credible demand commitments.",
+    "risks": [
+      {
+        "risk": "A line is purchased before product mix is defined.",
+        "response": "Select repeat board programmes and design rules before supplier RFQs."
+      },
+      {
+        "risk": "Low yield consumes expensive panels and chemicals.",
+        "response": "Bring in experienced process leadership and gate capacity expansion on yield."
+      },
+      {
+        "risk": "The site cannot support water and waste needs.",
+        "response": "Complete mass balance and environmental/site diligence before the lease."
+      },
+      {
+        "risk": "Customers expect capabilities beyond entry HDI.",
+        "response": "Publish a verified capability matrix and reject unsupported designs."
+      }
+    ],
+    "first90": [
+      "Collect fabrication files and demand history for several candidate boards.",
+      "Engage a PCB operator as process partner and validate the proposed capability.",
+      "Obtain integrated equipment, utilities and treatment RFQs.",
+      "Screen sites using water, power, chemical permissions and logistics; build a yield-sensitive financial model."
+    ],
+    "sources": [
+      {
+        "id": "PCB1",
+        "title": "Desmear and metallisation process solutions",
+        "url": "https://www.atotech.com/products/electronics/desmear-and-metallization/",
+        "publisher": "Atotech",
+        "date": "Accessed 20 September 2026",
+        "supports": "Wet-process equipment and chemistry for HDI/multilayer interconnects; not plant cost or water consumption.",
+        "type": "Company"
+      },
+      {
+        "id": "PCB2",
+        "title": "Product and service overview 2024",
+        "url": "https://www.schmoll-maschinen.de/fileadmin/Content/Datasheets/Schmoll_Brochure_2024.pdf",
+        "publisher": "Schmoll Maschinen",
+        "date": "2024; accessed 20 September 2026",
+        "supports": "PCB process sequence and imaging, drilling, routing and registration equipment families.",
+        "type": "Company"
+      },
+      {
+        "id": "PCB3",
+        "title": "PCB press and handling equipment",
+        "url": "https://www.burkle.tech/fileadmin/user_upload/Downloads_DE_EN_US/Prospekt_PCB_Press_a_Handling_Equipement_EN.pdf",
+        "publisher": "Bürkle",
+        "date": "Accessed 20 September 2026",
+        "supports": "PCB vacuum lamination and handling equipment; no price quotation.",
+        "type": "Company"
+      },
+      {
+        "id": "PCB4",
+        "title": "IPC releases IPC-6012F",
+        "url": "https://www.electronics.org/news-release/ipc-releases-ipc-6012f-qualification-and-performance-specification-rigid-printed",
+        "publisher": "Global Electronics Association / IPC",
+        "date": "18 October 2023; accessed 20 September 2026",
+        "supports": "Rigid-board qualification framework, including microvia-related reliability requirements; applicable current revision must be specified.",
+        "type": "Standard"
+      },
+      {
+        "id": "PCB5",
+        "title": "Annual report 2025/26",
+        "url": "https://ats.net/en/download/annual-report-2025-26/?wpdmdl=61788",
+        "publisher": "AT&S",
+        "date": "2026; accessed 20 September 2026",
+        "supports": "Nanjangud manufacturing and continued HDI qualification; not proof that its output is GPU server boards.",
+        "type": "Company"
+      },
+      {
+        "id": "PCB6",
+        "title": "ECMS guidelines",
+        "url": "https://ecms.meity.gov.in/documents/ECMS%20Guidelines_26.04.2025.pdf",
+        "publisher": "MeitY",
+        "date": "2025; accessed 20 September 2026",
+        "supports": "PCB product categories and category-specific eligibility.",
+        "type": "Government"
+      },
+      {
+        "id": "PCB7",
+        "title": "ECMS application portal",
+        "url": "https://ecms.meity.gov.in/",
+        "publisher": "MeitY",
+        "date": "Accessed 20 September 2026",
+        "supports": "Current application-window status.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Manufacturing steps and equipment families were checked against primary sources. All costs, machine quantities, site/utilities, team, capacity and schedule are screening assumptions. Supplier integration guarantees, environmental consent, customer acceptance and achievable yield remain unverified.",
+    "teamTotal": 116,
+    "factoryNote": "This is a proposed starter-factory configuration, not a vendor-engineered plant. Product ratings, permits, layout and utility connections must be confirmed before investment."
+  },
+  {
+    "id": "sic-modules",
+    "title": "Silicon-carbide power module packaging",
+    "shortTitle": "SiC power modules",
+    "sector": "Power semiconductors",
+    "plain": "This factory turns purchased silicon-carbide chips into robust power-switching modules. The module is then fitted inside a charger, inverter or other power converter.",
+    "analogy": "The chips are the working engines; the module provides their electrical connections, insulation and route for heat to escape.",
+    "product": "A qualified 1,200 V half-bridge power-module family, with application data, serialised production test results and agreed reliability evidence.",
+    "does": "Helps converter manufacturers switch electrical power efficiently in a package they can mount, cool and integrate.",
+    "customers": [
+      "DC fast-charger power-converter manufacturers",
+      "Industrial inverter manufacturers",
+      "Solar and battery-storage converter manufacturers",
+      "Automotive inverter suppliers after separate automotive qualification"
+    ],
+    "whyNow": "L&T Semiconductor Technologies and Newen announced an April 2026 agreement covering development, qualification and supply of SiC modules for renewable converters [SIC1]. It establishes a concrete Indian customer-development route, not proof that a new supplier has orders or that the announced programme is already in volume production.",
+    "firstProduct": "A licensed 1,200 V half-bridge module using purchased known-good SiC dies, a ceramic copper substrate, silver-sinter die attachment and heavy aluminium wire bonds. Target roughly 100–200 A only after thermal and electrical qualification. Start with one industrial/charger customer.",
+    "notIncluded": "SiC crystal growth, wafer fabrication, die design, wafer dicing, a complete inverter, GPU packaging and guaranteed automotive approval. Initial incoming material is singulated, traceable die suitable for the licensed package process.",
+    "entry": "Use a technical JV or licence with an experienced power-module packaging team. Require package design rights, a compatible die source, qualified material set, process recipes, resident launch engineers and joint customer validation. Equipment procurement alone is insufficient.",
+    "capacity": "Planning case: 24,000 saleable modules annually at maturity, one shift over 250 working days, approximately 96 modules/day. Bond count, package variants, yield and test time determine usable capacity.",
+    "budget": {
+      "basis": "INR crore, 2026 pre-feasibility allowances for a leased industrial shell. Excludes land, new building construction, recoverable GST and wafer fabrication. No grant deducted; working capital separate.",
+      "items": [
+        {
+          "name": "Controlled assembly space and utilities",
+          "low": 6,
+          "high": 10,
+          "note": "ESD, filtered environment, HVAC, dry storage, gases, power and commissioning."
+        },
+        {
+          "name": "Paste printing, die placement and sintering",
+          "low": 6,
+          "high": 10,
+          "note": "A pilot-to-production attachment cell; machines and tooling depend on the licensed material set."
+        },
+        {
+          "name": "Heavy-wire bonding",
+          "low": 4,
+          "high": 7,
+          "note": "Automatic bonding equipment, tools and process monitoring."
+        },
+        {
+          "name": "Baseplate attachment and encapsulation",
+          "low": 3,
+          "high": 5,
+          "note": "Vacuum reflow, dispensing, cure and package closure."
+        },
+        {
+          "name": "Imaging and mechanical quality laboratory",
+          "low": 3,
+          "high": 6,
+          "note": "X-ray/acoustic inspection and bond-strength measurement."
+        },
+        {
+          "name": "Electrical and reliability test capability",
+          "low": 4,
+          "high": 7,
+          "note": "Static/dynamic characterisation, protected test fixtures and selected in-house reliability equipment."
+        },
+        {
+          "name": "Technology transfer and customer qualification",
+          "low": 3,
+          "high": 6,
+          "note": "Provisional licence, training, sample lots and external validation; no offer obtained."
+        },
+        {
+          "name": "Fixtures, traceability and handling",
+          "low": 1,
+          "high": 2,
+          "note": "Product-specific tooling, identification and controlled handling."
+        },
+        {
+          "name": "Contingency",
+          "low": 4,
+          "high": 8,
+          "note": "Process integration, scrap during trials and equipment changes."
+        }
+      ],
+      "workingLow": 5,
+      "workingHigh": 10,
+      "workingNote": "Imported dies and substrates, minimum order quantities, qualification lots and receivables require separate funding. Recalculate after die-supply and customer agreements.",
+      "landNote": "Land purchase and new shell construction excluded. Lease deposit and modest internal building works are included in the facility allowance.",
+      "confidence": "Low-confidence pre-feasibility estimate until a licensor releases a process flow, equipment specification and die/material bill.",
+      "totalLow": 34,
+      "totalHigh": 61,
+      "fundingLow": 39,
+      "fundingHigh": 71
+    },
+    "site": {
+      "builtup": "Assume 30,000 sq ft, approximately 2,790 sq m, including controlled assembly and test laboratories.",
+      "plot": "Greenfield alternative: screen 1.5–2.5 acres, subject to utility plant, access and future expansion.",
+      "power": "Screen 400–750 kVA; ovens, environmental control, process tools and power-cycling equipment need an equipment-level load study.",
+      "water": "Assume 3–8 kilolitres/day for people and recirculating cooling make-up. No wafer wet-process line is included; acoustic inspection may require purified water.",
+      "conditions": [
+        "Separate ESD-controlled assembly from high-power testing and general stores.",
+        "Specify cleanliness, temperature and humidity from the licensed process; do not assume one universal cleanroom class.",
+        "Provide dry material storage, nitrogen and clean compressed air as required by supplier specifications.",
+        "Design test enclosures, extraction and emergency arrangements for the actual equipment."
+      ],
+      "areas": [
+        {
+          "name": "Controlled assembly",
+          "share": 35,
+          "why": "Place dies, bond wires and encapsulate modules."
+        },
+        {
+          "name": "Electrical and reliability testing",
+          "share": 20,
+          "why": "Characterise and screen finished modules."
+        },
+        {
+          "name": "Inspection and process laboratory",
+          "share": 15,
+          "why": "Inspect joints and analyse defects."
+        },
+        {
+          "name": "Material stores and preparation",
+          "share": 10,
+          "why": "Protect dies, substrates and chemicals."
+        },
+        {
+          "name": "Utilities",
+          "share": 10,
+          "why": "Control air, gases and cooling."
+        },
+        {
+          "name": "Engineering and support",
+          "share": 10,
+          "why": "Manage design, customers and records."
+        }
+      ]
+    },
+    "team": [
+      {
+        "role": "Plant and programme leadership",
+        "count": 2,
+        "why": "Own launch and customer delivery."
+      },
+      {
+        "role": "Packaging and process engineers",
+        "count": 6,
+        "why": "Control attachment, bonding and encapsulation."
+      },
+      {
+        "role": "Quality and reliability engineers",
+        "count": 6,
+        "why": "Develop evidence and analyse failures."
+      },
+      {
+        "role": "Electrical and application engineers",
+        "count": 4,
+        "why": "Characterise modules and support converter customers."
+      },
+      {
+        "role": "Process-machine operators",
+        "count": 16,
+        "why": "Run the packaging cells."
+      },
+      {
+        "role": "Assembly and production-test technicians",
+        "count": 6,
+        "why": "Finish, inspect and screen modules."
+      },
+      {
+        "role": "Maintenance and facilities",
+        "count": 3,
+        "why": "Maintain tools and controlled services."
+      },
+      {
+        "role": "Stores and production planning",
+        "count": 3,
+        "why": "Trace expensive incoming lots."
+      },
+      {
+        "role": "Commercial and administration",
+        "count": 4,
+        "why": "Manage partners, sourcing and operations."
+      }
+    ],
+    "teamNote": "50 people at one-shift maturity. Time-limited resident JV/process experts and external reliability laboratories may add to launch staffing.",
+    "machines": [
+      {
+        "name": "Plasma cleaning and material preparation",
+        "quantity": "1 preparation cell",
+        "purpose": "Prepare qualified bonding surfaces.",
+        "spec": "Surface compatibility, contamination control and handling defined by the licensed material/process combination.",
+        "sourceIds": [
+          "SIC2",
+          "SIC3"
+        ]
+      },
+      {
+        "name": "Paste printer and die-placement system",
+        "quantity": "1 of each",
+        "purpose": "Apply attachment material and position the chips.",
+        "spec": "Die dimensions, placement accuracy, paste control and traceable die handling.",
+        "sourceIds": [
+          "SIC2"
+        ]
+      },
+      {
+        "name": "Pressure-sintering system",
+        "quantity": "1 configurable system",
+        "purpose": "Form the die-to-substrate attachment.",
+        "spec": "Tooling, atmosphere, force uniformity and qualified material cycle; no universal pressure/temperature recipe.",
+        "sourceIds": [
+          "SIC2",
+          "SIC3"
+        ]
+      },
+      {
+        "name": "Vacuum reflow and baseplate tooling",
+        "quantity": "1 system",
+        "purpose": "Attach the substrate assembly to its baseplate.",
+        "spec": "Qualified solder/material stack, void requirements and thermal uniformity; change route only with partner approval.",
+        "sourceIds": [
+          "SIC3"
+        ]
+      },
+      {
+        "name": "Heavy-wire wedge bonder",
+        "quantity": "1 automatic system",
+        "purpose": "Join die and substrate electrical terminals.",
+        "spec": "Die-top metallisation compatibility, wire material, loop geometry and process monitoring.",
+        "sourceIds": [
+          "SIC4"
+        ]
+      },
+      {
+        "name": "Gel dispensing, cure and closure cell",
+        "quantity": "1 cell",
+        "purpose": "Protect the electrical assembly and close the package.",
+        "spec": "Degassing, fill coverage, cure and material compatibility from the package design.",
+        "sourceIds": [
+          "SIC2"
+        ]
+      },
+      {
+        "name": "X-ray/acoustic and bond-strength laboratory",
+        "quantity": "1 inspection set",
+        "purpose": "Inspect hidden joints and sample mechanical strength.",
+        "spec": "Resolution, sample access and acceptance criteria selected for the actual stack; specialist analysis can be external.",
+        "sourceIds": [
+          "SIC7",
+          "SIC4"
+        ]
+      },
+      {
+        "name": "Static and dynamic electrical-test systems",
+        "quantity": "1 production set plus 1 engineering bench",
+        "purpose": "Screen devices and measure switching behaviour.",
+        "spec": "Voltage/current ranges, isolation, measurement uncertainty and low-inductance protected fixtures.",
+        "sourceIds": [
+          "SIC5"
+        ]
+      },
+      {
+        "name": "Environmental and power-cycling laboratory",
+        "quantity": "1 initial set",
+        "purpose": "Assess package reliability under repeated stress.",
+        "spec": "Mission-profile-based stresses and sample plan; outsource lengthy or specialist campaigns initially.",
+        "sourceIds": [
+          "SIC6"
+        ]
+      }
+    ],
+    "process": [
+      {
+        "name": "Co-design and approve the package",
+        "plain": "Match the module to a real converter.",
+        "detail": "Freeze die, topology, cooling interface and the customer's operating profile.",
+        "check": "Rights, die supply and qualification plan agreed.",
+        "machine": "Engineering and simulation tools",
+        "sourceIds": [
+          "SIC1"
+        ]
+      },
+      {
+        "name": "Receive and prepare materials",
+        "plain": "Check every incoming lot.",
+        "detail": "Accept known-good dies, substrates and package parts; prepare compatible bonding surfaces.",
+        "check": "Traceability and incoming specifications satisfied.",
+        "machine": "Material preparation cell",
+        "sourceIds": [
+          "SIC3"
+        ]
+      },
+      {
+        "name": "Attach the dies",
+        "plain": "Fix the chips to their heat-carrying substrate.",
+        "detail": "Print attachment material, place the dies and run the qualified sintering process.",
+        "check": "Placement and attachment integrity accepted.",
+        "machine": "Paste printer; die placer; sintering system",
+        "sourceIds": [
+          "SIC2"
+        ]
+      },
+      {
+        "name": "Build the thermal and electrical connections",
+        "plain": "Connect the chips and heat path.",
+        "detail": "Attach the substrate to its baseplate and make the qualified wire bonds.",
+        "check": "Bond strength, geometry and hidden-joint inspection pass.",
+        "machine": "Vacuum reflow; wedge bonder; inspection laboratory",
+        "sourceIds": [
+          "SIC3",
+          "SIC4",
+          "SIC7"
+        ]
+      },
+      {
+        "name": "Protect and close the module",
+        "plain": "Seal the internal assembly against its intended environment.",
+        "detail": "Apply the specified insulating gel and assemble the package lid and terminals.",
+        "check": "Coverage, cure and package dimensions accepted.",
+        "machine": "Dispensing and closure cell",
+        "sourceIds": [
+          "SIC2"
+        ]
+      },
+      {
+        "name": "Characterise and screen",
+        "plain": "Confirm that it switches power correctly.",
+        "detail": "Perform production electrical screens; use engineering samples for switching and thermal characterisation.",
+        "check": "Released data-sheet limits and customer test plan met.",
+        "machine": "Electrical-test systems",
+        "sourceIds": [
+          "SIC5"
+        ]
+      },
+      {
+        "name": "Qualify and release",
+        "plain": "Prove reliability before increasing volume.",
+        "detail": "Complete the agreed environmental and cycling programme, review failures and release traceable lots.",
+        "check": "Customer grants product approval; automotive release is a separate gate.",
+        "machine": "Reliability laboratory and approved external labs",
+        "sourceIds": [
+          "SIC6"
+        ]
+      }
+    ],
+    "modelParts": [
+      {
+        "name": "SiC dies",
+        "meaning": "The small semiconductor switches."
+      },
+      {
+        "name": "Ceramic copper substrate",
+        "meaning": "Connects the chips while insulating them from the cooler."
+      },
+      {
+        "name": "Die-attachment layer",
+        "meaning": "Holds each chip and conducts its heat."
+      },
+      {
+        "name": "Bond wires",
+        "meaning": "Complete the electrical circuit inside the module."
+      },
+      {
+        "name": "Baseplate",
+        "meaning": "Spreads heat towards the customer's cooling system."
+      },
+      {
+        "name": "Housing and terminals",
+        "meaning": "Protect the assembly and connect it to the converter."
+      },
+      {
+        "name": "Insulating gel",
+        "meaning": "Protects internal electrical spaces."
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Secure partner and anchor application",
+        "duration": "Months 0–4",
+        "actions": "Select the converter customer, package design and die source.",
+        "gate": "Technical partnership and qualification responsibilities agreed."
+      },
+      {
+        "phase": "Prove the process on partner equipment",
+        "duration": "Months 4–8",
+        "actions": "Build samples, characterise them and freeze the material set.",
+        "gate": "Initial electrical and attachment results justify the line."
+      },
+      {
+        "phase": "Install and transfer the process",
+        "duration": "Months 8–15",
+        "actions": "Prepare controlled space, commission equipment and train staff.",
+        "gate": "Repeatable local engineering lots."
+      },
+      {
+        "phase": "Complete customer qualification",
+        "duration": "Months 15–24",
+        "actions": "Run reliability testing and converter integration trials.",
+        "gate": "Written release for the selected application."
+      },
+      {
+        "phase": "Ramp and add variants",
+        "duration": "Months 24–30+",
+        "actions": "Improve yield and qualify related modules; consider automotive separately.",
+        "gate": "Stable field results, supply continuity and repeat orders."
+      }
+    ],
+    "quality": [
+      {
+        "title": "Package-level reliability",
+        "detail": "A qualified bare die does not qualify the assembled module. Agree the mission profile and test attachment layers, interconnects and insulation as a complete package.",
+        "sourceIds": [
+          "SIC6"
+        ]
+      },
+      {
+        "title": "Switching characterisation",
+        "detail": "Measure overshoot, switching losses and parasitic effects using suitable protected fixtures and calibrated instruments.",
+        "sourceIds": [
+          "SIC5"
+        ]
+      },
+      {
+        "title": "Automotive extension",
+        "detail": "If pursuing traction, use the customer's applicable AQG 324 programme and automotive production approval. ECPE lists an April 2025 guideline; it is not a blanket certificate for a new module.",
+        "sourceIds": [
+          "SIC6"
+        ]
+      }
+    ],
+    "localisation": [
+      {
+        "part": "Package engineering, assembly and electrical testing",
+        "route": "Make in India",
+        "detail": "Local capability replaces purchased finished modules for approved designs."
+      },
+      {
+        "part": "Baseplates, housings and selected terminals",
+        "route": "Buy Indian",
+        "detail": "Qualify local parts against the package drawing."
+      },
+      {
+        "part": "SiC dies, ceramic substrates and specialist materials",
+        "route": "Import initially",
+        "detail": "Substantial upstream value remains imported; packaging does not create an indigenous SiC wafer supply."
+      },
+      {
+        "part": "Specialist reliability and failure analysis",
+        "route": "Outsource",
+        "detail": "Use qualified laboratories until volume supports all equipment in-house."
+      }
+    ],
+    "schemes": [
+      {
+        "name": "Semicon 2.0 and semiconductor packaging support",
+        "status": "Project classification and eligibility require written confirmation; no support assumed as of 20 September 2026.",
+        "detail": "A small power-module packaging line must not be equated automatically with a qualifying advanced ATMP project. Scheme thresholds, group capability, eligible expenditure and approval conditions must be checked for the exact proposed activity.",
+        "sourceIds": [
+          "SIC8"
+        ]
+      }
+    ],
+    "network": "Use access to MHI/industry and Karnataka institutions to reach converter engineering leaders, packaging technology owners, die suppliers and reliability facilities. Seek a co-development contract and qualification sponsor; a policy introduction is not a substitute for device performance.",
+    "risks": [
+      {
+        "risk": "No proven package technology is transferred.",
+        "response": "Make sample performance, training and process documentation contractual milestones."
+      },
+      {
+        "risk": "Imported die cost or supply undermines the module.",
+        "response": "Obtain a credible die allocation and approved alternative roadmap."
+      },
+      {
+        "risk": "Attachment or wire failures appear during cycling.",
+        "response": "Validate the entire material stack and maintain rigorous failure analysis."
+      },
+      {
+        "risk": "Qualification consumes cash before sales.",
+        "response": "Fund a staged industrial launch and defer automotive expansion until supported."
+      }
+    ],
+    "first90": [
+      "Obtain one customer's converter mission profile and module requirements.",
+      "Identify a licensor with production evidence and rights to transfer the package.",
+      "Secure die/substrate quotations and prototype material availability.",
+      "Run partner-built samples and prepare the complete qualification and funding plan."
+    ],
+    "sources": [
+      {
+        "id": "SIC1",
+        "title": "LTSCT and Newen SiC module agreement",
+        "url": "https://www.ltsct.com/wp-content/uploads/2026/04/Press-Release_LTSCT-X-Newen-Systems-Private-Limited_21st-April.pdf",
+        "publisher": "L&T Semiconductor Technologies",
+        "date": "21 April 2026; accessed 20 September 2026",
+        "supports": "Agreement covering design, development, qualification and supply for renewable converters; not a claim of present volume output.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC2",
+        "title": "Power module packaging with silver sintering",
+        "url": "https://semi.asmpt.com/en/solutions/power/high-power/",
+        "publisher": "ASMPT",
+        "date": "Accessed 20 September 2026",
+        "supports": "Paste application, die attachment, sintering and related equipment; machine quantities and costs are our assumptions.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC3",
+        "title": "Sinter materials for power applications",
+        "url": "https://www.heraeus-electronics.com/en/products-and-solutions/sinter-materials/",
+        "publisher": "Heraeus Electronics",
+        "date": "Accessed 20 September 2026",
+        "supports": "Material-dependent die and module attachment options; no universal processing recipe or guaranteed performance adopted.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC4",
+        "title": "Bondjet BJ985 heavy-wire wedge bonder",
+        "url": "https://www.hesse-mechatronics.com/wp-content/uploads/2019/10/Bros-MK-BJ985-en-20191029.pdf",
+        "publisher": "Hesse Mechatronics",
+        "date": "2019 brochure; accessed 20 September 2026",
+        "supports": "Heavy aluminium/copper wire bonding and process-monitoring equipment family.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC5",
+        "title": "Characterising SiC and GaN switching",
+        "url": "https://www.keysight.com/us/en/use-cases/characterize-sic-and-gan-switching.html",
+        "publisher": "Keysight",
+        "date": "Accessed 20 September 2026",
+        "supports": "Double-pulse characterisation and switching measurement challenges.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC6",
+        "title": "Automotive AQG 324",
+        "url": "https://www.ecpe.org/research/working-groups/automotive-aqg-324/",
+        "publisher": "European Center for Power Electronics",
+        "date": "Guideline 24 April 2025; accessed 20 September 2026",
+        "supports": "Automotive power-module qualification framework and current listed guideline.",
+        "type": "Industry"
+      },
+      {
+        "id": "SIC7",
+        "title": "AMI D9650Z acoustic microscopy for power modules",
+        "url": "https://www.nordson.com/en/products/test-and-inspection-products/ami-d9650z",
+        "publisher": "Nordson",
+        "date": "Accessed 20 September 2026",
+        "supports": "Acoustic inspection of module bond integrity and low-volume process development.",
+        "type": "Company"
+      },
+      {
+        "id": "SIC8",
+        "title": "Semicon 2.0 Gazette notification",
+        "url": "https://egazette.gov.in/WriteReadData/2026/275860.pdf",
+        "publisher": "Government of India",
+        "date": "31 August 2026; verified in the earlier primary-source policy audit",
+        "supports": "Category-specific semiconductor support conditions; this starter factory has no eligibility determination.",
+        "type": "Government"
+      }
+    ],
+    "researchNote": "Primary sources establish process families, qualification concerns and an Indian module-development agreement. The factory scale, quantities, costs, staffing, utilities and timing are our assumptions. No technology-transfer offer, die allocation, customer commitment or scheme approval has been obtained.",
+    "teamTotal": 50,
+    "factoryNote": "This is a proposed starter-factory configuration, not a vendor-engineered plant. Product ratings, permits, layout and utility connections must be confirmed before investment."
+  }
+]

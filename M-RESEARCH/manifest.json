@@ -1,0 +1,241 @@
+{
+  "created": "2026-09-22",
+  "description": "Original research and deliverable snapshots copied byte-for-byte. Hashes verify archive integrity, not accuracy of claims. Newly authored summary documents are not archival source copies.",
+  "duplicate_source_note": "AIKYANTRA-deck.html supplied from Downloads and Manufacture has identical SHA-256; one copy retained.",
+  "files": [
+    {
+      "path": "archive/manufacture/AI_DataCentre_Hardware_Evidence_2026-09-19.md",
+      "source": "Manufacture/AI_DataCentre_Hardware_Evidence_2026-09-19.md",
+      "bytes": 24181,
+      "sha256": "21195d0a52d52afa46132935ad0c0f896e7476a8263be458f037bdf0e6f684c0"
+    },
+    {
+      "path": "archive/manufacture/AI_Semiconductor_Government_Funding_2026-09-19.md",
+      "source": "Manufacture/AI_Semiconductor_Government_Funding_2026-09-19.md",
+      "bytes": 18538,
+      "sha256": "4061e50f59e5d1995a55546a42ce073b77e0c71d2dea8183dc0e3f05af526422"
+    },
+    {
+      "path": "archive/manufacture/AI_Semiconductor_Growth_Top10_2026-09-19.md",
+      "source": "Manufacture/AI_Semiconductor_Growth_Top10_2026-09-19.md",
+      "bytes": 20699,
+      "sha256": "edf4362da9c9de22555226bcd02c8c56b46ee24de3dbe3323754fda2ba876d85"
+    },
+    {
+      "path": "archive/manufacture/AI_Semiconductor_Opportunity_Evidence_2026-09-19.md",
+      "source": "Manufacture/AI_Semiconductor_Opportunity_Evidence_2026-09-19.md",
+      "bytes": 26604,
+      "sha256": "9ce834b3adb8f5e06274ed54b2fc306a25cbb005d3fac394e7b1ad47b61bd127"
+    },
+    {
+      "path": "archive/manufacture/AIKYANTRA-deck.html",
+      "source": "Manufacture/AIKYANTRA-deck.html",
+      "bytes": 54934,
+      "sha256": "553b98154d2311150060f64d56be80387a820fdc19d53f84679ea8add9b77d53"
+    },
+    {
+      "path": "archive/manufacture/AIKYANTRA-Manufacturing-Field-Guide-3D-Enhanced.html",
+      "source": "Manufacture/AIKYANTRA-Manufacturing-Field-Guide-3D-Enhanced.html",
+      "bytes": 1686132,
+      "sha256": "f62ae6e0ad6e8d5d48648744ce61e657dc0e20a9cb30247a265a476d5b72fe68"
+    },
+    {
+      "path": "archive/manufacture/AIKYANTRA-Manufacturing-Field-Guide.html",
+      "source": "Manufacture/AIKYANTRA-Manufacturing-Field-Guide.html",
+      "bytes": 863012,
+      "sha256": "07ef746de52f60342e734a1b0f61fad85bba52fbe0c47f0f0b146fbae375f97c"
+    },
+    {
+      "path": "archive/manufacture/build_report.py",
+      "source": "Manufacture/build_report.py",
+      "bytes": 19216,
+      "sha256": "156c4720c5e1e41c1d18d2454a8b8d5e920a4113e054800fadf6094b75eb18c4"
+    },
+    {
+      "path": "archive/manufacture/build_summary.py",
+      "source": "Manufacture/build_summary.py",
+      "bytes": 13397,
+      "sha256": "85be417b8c1b89471659117c9e4b812f80806444b8b8f0fa6d915e39e3d4fb80"
+    },
+    {
+      "path": "archive/manufacture/deep_ai_gpu_demand_2026-09-19.md",
+      "source": "Manufacture/deep_ai_gpu_demand_2026-09-19.md",
+      "bytes": 111435,
+      "sha256": "954acf0b66b44e13d4a995edfc66472316b64bdadab0f6a7623ce6fdd921ffb7"
+    },
+    {
+      "path": "archive/manufacture/deep_components_schemes_2026-09-19.md",
+      "source": "Manufacture/deep_components_schemes_2026-09-19.md",
+      "bytes": 68903,
+      "sha256": "030c9481152672538b70c442586ca84d0d4e54e47cc42555d7db91d77d8cc19f"
+    },
+    {
+      "path": "archive/manufacture/deep_semiconductor_money_2026-09-19.md",
+      "source": "Manufacture/deep_semiconductor_money_2026-09-19.md",
+      "bytes": 101469,
+      "sha256": "a166a046dd90d66c0631c57f774affa37eb7606d9b6e868a84984e9b0dd6d64e"
+    },
+    {
+      "path": "archive/manufacture/EV_10_Ranking_2026-09-19.md",
+      "source": "Manufacture/EV_10_Ranking_2026-09-19.md",
+      "bytes": 10393,
+      "sha256": "e4730ca759e0ff7c674a87d335c1ed1a196ea14d3049e468e5c33160e5d495b0"
+    },
+    {
+      "path": "archive/manufacture/ev_electronics_battery_screen_2026-09-19.md",
+      "source": "Manufacture/ev_electronics_battery_screen_2026-09-19.md",
+      "bytes": 27945,
+      "sha256": "78dcd5ba3996de0d9a9f4988c861c0e8e03ada70bdd254aa9d66575ab72c1306"
+    },
+    {
+      "path": "archive/manufacture/ev_independent_evidence_2026-09-19.md",
+      "source": "Manufacture/ev_independent_evidence_2026-09-19.md",
+      "bytes": 26327,
+      "sha256": "202592f06fea88dbe91f6482d12ebad5aad96f0118990325b4f38c84289a9cdc"
+    },
+    {
+      "path": "archive/manufacture/ev_mechanical_materials_screen_2026-09-19.md",
+      "source": "Manufacture/ev_mechanical_materials_screen_2026-09-19.md",
+      "bytes": 24121,
+      "sha256": "b3de69121db758b1d20a8824e0023a61a62945adbc398aff3575d67af3f11703"
+    },
+    {
+      "path": "archive/manufacture/ev_policy_demand_ranking_2026-09-19.md",
+      "source": "Manufacture/ev_policy_demand_ranking_2026-09-19.md",
+      "bytes": 19699,
+      "sha256": "c4715c00b669e336081461e01f0f684e030b23146c5f8c70d55360d51feda6f1"
+    },
+    {
+      "path": "archive/manufacture/Final_Karnataka_AI_Semiconductor_EV_Top10_2026-09-19.md",
+      "source": "Manufacture/Final_Karnataka_AI_Semiconductor_EV_Top10_2026-09-19.md",
+      "bytes": 32501,
+      "sha256": "b98d479946baaa0b319d51859fa1688089f4c521799fde523cf8d83e088abe4a"
+    },
+    {
+      "path": "archive/manufacture/Final_Ranking_AI_EV_Challenge_2026-09-19.md",
+      "source": "Manufacture/Final_Ranking_AI_EV_Challenge_2026-09-19.md",
+      "bytes": 8078,
+      "sha256": "5d61c0943e9fddf8f4c4556a21c58c2429b6d0d460de78665727d894eb54ff65"
+    },
+    {
+      "path": "archive/manufacture/Final_Ranking_Policy_Audit_2026-09-19.md",
+      "source": "Manufacture/Final_Ranking_Policy_Audit_2026-09-19.md",
+      "bytes": 17002,
+      "sha256": "c414ef2541013bcf959e0e267fff32643f6eba6f2b1fb29faed596eb70b85516"
+    },
+    {
+      "path": "archive/manufacture/Final_Ranking_Semiconductor_Market_Audit_2026-09-19.md",
+      "source": "Manufacture/Final_Ranking_Semiconductor_Market_Audit_2026-09-19.md",
+      "bytes": 18773,
+      "sha256": "ef9b74d17dafb28b3093a2b271480af7bec57efd9155777d5a67ecb6fef9318c"
+    },
+    {
+      "path": "archive/manufacture/industrial_independent_evidence_2026-09-19.md",
+      "source": "Manufacture/industrial_independent_evidence_2026-09-19.md",
+      "bytes": 25950,
+      "sha256": "44e7c776639f24c664ba75cd101dd48370849ab8e2f75daa38be812d62837403"
+    },
+    {
+      "path": "archive/manufacture/karnataka_operative_guidelines_source.pdf",
+      "source": "Manufacture/karnataka_operative_guidelines_source.pdf",
+      "bytes": 3553301,
+      "sha256": "2a60cd50022f6324026b244c552c4fd46cd7f141782d54f9c4c9d3a8f6ad783d"
+    },
+    {
+      "path": "archive/manufacture/Karnataka_Overall_Top10_2026-09-19.md",
+      "source": "Manufacture/Karnataka_Overall_Top10_2026-09-19.md",
+      "bytes": 8102,
+      "sha256": "d714ca39aba4513274387cb65e9546037cda7b6e05673e23a1e65edba0cdd4ff"
+    },
+    {
+      "path": "archive/manufacture/karnataka_zone_source.png",
+      "source": "Manufacture/karnataka_zone_source.png",
+      "bytes": 52453,
+      "sha256": "cd401f0ee3319f31789efe79903782c9d244d5c9cf9408bbb1272194442ccf15"
+    },
+    {
+      "path": "archive/manufacture/Manufacturing_10_Ideas_Verified_2026-09-19.md",
+      "source": "Manufacture/Manufacturing_10_Ideas_Verified_2026-09-19.md",
+      "bytes": 21873,
+      "sha256": "0c3607d4e419b78d7cf1e76eac8bd5166eb85f4589704f7ce2d257087088cca8"
+    },
+    {
+      "path": "archive/manufacture/Manufacturing_Independent_Ranking_2026-09-19.md",
+      "source": "Manufacture/Manufacturing_Independent_Ranking_2026-09-19.md",
+      "bytes": 8646,
+      "sha256": "e3e96f846090ec8707f79afeff4cae71ab5d60367dacd2af1aecbaa02c3599ab"
+    },
+    {
+      "path": "archive/manufacture/Manufacturing_Research_Handoff.md",
+      "source": "Manufacture/Manufacturing_Research_Handoff.md",
+      "bytes": 80400,
+      "sha256": "bcdba29a67ec619002bb465f49d5374f9191151848f09da87814d877a86db345"
+    },
+    {
+      "path": "archive/manufacture/report.md",
+      "source": "Manufacture/report.md",
+      "bytes": 67958,
+      "sha256": "68e08d63a109025e3d8e4ff12c375104c54e0b6b917542517f67186d49c4f740"
+    },
+    {
+      "path": "archive/manufacture/research_ev_electrical.md",
+      "source": "Manufacture/research_ev_electrical.md",
+      "bytes": 23713,
+      "sha256": "8612db8d3dbc278224be227e64272cf3e0841d8d2eec887ab0a262a4d89c5a33"
+    },
+    {
+      "path": "archive/manufacture/research_macro_policy.md",
+      "source": "Manufacture/research_macro_policy.md",
+      "bytes": 15146,
+      "sha256": "705bb198beb22ccab59cf2fb36c9dc3e8dfd0c0108ec3f53fdb3c1d9d95472a2"
+    },
+    {
+      "path": "archive/manufacture/research_pharma_alternatives.md",
+      "source": "Manufacture/research_pharma_alternatives.md",
+      "bytes": 16799,
+      "sha256": "4e11b02cedbeed3895d61c63d1999220ed8e3469fedb31114662f27c060bd732"
+    },
+    {
+      "path": "archive/manufacture/semiconductor_independent_evidence_2026-09-19.md",
+      "source": "Manufacture/semiconductor_independent_evidence_2026-09-19.md",
+      "bytes": 32122,
+      "sha256": "f60b329c1b085bac825ab70f9d8e15fcf23876868edf62c0b5a7022abd06b27e"
+    },
+    {
+      "path": "archive/field-guide-research/all-ideas.json",
+      "source": "opportunity-atlas-3d-enhanced/research/all-ideas.json",
+      "bytes": 245525,
+      "sha256": "d3500850207a203ffb248980e56ae1610c8167ab898090492fb546a67b3826c4"
+    },
+    {
+      "path": "archive/field-guide-research/BRIEF.md",
+      "source": "opportunity-atlas-3d-enhanced/research/BRIEF.md",
+      "bytes": 4796,
+      "sha256": "c1f31f2ceeb1155b662df117b386499cd115fa5af9dba2b27e4b1f8d81c54be5"
+    },
+    {
+      "path": "archive/field-guide-research/group-a.json",
+      "source": "opportunity-atlas-3d-enhanced/research/group-a.json",
+      "bytes": 74055,
+      "sha256": "f75c69cfb3e7e1269ffd7a60e14aa6d723c697499c745d782d93c6c753212b00"
+    },
+    {
+      "path": "archive/field-guide-research/group-b.json",
+      "source": "opportunity-atlas-3d-enhanced/research/group-b.json",
+      "bytes": 93083,
+      "sha256": "395e008fb669ba50342b181847423000c5b12c18701f3855558d03bacf905cb8"
+    },
+    {
+      "path": "archive/field-guide-research/group-c.json",
+      "source": "opportunity-atlas-3d-enhanced/research/group-c.json",
+      "bytes": 80076,
+      "sha256": "4eb90d37ca240bdb0f3f94cdc2cd074023e232eae44d7c6c6afde4dcd87e1d85"
+    },
+    {
+      "path": "archive/user-context/other-chat-ranking.txt",
+      "source": "user attachment: other chat ranking",
+      "bytes": 6568,
+      "sha256": "13fc7e74a3383a7964cb49f32e481dc47a9a4e27aaccf2bd26523d7f06b44044"
+    }
+  ]
+}

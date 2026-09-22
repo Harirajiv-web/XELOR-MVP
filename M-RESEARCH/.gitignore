@@ -1,0 +1,3 @@
+# These requested research snapshots are versioned, unlike runtime archives.
+!archive/
+!archive/**

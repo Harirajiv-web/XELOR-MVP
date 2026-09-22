@@ -1,0 +1,42 @@
+Top 10
+#	What you make	India market / import gap	Scheme pull
+1	Cleanroom systems & fab/OSAT facility hook-up	₹41,000–57,000 cr of India-fitted scope in the approved ₹1.64 lakh cr pipeline (derived)	Named in Semicon 2.0 eligible capex — govt co-pays 30–40% of your customer's spend
+2	Connectors, relays & switches	USD 3,582 m imported FY25-26, +24.7%; connectors +41%	ECMS joint-top rate 8/7/7/6/5/4% at ₹50 cr; on CEA's 16 prioritised items
+3	Ultra-high-purity gas & chemical delivery systems	Part of the same fab-utilities pool; 85% specialty-chemical import dependence	Named MSME localisation target; buyers building beside the fabs
+4	Precision tooling — moulds, dies, press tools	₹12,886 cr imported FY25-26, +21.4%; ~35% of consumption	ECMS Segment D — open, 25% capex, closes 30 Apr 2027
+5	Multi-layer, HDI & flexible PCB	USD 1,676 m imported, ~50% of demand; ₹1.8 lakh cr market by 2032	Highest ECMS rate — 10% for ≥8 layers, +1% for Indian laminate. Window closed
+6	Power distribution assemblies for AI data halls	₹43,000 cr of DC power equipment FY26–FY30; electrical = 40–48% of AI facility capex	None. Pure market play
+7	Capital equipment for electronics manufacturing	Size unclear; minister signalled preference for indigenous capital equipment	The only open ECMS door — 25% capex, ₹10 cr, to Apr 2027
+8	Electronic-grade chemicals, gases & fab consumables	85% imported; recurring revenue, not one-time	Cheapest Semicon 2.0 entry — ₹50 cr / ₹20 cr
+9	Battery busbars, cell interconnects & HV connectors	55–70% imported; ₹450–680 cr → ₹1,200–2,000 cr (est.)	PM E-DRIVE forces HV connectors from 1 Apr 2027
+10	Sintered NdFeB magnets	100% imported	REPM ₹7,280 cr notified — but only 5 beneficiaries via global tender
+The reasoning, briefly
+1. Cleanroom and fab hook-up. Cleanroom is 15–20% and utilities 10–15% of a fab's capex, and all of it is physically fitted in India. It's the single largest genuinely-local scope in the entire research. The unusual part: because it sits inside Semicon 2.0's eligible capex, the government pays 30–40% of what your customer spends — so your buyer is subsidised to buy.
+
+2. Connectors, relays and switches. ₹32,000 crore of imports growing at 25% a year, and the same part sells into EVs, electronics, power equipment and data centres. Highest ECMS rate at the lowest entry bar. Molex, Amphenol, TE and Rosenberger are all here — which proves Indian buyers actually buy this.
+
+3. UHP gas and chemical delivery. Gas cabinets, valve manifold boxes, orbital-welded tubing, high-purity valves. Shares a factory with #1. Linde, Air Liquide and Inox are building purification plants next to Dholera and Sanand, and India's first 16 semiconductor-grade welders only qualified in May 2026.
+
+4. Precision tooling. Verified hard number, growing 21% a year, and it feeds all three booms — EV parts, electronics housings, semiconductor packaging. Crucially it qualifies under the one ECMS window still open, with a real deadline.
+
+5. Multi-layer and HDI PCB. Half of India's demand is still imported and the incentive is the richest in ECMS. The catch is the window closed on 30 Sep 2025, so this needs a reopening to get the subsidy — the market stands on its own either way.
+
+6. Power distribution for AI halls. India's AI data-centre load is projected at 26.3 GW by 2031–32 — Ministry of Power, July 2026, nearly double their own March estimate. Electrical is the biggest slice of that build and none of it arrives pre-installed. No scheme money at all, so this ranks on size alone.
+
+7. Capital equipment for electronics manufacturing. The weakest market data on the list but the strongest, most immediate pull — it's the only door still open, and two of the first approvals (ASM Technologies, Indo-MIM) are Bengaluru firms, so there's local precedent.
+
+8. Electronic-grade chemicals and fab consumables. Recurring revenue rather than one-time supply, 85% imported, and the cheapest entry threshold in Semicon 2.0. One correction from the research: bulk gases are already localised — under USD 3 m imported — so the opportunity is purity, specialty gases and delivery, not bulk generation.
+
+9. Battery busbars and HV interconnects. The best-verified import gap in EV, with buyers inside 60 km — Exide Devanahalli, Ola Krishnagiri, Ather/TVS/Simple at Hosur. A notified deadline forces HV connectors local from 1 Apr 2027. This is the position the pending EV report could move.
+
+10. NdFeB magnets. 100% imported, and the only scheme on this list that is both notified and funded specifically against a total import dependence. Ranked last because access is genuinely scarce — five beneficiaries, allocated by global tender.
+
+Just missed
+Liquid-cooling pipework for AI data centres — was #1 on the old list. Cleanest 0%-pre-installed line found and growing 5×, but ₹150–300 cr → ₹800–1,500 cr is small next to everything above. It ranked first when low capex was an advantage; it doesn't when capex is ignored.
+Genset packaging for data centres — ~₹12,000 cr cumulative to FY30, and the hardest demand evidence in the whole research: Cummins India's data-centre revenue went from under 2% to ~14% in seven years. Out only because no scheme touches it.
+Overhead track busway and intelligent rack PDUs — 0% pre-installed and roughly 0% Indian-made, the purest import gap found. Out because it's unverified.
+Also close: precision machined parts and vacuum chambers for semicap equipment; test sockets and probe cards; IC substrates and lead frames; passive components; aluminium extrusion for enclosures (reported 100% imported).
+Three things to know before acting
+Announced money is not appropriated money. The ₹1,27,500 cr Semicon 2.0 headline is a six-year authorisation — only ₹1,000 cr is actually budgeted for it in FY2026-27. ECMS has approved 106 projects worth ₹69,548 cr and disbursed nothing yet; first claims fall due nine months after FY2025-26 closes.
+Karnataka is the weakest of six states on incentives — the only one with no top-up over ISM or ECMS, and its capital subsidy appears to exclude Bengaluru Urban. Both agents flagged this independently. The buyers are here; the subsidy isn't. Bengaluru Rural, Kolar, Malur and Tumakuru are where they overlap.
+No agent found a single purchase order from an Indian fab to an Indian supplier. Everything in the semiconductor chain is still at MoU stage. The schemes and deadlines are real; the orders aren't placed yet.
