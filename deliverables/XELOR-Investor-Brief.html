@@ -278,6 +278,7 @@ h3{font-size:21px;letter-spacing:-.02em;line-height:1.2}
 .price:hover{transform:translateY(-6px)}
 .price .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--deep-sub)}
 .price .v{font-family:var(--display);font-size:46px;font-weight:800;letter-spacing:-.045em;color:var(--on-deep);line-height:1.05;margin-top:10px;white-space:nowrap}
+.price .v.word{font-size:36px;letter-spacing:-.035em}
 .price .v small{font-size:17px;font-weight:600;color:var(--deep-sub);letter-spacing:0;margin-left:4px}
 .price p{margin-top:10px;font-size:15.5px;color:var(--deep-sub)}
 .dark .price.hl{background:var(--gold);border-color:var(--gold)}
@@ -297,6 +298,8 @@ h3{font-size:21px;letter-spacing:-.02em;line-height:1.2}
 .funnel .bar i{display:block;height:100%;border-radius:7px;background:var(--acc);width:var(--w);transform-origin:left;transition:transform 1.3s var(--out);transition-delay:calc(var(--d,0) * 150ms + 200ms)}
 .funnel.pre .bar i{transform:scaleX(0)}
 .funnel .t{font-size:15px;color:var(--muted)}
+.funnel.ue .bar i{background:var(--gold)}
+.funnel.ue .cost .bar i{background:var(--line-2)}
 .funnel .t b{display:block;font-family:var(--display);font-size:17px;color:var(--ink);letter-spacing:-.01em}
 .funnel .v{font-family:var(--display);font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--ink);white-space:nowrap}
 .funnel .v small{font-size:14px;color:var(--muted);font-weight:600;letter-spacing:0}
@@ -712,13 +715,13 @@ h3{font-size:21px;letter-spacing:-.02em;line-height:1.2}
     </div>
     <div class="prices">
       <div class="card price" data-r style="--d:1"><span class="k">Paid pilot</span><span class="v">₹3 L</span><p>Six weeks, one workflow, a signed baseline. Credited in full on conversion.</p></div>
-      <div class="card price" data-r style="--d:2"><span class="k">Install</span><span class="v">₹5 L<small>once</small></span><p>We migrate from Tally and spreadsheets and do the setup ourselves.</p></div>
-      <div class="card price hl" data-r style="--d:3"><span class="k">One plant</span><span class="v">₹18 L<small>/ yr</small></span><p>The whole plant, two standard connectors, every user included.</p></div>
-      <div class="card price" data-r style="--d:4"><span class="k">Multi-plant</span><span class="v">₹54 L<small>/ yr</small></span><p>Head office and two factories, five connectors, a group view.</p></div>
+      <div class="card price" data-r style="--d:2"><span class="k">Installation</span><span class="v word">Quoted<small>per plant</small></span><p>Data migration from Tally and spreadsheets, and commissioning. We do the setup ourselves.</p></div>
+      <div class="card price hl" data-r style="--d:3"><span class="k">One plant</span><span class="v">₹50k<small>/ month</small></span><p>₹6 lakh a year. The whole plant, two standard connectors, every user included.</p></div>
+      <div class="card price" data-r style="--d:4"><span class="k">More plants</span><span class="v word">Group rate</span><p>Each extra factory joins at a group discount, with one view across every plant.</p></div>
     </div>
     <div class="gate" data-r>
       <b>5×</b>
-      <p>A pilot converts at full price only after it shows ₹90 lakh of measurable yearly value against a signed baseline.<span>Launch prices under test. No customer has accepted them yet; they are fixed after five paid pilots in each segment.</span></p>
+      <p>A pilot converts at full price only after it shows ₹30 lakh of measurable yearly value, five times the yearly fee, against a signed baseline.<span>Launch prices under test. No customer has accepted them yet; they are fixed after five paid pilots in each segment.</span></p>
     </div>
   </div>
 </section>
@@ -726,31 +729,29 @@ h3{font-size:21px;letter-spacing:-.02em;line-height:1.2}
 <!-- ============================ 08 ============================ -->
 <section class="section" id="plan">
   <div class="wrap">
-    <div class="eyebrow" data-r>08 / Market and plan</div>
+    <div class="eyebrow" data-r>08 / Market and unit economics</div>
     <div class="section-head">
-      <h2 data-r style="--d:1">Start in Peenya.<br>Prove the loop. Then expand.</h2>
-      <p data-r style="--d:2">Sized bottom-up on factories we can invoice, at prices still under test.</p>
+      <h2 data-r style="--d:1">Start in Peenya.<br>Win it plant by plant.</h2>
+      <p data-r style="--d:2">Sized bottom-up on factories we can invoice, at ₹6 lakh per plant a year.</p>
     </div>
     <div class="mkt">
       <div class="card" data-r style="--d:1">
-        <h3>The market</h3>
+        <h3>The market, one plant each</h3>
         <ul class="funnel">
-          <li style="--w:100%;--d:0"><span class="t"><b>The ceiling</b>47,762 factories with 100+ people</span><span class="v">₹18,727 Cr<small> / yr</small></span><span class="bar"><i></i></span></li>
-          <li style="--w:46%;--d:1"><span class="t"><b>First target list</b>5,000 named accounts</span><span class="v">₹1,260 Cr<small> / yr</small></span><span class="bar"><i></i></span></li>
-          <li style="--w:14%;--d:2"><span class="t"><b>Five-year capture</b>100 customers, 2% of the list</span><span class="v">₹25.2 Cr<small> ARR</small></span><span class="bar"><i></i></span></li>
+          <li style="--w:100%;--d:0"><span class="t"><b>The ceiling</b>47,762 factories with 100+ people</span><span class="v">₹2,866 Cr<small> / yr</small></span><span class="bar"><i></i></span></li>
+          <li style="--w:38%;--d:1"><span class="t"><b>First target list</b>5,000 named accounts</span><span class="v">₹300 Cr<small> / yr</small></span><span class="bar"><i></i></span></li>
         </ul>
-        <p class="small" style="margin-top:18px">Bar lengths show the order, not the scale. Model-derived opportunity, not reported software spend.</p>
+        <p class="small" style="margin-top:18px">At ₹50,000 a month per plant, before installation fees and extra plants. Bar lengths show the order, not the scale. Model-derived opportunity, not reported software spend.</p>
       </div>
       <div class="card" data-r style="--d:2">
-        <h3>The plan · exit ARR, ₹ crore</h3>
-        <div class="yrs" role="img" aria-label="Exit ARR: year one 2.16 crore, year two 7.56 crore, year three 18.9 crore">
-          <div class="b" style="--h:11.4%;--d:0"><span>2.16</span><i></i></div>
-          <div class="b" style="--h:40%;--d:1"><span>7.56</span><i></i></div>
-          <div class="b hot" style="--h:100%;--d:2"><span>18.9</span><i></i></div>
-        </div>
-        <div class="yr-l"><span><b>Year 1</b>8 customers</span><span><b>Year 2</b>30 customers</span><span><b>Year 3</b>75 customers</span></div>
-        <div class="kpis"><div><b>~35</b><span>customers to break even</span></div><div><b>75–78%</b><span>gross margin target</span></div></div>
-        <p class="small" style="margin-top:14px">Planning model v3.1 · targets and assumptions, not results.</p>
+        <h3>One plant, per year</h3>
+        <ul class="funnel ue">
+          <li style="--w:75%;--d:0"><span class="t"><b>Subscription</b>₹50,000 × 12 months</span><span class="v">₹6.0 L</span><span class="bar"><i></i></span></li>
+          <li style="--w:57.5%;--d:1"><span class="t"><b>Gross profit</b>at the 75–78% margin target</span><span class="v">₹4.5–4.7 L</span><span class="bar"><i></i></span></li>
+          <li class="cost" style="--w:100%;--d:2"><span class="t"><b>Cost to win a plant</b>planning assumption</span><span class="v">₹8 L</span><span class="bar"><i></i></span></li>
+        </ul>
+        <div class="kpis"><div><b>~21 months</b><span>to earn back the cost of winning a plant, before installation fees</span></div><div><b>₹0</b><span>per seat: every user in the plant is included</span></div></div>
+        <p class="small" style="margin-top:14px">Bars share one scale. Margin and acquisition cost come from planning model v3.1 and are assumptions, not results; a lower-priced sale may cost less to win.</p>
       </div>
     </div>
   </div>
@@ -833,7 +834,7 @@ h3{font-size:21px;letter-spacing:-.02em;line-height:1.2}
       <div class="phases">
         <div><span>MONTHS 1–6</span><b>₹3.0 Cr</b><p>Production baseline, two connectors, 3–4 paid pilots</p></div>
         <div><span>MONTHS 7–12</span><b>₹3.5 Cr</b><p>At least 8 recurring customers</p></div>
-        <div><span>MONTHS 13–18</span><b>₹3.5 Cr</b><p>16–20 customers, ₹4–5 crore exit ARR</p></div>
+        <div><span>MONTHS 13–18</span><b>₹3.5 Cr</b><p>16–20 recurring customers, three reusable connector families</p></div>
       </div>
       <div class="ask-actions">
         <button class="btn gold product-launch" type="button">See the product <svg class="ic arr"><use href="#i-arrow"/></svg></button>
