@@ -792,7 +792,7 @@ label.fl .kn{font-weight:500;color:var(--muted)}
 .proof{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--body);background:var(--surface-2);border-radius:10px;padding:8px 10px;border-left:2.5px solid var(--gold)}
 .proof b{color:var(--ink)}
 .proof.unk{border-left-color:var(--ochre);background:var(--ochre-soft);color:var(--ochre);flex-direction:row;gap:7px;align-items:flex-start}
-.mets{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.mets{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
 @container vp (max-width:760px){.mets{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .mets .mk{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .mets .mv{font-family:var(--display);font-weight:800;font-size:14.5px;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -974,6 +974,23 @@ label.fl .kn{font-weight:500;color:var(--muted)}
 @media (max-width:720px){.clockchip{font-size:12px}.top-sp{display:none}}
 
 .clockchip,.demoflag,.vchip,.themeb{flex:0 0 auto}
+
+/* single-column stage: device centred, one-line caption, no spec panel */
+.stagegrid{grid-template-columns:minmax(0,1fr)!important;justify-items:center}
+.stage{width:100%}
+.frame.laptop{width:min(1200px,100%)}
+.stagecap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted);margin:2px 0 0;max-width:min(1200px,100%);text-align:center}
+.stagecap b{color:var(--ink)} .stagecap .sep{color:var(--line-2)}
+.stagecap .ri{width:24px;height:24px;border-radius:7px;display:inline-grid;place-items:center;background:var(--role-soft);color:var(--role-ink);font-size:13px}
+/* example-view banner */
+.pvbar{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 11px;border-radius:13px;background:var(--blue-soft);border:1px solid color-mix(in srgb,var(--blue) 35%,transparent);animation:scrin .4s var(--ease) both}
+.pvbar .pvi{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--blue);color:var(--on-blue);font-size:15px;flex:0 0 auto}
+.pvbar b{display:block;font-size:13px;color:var(--ink)} .pvbar span{font-size:11.5px;color:var(--body);line-height:1.35}
+.pvbar .pvgo{background:var(--blue);color:var(--on-blue);flex:0 0 auto}
+.pvbar.nudge{animation:nudge .5s var(--spring)}
+@keyframes nudge{0%,100%{transform:none}30%{transform:translateX(-5px)}60%{transform:translateX(4px)}}
+@container vp (max-width:520px){.pvbar span{display:none}}
+[data-preview] .scr > :not(.pvbar){filter:saturate(.92)}
 </style>
 </head><body>
 <header class="top">
@@ -1002,7 +1019,7 @@ label.fl .kn{font-weight:500;color:var(--muted)}
         <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="addr" id="addr">kaveri.xelor.in</span></div>
         <div class="vp" id="vp"></div>
       </div></div>
-      <aside class="spec" id="spec" aria-label="Screen specification"></aside>
+      <p class="stagecap" id="cap" aria-live="polite"></p>
     </div>
   </main>
 </div>
@@ -1352,7 +1369,7 @@ const TOUR=[
   {role:'pur',scr:'p.plan',st:'Plan',k:'Planning',t:'XELOR explodes 80 pumps into parts and checks the shelf',p:`Six parts against this morning’s stock. One is short: ${NEED_QTY} pump body castings, needed by ${dmy(RFQ.need)} to ship on ${dmy(ORDER.due)}.`,hint:'Tap “Check materials”',done:()=>S.planRun,run:()=>A.runPlan()},
   {role:'pur',scr:'p.net',st:'Ask',k:'Supplier network',t:'The request writes itself from records XELOR holds',p:'Part, quantity, need date, drawing and the incoming quality plan are read from the item master, BOM and QP. Priya only chooses who to ask: each foundry shows its earned record and, if it runs XELOR, live capacity.',hint:'Tap “Send request”',done:()=>S.rfq.status!=='none',run:()=>A.sendRfq()},
   {role:'sup',scr:'s.quote',st:'Quote',k:'Supplier',t:'Sri Ganesh quotes from a message link, with no login',p:'Price per piece is the only required field. The foundry sees how the castings will be judged before quoting, and its own record with Kaveri. It never sees the ranking.',hint:'Fill ₹2,760 → Send quote',done:()=>!!S.rfq.quotes.ganesh,run:()=>{A.fillQuote();A.sendQuote()}},
-  {role:'pur',scr:'p.net',st:'Award',k:'Ranking',t:'Answers come back ranked, with the reasoning written out',p:'Delivery 40%, landed cost 35%, track record 25%. Veerabhadra is cheapest per piece but unproven and not an approved vendor, so it can be compared and never awarded. XELOR explains; Priya decides.',hint:'Tap “Award” on the top answer',done:()=>!!S.po,run:()=>{A.arriveAll();const top=ranked().find(r=>!r.late&&r.s.vendor);if(top)A.award(top.id)},enter:()=>{QUIET=true;A.arriveAll();QUIET=false}},
+  {role:'pur',scr:'p.net',st:'Award',k:'Ranking',t:'Answers come back ranked, with the reasoning written out',p:'Delivery 40%, landed cost 35%, track record 25%. Veerabhadra is cheapest per piece but unproven and not an approved vendor, so it can be compared and never awarded. XELOR explains; Priya decides.',hint:'Tap “Award” on the top answer',done:()=>!!S.po,run:()=>{A.arriveAll();const top=ranked().find(r=>!r.late&&r.s.vendor);if(top)A.award(top.id)},enter:()=>{const q=QUIET;QUIET=true;A.arriveAll();QUIET=q}},
   {role:'own',scr:'w.po',st:'Approve',k:'Owner',t:'Above Priya’s limit, so it lands on Arun’s phone',p:`₹1,50,000 is Priya’s limit and the person who awards never approves. Arun sees why it’s with him, the ranking and the supplier’s record, then signs with one tap.`,hint:'Tap “Approve”',done:()=>!!S.po&&S.po.status==='approved',run:()=>A.approve()},
   {role:'stores',scr:'t.gate',st:'Receive',k:'Stores',t:'The truck arrives; one scan posts the receipt',p:'Receiving moves stock, valuation and the supplier’s on-time record in one step. Scan the same challan twice and the second is refused, so nothing is ever counted double.',hint:'Skip to delivery → Scan the challan',done:()=>!!S.grn&&!S.grn.pending,run:()=>{A.truck();A.scan()}},
   {role:'stores',scr:'t.qc',st:'Inspect',k:'Quality',t:'Latha passes the lot against the written quality plan',p:'Five castings sampled against QP-BDY-150 rev 2. Passing releases the stock, and the supplier’s rejection rate updates from this inspection. Nobody types that number.',hint:'Tap “Pass the lot”',done:()=>S.inspection==='pass',run:()=>A.inspect('pass')},
@@ -1362,10 +1379,19 @@ const TOUR=[
   {role:'acct',scr:'a.dispatch',st:'IRN',k:'Accounts',t:'IRN and e-way bill make the invoice valid',p:'Turnover above ₹5 crore and goods over ₹50,000 crossing a state need both. Simulated here: the product files through a licensed GST provider that isn’t chosen yet.',hint:'Tap “Get IRN and e-way bill”',done:()=>!!S.dispatch&&!!S.dispatch.irn,run:()=>A.irn()},
   {role:'acct',scr:'a.books',st:'Books',k:'Accounts',t:'The books, written by events, then the order closes',p:'Every ledger line came from a dispatch or a receipt, never a typed journal, so it reconciles with the floor. The 45-day MSME clock for Sri Ganesh starts on the day the goods were accepted.',hint:'Tap “Close the order”',done:()=>S.closed,run:()=>A.close()}
 ];
-function ensureUpTo(i){QUIET=true;for(let j=0;j<i;j++){if(TOUR[j].enter)TOUR[j].enter();QUIET=true;if(!TOUR[j].done())TOUR[j].run()}QUIET=false}
+function ensureUpTo(i){const q=QUIET;QUIET=true;for(let j=0;j<i;j++){if(TOUR[j].enter)TOUR[j].enter();QUIET=true;if(!TOUR[j].done())TOUR[j].run()}QUIET=q}
 function tourGo(i){if(i<0||i>=TOUR.length)return;ensureUpTo(i);ui.tour=i;const s=TOUR[i];if(s.enter)s.enter();setRole(s.role,true,false);ui.navDir=null;ui.scr[s.role]=s.scr;if(PHONE_ROLES.includes(s.role))ui.hist[s.role]=[];render();
   document.querySelector('.stagegrid')?.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'nearest'})}
 function tourNext(){const s=TOUR[ui.tour];if(s&&!s.done()){s.run();render();return}if(ui.tour<TOUR.length-1)tourGo(ui.tour+1);else{ui.tour=-2;render()}}
+
+/* ---------- example views: every module shows something, even before the order reaches it ---------- */
+/* A screen whose data doesn't exist yet is drawn from a copy of the demo run forward to that point.
+   Nothing in the real demo changes; buttons in an example view are inert until you make it real. */
+function previewOf(sc){const p=PV[sc.id];if(!p)return null;const [req]=p;return TOUR[req-1].done()?null:p}
+function withState(st,fn){const s0=S,t0=TIMERS,q0=QUIET;S=st;TIMERS=[];QUIET=true;try{return fn()}finally{TIMERS.forEach(clearTimeout);S=s0;TIMERS=t0;QUIET=q0}}
+function futureState(p){return withState(JSON.parse(JSON.stringify(S)),()=>{ensureUpTo(p[1]);A.arriveAll();if(p[2])p[2]();sweep();return S})}
+function pvBanner(p){return `<div class="pvbar"><span class="pvi">${I('eye')}</span><div class="grow"><b>Example view</b><span>Filled in as if the order had reached this point. It becomes real after “${esc(TOUR[p[0]-1].t)}”.</span></div><button class="btn sm pvgo" data-jump="${p[0]}">Show it for real${I('arrow')}</button></div>`}
+function jumpTo(n){ensureUpTo(n);toast('Done up to here','The steps before this screen ran, so it now shows the live order.');render()}
 
 /* ---------- shell rendering ---------- */
 function setRole(r,autoDev=true,doRender=true){if(ui.role!==r&&S.unread[r]!=null&&r!=='sup')S.unread[r]=0;ui.role=r;if(autoDev)ui.dev=ROLES[r].dev;if(r==='sup'&&ui.scr.sup==='s.chat')S.unread.sup=0;if(doRender)render()}
@@ -1403,21 +1429,21 @@ function phoneRight(r){
   if(r==='own'){const c=S.po&&S.po.status==='awaiting'?1:0;return `<button class="bell" data-nav="w.inbox" aria-label="Needs you">${I('bell')}${c?`<i>${c}</i>`:''}</button>`}
   if(r==='floor')return `<span class="offline">Assembly 1 · shift A</span>`;
   return `<span class="offline">Business · via XELOR</span>`}
-function shellPhone(r,sc,body){
+function shellPhone(r,sc,body,pv){
   const nav=NAVS[r]||[];const cur=sc.nav||ui.scr[r];const h=ui.hist[r]||[];
   const header=sc.header?sc.header():`<div class="abar">${h.length?`<button class="bk" data-back aria-label="Back">${I('left')}</button>`:''}<div class="tt">${esc(sc.title)}${sc.kn?`<small>${esc(sc.kn)}</small>`:''}</div><div class="rt">${phoneRight(r)}</div></div>`;
   const ci=Math.max(0,nav.findIndex(n=>n[0]===cur));const pi=ui.tabIdx[r]??ci;
   const bottom=sc.cta?`<div class="stickycta">${sc.cta()}</div>`:`<nav class="tabbar" style="--n:${nav.length}"><span class="ind" data-ci="${ci}" style="width:calc((100% - 10px - ${(nav.length-1)*2}px)/${nav.length});transform:translateX(calc(${pi} * (100% + 2px)))"></span>${nav.map(([id,ic,l,cnt])=>{const c=cnt?cnt():0;return `<button data-nav="${id}" ${cur===id?'aria-current="page"':''}>${I(ic)}<span>${l}</span>${c?`<span class="cnt">${c}</span>`:''}</button>`}).join('')}</nav>`;
   if(!sc.cta)ui.tabIdx[r]=ci;
   const tm0=new Date(S.clock).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true}).replace(/\s?[ap]m/i,'');
-  return `<div class="app ${sc.cta?'has-cta':''}"><div class="statusbar"><span class="sb-time">${tm0}</span>${SB_ICONS}</div>${header}
+  return `<div class="app ${sc.cta?'has-cta':''}" ${pv?'data-preview':''}><div class="statusbar"><span class="sb-time">${tm0}</span>${SB_ICONS}</div>${header}
   <div class="abody"><div class="scr">${body}</div></div>${bottom}<span class="homebar"></span></div>`;
 }
-function shellPortal(r,sc,body){
+function shellPortal(r,sc,body,pv){
   const v=ROLES[r];const tabs=TABS[r]||[];const cur=sc.nav||ui.scr[r];
   const mark={pur:'PR',stores:'GM',acct:'DS'}[r]||'XL';
   const right=r==='pur'?`<span class="credits">Limit ${inr(PEOPLE.priya.limit)}</span>`:r==='acct'?`<span class="badge g">${I('lock')} Append-only books</span>`:`<span class="badge">${I('pin')} Gate 1 · Peenya</span>`;
-  return `<div class="portal"><div class="ptop"><span class="pm">${mark}</span><div class="grow"><b>${esc(v.who.split(' · ')[0])}</b><small>${esc(v.name)} · ${esc(FACTORY.name)}</small></div><div class="rt hide-n">${right}</div></div>
+  return `<div class="portal" ${pv?'data-preview':''}><div class="ptop"><span class="pm">${mark}</span><div class="grow"><b>${esc(v.who.split(' · ')[0])}</b><small>${esc(v.name)} · ${esc(FACTORY.name)}</small></div><div class="rt hide-n">${right}</div></div>
   <div class="pwrap"><nav class="pside"><span class="sb">${esc(v.name)}</span>${tabs.map(([id,ic,l,cnt])=>{const c=cnt?cnt():0;return `<button class="ptab" data-nav="${id}" ${cur===id?'aria-current="page"':''}>${I(ic)}${l}${c?`<span class="c">${c}</span>`:''}</button>`}).join('')}<div class="foot">${esc(v.surface)}. One database: every module reads the same order.</div></nav>
   <div class="pmain"><div class="scr">${body}</div></div></div></div>`;
 }
@@ -1426,8 +1452,9 @@ function renderStage(o={}){
   const same=ui.lastScr===id&&ui.lastRole===r;const old=vp.querySelector('.abody,.pmain');const top=same&&old?old.scrollTop:0;
   let before=null;if(o.flip&&same){before={};vp.querySelectorAll('[data-flip]').forEach(el=>{before[el.dataset.flip]=el.getBoundingClientRect().top})}
   frame.className='frame '+ui.dev+' fin-'+ui.finish;vp.className='vp '+ROLES[r].cls;
-  const body=sc.render();
-  vp.innerHTML=PHONE_ROLES.includes(r)?shellPhone(r,sc,body):shellPortal(r,sc,body);
+  const pv=previewOf(sc);
+  const build=()=>{const body=(pv?pvBanner(pv):'')+sc.render();return PHONE_ROLES.includes(r)?shellPhone(r,sc,body,pv):shellPortal(r,sc,body,pv)};
+  vp.innerHTML=pv?withState(futureState(pv),build):build();
   const sc2=vp.querySelector('.abody,.pmain');const inner=sc2.querySelector('.scr');
   if(same)sc2.scrollTop=top;else{inner.classList.add('enter','stg');if(PHONE_ROLES.includes(r)&&ui.navDir)inner.classList.add(ui.navDir);countUp(inner)}
   ui.navDir=null;
@@ -1441,18 +1468,8 @@ function countUp(root){if(reduceMotion())return;root.querySelectorAll('[data-cu]
   const f=v=>fmt==='inr'?inr(v):fmt==='pct'?Math.round(v)+'%':nos(Math.round(v));const t0=performance.now(),dur=900;
   const stepf=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);el.textContent=f(to*e);if(k<1)requestAnimationFrame(stepf)};el.textContent=f(0);requestAnimationFrame(stepf)})}
 const cu=(v,fmt='n')=>`<span data-cu="${v}" data-fmt="${fmt}">${fmt==='inr'?inr(v):fmt==='pct'?Math.round(v)+'%':nos(v)}</span>`;
-function renderSpec(){
-  const sc=SCREENS[ui.scr[ui.role]];const el=$('#spec');
-  const li=a=>a.map(x=>Array.isArray(x)?`<li><span>${esc(x[0])}</span><code>${esc(x[1])}</code></li>`:`<li>${esc(x)}</li>`).join('');
-  el.innerHTML=`<div class="sh"><span class="lbl">${I('file')} Screen spec</span><span class="badge g">${esc(ui.scr[ui.role])}</span></div>
-  <div><h3>${esc(sc.title)}</h3><div class="sub" style="margin-top:3px">${esc(ROLES[sc.role].name)} · ${esc(ROLES[sc.role].surface)}</div></div>
-  <div class="route">${esc(ROLES[sc.role].host+sc.route)}</div>
-  <p class="purpose">${esc(sc.purpose)}</p>
-  ${sc.reads?.length?`<div><h5>Reads</h5><ul>${li(sc.reads)}</ul></div>`:''}
-  ${sc.api?.length?`<div><h5>Actions → API</h5><ul>${li(sc.api)}</ul></div>`:''}
-  ${sc.states?.length?`<div><h5>States to design</h5><div class="chips" style="display:flex;flex-wrap:wrap;gap:5px">${sc.states.map(s=>`<span class="pill st-off">${esc(s)}</span>`).join('')}</div></div>`:''}
-  ${sc.rules?.length?`<div class="rules"><h5>Rules this screen enforces</h5><ul>${sc.rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>`:''}`;
-}
+function renderSpec(){const sc=SCREENS[ui.scr[ui.role]];const v=ROLES[sc.role];
+  $('#cap').innerHTML=`<span class="ri ${v.cls}">${I(v.ic)}</span><b>${esc(v.who.split(' · ')[0])}</b><span class="sep">·</span><span>${esc(sc.title)}</span><span class="sep">·</span><span class="cp">${esc(sc.purpose.split('. ')[0].replace(/\.$/,''))}.</span>`}
 function renderClock(){const d=new Date(S.clock);$('#clockchip').innerHTML=`${I('clock')}<b>${d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</b><span class="lng">${d.getFullYear()} · </span>${tm()}`}
 function render(o={}){sweep();renderTour();renderRoles();renderStage(o);renderSpec();renderClock();S.bumped=null;S.justStamped=null;
   Object.values(S.rfq.quotes).forEach(q=>{if(q.fresh)setTimeout(()=>{q.fresh=false},2500)})}
@@ -1461,6 +1478,8 @@ function render(o={}){sweep();renderTour();renderRoles();renderStage(o);renderSp
 document.addEventListener('click',e=>{
   const t=e.target;
   if(t.closest('[data-veil]')){const v=t.closest('.veil');v.classList.add('out');setTimeout(()=>{$('#overlay').innerHTML=''},420);return}
+  const jp=t.closest('[data-jump]');if(jp){jumpTo(+jp.dataset.jump);return}
+  if(t.closest('[data-preview]')&&t.closest('[data-a]')){toast('This is an example view','Tap “Show it for real” at the top to run the steps up to here.','info');const b=$('.pvbar');if(b){b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge')}return}
   const tr=t.closest('[data-tour]');if(tr){const v=tr.dataset.tour;if(v==='start')tourGo(0);else if(v==='next')tourNext();else if(v==='prev')tourGo(ui.tour-1);else if(v==='exit'){ui.tour=-1;render()}else tourGo(+v);return}
   const rb=t.closest('[data-role]');if(rb){setRole(rb.dataset.role);return}
   const db=t.closest('[data-dev]');if(db){ui.dev=db.dataset.dev;render();return}
@@ -1529,7 +1548,7 @@ const NAVS={
 const TABS={
   pur:[['p.home','home','Today'],['p.sales','file','Sales order',()=>S.order==='received'?1:0],['p.plan','chart','Material check'],['p.net','net','Supplier network',()=>S.rfq.status==='sent'?Object.keys(S.rfq.quotes).length:0],['p.po','cart','Purchase orders',()=>S.po&&S.po.status==='awaiting'?1:0],['p.rec','award','Supplier records'],['p.log','list','Activity']],
   stores:[['t.gate','truck','Gate',()=>S.po&&S.po.status==='approved'&&(!S.grn||S.grn.pending)?1:0],['t.qc','shield','Inspection',()=>S.grn&&!S.grn.pending&&S.inspection!=='pass'?1:0],['t.stock','box','Stock'],['t.rec','award','Supplier records']],
-  acct:[['a.dispatch','truck','Dispatch & invoice',()=>S.wo&&S.wo.status==='done'&&!(S.dispatch&&S.dispatch.irn)?1:0],['a.books','book','Ledger'],['a.audit','lock','Audit trail'],['a.real','eye','What is real']]
+  acct:[['a.dispatch','truck','Dispatch & invoice',()=>S.wo&&S.wo.status==='done'&&!(S.dispatch&&S.dispatch.irn)?1:0],['a.books','book','Ledger'],['a.audit','lock','Audit trail']]
 };
 
 /* ================= PURCHASE (Priya, laptop) ================= */
@@ -1566,7 +1585,7 @@ def('p.sales',{role:'pur',title:'Sales order',route:'/sales/orders/SO-2627-0291'
       ${ok?'':`<button class="btn pri" data-a="confirmOrder">${I('check')}Confirm order</button>`}</div>
     <div class="card"><h4>Credit check</h4><p class="sub">Done before confirming, not at dispatch</p>${kv('Credit limit',inr(CUSTOMER.limit))}${kv('Already owed',inr(CUSTOMER.outstanding))}${kv('This order',inr(INVOICE_TOTAL))}${kv('After this order',inr(after))}
       <div class="bar" style="grid-template-columns:minmax(0,1fr) 50px"><span class="tr"><i style="width:${pct}%;background:var(--green)"></i></span><b>${pct}%</b></div>${tp('Within limit','ok')}</div></div>
-    ${ok?`<p class="note rule">Planning already has this order. You didn’t send it anywhere. It’s the same record.</p>`:''}`}});
+`}});
 
 def('p.plan',{role:'pur',title:'Material check',route:'/planning/mrp/runs/latest',purpose:'XELOR explodes the confirmed order through its bill of materials and compares every part with this morning’s shelf. A shortage becomes a suggestion to ask suppliers, with the evidence written under it.',
   reads:['BOM v4 for KP-PMP-6ES','Stock by bin','Machining and assembly lead time'],api:[['Run MRP','POST /api/v1/planning/mrp/run'],['Explain a line','GET /api/v1/planning/mrp/runs/{runNo}/explain/{itemCode}'],['Exceptions','GET /api/v1/planning/exceptions']],
@@ -1579,11 +1598,10 @@ def('p.plan',{role:'pur',title:'Material check',route:'/planning/mrp/runs/latest
     ${rows.map(r=>`<tr class="${r.short?'hot':''}"><td><b>${esc(r.b.name)}</b><div class="s mono">${r.b.code} · bin ${r.b.bin}</div></td><td class="r num">${r.b.per}</td><td class="r num">${nos(r.need)}</td><td class="r num">${nos(r.have)}</td><td class="r num"><b>${r.short?nos(r.short):'—'}</b></td><td>${r.short?tp('Short','bad'):tp('Covered','ok')}</td></tr>`).join('')}</tbody></table></div>
     ${S.inspection==='pass'?`<div class="card ok"><h4>Covered</h4><p class="sub">The 60 castings arrived and passed inspection, so every part is on the shelf.</p></div>`:
     `<div class="card gold"><div class="eyb" style="color:var(--gold-ink)">${I('spark')} Suggestion</div><h4>Ask three casting suppliers for ${NEED_QTY} pump bodies</h4><p class="sub">To ship on ${dmy(ORDER.due)} the castings must be here by ${dmy(RFQ.need)}. Three foundries on the network pour grey iron.</p>
-      <p class="note mono" style="font-size:10.5px">From ${ORDER.no} × BOM v4 · stock ${SHORT.stock} in bin ${SHORT.bin} · 11 days to machine and assemble</p>
       <div class="btns" style="justify-content:flex-start">${S.rfq.status==='none'?`<button class="btn pri sm" style="flex:0 0 auto" data-go="p.net">${I('send')}Ask suppliers for a price</button>`:`${tp('Request already sent','ok')} <button class="btn gh sm" style="flex:0 0 auto" data-go="p.net">See the answers</button>`}</div></div>`}`}});
 
 function packCard(){const rows=[['Part',SHORT.name+', 6 in','item master '+SHORT.code],['Quantity',NEED_QTY+' nos','material check: 80 needed − '+SHORT.stock+' on shelf'],['Needed by',dmyy(RFQ.need),'ship '+dmy(ORDER.due)+' − 11 days'],['Drawing','Rev A, machining allowance 3 mm','item attachments'],['Checked on arrival',QPLAN.checks.length+' checks, sample '+QPLAN.sample,QPLAN.no],['Deliver to',FACTORY.town,'factory master']];
-  return card('The request, already written','Priya typed nothing below',`<div class="list" style="gap:0">${rows.map((r,i)=>`<div class="kv" style="animation:scrin .4s var(--ease) ${i*60}ms both"><span>${esc(r[0])}</span><b>${esc(r[1])}<span class="mono" style="display:block;font-size:10px;color:var(--muted);font-weight:500">from ${esc(r[2])}</span></b></div>`).join('')}</div><p class="note rule">The supplier sees how the castings will be judged before quoting, so a reject is a broken promise, not a surprise.</p>`)}
+  return card('The request, already written','Priya typed nothing below',`<div class="list" style="gap:0">${rows.map((r,i)=>`<div class="kv" style="animation:scrin .4s var(--ease) ${i*60}ms both"><span>${esc(r[0])}</span><b>${esc(r[1])}<span class="mono" style="display:block;font-size:10px;color:var(--muted);font-weight:500">from ${esc(r[2])}</span></b></div>`).join('')}</div>`)}
 function rfqBubble(preview){const open=!preview&&S.rfq.status==='sent'&&!S.rfq.quotes.ganesh;
   return `<div class="bub"><div class="from">${esc(FACTORY.name)}</div>Request for quotation <b>${RFQ.no}</b><dl><dt>Part</dt><dd>${esc(SHORT.name)}, 6 in</dd><dt>Quantity</dt><dd>${NEED_QTY} nos</dd><dt>Needed by</dt><dd>${dmyy(RFQ.need)}</dd><dt>Reply by</dt><dd>${dmyy(RFQ.replyBy)}</dd><dt>Drawing</dt><dd>Rev A · on the link</dd></dl>Machining allowance 3 mm all over. Our pattern.
   <div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--line-2);font-size:12px"><b>How we check it on arrival</b> (${QPLAN.sample})<ul>${QPLAN.checks.map(c=>`<li>${esc(c[0])}: ${esc(c[1])}</li>`).join('')}</ul></div>
@@ -1602,7 +1620,7 @@ function ansRow(r){const s=r.s,awarded=S.po&&S.po.sup===r.id;let act='';
   return `<div class="ans ${r.late?'late':''} ${awarded?'won':''}" data-flip="${r.id}"><span class="rank ${r.rank===1?'first':''}">${r.late?'✕':r.rank}</span><div class="b">
     <h4>${esc(s.name)}${s.xelor?vbadge():''}${s.vendor?'':tp('Network only','warn')}${r.fresh&&r.id==='ganesh'?tp('Just quoted','acc'):''}${r.id!=='ganesh'?tp('Simulated reply'):''}</h4>
     <p class="why">${esc(lead+' '+(r.note||''))}</p>${proof}
-    <div class="mets">${m('Landed',inr(r.landed))}${m('Per piece',inr2(r.unit))}${m('Freight',r.freight?inr(r.freight):'—')}${m('Delivery',r.speed.toFixed(2),r.speed,'var(--acc)')}${m('Price',r.cost.toFixed(2),r.cost,'var(--blue)')}${m('Record',r.rec.toFixed(2),r.rec,'var(--gold)')}${m('Score',r.late?'—':r.score.toFixed(2))}</div>${act}</div></div>`}
+    <div class="mets">${m('Landed',inr(r.landed))}${m('Per piece',inr2(r.unit))}${m('Delivery',r.speed.toFixed(2),r.speed,'var(--acc)')}${m('Price',r.cost.toFixed(2),r.cost,'var(--blue)')}${m('Record',r.rec.toFixed(2),r.rec,'var(--gold)')}${m('Score',r.late?'—':r.score.toFixed(2))}</div>${act}</div></div>`}
 def('p.net',{role:'pur',title:'Supplier network',route:'/purchase/network/rfqs/RFQ-2627-0114',purpose:'Ask foundries for a price and get the answers back ranked. The request is written from records XELOR holds; each supplier shows its earned record and, when it runs XELOR, live capacity. Ranking weighs delivery, landed cost and track record, and explains itself.',
   reads:['Item master, BOM, quality plan QP-BDY-150','Vendor approval status','Supplier performance from Kaveri’s receipts and inspections','Live capacity (suppliers on XELOR)'],
   api:[['Create RFQ','POST /api/v1/purchase/rfqs'],['Issue + broadcast','POST /api/v1/purchase/network/rfqs/{id}/broadcast'],['Performance','GET /api/v1/purchase/network/suppliers/{id}/performance'],['Ranking','GET /api/v1/purchase/network/rfqs/{id}/ranking'],['Award → PO','POST /api/v1/purchase/rfqs/{id}/award']],
@@ -1614,12 +1632,11 @@ def('p.net',{role:'pur',title:'Supplier network',route:'/purchase/network/rfqs/R
       return `${head('Ask for a price','XELOR wrote the request from records it already holds. Choose who to ask. They answer from a link with no login.')}
       <div class="two"><div class="card"><h4>Who to ask</h4><p class="sub">Suppliers who pour grey iron castings</p><div class="list">${SUP_ORDER.map(id=>{const s=SUP[id];return `<div class="sup ${ui.pick[id]?'on':''}" role="checkbox" tabindex="0" aria-checked="${!!ui.pick[id]}" data-a="pick" data-id="${id}"><span class="cbx">${I('check')}</span>${logo(id)}<span class="tx"><b>${esc(s.name)}${s.xelor?vbadge():''}</b><small>${esc(s.town)} · ${s.km} km · replies in about ${s.reply}</small><span class="stats">${recLine(id)}</span>${capLine(id)}</span>${s.vendor?tp('Approved','ok'):tp('Network only','warn')}</div>`}).join('')}</div>
         <button class="btn pri block" data-a="sendRfq" ${n?'':'disabled'}>${I('send')}Send request to ${n} supplier${n===1?'':'s'}</button></div>
-      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">${packCard()}${card('What each supplier receives','A message with a private link',`<div class="thread" style="margin:0;border-radius:12px;min-height:0">${rfqBubble(true)}</div>`)}</div></div>
-      <p class="note rule">Veerabhadra can be asked and compared, but not awarded. It isn’t an approved vendor. Its record says unproven because it has never delivered to Kaveri, not because it’s perfect.</p>`}
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">${packCard()}${card('What each supplier receives','A message with a private link',`<div class="thread" style="margin:0;border-radius:12px;min-height:0">${rfqBubble(true)}</div>`)}</div></div>`}
     const rows=ranked(),miss=S.rfq.to.filter(id=>!S.rfq.quotes[id]),usable=rows.filter(r=>!r.late);
     return `${head('Answers for '+RFQ.no,`${NEED_QTY} × ${esc(SHORT.name)} · needed by ${dmyy(RFQ.need)} · ranked on delivery, landed cost and each supplier’s real record.`)}
     <div class="kpis"><div class="kpi hl"><b>${rows.length} of ${S.rfq.to.length}</b><span>${miss.length?'answers in · reply by '+dmy(RFQ.replyBy):'everyone answered'}</span></div><div class="kpi"><b>${usable.length?inr(Math.min(...usable.map(r=>r.landed))):'—'}</b><span>best landed cost, before GST</span></div><div class="kpi"><b>${usable.length>1?inr(Math.max(...usable.map(r=>r.landed))-Math.min(...usable.map(r=>r.landed))):'—'}</b><span>spread, best to worst</span></div><div class="kpi"><b>${rows.filter(r=>onTimePct(r.id)!=null).length} of ${rows.length}</b><span>answers backed by deliveries</span></div></div>
-    ${S.rfq.status==='awarded'?`<p class="note rule">${S.po.no} was raised against ${esc(SUP[S.po.sup].name)}. The ranking stays as the record of what the decision was made from.</p>`:''}
+    
     <div class="card"><div class="row sb"><h4>Ranked answers</h4><span class="sub">The ranking explains; you decide</span></div>
       <div class="weights"><i style="flex:${W.speed};background:var(--acc)"></i><i style="flex:${W.cost};background:var(--blue);animation-delay:.08s"></i><i style="flex:${W.rec};background:var(--gold);animation-delay:.16s"></i></div>
       <div class="weights-k"><span style="--c:var(--acc)">Delivery promised 40%</span><span style="--c:var(--blue)">Landed cost 35%</span><span style="--c:var(--gold)">Track record 25%</span></div></div>
@@ -1650,10 +1667,7 @@ def('p.rec',{role:'pur',title:'Supplier records',route:'/purchase/network/suppli
   reads:['Goods receipts by supplier','Incoming inspection results','Kaveri’s on-time shipments'],api:[['Performance','GET /api/v1/purchase/network/suppliers/{id}/performance'],['Suppliers','GET /api/v1/purchase/network/suppliers']],
   states:['proven','unproven (no deliveries)','updated by a receipt','updated by an inspection'],rules:['No number on this screen is typed by a person','A receipt counts on-time; an inspection counts pieces and rejects','Proposed: offering spare capacity publishes nothing in this demo'],
   render(){const n=KAVERI_REC.orders+(S.closed?1:0),ok=KAVERI_REC.onTimeN+(S.closed&&S.dispatch.at.slice(0,10)<=ORDER.due?1:0);
-    return `${head('Supplier records','Earned, not claimed. Every number comes from a receipt or an inspection at Kaveri’s gate.')}${scorecard()}
-    <div class="card"><div class="row sb"><h4>Kaveri’s own record, as a buyer would see it</h4>${tp('Proposed','info')}</div><p class="sub">Built the same way, as a by-product of running the factory</p>
-    <div class="passport"><div><b>${Math.round(ok/n*100)}%${S.closed?'<span class="delta">+1 order</span>':''}</b><small>on time to customers, ${ok} of ${n} orders since ${KAVERI_REC.since}</small></div><div><b>${SUP_ORDER.filter(id=>onTimePct(id)!=null).length} suppliers</b><small>held to a written quality plan, every lot inspected at the gate</small></div><div><b>3 free shifts</b><small>Assembly 1, week of 26 Oct, read from the schedule</small><div style="margin-top:6px">${S.offered?tp('Offered on the network','ok'):`<button class="btn gh sm" data-a="offer">${I('net')}Offer on the network</button>`}</div></div></div>
-    <p class="note">A shop that runs XELOR can show this record to a bigger buyer or an export sourcing partner instead of asking to be trusted.</p></div>`}});
+    return `${head('Supplier records','Earned, not claimed. Every number comes from a receipt or an inspection at Kaveri’s gate.')}${scorecard()}`}});
 
 def('p.log',{role:'pur',title:'Activity',route:'/activity?order=SO-2627-0291',purpose:'Everything that happened to this order, newest first, with who did it. Nothing here can be edited; a mistake is corrected by a new entry.',
   reads:['Audit log for the order'],api:[['Audit pack','GET /api/v1/admin/audit/pack?ref=SO-2627-0291']],states:['empty','entries'],rules:['Append-only','Each entry names a person or a system'],
@@ -1683,27 +1697,23 @@ def('s.quote',{role:'sup',title:'Your price',kn:'kaveri.xelor.in/q · no login',
     if(!S.draft.unit&&S.rfq.quotes.ganesh){const q=S.rfq.quotes.ganesh;S.draft={unit:String(q.unit),date:q.date||'',freight:q.freight?String(q.freight):'',note:''}}
     const d=S.draft,unit=Number(String(d.unit).replace(/,/g,''))||0,fr=Number(String(d.freight).replace(/,/g,''))||0,late=d.date&&d.date>RFQ.need;
     return `<div class="card tint"><span class="eyb">They are asking for</span><h4>${NEED_QTY} × ${esc(SHORT.name)}</h4>${kv('Needed by',dmyy(RFQ.need))}${kv('Reply by',dmyy(RFQ.replyBy))}${kv('Deliver to','Peenya, Bengaluru')}${kv('Checked on arrival',QPLAN.checks.length+' checks · '+QPLAN.sample)}</div>
-    <p class="note rule">Your on-time and reject record with Kaveri counts in the ranking, not only the price. You: <b>${Math.round(onTimePct('ganesh'))}% on time, ${rejPct('ganesh').toFixed(1)}% rejected.</b></p>
     <label class="fl" for="qUnit">Price per piece <span class="kn">the only required field</span></label><div class="money"><span>₹</span><input id="qUnit" inputmode="decimal" placeholder="0" value="${esc(d.unit)}" autocomplete="off"></div>
     <div class="row sb"><span class="sub">Excluding GST</span><button class="linkbtn" data-a="fill">Fill ₹2,760 · 9 Oct · ₹2,400 freight</button></div>
     <label class="fl" for="qDate">Delivery date <span class="kn">optional</span></label><input id="qDate" class="field" type="date" value="${esc(d.date)}"><p class="note" id="qLate" style="${late?'color:var(--red)':''}">${late?`After ${dmy(RFQ.need)}. You can still send it, but it can’t be used.`:'Leave it blank if unsure. A blank date beats a missed one.'}</p>
     <label class="fl" for="qFreight">Freight to Peenya <span class="kn">optional</span></label><div class="money"><span>₹</span><input id="qFreight" inputmode="decimal" placeholder="0" value="${esc(d.freight)}" autocomplete="off"></div>
-    <div class="qtotal"><div><small>What they will compare</small><span style="color:var(--on-deep);font-size:13px">${NEED_QTY} pieces + freight</span></div><b id="qTotal">${unit?inr(unit*NEED_QTY+fr):'—'}</b></div>
-    <p class="note center">No account, no password. The link expires when the request closes.</p>`}});
+    <div class="qtotal"><div><small>What they will compare</small><span style="color:var(--on-deep);font-size:13px">${NEED_QTY} pieces + freight</span></div><b id="qTotal">${unit?inr(unit*NEED_QTY+fr):'—'}</b></div>`}});
 def('s.record',{role:'sup',title:'My record',kn:'with Kaveri Pumps',route:'/q/:token/record',purpose:'The foundry’s own record with Kaveri, as Kaveri counts it at the gate. It shows the supplier exactly what feeds a quarter of the ranking, so keeping promises now wins work later.',
   reads:['Receipts and inspections for this supplier at Kaveri'],api:[['Performance (own)','GET /api/v1/purchase/network/suppliers/{id}/performance']],states:['proven','updated today'],rules:['The supplier sees its own record, never anyone else’s','Counted from receipts and inspections; never typed'],
   render(){const h=H('ganesh'),o=onTimePct('ganesh'),rj=rejPct('ganesh'),rs=recScore('ganesh'),b=SUP.ganesh.hist;const C=2*Math.PI*26;
     return `<div class="hero"><span class="eyb">Sri Ganesh Castings · since ${h.since}</span><h4>${Math.round(o)}% on time over ${h.deliveries} deliveries</h4><p>${rj.toFixed(2)}% of ${nos(h.pieces)} pieces rejected at Kaveri’s gate. Record score ${rs.toFixed(2)} of 1.</p></div>
     <div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="kpi hl"><b>${h.deliveries}${h.deliveries>b.deliveries?`<span class="delta">+${h.deliveries-b.deliveries}</span>`:''}</b><span>deliveries</span></div><div class="kpi"><b>${h.onTimeN}</b><span>on time</span></div><div class="kpi"><b>${nos(h.pieces)}${h.pieces>b.pieces?`<span class="delta">+${h.pieces-b.pieces}</span>`:''}</b><span>pieces checked</span></div><div class="kpi"><b>${h.rejected}</b><span>rejected</span></div></div>
-    <div class="card"><div class="row"><svg class="ring" viewBox="0 0 64 64" aria-label="Record ${rs.toFixed(2)}"><circle class="bg" cx="32" cy="32" r="26"/><circle class="fg" cx="32" cy="32" r="26" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-rs)}"/><text x="32" y="37" text-anchor="middle">${Math.round(rs*100)}</text></svg><div class="grow"><h4>How Kaveri scores your record</h4><p class="sub">On-time share counts 70%. Rejects count 30%: 0% is full marks, 5% or worse is nothing.</p></div></div></div>
-    <p class="note rule">Counted by Kaveri’s stores and quality team at the gate. You can’t edit it, and neither can Kaveri.</p>`}});
+    <div class="card"><div class="row"><svg class="ring" viewBox="0 0 64 64" aria-label="Record ${rs.toFixed(2)}"><circle class="bg" cx="32" cy="32" r="26"/><circle class="fg" cx="32" cy="32" r="26" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-rs)}"/><text x="32" y="37" text-anchor="middle">${Math.round(rs*100)}</text></svg><div class="grow"><h4>How Kaveri scores your record</h4><p class="sub">On-time share counts 70%. Rejects count 30%: 0% is full marks, 5% or worse is nothing.</p></div></div></div>`}});
 def('s.cap',{role:'sup',title:'Furnace 2',kn:'live capacity · runs XELOR',route:'/capacity · Sri Ganesh’s own XELOR',purpose:'Sri Ganesh runs XELOR in its own foundry, so its free capacity is read from its schedule and shown to buyers who ask it for a price. A promise backed by a schedule is believable.',
   reads:['Own furnace schedule (Sri Ganesh’s XELOR)'],api:[['Capacity (shared)','GET /api/v1/planning/mrp/runs/{runNo}/capacity']],states:['free capacity','fully booked','shared with a buyer'],rules:['Shared only with buyers who send this supplier a request','Read from the schedule; never typed into a profile'],
   render(){const x=SUP.ganesh.xelor;const won=S.po&&S.po.sup==='ganesh'&&S.po.status==='approved';const booked=won?84:x.booked;const C=2*Math.PI*26;
     const daysL=['1 Oct','2','3','4','5','6','7','8','9 Oct','10'];const load=[90,70,40,55,30,95,60,45,35,80].map((v,i)=>won&&i>=1&&i<=4?Math.min(100,v+40):v);
     return `<div class="card"><div class="row"><svg class="ring" viewBox="0 0 64 64" aria-label="${booked}% booked"><circle class="bg" cx="32" cy="32" r="26"/><circle class="fg" cx="32" cy="32" r="26" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-booked/100)}"/><text x="32" y="37" text-anchor="middle">${booked}%</text></svg><div class="grow"><h4>${esc(x.line)} · ${booked}% booked</h4><p class="sub">${won?'Kaveri’s 60 bodies are scheduled · 1 pour free before 9 Oct':esc(x.free)}</p>${vbadge()}</div></div></div>
-    <div class="card"><h4>Next ten days</h4><div class="bars">${daysL.map((d,i)=>`<div class="bar" style="grid-template-columns:52px minmax(0,1fr) 40px"><span>${d}</span><span class="tr"><i style="width:${load[i]}%;background:${load[i]>85?'var(--red)':'var(--role)'};animation-delay:${i*40}ms"></i></span><b>${load[i]}%</b></div>`).join('')}</div></div>
-    <p class="note rule">Buyers who ask you for a price see “${esc(x.free)}”, read live. They never see your customers or your prices to others.</p>`}});
+    <div class="card"><h4>Next ten days</h4><div class="bars">${daysL.map((d,i)=>`<div class="bar" style="grid-template-columns:52px minmax(0,1fr) 40px"><span>${d}</span><span class="tr"><i style="width:${load[i]}%;background:${load[i]>85?'var(--red)':'var(--role)'};animation-delay:${i*40}ms"></i></span><b>${load[i]}%</b></div>`).join('')}</div></div>`}});
 
 /* ================= OWNER (Arun, phone) ================= */
 def('w.inbox',{role:'own',title:'Needs you',kn:'Arun Venkatesh · Owner',route:'/inbox',purpose:'Only what needs the owner: approvals above someone’s limit. Everything else is visible but never asks for him.',
@@ -1728,8 +1738,7 @@ def('w.biz',{role:'own',title:'Business',kn:'one order, in money',route:'/busine
   reads:['Order, PO, receivable, payable'],api:[['Trial balance','GET /api/v1/accounts/trial-balance'],['Outstanding','GET /api/v1/accounts/customers/{id}/outstanding']],states:['before dispatch','after dispatch','closed'],rules:['MSME suppliers must be paid within 45 days of acceptance (section 43B(h))','Synthetic demo figures; never claimed as savings'],
   render(){const n=Object.keys(S.stamped).length,C=2*Math.PI*26;const pay=S.grn&&!S.grn.pending?addDays(S.po.promised,45):null;
     return `<div class="card"><div class="row"><svg class="ring" viewBox="0 0 64 64" aria-label="${n} of 9 stations"><circle class="bg" cx="32" cy="32" r="26"/><circle class="fg" cx="32" cy="32" r="26" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-n/9)}"/><text x="32" y="37" text-anchor="middle">${n}/9</text></svg><div class="grow"><h4>${ORDER.no}</h4><p class="sub">${ORDER.qty} pumps for ${esc(CUSTOMER.name)} · due ${dmy(ORDER.due)}</p></div></div></div>
-    <div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="kpi hl"><b>${cu(INVOICE_TOTAL,'inr')}</b><span>order value</span></div><div class="kpi"><b>${S.dispatch&&!S.dispatch.running?inr(INVOICE_TOTAL):'—'}</b><span>${S.dispatch&&!S.dispatch.running?'customer owes · due '+dmy(addDays(S.dispatch.at.slice(0,10),30)):'receivable after dispatch'}</span></div><div class="kpi"><b>${S.po?inr(S.po.total):'—'}</b><span>owed to the foundry</span></div><div class="kpi"><b>${pay?dmy(pay):'—'}</b><span>${pay?'MSME pay-by date':'clock starts at receipt'}</span></div></div>
-    <p class="note rule">Demonstration figures for one order. Nothing here is a saving or a forecast.</p>`}});
+    <div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="kpi hl"><b>${cu(INVOICE_TOTAL,'inr')}</b><span>order value</span></div><div class="kpi"><b>${S.dispatch&&!S.dispatch.running?inr(INVOICE_TOTAL):'—'}</b><span>${S.dispatch&&!S.dispatch.running?'customer owes · due '+dmy(addDays(S.dispatch.at.slice(0,10),30)):'receivable after dispatch'}</span></div><div class="kpi"><b>${S.po?inr(S.po.total):'—'}</b><span>owed to the foundry</span></div><div class="kpi"><b>${pay?dmy(pay):'—'}</b><span>${pay?'MSME pay-by date':'clock starts at receipt'}</span></div></div>`}});
 
 /* ================= STORES & QUALITY (tablet) ================= */
 function recordDelta(id){const b=SUP[id].hist,h=H(id),s=SUP[id];const bo=b?b.onTimeN/b.deliveries*100:null,br=b?b.rejected/b.pieces*100:null;
@@ -1743,7 +1752,7 @@ def('t.gate',{role:'stores',title:'Gate',route:'/stores/receipts',purpose:'Recei
     const g=S.grn;const steps=[['Challan scanned at the gate',g.pending?'Waiting for the scan':stamp(g.at)+' · '+g.no,g.pending?'now':'done'],['Stock posted, held for inspection',g.pending?'After the scan':`+${NEED_QTY} in bin ${SHORT.bin} · can’t be issued yet`,g.pending?'':'done'],['Incoming inspection',S.inspection==='pass'?'Passed · 5 sampled':g.pending?'After receipt':'Latha checks the lot',S.inspection==='pass'?'done':g.pending?'':'now'],['Released to production',S.inspection==='pass'?'All '+NEED_QTY+' usable':'After inspection',S.inspection==='pass'?'done':'']];
     return `${head('Receive '+S.po.no,'One scan moves stock, valuation and the supplier’s on-time record. Inspection decides whether the stock can be used.')}
     <div class="two"><div style="display:flex;flex-direction:column;gap:12px;min-width:0"><div class="card"><div class="scanbox ${g.pending?'':'ok'}"><div class="doc"><b>DELIVERY CHALLAN · ${esc(s.short.toUpperCase())}</b><i></i><i class="w"></i><i></i><span>${NEED_QTY} × ${SHORT.code} · ${S.po.no}</span><i class="w"></i></div><span class="beam"></span>${g.pending?'':`<span class="okm">${I('check')}</span>`}</div>
-      ${kv('Against','<span class="mono">'+S.po.no+'</span>')}${kv('Ordered / delivered',NEED_QTY+' / '+NEED_QTY+' nos')}${kv('On time?','<span style="color:var(--green-ink)">Yes · '+dmy(S.po.promised)+'</span>')}${kv('Idempotency key','<span class="mono">'+hshort(hx('challan'+S.po.no))+'</span>')}
+      ${kv('Against','<span class="mono">'+S.po.no+'</span>')}${kv('Ordered / delivered',NEED_QTY+' / '+NEED_QTY+' nos')}${kv('On time?','<span style="color:var(--green-ink)">Yes · '+dmy(S.po.promised)+'</span>')}
       <div class="btns"><button class="btn ${g.pending?'pri':'gh'}" data-a="scan">${I('scan')}${g.pending?'Scan the challan':'Scan it again'}</button></div>${!g.pending?`<p class="note">Try it: a second scan is refused, not doubled.${S.dupScans?` Refused ${S.dupScans}×.`:''}</p>`:''}</div></div>
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0"><div class="card"><h4>What happened</h4>${pipeHtml(steps)}${!g.pending&&S.inspection!=='pass'?`<button class="btn pri block" data-go="t.qc">${I('shield')}Inspect the lot</button>`:''}</div>${!g.pending?recordDelta(S.po.sup):''}</div></div>`}});
 def('t.qc',{role:'stores',title:'Incoming inspection',route:'/quality/inspections/:id',purpose:'Latha samples the lot against the written quality plan the supplier saw before quoting. Passing releases stock and adds the pieces to the supplier’s record; rejecting holds the lot and raises a finding.',
@@ -1785,7 +1794,7 @@ def('m.wo',{role:'floor',title:'Work order',kn:'WO-2627-0918',route:'/jobs/:id',
     if(st===2)body=`<div class="card"><div class="counter"><b>${cu(w.made)}<small> / ${ORDER.qty}</small></b></div><p class="center sub">0 scrap · assembled on Assembly 1</p></div>
       <div class="card" style="gap:0"><h4 style="margin-bottom:4px">Final test · every pump</h4>${FTESTS.map((c,i)=>`<div class="check" role="checkbox" tabindex="0" aria-checked="${S.tests[i]}" data-a="test" data-i="${i}"><span class="cb">${I('check')}</span><div><b>${esc(c[0])}</b><span>${esc(c[1])}</span></div></div>`).join('')}</div>
       <button class="btn xp block" data-a="finalTest" ${S.tests.every(Boolean)?'':'disabled'}>${I('shield')}Pass final test</button>`;
-    if(st===3)body=`<div class="tick" style="background:var(--deep);color:#f0c95f">${I('check')}</div><div class="center"><h3 class="h3">${ORDER.qty} pumps ready to ship</h3><p class="sub">${days(clockDate(),ORDER.due)} days before ${dmy(ORDER.due)} · handed to dispatch</p></div><div class="card">${kv('Made',ORDER.qty+' of '+ORDER.qty)}${kv('Scrap','0')}${kv('Final test','4 of 4 checks · all pumps')}${kv('Idempotency key','<span class="mono">'+hshort(hx('WO-2627-0918'))+'</span>')}</div>`;
+    if(st===3)body=`<div class="tick" style="background:var(--deep);color:#f0c95f">${I('check')}</div><div class="center"><h3 class="h3">${ORDER.qty} pumps ready to ship</h3><p class="sub">${days(clockDate(),ORDER.due)} days before ${dmy(ORDER.due)} · handed to dispatch</p></div><div class="card">${kv('Made',ORDER.qty+' of '+ORDER.qty)}${kv('Scrap','0')}${kv('Final test','4 of 4 checks · all pumps')}</div>`;
     return hd+stepper+body}});
 def('m.mat',{role:'floor',title:'Materials',kn:'issued to WO-2627-0918',route:'/jobs/:id/materials',nav:'m.mat',purpose:'What left the store for this job and what is left on the shelf. Stock goes down as parts are issued, never by a manual adjustment.',
   reads:['Stock ledger entries for the WO'],api:[['Ledger','GET /api/v1/inventory/stock?wo={id}']],states:['nothing issued','issued'],rules:['Only the ledger moves stock'],
@@ -1803,7 +1812,7 @@ def('a.dispatch',{role:'acct',title:'Dispatch & invoice',route:'/sales/orders/SO
       <div class="scx"><table class="tbl"><tbody><tr><td>${ORDER.qty} × ${esc(ORDER.item)} <span class="s">HSN ${ORDER.hsn}</span></td><td class="r num">${inr(TAXABLE)}</td></tr><tr><td class="s">IGST 18% · place of supply Andhra Pradesh</td><td class="r num">${inr(IGST)}</td></tr><tr class="tot"><td>Total</td><td class="r num">${inr(INVOICE_TOTAL)}</td></tr>
       <tr><td class="s">IRN</td><td class="r mono" style="font-size:11px">${d&&d.irn?d.irn+'…':'—'}</td></tr><tr><td class="s">E-way bill</td><td class="r mono" style="font-size:11px">${d&&d.ewb?d.ewb:'—'}</td></tr></tbody></table></div></div>
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0"><div class="card"><div class="row sb"><h4>One transaction</h4><span class="sub">${d?(d.running?'Writing…':'All four written together'):'Nothing written yet'}</span></div><div class="checks">${chks.map(c=>`<div class="chk ${d&&!d.running?'on':''}" data-chk><span class="c">${I('check')}</span>${esc(c[0])}<small>${esc(c[1])}</small></div>`).join('')}</div>${!d?`<button class="btn pri block" data-a="dispatch">${I('truck')}Dispatch and invoice</button>`:''}</div>
-    ${d&&!d.running?`<div class="card"><h4>IRN and e-way bill</h4><p class="sub">Required: turnover above ₹5 crore, and goods over ₹50,000 crossing a state</p>${d.irn?`<div class="row" style="flex-wrap:wrap;gap:6px">${tp('IRN attached','ok')}${tp('E-way bill valid 2 days · '+CUSTOMER.km+' km','ok')}${tp('Simulated','warn')}</div>`:`<p class="sub">Without an IRN the invoice isn’t valid and the customer loses their input credit.</p><button class="btn pri" data-a="irn">${I('shield')}Get IRN and e-way bill</button>`}<p class="note">Simulated in this demo. The product files through a licensed GST provider, which isn’t chosen yet.</p></div>`:''}</div></div>`}});
+    ${d&&!d.running?`<div class="card"><h4>IRN and e-way bill</h4>${d.irn?`<div class="row" style="flex-wrap:wrap;gap:6px">${tp('IRN attached','ok')}${tp('E-way bill valid 2 days · '+CUSTOMER.km+' km','ok')}${tp('Simulated','warn')}</div>`:`<p class="sub">Without an IRN the invoice isn’t valid and the customer loses their input credit.</p><button class="btn pri" data-a="irn">${I('shield')}Get IRN and e-way bill</button>`}</div>`:''}</div></div>`}});
 def('a.books',{role:'acct',title:'Ledger',route:'/accounts/vouchers?ref=SO-2627-0291',purpose:'What this one order left in the books. Every line was written by an event, a dispatch or a receipt, never typed as a journal, so it reconciles with the floor. Then the order closes and the last station is stamped.',
   reads:['Vouchers linked to the order','Payables and the MSME clock'],api:[['Vouchers','GET /api/v1/accounts/vouchers?ref={orderNo}'],['Trial balance','GET /api/v1/accounts/trial-balance'],['Reverse (never edit)','POST /api/v1/accounts/vouchers/{id}/reverse']],
   states:['nothing posted','posted','payables being built','closed'],rules:['A mistake is reversed by a new voucher, never edited','MSME supplier: pay within 45 days of acceptance or lose the deduction (43B(h))','Supplier invoices and payables are being built'],
@@ -1824,16 +1833,12 @@ def('a.audit',{role:'acct',title:'Audit trail',route:'/admin/audit',purpose:'Eve
   render(){const ev=[...S.log].reverse();let prev='0'.repeat(64);
     return `${head('Audit trail',`${ev.length} entr${ev.length===1?'y':'ies'} on ${ORDER.no}, oldest first. Each links to the hash of the one before.`,ev.length?`<button class="btn ${S.verified?'gh':'pri'} sm" data-a="verify">${I('shield')}${S.verified?'Verified · run again':'Verify chain'}</button>`:'')}
     ${ev.length?`<div class="card"><div class="xp-chain">${ev.map((l,i)=>{const h=hx(prev+l.what+l.at);const row=`<div class="blk" style="animation-delay:${Math.min(i,12)*.04}s"><span class="bi">${i+1}</span><div class="grow"><b>${esc(l.what)}</b><span>${esc(l.who)} · ${stamp(l.at)}</span><code>prev ${hshort(prev)} → ${hshort(h)}</code></div></div>`;prev=h;return row}).join('')}</div></div><p class="note">Append-only. The day’s root hash is anchored at 23:59 IST.${S.verified?' Last verification: intact.':''}</p>`:empty('lock','Nothing recorded yet','Every action on the order writes an entry here.')}`}});
-def('a.real',{role:'acct',title:'What is real',route:'/about/demo',purpose:'An honest map of the demo: what runs in the product today, what is simulated here, what is being built and what v4 proposes. So nobody is surprised later.',
-  reads:[],api:[],states:['running','simulated','being built','proposed'],rules:['Synthetic figures are labelled and never claimed as savings','Supplier messages default to preview','No offline business writes; responsive web, no native binary'],
-  render(){const col=(t,tone,items)=>`<div><div>${tp(t,tone)}</div><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`;
-    return `${head('What is real in this demo','So nobody is surprised later.')}
-    <div class="legend">${col('Running','ok',['Order, credit check, dispatch, GST invoice and ledger in one transaction','Material check, supplier request, no-login quote, ranking, award to PO','Approval limits, goods receipt, inspection, work orders, audit trail','Supplier on-time and reject rates counted from receipts and inspections'])}
-    ${col('Simulated here','warn',['Message delivery: composed, not sent','Two of the three supplier replies','IRN and e-way bill: no GST provider connected','The calendar skips days so a nine-day delivery takes one click'])}
-    ${col('Being built','info',['Supplier invoices and payables','The 45-day MSME payment clock','Cost of goods posted to the books'])}
-    ${col('Proposed in v4','gold',['Track record as 25% of the ranking','Request written from item master, BOM and quality plan','Live capacity from suppliers who run XELOR','Kaveri’s own record and spare-capacity offers'])}</div>
-    <div class="card"><h4>How the ranking is built</h4><p class="sub">Delivery 40% (closest to the soonest promise), landed cost 35% (closest to the best price), track record 25% (70% on-time share, 30% rejects). An answer after the need date scores nothing. The ranking explains; a person decides.</p></div>
-    <p class="note rule">Every name, company and number is an example written for this prototype.</p>`}});
+
+/* Example-view map: [steps needed for the real view, steps to run for the example, optional extra setup] */
+const PV={'p.plan':[1,2],'p.net':[2,4],'p.po':[5,5],'p.log':[1,13],
+  's.chat':[3,6],'s.quote':[3,3],'w.inbox':[5,5],'w.po':[5,5],'w.today':[1,13],
+  't.gate':[6,7],'t.qc':[7,7],'m.wo':[8,9,()=>{A.output();S.tests=[true,true,false,false]}],'m.mat':[8,9],
+  'a.dispatch':[10,12],'a.books':[12,13],'a.audit':[1,13]};
 /* ---------- boot ---------- */
 try{const h=location.hash.replace('#','');if(ROLES[h]){ui.role=h;ui.dev=ROLES[h].dev}}catch(_){}
 paintTheme();
