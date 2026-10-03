@@ -1039,6 +1039,24 @@ details.json summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weigh
 details.json pre{margin:0;padding:0 12px 12px;font-family:var(--mono);font-size:11px;color:var(--green-ink);white-space:pre-wrap;word-break:break-all}
 .portal .ptop .rt{gap:6px}
 .r-acct .ptop .badge:not(.g){color:#f0c95f;border-color:rgba(240,201,95,.45);background:rgba(240,201,95,.08)}
+/* ===== soft pass: v6 additions in the v5 visual language ===== */
+.agcard{background:var(--surface);border:1px solid var(--line);box-shadow:none;animation:none;padding:12px 14px}
+.agmark{width:32px;height:32px;border-radius:10px;font-size:16px;background:var(--acc-soft);color:var(--acc-ink);box-shadow:none}
+.agmark::after{display:none}
+.agopen{background:transparent;color:var(--acc-ink);border:1.5px solid var(--line-2)}
+.agopen:hover{border-color:var(--acc)}
+.ag{background:var(--surface-2);border-color:transparent}
+.ag:hover{transform:none;border-color:var(--line-2)}
+.pass{background:var(--surface);color:var(--body);border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));box-shadow:none;animation:cardin .45s var(--spring) both}
+.pass::before{display:none}
+.pass-h small{color:var(--gold-ink)} .pass-h h4{color:var(--ink)} .pass-h span{color:var(--muted)}
+.seal{width:40px;height:40px;font-size:19px;background:var(--gold-soft);color:var(--gold-ink);box-shadow:none}
+.qr{fill:var(--ink);background:var(--surface-2);opacity:.85}
+.pass-stats > div{background:var(--surface-2);border-color:var(--line)}
+.pass-stats b{color:var(--ink)} .pass-stats small{color:var(--muted)}
+.pass-cap{color:var(--muted)} .pass-cap b{color:var(--ink)}
+.pass-f{color:var(--muted);border-top-color:var(--line)}
+.vnb{box-shadow:none}
 </style></head><body>
 <header class="top">
   <div class="top-in">
@@ -1991,7 +2009,7 @@ def('p.agent',{role:'pur',title:'XELOR Agent',route:'/agent',purpose:'What Priya
 /* ---------- home: the agent leads ---------- */
 SCREENS['p.home'].render=function(){const hr=new Date(S.clock).getHours();const hi=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';const left=days(clockDate(),ORDER.due);const asks=agentAsks();const P=passportStats();const o=onTimePct('ganesh');
   return `${head(hi+', Priya.',asks?`Your agent has been working. ${asks} thing${asks===1?'':'s'} need${asks===1?'s':''} you.`:'Your agent has nothing waiting on you.')}
-  ${agentCard(4)}
+  ${agentCard(3)}
   ${routeCard()}
   <div class="kpis"><div class="kpi hl"><b>${cu(INVOICE_TOTAL,'inr')}</b><span>order value, incl. IGST</span></div><div class="kpi"><b>${dmy(ORDER.due)}</b><span>due to ship · ${left>0?left+' days away':'today'}</span></div><div class="kpi"><b>${Math.round(o)}%</b><span>Sri Ganesh on time · earned at the gate</span></div><div class="kpi"><b>${P.pct}%</b><span>Kaveri’s passport · on time to customers</span></div></div>`};
 
