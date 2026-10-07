@@ -1,0 +1,528 @@
+<title>XELOR</title>
+<meta name="description" content="XELOR is the trusted supplier network for MSMEs and small industries. Every delivery builds a track record.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,800&family=JetBrains+Mono:wght@500;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one long product page. Dark "network" band in the middle carries the core idea; product screens sit in browser and phone frames. */
+:root{
+ --bg:#faf6f2;--surface:#ffffff;--surface-2:#f4ece6;--line:#e8ddd5;--ink:#22161b;--body:#45373d;--muted:#76666c;
+ --wine:#7a2945;--wine-2:#9c3a5d;--wine-soft:#f5e7ec;--gold:#c89a2e;--gold-ink:#8a6312;--gold-soft:#f7edd6;
+ --deep:#24101a;--deep-2:#341826;--cream:#f6ecdc;--on-deep:#e2ccd5;--ok:#1b6a48;--ok-soft:#e3f0e9;--bad:#b3402f;--bad-soft:#fbe8e3;
+ --shadow:0 30px 60px -30px rgba(60,20,35,.35);
+ --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+ --sans:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+ --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#140a0f;--surface:#1f1118;--surface-2:#2a1720;--line:#3a2430;--ink:#f6ecdc;--body:#dbc8cf;--muted:#ab97a0;
+ --wine:#d27a99;--wine-2:#e295b0;--wine-soft:#3a1d2a;--gold:#e2b54a;--gold-ink:#e9c56c;--gold-soft:#3a2c14;
+ --deep:#0d0508;--deep-2:#1d0d15;--cream:#f6ecdc;--on-deep:#d9c3cc;--ok:#5fc095;--ok-soft:#173528;--bad:#f08b78;--bad-soft:#3d1c17;
+ --shadow:0 30px 60px -30px rgba(0,0,0,.7);color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#140a0f;--surface:#1f1118;--surface-2:#2a1720;--line:#3a2430;--ink:#f6ecdc;--body:#dbc8cf;--muted:#ab97a0;
+ --wine:#d27a99;--wine-2:#e295b0;--wine-soft:#3a1d2a;--gold:#e2b54a;--gold-ink:#e9c56c;--gold-soft:#3a2c14;
+ --deep:#0d0508;--deep-2:#1d0d15;--cream:#f6ecdc;--on-deep:#d9c3cc;--ok:#5fc095;--ok-soft:#173528;--bad:#f08b78;--bad-soft:#3d1c17;
+ --shadow:0 30px 60px -30px rgba(0,0,0,.7);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);font:400 17px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.025em}
+p{margin:0}
+.wrap{width:min(1180px,100%);margin:0 auto;padding-inline:24px}
+.eyebrow{font:700 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--wine);display:inline-flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--gold)}
+.sec{padding-block:96px}
+.sec-head{display:grid;gap:14px;max-width:760px;margin-bottom:44px}
+.sec-head h2{font-size:clamp(32px,4.4vw,52px);line-height:1.04;font-weight:800}
+.sec-head p{font-size:19px;color:var(--muted);max-width:640px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;font:700 16px var(--sans);text-decoration:none;border:1.5px solid transparent;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:focus-visible,.tab:focus-visible,.step:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.btn-pri{background:var(--wine);color:#fff;box-shadow:0 14px 30px -14px var(--wine)}
+.btn-pri:hover{transform:translateY(-2px)}
+.btn-ghost{border-color:var(--line);color:var(--ink);background:var(--surface)}
+.btn-ghost:hover{border-color:var(--wine)}
+.btn svg{width:18px;height:18px}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo svg{width:34px;height:34px}
+.logo b{font:800 22px var(--display);letter-spacing:-.03em;color:var(--ink)}
+.nav-links{display:flex;gap:22px;margin-left:auto}
+.nav-links a{text-decoration:none;font-weight:600;font-size:15px;color:var(--muted)}
+.nav-links a:hover{color:var(--ink)}
+.nav .btn{padding:10px 18px;font-size:15px}
+@media (max-width:900px){.nav-links{display:none}.nav .btn{margin-left:auto}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding-block:64px 80px}
+#net{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+.hero h1{font-size:clamp(42px,6vw,76px);line-height:.98;font-weight:800;letter-spacing:-.04em}
+.hero h1 em{font-style:normal;color:var(--wine);position:relative}
+.hero h1 em::after{content:none;position:absolute;left:0;right:0;bottom:.06em;height:.12em;background:var(--gold);border-radius:4px;opacity:.5;transform-origin:0 50%;animation:ul 1.1s .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ul{from{transform:scaleX(0)}}
+.hero .lede{font-size:21px;line-height:1.5;color:var(--body);margin-top:22px;max-width:560px}
+.hero .lede b{color:var(--ink)}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.for{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;align-items:center}
+.for b{font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-right:4px}
+.for span{font-weight:600;font-size:14px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.stage{position:relative;min-height:470px}
+.browser{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.browser .bar{display:none;height:34px;display:flex;align-items:center;gap:7px;padding:0 12px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.browser .bar i{width:10px;height:10px;border-radius:50%;background:#e2675f}.browser .bar i:nth-child(2){background:#e7b14a}.browser .bar i:nth-child(3){background:#5fae5a}
+.browser .bar span{margin:0 auto;font:500 11.5px var(--mono);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 14px;max-width:60%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.hero .browser{position:absolute;left:0;top:20px;width:92%;transform:perspective(1600px) rotateY(-7deg) rotateX(2deg);transform-origin:0 50%;animation:rise 1s .1s cubic-bezier(.2,.8,.2,1) both}
+.phone{background:#120a0e;border-radius:34px;padding:9px;box-shadow:0 40px 70px -30px rgba(30,8,16,.6),inset 0 0 0 1.5px #3b2a31}
+.phone img{border-radius:26px}
+.hero .phone{position:absolute;right:0;bottom:-6px;width:31%;animation:rise 1s .35s cubic-bezier(.2,.8,.2,1) both,float 7s 1.5s ease-in-out infinite}
+.rec{position:absolute;left:-14px;bottom:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);width:min(300px,62%);animation:rise 1s .55s cubic-bezier(.2,.8,.2,1) both,float 8s 2s ease-in-out infinite reverse}
+.rec .t{font:700 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-ink)}
+.rec b.n{display:block;font:650 17px var(--display);color:var(--ink);margin-top:4px}
+.rec .k{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.rec .k div{background:var(--surface-2);border-radius:10px;padding:7px 4px;text-align:center}
+.rec .k strong{display:block;font:800 19px var(--display);color:var(--wine);font-variant-numeric:tabular-nums}
+.rec .k small{font-size:11.5px;color:var(--muted)}
+.rec .ok{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--ok)}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}}
+@keyframes float{50%{translate:0 -10px}}
+@media (max-width:960px){.hero .wrap{grid-template-columns:1fr}.stage{min-height:0;aspect-ratio:1.25/1}}
+
+/* marquee */
+.ticker{border-block:1px solid var(--line);background:var(--surface);overflow:hidden}
+.ticker .track{display:flex;gap:44px;padding-block:16px;width:max-content;animation:tick 40s linear infinite}
+.ticker span{font:650 18px var(--display);color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:44px}
+.ticker span::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* problem */
+.prob-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:start}
+.cards3{display:grid;gap:14px}
+.pcard{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px}
+.pcard i{flex:none;width:46px;height:46px;border-radius:14px;background:var(--bad-soft);display:grid;place-items:center}
+.pcard i svg{width:24px;height:24px;fill:none;stroke:var(--bad);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pcard h3{font-size:21px;font-weight:650}
+.pcard p{color:var(--muted);margin-top:4px;font-size:16px}
+.chat{background:var(--surface-2);border:1px solid var(--line);border-radius:22px;padding:18px;display:grid;gap:9px;position:relative}
+.chat .hdr{display:flex;align-items:center;gap:10px;padding:4px 4px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.chat .hdr i{width:34px;height:34px;border-radius:50%;background:var(--ok);opacity:.8}
+.chat .hdr b{color:var(--ink);font-size:15px}.chat .hdr small{display:block;color:var(--muted);font-size:12.5px}
+.msg{max-width:82%;padding:9px 13px 18px;border-radius:14px;background:var(--surface);font-size:15px;line-height:1.35;color:var(--ink);position:relative;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+.msg small{position:absolute;right:10px;bottom:3px;font-size:10.5px;color:var(--muted)}
+.msg.me{margin-left:auto;background:var(--ok-soft)}
+.msg.sys{margin:2px auto;max-width:none;width:max-content;padding:4px 12px;font-size:12.5px;background:var(--gold-soft);color:var(--gold-ink)}
+.chat .stamp{position:absolute;right:16px;top:58%;transform:rotate(-8deg);border:3px solid var(--bad);color:var(--bad);font:800 18px var(--display);letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:10px;background:color-mix(in srgb,var(--surface) 70%,transparent)}
+@media (max-width:900px){.prob-grid{grid-template-columns:1fr}}
+
+/* network band */
+.band{background:radial-gradient(60% 80% at 100% 0%,rgba(226,181,74,.16),transparent 60%),radial-gradient(60% 80% at 0% 100%,rgba(156,58,93,.35),transparent 60%),var(--deep);color:var(--on-deep)}
+.band .eyebrow{color:#e2b54a}
+.band .sec-head h2{color:var(--cream)}
+.band .sec-head h2 em{font-style:normal;color:#e2b54a}
+.band .sec-head p{color:var(--on-deep)}
+.chain{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.chain .rail{position:absolute;left:8%;right:8%;top:34px;height:2px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden}
+.chain .rail::after{content:"";position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,#e2b54a,transparent);animation:run 3.6s linear infinite}
+@keyframes run{to{left:100%}}
+.node{position:relative;text-align:center;padding:0 6px}
+.node .dot{width:68px;height:68px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:var(--deep-2);border:1.5px solid rgba(226,181,74,.55);box-shadow:0 0 0 8px rgba(226,181,74,.06);position:relative;z-index:1;animation:pulse 3.6s ease-in-out infinite}
+.node:nth-child(3) .dot{animation-delay:.6s}.node:nth-child(4) .dot{animation-delay:1.2s}.node:nth-child(5) .dot{animation-delay:1.8s}.node:nth-child(6) .dot{animation-delay:2.4s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 8px rgba(226,181,74,.06)}15%{box-shadow:0 0 0 14px rgba(226,181,74,.18)}}
+.node .dot svg{width:30px;height:30px;fill:none;stroke:#f6ecdc;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.node b{display:block;margin-top:16px;font:650 19px/1.2 var(--display);color:var(--cream)}
+.node p{font-size:15px;color:var(--on-deep);margin-top:6px;line-height:1.45}
+.node.key .dot{background:#e2b54a;border-color:#e2b54a}.node.key .dot svg{stroke:#24101a}
+.netrow{display:grid;grid-template-columns:1fr 1.1fr;gap:28px;margin-top:56px;align-items:stretch}
+.recbig{background:var(--cream);color:#2a1e23;border-radius:22px;padding:26px}
+.recbig .t{font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#8a6312}
+.recbig h3{color:#22161b;font-size:26px;margin-top:6px}
+.recbig .sub{color:#76666c;font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.stats div{background:#fff;border-radius:14px;padding:14px 8px;text-align:center}
+.stats strong{display:block;font:800 34px/1 var(--display);color:#7a2945;font-variant-numeric:tabular-nums}
+.stats small{display:block;margin-top:6px;color:#76666c;font-size:13px}
+.recbig .note{margin-top:14px;font-size:14px;color:#5b4a50;display:flex;gap:8px;align-items:center}
+.recbig .note svg{width:16px;height:16px;flex:none;stroke:#1b6a48;fill:none;stroke-width:2.4}
+.grow{border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:26px;display:grid;gap:18px;background:rgba(255,255,255,.03)}
+.grow h3{color:var(--cream);font-size:26px}
+.grow p{color:var(--on-deep)}
+.fly{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fly span{background:#e2b54a;color:#24101a;font-weight:700;border-radius:999px;padding:8px 16px;font-size:15px}
+.fly em{font-style:normal;color:#e2b54a;font-weight:800}
+.mini-net{width:100%;height:120px}
+@media (max-width:900px){.chain{grid-template-columns:1fr;gap:22px}.chain .rail{display:none}.node{display:grid;grid-template-columns:68px 1fr;gap:16px;text-align:left;align-items:center}.node b{margin-top:0}.netrow{grid-template-columns:1fr}}
+
+/* products */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.tab{appearance:none;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:700 15px var(--sans);padding:11px 18px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:all .2s}
+.tab[aria-selected="true"]{background:var(--wine);border-color:var(--wine);color:#fff}
+.tab .fl{font:700 10px var(--mono);letter-spacing:.1em;background:var(--gold);color:#24101a;border-radius:999px;padding:2px 7px}
+.panel{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.9fr);gap:40px;align-items:center}
+.panel .browser{transform:none}
+.panel .shot{position:relative}
+.panel .shot .phone{position:absolute;right:-10px;bottom:-24px;width:30%}
+.panel h3{font-size:clamp(28px,3vw,38px);font-weight:800}
+.panel .tag{font:700 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink)}
+.panel p.lead{margin-top:12px;font-size:18px;color:var(--body)}
+.ticks{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:12px}
+.ticks li{display:flex;gap:12px;align-items:flex-start;font-size:16.5px;line-height:1.45}
+.ticks li::before{content:"";flex:none;width:22px;height:22px;margin-top:1px;border-radius:50%;background:var(--ok-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m7 12.5 3.2 3.2L17 9' fill='none' stroke='%231b6a48' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.panel[hidden]{display:none}
+.panel:not([hidden]) .browser{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+@media (max-width:900px){.panel{grid-template-columns:1fr}.panel .shot .phone{right:0}}
+
+/* how */
+.how{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:44px;align-items:center}
+.steps{display:grid;gap:12px}
+.step{appearance:none;text-align:left;width:100%;display:grid;grid-template-columns:44px 1fr;gap:16px;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:18px 20px;cursor:pointer;font:inherit;color:inherit;transition:border-color .2s,box-shadow .2s,transform .2s}
+.step .num{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--wine-soft);color:var(--wine);font:700 15px var(--mono)}
+.step h3{font-size:21px;font-weight:650}
+.step p{color:var(--muted);font-size:15.5px;margin-top:3px}
+.step[aria-pressed="true"]{border-color:var(--wine);box-shadow:0 18px 40px -26px var(--wine);transform:translateX(4px)}
+.step[aria-pressed="true"] .num{background:var(--wine);color:#fff}
+.howshot{position:relative;display:grid;place-items:center;min-height:420px;background:radial-gradient(70% 70% at 50% 40%,var(--wine-soft),transparent 70%);border-radius:28px}
+.howshot figure{margin:0;width:100%}
+.howshot figure[hidden]{display:none}
+.howshot figure:not([hidden]){animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.howshot .phone{width:min(250px,60%);margin:0 auto}
+.howshot figcaption{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
+@media (max-width:900px){.how{grid-template-columns:1fr}.howshot{min-height:0;padding-block:24px}}
+
+/* gallery */
+.gallery{display:grid;grid-auto-flow:column;grid-auto-columns:min(460px,82%);gap:20px;overflow-x:auto;padding-bottom:16px;scroll-snap-type:x mandatory}
+.gallery figure{margin:0;scroll-snap-align:start}
+.gallery figcaption{margin-top:12px}
+.gallery figcaption b{display:block;color:var(--ink);font:650 18px var(--display)}
+.gallery figcaption span{color:var(--muted);font-size:15px}
+
+/* compare */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:640px;font-size:16px}
+th,td{padding:16px 20px;text-align:left;border-bottom:1px solid var(--line)}
+th{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+th.us,td.us{background:var(--wine-soft)}
+th.us{color:var(--wine)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;color:var(--ink)}
+.yes,.no{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.yes{color:var(--ok)}.no{color:var(--bad)}
+.yes::before,.no::before{font-weight:800}
+.yes::before{content:"✓"}.no::before{content:"✕"}
+
+/* pricing */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.price{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:10px}
+.price .t{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.price strong{font:800 40px/1 var(--display);color:var(--ink);letter-spacing:-.03em}
+.price strong small{font:600 15px var(--sans);color:var(--muted);letter-spacing:0}
+.price p{color:var(--muted);font-size:15.5px}
+.price.hl{background:var(--deep);border-color:var(--deep);color:var(--on-deep)}
+.price.hl .t{color:#e2b54a}.price.hl strong{color:var(--cream)}.price.hl p,.price.hl strong small{color:var(--on-deep)}
+.price ul{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:8px;font-size:15px}
+.price li{display:flex;gap:8px}.price li::before{content:"✓";color:var(--ok);font-weight:800}
+.price.hl li::before{color:#e2b54a}
+.small-note{margin-top:16px;color:var(--muted);font-size:14px}
+@media (max-width:900px){.prices{grid-template-columns:1fr}}
+
+/* team */
+.team{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.person{display:flex;gap:20px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px}
+.person img{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--gold-soft)}
+.person h3{font-size:24px}
+.person .role{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--wine)}
+.person p{color:var(--muted);font-size:15.5px;margin-top:6px}
+.why-us{margin-top:20px;background:var(--gold-soft);border-radius:22px;padding:24px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why-us b{display:block;font:800 30px var(--display);color:var(--ink);letter-spacing:-.02em}
+.why-us span{color:var(--body);font-size:15.5px}
+@media (max-width:800px){.team,.why-us{grid-template-columns:1fr}}
+
+/* cta + footer */
+.cta{background:radial-gradient(70% 120% at 50% 0%,rgba(226,181,74,.2),transparent 60%),var(--deep);border-radius:32px;padding:64px 32px;text-align:center;color:var(--on-deep);position:relative;overflow:hidden}
+.cta h2{color:var(--cream);font-size:clamp(32px,4.6vw,56px);font-weight:800;line-height:1.04}
+.cta h2 em{font-style:normal;color:#e2b54a}
+.cta p{margin:16px auto 0;max-width:560px;font-size:18px}
+.cta .ctas{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:28px}
+.cta .btn-ghost{background:transparent;color:var(--cream);border-color:rgba(255,255,255,.3)}
+footer{padding-block:40px 56px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+footer .logo b{font-size:18px}
+footer .logo svg{width:26px;height:26px}
+
+/* reveal: elements are visible at rest; motion only adds a small lift */
+@media (prefers-reduced-motion:no-preference){.rv{transition:transform .8s cubic-bezier(.2,.8,.2,1)}.rv.pre{transform:translateY(26px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<header class="nav">
+ <div class="wrap">
+  <a class="logo" href="#top" aria-label="XELOR home">
+   <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a3456a"/><stop offset=".55" stop-color="#7a2945"/><stop offset="1" stop-color="#4a1530"/></linearGradient><mask id="lm1" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><path d="M14 36 24 46 50 16" fill="none" stroke="#000" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><rect width="64" height="64" rx="16" fill="url(#lg1)"/><path d="M19 17 45 47" stroke="#f6ecdc" stroke-width="7" stroke-linecap="round" fill="none" mask="url(#lm1)"/><path d="M14 36 24 46 50 16" fill="none" stroke="#e2b54a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   <b>XELOR</b>
+  </a>
+  <nav class="nav-links" aria-label="Sections">
+   <a href="#problem">Problem</a><a href="#network">The network</a><a href="#products">Products</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#team">Team</a>
+  </nav>
+  <a class="btn btn-pri" href="#products">See the product</a>
+ </div>
+</header>
+
+<main id="top">
+ <section class="hero">
+  <canvas id="net" aria-hidden="true"></canvas>
+  <div class="wrap">
+   <div>
+    <span class="eyebrow">Trusted supplier network · India</span>
+    <h1 style="margin-top:18px">The trusted network behind <em>what India manufactures.</em></h1>
+    <p class="lede">XELOR helps <b>MSMEs and small industries</b> find suppliers and buyers they can trust, based on how well each business actually delivers.</p>
+    <div class="ctas">
+     <a class="btn btn-pri" href="#network">How it works <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+     <a class="btn btn-ghost" href="#products">Explore the products</a>
+    </div>
+    <div class="for"><b>Built for</b><span>Small factories</span><span>Job shops</span><span>Suppliers</span><span>Workshops</span></div>
+   </div>
+   <div class="stage" aria-label="XELOR product screens">
+    <div class="browser"><div class="bar"><i></i><i></i><i></i><span>market.xelor.in</span></div><img src="{{mkt-home}}" alt="XELOR Market home screen showing sellers with their delivery records" width="1400" height="984"></div>
+    <div class="phone"><img src="{{ph-gram-live}}" alt="Xelogram post on a supplier's phone" width="420" height="887"></div>
+    <div class="rec">
+     <span class="t">Track record</span>
+     <b class="n">Sri Ganesh Castings</b>
+     <div class="k"><div><strong data-count="96" data-suffix="%">96%</strong><small>on time</small></div><div><strong data-count="0.3" data-dec="1" data-suffix="%">0.3%</strong><small>rejected</small></div><div><strong data-count="19">19</strong><small>deliveries</small></div></div>
+     <div class="ok"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 12.5 4 4L18 8"/></svg>Counted at the factory gate</div>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <div class="ticker" aria-hidden="true"><div class="track">
+  <span>Foundries</span><span>Machine shops</span><span>Coating units</span><span>Assemblers</span><span>Job shops</span><span>Fabricators</span><span>Pump makers</span><span>Workshops</span><span>Small factories</span>
+  <span>Foundries</span><span>Machine shops</span><span>Coating units</span><span>Assemblers</span><span>Job shops</span><span>Fabricators</span><span>Pump makers</span><span>Workshops</span><span>Small factories</span>
+ </div></div>
+
+ <section class="sec" id="problem">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">The problem</span><h2>Finding a good supplier is still guesswork.</h2><p>Behind almost every product made in India is a chain of small factories. They still find each other the old way.</p></div>
+   <div class="prob-grid">
+    <div class="cards3">
+     <div class="pcard rv"><i><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></i><div><h3>WhatsApp, calls and word of mouth</h3><p>Owners ask around, chase replies and make long site visits just to trust one new supplier.</p></div></div>
+     <div class="pcard rv"><i><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i><div><h3>Listing sites cost too much</h3><p>A paid listing is ₹32,000 or more a year. Most small businesses can’t afford it.</p></div></div>
+     <div class="pcard rv"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6M12 17h.01"/></svg></i><div><h3>No way to know who’s reliable</h3><p>So owners take risks, or pay more just to be safe. Good suppliers stay invisible.</p></div></div>
+     <div class="pcard rv"><i><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg></i><div><h3>Paperwork everywhere</h3><p>Orders in WhatsApp, stock in Excel, accounts in Tally, quality on paper. The same details get typed again and again.</p></div></div>
+    </div>
+    <div class="chat rv" aria-label="Example of a supplier search on WhatsApp">
+     <div class="hdr"><i></i><div><b>Casting suppliers</b><small>Ramesh, Suresh, Anil +4</small></div></div>
+     <div class="msg me">Need 60 pump body castings, GG25. Rate?<small>10:02</small></div>
+     <div class="msg">Who is this?<small>11:40</small></div>
+     <div class="msg me">Got your number from Suresh.<small>11:41</small></div>
+     <div class="msg">Send drawing.<small>14:15</small></div>
+     <div class="msg">Will check and tell.<small>Tue</small></div>
+     <div class="msg sys">Day 6</div>
+     <div class="msg me">Any update on the rate?? Please confirm by Friday 🙏<small>Mon</small></div>
+     <div class="stamp">No reply</div>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec band" id="network">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">Our core · the supplier network</span><h2>Every delivery builds a <em>track record.</em></h2><p>XELOR notes how each delivery actually went. Over time, every supplier earns a record that other factories can trust.</p></div>
+   <div class="chain">
+    <div class="rail" aria-hidden="true"></div>
+    <div class="node rv"><div class="dot"><svg viewBox="0 0 24 24"><path d="M3 21V11l6-4v4l6-4v4h6v10z"/><path d="M7 16h2M12 16h2M17 16h1"/></svg></div><div><b>A factory orders</b><p>From a supplier, through XELOR.</p></div></div>
+    <div class="node rv"><div class="dot"><svg viewBox="0 0 24 24"><path d="M2 7h11v9H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></div><div><b>The supplier delivers</b><p>The goods reach the factory gate.</p></div></div>
+    <div class="node rv"><div class="dot"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></div><div><b>The delivery is checked</b><p>On time? Right amount? Good quality?</p></div></div>
+    <div class="node key rv"><div class="dot"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></div><div><b>A record is earned</b><p>Counted, never typed, so it can’t be faked.</p></div></div>
+    <div class="node rv"><div class="dot"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11l2 2 4-4"/></svg></div><div><b>Good work gets noticed</b><p>Reliable suppliers win more orders.</p></div></div>
+   </div>
+   <div class="netrow">
+    <div class="recbig rv">
+     <span class="t">Example track record</span>
+     <h3>Sri Ganesh Castings</h3>
+     <span class="sub">Foundry · Hosur · supplying since 2024</span>
+     <div class="stats"><div><strong data-count="96" data-suffix="%">96%</strong><small>on time</small></div><div><strong data-count="0.3" data-dec="1" data-suffix="%">0.3%</strong><small>parts rejected</small></div><div><strong data-count="19">19</strong><small>deliveries</small></div></div>
+     <div class="note"><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8"/></svg>Built from real receipts and quality checks. Demonstration data.</div>
+    </div>
+    <div class="grow rv">
+     <h3>The network grows with every order.</h3>
+     <p>When a factory asks a new supplier for a price, that supplier joins XELOR for free and brings its own customers. Every order adds more records, and more records mean more trust.</p>
+     <canvas class="mini-net" id="mininet" aria-hidden="true"></canvas>
+     <div class="fly"><span>More orders</span><em>→</em><span>More records</span><em>→</em><span>More trust</span></div>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" id="products">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">What we offer</span><h2>One trusted record. Four ways to use it.</h2><p>Real screens from the working product, with demonstration data.</p></div>
+   <div class="tabs" role="tablist" aria-label="XELOR products">
+    <button class="tab" role="tab" id="t-mkt" aria-controls="p-mkt" aria-selected="true">XELOR Market <span class="fl">FLAGSHIP</span></button>
+    <button class="tab" role="tab" id="t-help" aria-controls="p-help" aria-selected="false" tabindex="-1">Find help</button>
+    <button class="tab" role="tab" id="t-gram" aria-controls="p-gram" aria-selected="false" tabindex="-1">Xelogram</button>
+    <button class="tab" role="tab" id="t-erp" aria-controls="p-erp" aria-selected="false" tabindex="-1">Smart factory software</button>
+   </div>
+   <div class="panel" role="tabpanel" id="p-mkt" aria-labelledby="t-mkt">
+    <div class="shot"><div class="browser"><div class="bar"><i></i><i></i><i></i><span>market.xelor.in</span></div><img src="{{mkt-home}}" alt="XELOR Market" width="1400" height="984"></div></div>
+    <div><span class="tag">Find &amp; connect</span><h3>XELOR Market</h3><p class="lead">A marketplace built for MSMEs. Find suppliers and buyers, and see each seller’s track record before you call.</p>
+     <ul class="ticks"><li>Every seller shows real numbers: on time, rejects, deliveries</li><li>A buyer’s request goes to five matched sellers at most, never resold</li><li>Free to start. Listing from ₹249 a month</li><li>XELOR never handles payments. Businesses deal directly</li></ul></div>
+   </div>
+   <div class="panel" role="tabpanel" id="p-help" aria-labelledby="t-help" hidden>
+    <div class="shot"><div class="browser"><div class="bar"><i></i><i></i><i></i><span>market.xelor.in/help</span></div><img src="{{mkt-help}}" alt="Find help screen" width="1400" height="984"></div></div>
+    <div><span class="tag">Local services</span><h3>Find help</h3><p class="lead">Everything a factory needs, in one place, with people you can trust.</p>
+     <ul class="ticks"><li>Machine down? Reach the nearest checked technicians in one tap</li><li>Repairs, testing, compliance, finance and job work</li><li>Reviews only come from confirmed jobs</li><li>Help finding government support schemes</li></ul></div>
+   </div>
+   <div class="panel" role="tabpanel" id="p-gram" aria-labelledby="t-gram" hidden>
+    <div class="shot"><div class="browser"><div class="bar"><i></i><i></i><i></i><span>market.xelor.in/xelogram</span></div><img src="{{gram-feed}}" alt="Xelogram feed" width="1400" height="984"></div><div class="phone"><img src="{{ph-gram-draft}}" alt="Xelogram post draft on a phone" width="420" height="887"></div></div>
+    <div><span class="tag">Get noticed</span><h3>Xelogram</h3><p class="lead">Like a social feed for factories. Show your finished work and let buyers come to you.</p>
+     <ul class="ticks"><li>A verified delivery becomes a post with a “Request quote” button</li><li>The caption is written for you in Tamil, Kannada, Hindi or English</li><li>Share to WhatsApp Status in one tap</li><li>You choose what stays private</li></ul></div>
+   </div>
+   <div class="panel" role="tabpanel" id="p-erp" aria-labelledby="t-erp" hidden>
+    <div class="shot"><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/today</span></div><img src="{{erp-home}}" alt="Smart factory software home" width="1400" height="984"></div><div class="phone"><img src="{{ph-owner}}" alt="Owner approving an order on the phone" width="420" height="887"></div></div>
+    <div><span class="tag">Run your factory</span><h3>Smart factory software</h3><p class="lead">AI-powered software that runs daily work: orders, buying, stock, production and bills. It does most of the typing for you.</p>
+     <ul class="ticks"><li>Reads orders from messages and fills in the details</li><li>Asks suppliers for prices and follows up for you</li><li>People stay in charge. Owners approve from the phone</li><li>Works alongside Tally. No need to switch</li></ul></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" id="how" style="padding-top:24px">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">How buying works</span><h2>Ask. Compare. Choose. Record.</h2><p>Tap a step to see it in the product.</p></div>
+   <div class="how">
+    <div class="steps" role="group" aria-label="Buying steps">
+     <button class="step" aria-pressed="true" data-shot="s1"><span class="num">1</span><span><h3>Ask</h3><p>Say what you need. XELOR sends the request to suppliers, who reply from a simple link. No login, no app.</p></span></button>
+     <button class="step" aria-pressed="false" data-shot="s2"><span class="num">2</span><span><h3>Compare</h3><p>See every price side by side, with each supplier’s delivery history.</p></span></button>
+     <button class="step" aria-pressed="false" data-shot="s3"><span class="num">3</span><span><h3>Choose</h3><p>You pick the supplier. The owner approves from the phone.</p></span></button>
+     <button class="step" aria-pressed="false" data-shot="s4"><span class="num">4</span><span><h3>Record</h3><p>When the goods arrive, XELOR notes how it went. The supplier’s record updates by itself.</p></span></button>
+    </div>
+    <div class="howshot">
+     <figure id="s1"><div class="phone"><img src="{{ph-supplier}}" alt="Supplier replying to a request from a link" width="420" height="887"></div><figcaption>The supplier replies from a link on the phone</figcaption></figure>
+     <figure id="s2" hidden><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/quotes</span></div><img src="{{erp-rank}}" alt="Quotes ranked side by side" width="1400" height="984"></div><figcaption>Quotes ranked on price, delivery and record</figcaption></figure>
+     <figure id="s3" hidden><div class="phone"><img src="{{ph-owner}}" alt="Owner approving on the phone" width="420" height="887"></div><figcaption>The owner approves with one tap</figcaption></figure>
+     <figure id="s4" hidden><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/stores/receipts</span></div><img src="{{erp-gate}}" alt="Delivery scanned at the gate and record updated" width="1400" height="1341"></div><figcaption>Scanned at the gate. The record updates itself</figcaption></figure>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" style="padding-top:24px">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">More from the product</span><h2>Built for the factory floor.</h2></div>
+   <div class="gallery" tabindex="0" aria-label="Product screens, scroll sideways">
+    <figure><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/passport</span></div><img src="{{passport}}" alt="Factory passport" width="1400" height="984"></div><figcaption><b>Factory passport</b><span>A shareable page that shows what your factory has delivered.</span></figcaption></figure>
+    <figure><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/agent</span></div><img src="{{erp-agent}}" alt="XELOR assistant" width="1400" height="984"></div><figcaption><b>The assistant</b><span>Prepares the next steps. People make the decisions.</span></figcaption></figure>
+    <figure><div class="browser"><div class="bar"><i></i><i></i><i></i><span>app.xelor.in/quotes</span></div><img src="{{erp-rank}}" alt="Ranked quotes" width="1400" height="984"></div><figcaption><b>Ranked quotes</b><span>Price is only part of the choice.</span></figcaption></figure>
+    <figure><div class="browser"><div class="bar"><i></i><i></i><i></i><span>market.xelor.in/xelogram</span></div><img src="{{gram-feed}}" alt="Xelogram feed" width="1400" height="984"></div><figcaption><b>Xelogram feed</b><span>Real, verified work that buyers can act on.</span></figcaption></figure>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" style="padding-top:24px">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">Why XELOR</span><h2>Built for small businesses, not against them.</h2></div>
+   <div class="tablewrap rv">
+    <table>
+     <thead><tr><th></th><th>WhatsApp &amp; calls</th><th>Paid listing sites</th><th class="us">XELOR</th></tr></thead>
+     <tbody>
+      <tr><td>Cost to get listed</td><td>Free</td><td>₹32,000+ a year</td><td class="us"><b>Free · from ₹249/month</b></td></tr>
+      <tr><td>Shows who delivers on time</td><td><span class="no">No</span></td><td><span class="no">No, identity only</span></td><td class="us"><span class="yes">Yes, from real deliveries</span></td></tr>
+      <tr><td>Your enquiry sold to many sellers</td><td>—</td><td><span class="no">Often</span></td><td class="us"><span class="yes">Never, 5 sellers at most</span></td></tr>
+      <tr><td>Handles your money</td><td>—</td><td>Some do</td><td class="us"><span class="yes">Never</span></td></tr>
+      <tr><td>Reaches small suppliers</td><td>Only people you know</td><td>Only those who pay</td><td class="us"><span class="yes">Every supplier joins free</span></td></tr>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" id="pricing" style="padding-top:24px">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">Pricing</span><h2>Start free. Grow when you’re ready.</h2></div>
+   <div class="prices">
+    <div class="price rv"><span class="t">Suppliers</span><strong>₹0</strong><p>For every supplier invited by a buyer.</p><ul><li>Reply to requests from a link</li><li>Your own track record</li><li>No login or app needed</li></ul></div>
+    <div class="price hl rv"><span class="t">XELOR Market</span><strong>Free <small>then ₹249 / month</small></strong><p>For MSMEs that want to be found.</p><ul><li>Verified listing with your record</li><li>Matched buyer requests</li><li>Xelogram posts and Find help</li></ul></div>
+    <div class="price rv"><span class="t">Smart factory software</span><strong>₹50K <small>/ month per plant</small></strong><p>For factories that want to run everything in one place.</p><ul><li>Every user included</li><li>Orders, buying, stock and bills</li><li>Works alongside Tally</li></ul></div>
+   </div>
+   <p class="small-note">Launch pricing, still being tested with pilot customers.</p>
+  </div>
+ </section>
+
+ <section class="sec" id="team" style="padding-top:24px">
+  <div class="wrap">
+   <div class="sec-head rv"><span class="eyebrow">The team</span><h2>Starting in Peenya, Bengaluru.</h2><p>One of India’s largest industrial areas, and where we grew up.</p></div>
+   <div class="team">
+    <div class="person rv"><img src="{{hari}}" alt="Hari Rajiv" width="96" height="96"><div><span class="role">Co-founder &amp; CEO</span><h3>Hari Rajiv</h3><p>Interning at Siemens, where he first saw the technology side of manufacturing.</p></div></div>
+    <div class="person rv"><img src="{{medhansh}}" alt="Medhansh" width="96" height="96"><div><span class="role">Co-founder &amp; CTO</span><h3>Medhansh</h3><p>Interning at Cisco. Builds the XELOR product and platform.</p></div></div>
+   </div>
+   <div class="why-us rv">
+    <div><b>21 years</b><span>living in Peenya, among the factories we serve</span></div>
+    <div><b>10–15</b><span>factory visits with owners and buying teams</span></div>
+    <div><b>2 pilots</b><span>with local factories, on real orders</span></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec" style="padding-top:24px">
+  <div class="wrap">
+   <div class="cta rv">
+    <h2>Every delivery <em>builds trust.</em></h2>
+    <p>XELOR is the trusted network behind what India manufactures, built for the MSMEs and small industries that make it.</p>
+    <div class="ctas"><a class="btn btn-pri" href="#products">Explore the products</a><a class="btn btn-ghost" href="#network">See how the network works</a></div>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer>
+ <div class="wrap">
+  <span class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a3456a"/><stop offset=".55" stop-color="#7a2945"/><stop offset="1" stop-color="#4a1530"/></linearGradient><mask id="lm2" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><path d="M14 36 24 46 50 16" fill="none" stroke="#000" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><rect width="64" height="64" rx="16" fill="url(#lg2)"/><path d="M19 17 45 47" stroke="#f6ecdc" stroke-width="7" stroke-linecap="round" fill="none" mask="url(#lm2)"/><path d="M14 36 24 46 50 16" fill="none" stroke="#e2b54a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><b>XELOR</b></span>
+  <span>Peenya, Bengaluru · Screens from the working product use demonstration data.</span>
+ </div>
+</footer>
+
+<script>
+(()=>{
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* tabs */
+const tabs=[...document.querySelectorAll('.tab')];
+function select(t){tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>select(t));t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];select(n);n.focus();}});});
+/* steps */
+const steps=[...document.querySelectorAll('.step')];
+function show(s){steps.forEach(x=>{const on=x===s;x.setAttribute('aria-pressed',on);document.getElementById(x.dataset.shot).hidden=!on;});}
+steps.forEach(s=>s.addEventListener('click',()=>{show(s);auto=false;}));
+let auto=!reduce,si=0;
+setInterval(()=>{if(!auto||document.hidden)return;const how=document.getElementById('how').getBoundingClientRect();if(how.bottom<0||how.top>innerHeight)return;si=(si+1)%steps.length;show(steps[si]);},4200);
+/* reveal: visible at rest, lifts in when it enters view */
+if(!reduce&&'IntersectionObserver' in window){
+ const els=[...document.querySelectorAll('.rv')].filter(el=>el.getBoundingClientRect().top>innerHeight);
+ els.forEach(el=>el.classList.add('pre'));
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target);}}),{rootMargin:'0px 0px -8% 0px'});
+ els.forEach(el=>io.observe(el));
+ /* count up once when numbers come into view */
+ const nums=[...document.querySelectorAll('[data-count]')];
+ const cio=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;cio.unobserve(e.target);const el=e.target,to=+el.dataset.count,dec=+(el.dataset.dec||0),suf=el.dataset.suffix||'';const t0=performance.now();
+  const step=now=>{const p=Math.min(1,(now-t0)/1100),v=to*(1-Math.pow(1-p,3));el.textContent=v.toFixed(dec)+suf;if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step);}),{threshold:.6});
+ nums.forEach(n=>cio.observe(n));
+}
+/* network canvases */
+function net(canvas,opts){
+ const ctx=canvas.getContext('2d');let w,h,pts=[],dpr=Math.min(2,devicePixelRatio||1);
+ const rnd=(s=>()=>(s=(s*1664525+1013904223)>>>0)/4294967296)(opts.seed||7);
+ function size(){const r=canvas.getBoundingClientRect();w=r.width;h=r.height;canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  pts=Array.from({length:opts.n},()=>({x:rnd()*w,y:rnd()*h,vx:(rnd()-.5)*opts.speed,vy:(rnd()-.5)*opts.speed,g:rnd()<.18}));}
+ function frame(){ctx.clearRect(0,0,w,h);const css=getComputedStyle(document.documentElement);const line=opts.line||css.getPropertyValue('--wine').trim();const gold=css.getPropertyValue('--gold').trim();
+  for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;}
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<opts.link){ctx.globalAlpha=(1-d/opts.link)*opts.alpha;ctx.strokeStyle=line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+  ctx.globalAlpha=1;for(const p of pts){ctx.fillStyle=p.g?gold:(opts.dot||line);ctx.beginPath();ctx.arc(p.x,p.y,p.g?3.2:2,0,6.283);ctx.fill();}
+  if(!reduce)requestAnimationFrame(frame);}
+ size();addEventListener('resize',size);frame();
+}
+net(document.getElementById('net'),{n:46,speed:.25,link:150,alpha:.28,seed:11});
+net(document.getElementById('mininet'),{n:28,speed:.3,link:90,alpha:.5,seed:5,line:'#e2b54a',dot:'#f6ecdc'});
+})();
+</script>

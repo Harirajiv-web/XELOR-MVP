@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const url='file://'+process.cwd()+'/build/full.html';
+const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+const clean=async p=>{await p.evaluate(()=>{document.getElementById('toasts').innerHTML='';document.getElementById('overlay').innerHTML='';const i=document.querySelector('#frame .island');if(i)i.classList.remove('live')});};
+let p=await b.newPage({viewport:{width:1500,height:1060},deviceScaleFactor:1.4});
+await p.goto(url);await p.waitForTimeout(400);
+const lap=async(js,file,scroll=0)=>{await p.evaluate(js);await p.waitForTimeout(1800);await clean(p);if(scroll)await p.evaluate(s=>{document.querySelector('.pmain').scrollTop=s},scroll);await p.waitForTimeout(300);await p.locator('#frame').screenshot({path:'old/'+file,type:'jpeg',quality:84})};
+await lap(()=>{QUIET=true;ensureUpTo(16);QUIET=false;setRole('mkt');go('k.home')},'shot-mkt.jpg');
+await lap(()=>{QUIET=true;A.machineDown();A.callPro('sai');QUIET=false;go('k.help')},'shot-help.jpg');
+await lap(()=>{QUIET=true;ensureUpTo(19);QUIET=false;go('k.gram')},'shot-gramL.jpg',330);
+await lap(()=>{go('k.plans')},'shot-plans.jpg');
+p=await b.newPage({viewport:{width:900,height:1100},deviceScaleFactor:1.5});
+await p.goto(url);await p.waitForTimeout(400);
+const ph=async(js,file,scroll=0)=>{await p.evaluate(js);await p.waitForTimeout(1600);await clean(p);if(scroll)await p.evaluate(s=>{document.querySelector('.abody').scrollTop=s},scroll);await p.waitForTimeout(400);await p.locator('#frame').screenshot({path:'old/'+file,omitBackground:true})};
+await ph(()=>{QUIET=true;ensureUpTo(18);QUIET=false;ui.glang='ta';go('s.gram')},'shot-gram-draft.png',150);
+await ph(()=>{QUIET=true;A.gramPost();A.gramShare('WhatsApp Status');QUIET=false;render()},'shot-gram-live.png');
+await b.close();

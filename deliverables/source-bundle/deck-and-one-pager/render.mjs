@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const f=process.argv[2]||'deck.html', out=process.argv[3]||'XELOR-Pitch-Deck.pdf';
+const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+const p=await b.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:1});
+await p.goto('file://'+process.cwd()+'/'+f,{waitUntil:'networkidle'});await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(500);
+const n=await p.evaluate(()=>document.querySelectorAll('.sl').length);console.log('slides',n);
+const ov=await p.evaluate(()=>[...document.querySelectorAll('.sl')].map((s,i)=>{const R=s.getBoundingClientRect();const bad=[];s.querySelectorAll('*').forEach(e=>{if(e.closest('.ft'))return;const r=e.getBoundingClientRect();if(r.width&&(r.bottom>R.bottom-70||r.right>R.right+1)&&getComputedStyle(e).position!=='absolute'&&!e.closest('.shots,.cv-shots,.scatter'))bad.push(e.tagName+'.'+e.className+' '+Math.round(r.bottom-R.top))});return (i+1)+': '+bad.slice(0,4).join(' | ')}));
+console.log(ov.filter(x=>!x.endsWith(': ')).join('\n'));
+const secs=await p.$$('.sl');for(let i=0;i<secs.length;i++)await secs[i].screenshot({path:`prev/s${String(i+1).padStart(2,'0')}.png`});
+await p.pdf({path:out,width:'1920px',height:'1080px',printBackground:true,preferCSSPageSize:true});
+await b.close();

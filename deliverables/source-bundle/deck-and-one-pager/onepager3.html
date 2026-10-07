@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>XELOR One-Pager</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f5f2;--card:#fff;--line:#e6dcd6;--ink:#1f1418;--body:#3b2f34;--muted:#6b5c62;--acc:#7a2945;--acc-soft:#f6e8ed;--gold:#c89a2e;--gold-hi:#e2b54a;--gold-ink:#86600f;--gold-soft:#f8efd9;--deep:#2a0f1a;--cream:#f6ecdc;--sub:#d9c3cc;--green:#1b6a48;--green-soft:#e4f1ea;--red:#b3402f;--red-soft:#fbe9e5;
+ --d:"Bricolage Grotesque",sans-serif;--s:"Source Sans 3",sans-serif;--m:"JetBrains Mono",monospace}
+body{font-family:var(--s);color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.hd{background:radial-gradient(70% 140% at 100% 0%,rgba(226,181,74,.22),transparent 60%),radial-gradient(60% 120% at 0% 100%,rgba(143,51,84,.55),transparent 60%),var(--deep);padding:18px 36px 17px;color:var(--sub)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:38px;height:38px}
+.brand b{font:800 25px var(--d);letter-spacing:-.03em;color:var(--cream)}
+.brand small{margin-left:auto;font:700 10px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+h1{font:800 28px/1.06 var(--d);letter-spacing:-.035em;color:var(--cream);margin-top:10px}
+h1 span{color:var(--gold-hi)}
+.hd p{font-size:15px;line-height:1.4;margin-top:7px;max-width:640px}
+.hd p b{color:var(--cream);font-weight:600}
+.main{padding:13px 36px 10px;display:flex;flex-direction:column;gap:11px;flex:1}
+.lbl{font:700 11px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.lbl:before{content:"";width:16px;height:2px;background:var(--gold)}
+/* problem */
+.prob{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pt{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:9px 12px;display:flex;gap:10px;align-items:flex-start}
+.pt i{flex:none;width:34px;height:34px;border-radius:10px;background:var(--red-soft);display:grid;place-items:center}
+.pt i svg{width:19px;height:19px;fill:none;stroke:var(--red);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pt b{display:block;font:700 15.5px/1.15 var(--d);color:var(--ink);letter-spacing:-.01em}
+.pt span{display:block;font-size:12.6px;line-height:1.36;color:var(--muted);margin-top:3px}
+/* impact */
+.net{background:radial-gradient(80% 120% at 100% 0%,rgba(226,181,74,.18),transparent 60%),var(--deep);border-radius:18px;padding:13px 18px 12px;color:var(--sub);position:relative;border:2px solid var(--gold)}
+.net .tag{position:absolute;right:16px;top:14px;font:700 10px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--deep);background:var(--gold-hi);border-radius:999px;padding:4px 10px}
+.net .k{font:700 11px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+.net h2{font:800 23px/1.1 var(--d);letter-spacing:-.025em;color:var(--cream);margin-top:5px}
+.net h2 span{color:var(--gold-hi)}
+.chain{display:grid;grid-template-columns:1fr 1fr 1.15fr 1.25fr 1.1fr;gap:12px;margin-top:10px;align-items:stretch}
+.st{background:#ffffff0d;border:1px solid #ffffff22;border-radius:12px;padding:10px 10px;position:relative}
+.st:not(:last-child):after{content:"";position:absolute;right:-10px;top:50%;width:7px;height:7px;border-top:2px solid var(--gold-hi);border-right:2px solid var(--gold-hi);transform:translateY(-50%) rotate(45deg)}
+.st .n{font:700 10px var(--m);color:var(--gold-hi);letter-spacing:.08em}
+.st b{display:block;font:700 14.5px/1.15 var(--d);color:var(--cream);margin-top:3px}
+.st span{display:block;font-size:11.8px;line-height:1.32;color:var(--sub);margin-top:3px}
+.st.rec{background:var(--cream);border-color:var(--cream)}
+.st.rec .n{color:var(--gold-ink)}.st.rec b{color:var(--ink)}
+.rs{display:flex;gap:5px;margin-top:6px}
+.rs div{flex:1;background:#fff;border-radius:7px;padding:4px 2px;text-align:center}
+.rs div b{font:800 14px var(--d);color:var(--acc);margin:0}
+.rs div small{display:block;font-size:9.5px;color:var(--muted);line-height:1.1}
+.grow{display:flex;gap:12px;align-items:center;margin-top:10px;padding-top:9px;border-top:1px dashed #ffffff30}
+.grow svg{flex:none;width:58px;height:40px}
+.grow p{font-size:13.6px;line-height:1.4;color:var(--sub)}
+.grow p b{color:var(--cream);font-weight:600}
+.fly{margin-left:auto;flex:none;display:flex;gap:6px;align-items:center;font:700 12px var(--s);color:var(--deep)}
+.fly span{background:var(--gold-hi);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.fly em{font-style:normal;color:var(--gold-hi);font-weight:800}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.sp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 11px}
+.sp .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font:700 11px var(--m)}
+.sp b{display:inline;font:700 15.5px var(--d);color:var(--ink);margin-left:6px;vertical-align:1px}
+.sp p{font-size:12.4px;line-height:1.36;color:var(--muted);margin-top:5px}
+/* products */
+.prods{display:grid;grid-template-columns:1.32fr 1fr 1fr;gap:10px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.pc .im{height:78px;overflow:hidden;background:linear-gradient(160deg,#f6e8ed,#f8efd9);border-bottom:1px solid var(--line);position:relative}
+.pc .im img{width:100%;display:block}
+.pc .im img.ph{width:64px;margin:7px auto 0;border-radius:9px;box-shadow:0 6px 14px -6px rgba(42,15,26,.5)}
+.pc .tx{padding:7px 12px 9px}
+.pc .t{font:700 10px var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink)}
+.pc h3{font:800 17px var(--d);letter-spacing:-.02em;color:var(--ink);margin-top:1px}
+.pc p{font-size:12.4px;line-height:1.36;color:var(--muted);margin-top:3px}
+.pc.f{border:2px solid var(--acc)}
+.pc.f .flag{position:absolute;left:10px;top:9px;font:700 9.5px var(--m);letter-spacing:.12em;color:#fff;background:var(--acc);border-radius:999px;padding:3px 8px}
+/* why */
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.wy{display:flex;gap:9px;align-items:flex-start;background:var(--gold-soft);border-radius:12px;padding:8px 11px}
+.wy i{flex:none;width:20px;height:20px;border-radius:50%;background:var(--green);display:grid;place-items:center;margin-top:1px}
+.wy i svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.wy b{display:block;font:700 14px/1.2 var(--d);color:var(--ink)}
+.wy span{display:block;font-size:12px;line-height:1.32;color:var(--muted);margin-top:2px}
+.ft{margin-top:auto;padding:9px 36px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);font:600 9.5px var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ft b{color:var(--acc)}
+.ft span{display:inline-flex;align-items:center;gap:7px}
+
+.who{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.who b{font:700 11px var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--deep);background:var(--gold-hi);border-radius:999px;padding:5px 11px;margin-right:4px}.who span{font:600 12.5px var(--s);color:var(--cream);border:1px solid #ffffff33;border-radius:999px;padding:4px 11px;background:#ffffff0d}
+
+.hd{padding:16px 36px 15px!important}
+h1{font-size:26.5px!important;margin-top:8px!important}
+.hd p{font-size:14.5px!important;margin-top:6px!important}
+.who{margin-top:8px!important}
+.main{gap:9px!important;padding-top:11px!important}
+.lbl{margin-bottom:5px!important}
+.pc .im{height:64px!important}
+.pc .im img.ph{width:54px!important;margin-top:6px!important}
+.chain{margin-top:8px!important}
+.st{padding:8px 9px!important}
+.grow{margin-top:8px!important;padding-top:8px!important}
+.net{padding:12px 16px 11px!important}
+</style></head><body>
+<div class="page">
+ <header class="hd">
+  <div class="brand"><img src="xelor-mark.svg" alt=""><b>XELOR</b><small>Company overview · Oct 2026</small></div>
+  <h1>The trusted network behind<br><span>what India manufactures.</span></h1>
+  <p>XELOR helps <b>MSMEs and small industries find suppliers and buyers they can trust</b>, based on how well each business actually delivers.</p>
+  <div class="who"><b>Built for MSMEs &amp; small industries</b><span>Small factories</span><span>Job shops</span><span>Suppliers</span><span>Workshops</span></div>
+ </header>
+
+ <main class="main">
+  <section>
+   <div class="lbl">The problem</div>
+   <div class="prob">
+    <div class="pt"><i><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></i><div><b>Finding suppliers is guesswork</b><span>Owners rely on WhatsApp, phone calls, word of mouth and long visits.</span></div></div>
+    <div class="pt"><i><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i><div><b>Listing sites cost too much</b><span>A paid listing is ₹32,000+ a year. Most small businesses can’t afford it.</span></div></div>
+    <div class="pt"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6M12 17h.01"/></svg></i><div><b>No way to know who’s reliable</b><span>So owners take risks, or pay more just to be safe.</span></div></div>
+   </div>
+  </section>
+
+  <section class="net">
+   <span class="tag">Our core</span>
+   <div class="k">How the XELOR network works</div>
+   <h2>Every delivery builds a <span>track record.</span></h2>
+   <div class="chain">
+    <div class="st"><span class="n">01</span><b>A factory orders</b><span>From a supplier, through XELOR.</span></div>
+    <div class="st"><span class="n">02</span><b>Supplier delivers</b><span>The goods reach the factory.</span></div>
+    <div class="st"><span class="n">03</span><b>Delivery is checked</b><span>On time? Right amount? Good quality?</span></div>
+    <div class="st rec"><span class="n">04 · TRACK RECORD</span><b>Sri Ganesh Castings</b><div class="rs"><div><b>96%</b><small>on time</small></div><div><b>0.3%</b><small>rejected</small></div><div><b>19</b><small>deliveries</small></div></div></div>
+    <div class="st"><span class="n">05</span><b>Good work gets noticed</b><span>Reliable suppliers get more orders.</span></div>
+   </div>
+   <div class="grow">
+    <svg viewBox="0 0 58 40"><g stroke="#e2b54a" stroke-width="1.6" fill="none"><path d="M29 20 10 8M29 20 10 32M29 20 48 8M29 20 48 32M48 8 56 2M48 32 56 38M10 8 2 2"/></g><g fill="#f6ecdc"><circle cx="29" cy="20" r="5" fill="#e2b54a"/><circle cx="10" cy="8" r="3.4"/><circle cx="10" cy="32" r="3.4"/><circle cx="48" cy="8" r="3.4"/><circle cx="48" cy="32" r="3.4"/><circle cx="56" cy="2" r="2"/><circle cx="56" cy="38" r="2"/><circle cx="2" cy="2" r="2"/></g></svg>
+    <p><b>The network grows with every order.</b> When a factory asks a new supplier for a price, that supplier joins free and brings its own customers.</p>
+    <div class="fly"><span>More orders</span><em>→</em><span>More records</span><em>→</em><span>More trust</span></div>
+   </div>
+  </section>
+
+  <section>
+   <div class="lbl">How buying works on XELOR</div>
+   <div class="steps">
+    <div class="sp"><span class="n">1</span><b>Ask</b><p>Say what you need. XELOR sends it to suppliers, who reply from a simple link.</p></div>
+    <div class="sp"><span class="n">2</span><b>Compare</b><p>See all prices side by side, with each supplier’s delivery history.</p></div>
+    <div class="sp"><span class="n">3</span><b>Choose</b><p>You pick the supplier. The owner approves from the phone.</p></div>
+    <div class="sp"><span class="n">4</span><b>Record</b><p>When the goods arrive, XELOR notes how it went. No typing needed.</p></div>
+   </div>
+  </section>
+
+  <section>
+   <div class="lbl">What we offer</div>
+   <div class="prods">
+    <div class="pc f"><div class="im"><span class="flag">FLAGSHIP</span><img src="shots/mkt-home.jpg" alt="XELOR Market"></div><div class="tx"><span class="t">Find &amp; connect</span><h3>XELOR Market</h3><p>Find suppliers, buyers and local help like repairs and testing. See each seller’s track record before you call.</p></div></div>
+    <div class="pc"><div class="im"><img class="ph" src="shots/ph-gram-live.png" alt="Xelogram"></div><div class="tx"><span class="t">Get noticed</span><h3>Xelogram</h3><p>Like a social feed for factories. Show finished work; buyers ask for a price from the post.</p></div></div>
+    <div class="pc"><div class="im"><img src="shots/erp-rank.jpg" alt="Smart factory software"></div><div class="tx"><span class="t">Run your factory</span><h3>Smart factory software</h3><p>Handles orders, stock and bills, and does most of the typing for you. Works with Tally.</p></div></div>
+   </div>
+  </section>
+
+  <section>
+   <div class="lbl">Why XELOR is different</div>
+   <div class="why">
+    <div class="wy"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8"/></svg></i><div><b>Built on real work</b><span>Track records come from real deliveries, not reviews.</span></div></div>
+    <div class="wy"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8"/></svg></i><div><b>We only connect</b><span>XELOR never handles your money or sells your details.</span></div></div>
+    <div class="wy"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8"/></svg></i><div><b>Low cost for every MSME</b><span>Free to start. Listings from ₹249 a month.</span></div></div>
+   </div>
+  </section>
+ </main>
+ <footer class="ft"><span><img src="xelor-mark.svg" alt="" style="width:15px;height:15px">XELOR · Peenya, Bengaluru</span><span>Screens from the working product · <b>demonstration data</b></span></footer>
+</div>
+</body></html>

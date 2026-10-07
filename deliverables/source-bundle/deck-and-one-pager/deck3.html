@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>XELOR Pitch Deck</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f5f5;--bg2:#efeaea;--surface:#fff;--line:#e2d9db;--line2:#cdc0c4;--ink:#1d1418;--body:#3d3036;--muted:#6f6066;
+  --acc:#7a2945;--acc-soft:#f6e8ed;--gold:#c89a2e;--gold-ink:#86600f;--gold-soft:#f8efd9;--gold-hi:#e2b54a;
+  --deep:#2a0f1a;--on-deep:#f6ecdc;--deep-sub:#d2b8c2;--deep-line:rgba(246,236,220,.18);--deep-card:rgba(246,236,220,.06);
+  --green:#1b6a48;--green-soft:#e4f1ea;--red:#a13d2a;
+  --display:"Bricolage Grotesque","Segoe UI",sans-serif;--sans:"Source Sans 3","Segoe UI",sans-serif;--mono:"JetBrains Mono",monospace}
+html,body{background:#ccc}
+body{font-family:var(--sans);color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sl{width:1920px;height:1080px;position:relative;overflow:hidden;background:var(--bg);padding:90px 120px 110px;break-after:page;display:flex;flex-direction:column}
+.sl.tint{background:var(--bg2)}
+.sl.dark{background:var(--deep);color:var(--deep-sub)}
+.eb{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.dark .eb{color:var(--gold-hi)}
+h1,h2,h3{font-family:var(--display);color:var(--ink);letter-spacing:-.03em;font-weight:800}
+.dark h1,.dark h2,.dark h3{color:var(--on-deep)}
+h2{font-size:76px;line-height:1.04;margin-top:18px}
+h2 em{font-style:normal;color:var(--acc)} .dark h2 em{color:var(--gold-hi)}
+.lead{font-size:32px;line-height:1.4;color:var(--muted);margin-top:26px}
+.dark .lead{color:var(--deep-sub)}
+.ft{position:absolute;left:120px;right:120px;bottom:44px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dark .ft{color:rgba(210,184,194,.75)}
+.ft b{color:var(--acc)} .dark .ft b{color:var(--gold-hi)}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:26px}
+.dark .card{background:var(--deep-card);border-color:var(--deep-line)}
+.lap{border-radius:1.07%/1.52%;overflow:hidden;box-shadow:0 50px 90px -40px rgba(42,15,26,.55),0 0 0 1px rgba(0,0,0,.08);background:#120a0d}
+.lap img,.tab img{display:block;width:100%;height:auto}
+.tab{border-radius:1.9%/2%;overflow:hidden;box-shadow:0 50px 90px -40px rgba(42,15,26,.55)}
+.ph{position:absolute;filter:drop-shadow(0 40px 50px rgba(42,15,26,.45))}
+.pts{display:flex;flex-direction:column;gap:26px;margin-top:40px}
+.pts li{list-style:none;display:flex;gap:20px;font-size:31px;line-height:1.35;color:var(--body)}
+.pts li b{color:var(--ink)}
+.pts li::before{content:"";flex:none;width:34px;height:34px;margin-top:2px;border-radius:50%;background:var(--green-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m7 12.5 3.2 3.2L17 9' fill='none' stroke='%231b6a48' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/24px no-repeat}
+.dark .pts li{color:var(--deep-sub)} .dark .pts li b{color:var(--on-deep)}
+.split{display:grid;gap:70px;flex:1;align-items:center;min-height:0}
+.note{font-size:20px;color:var(--muted);line-height:1.4}
+.dark .note{color:rgba(210,184,194,.8)}
+.tag{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:12px;font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.tag.gold{background:var(--gold-soft);color:var(--gold-ink)} .tag.acc{background:var(--acc-soft);color:var(--acc)} .tag.ok{background:var(--green-soft);color:var(--green)}
+.dark .tag.gold{background:var(--gold-hi);color:#1d1606}
+
+/* 1 cover */
+.cover{background:radial-gradient(70% 90% at 95% 15%,rgba(226,181,74,.22),transparent 55%),radial-gradient(60% 80% at 0% 100%,rgba(143,51,84,.6),transparent 60%),var(--deep);padding:100px 120px}
+.cover::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(246,236,220,.06) 1.2px,transparent 1.2px);background-size:32px 32px;mask-image:linear-gradient(110deg,#000 10%,transparent 60%);-webkit-mask-image:linear-gradient(110deg,#000 10%,transparent 60%);pointer-events:none}
+.brand{display:flex;align-items:center;gap:20px;position:relative;z-index:1}
+.mark{width:78px;height:78px;border-radius:22px;background:linear-gradient(145deg,#a3456a,#7a2945 55%,#5e1d35);display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(0,0,0,.6)}
+.mark svg{width:34px;height:34px}
+.brand b{font-family:var(--display);font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--on-deep)}
+.brand b span{color:var(--gold-hi)}
+.cv{position:relative;z-index:1;display:grid;grid-template-columns:820px 1fr;gap:50px;flex:1;align-items:center}
+.cover h1{font-size:118px;line-height:.96;letter-spacing:-.05em;color:var(--on-deep)}
+.cover h1 span{color:var(--gold-hi)}
+.cover .sub{font-size:38px;line-height:1.3;color:var(--deep-sub);margin-top:36px;font-weight:600}
+.cv-art{position:relative;height:760px}
+.cv-art .lap{position:absolute;left:0;top:110px;width:860px;box-shadow:0 70px 120px -40px rgba(0,0,0,.85),0 0 0 1px rgba(246,236,220,.14)}
+.cv-art .ph{right:-10px;top:40px;width:300px}
+.cv-foot{position:relative;z-index:1;display:flex;gap:40px;font-family:var(--mono);font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:rgba(210,184,194,.85)}
+.cv-foot b{color:var(--gold-hi);font-weight:700}
+
+/* 2 problem */
+.prob{position:relative;flex:1;margin-top:30px}
+.prob svg{position:absolute;inset:0;width:100%;height:100%}
+.pc{position:absolute;width:520px;background:var(--surface);border:1.5px solid var(--line);border-radius:24px;padding:24px 28px;box-shadow:0 24px 50px -30px rgba(42,15,26,.5)}
+.pc .h{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pc .h i{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-style:normal;font-size:20px;font-family:var(--sans)}
+.pc p{font-size:30px;line-height:1.3;color:var(--ink);margin-top:14px;font-weight:600}
+.pc .x{display:block;margin-top:12px;font-size:23px;font-weight:700;color:var(--red)}
+.core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:360px;height:360px;border-radius:50%;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;box-shadow:0 0 0 18px rgba(122,41,69,.08),0 0 0 38px rgba(122,41,69,.05)}
+.core b{font-family:var(--display);font-size:84px;color:var(--gold-hi);line-height:.9}
+.core span{font-family:var(--display);font-size:34px;font-weight:700;color:var(--on-deep);line-height:1.15;margin-top:14px}
+
+/* stats */
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin:auto 0}
+.stats3 .card{padding:40px 40px 36px}
+.stats3 b{display:block;font-family:var(--display);font-size:104px;font-weight:800;letter-spacing:-.05em;color:var(--acc);line-height:1}
+.stats3 p{font-size:31px;line-height:1.35;color:var(--ink);margin-top:18px;font-weight:600}
+.stats3 .src{display:block;margin-top:18px;font-family:var(--mono);font-size:17px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.punch{margin-top:auto;font-family:var(--display);font-size:46px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.punch span{color:var(--acc)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin:auto 0}
+.step{padding:34px 32px;position:relative}
+.step:not(:last-child)::after{content:"";position:absolute;right:-20px;top:50%;width:14px;height:14px;border-top:4px solid var(--gold);border-right:4px solid var(--gold);transform:translateY(-50%) rotate(45deg)}
+.step .n{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;background:var(--acc);color:#fff;font-family:var(--display);font-weight:800;font-size:30px}
+.step h3{font-size:44px;margin-top:22px}
+.step p{font-size:28px;line-height:1.35;color:var(--muted);margin-top:12px}
+.band{margin-top:auto;display:flex;align-items:center;gap:26px;padding:30px 38px;border-radius:24px;background:var(--deep);color:var(--on-deep);font-size:32px;font-weight:600}
+.band b{color:var(--gold-hi)}
+
+/* loop */
+.loop{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin:auto 0}
+.loop li{list-style:none;padding:30px 28px;position:relative;background:var(--surface);border:1.5px solid var(--line);border-radius:24px}
+.loop li:not(:last-child)::after{content:"";position:absolute;right:-17px;top:50%;width:12px;height:12px;border-top:4px solid var(--gold);border-right:4px solid var(--gold);transform:translateY(-50%) rotate(45deg)}
+.loop .n{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--gold-ink)}
+.loop b{display:block;font-family:var(--display);font-size:36px;color:var(--ink);margin-top:10px;line-height:1.15}
+.loop span{display:block;font-size:27px;color:var(--muted);margin-top:10px;line-height:1.35}
+
+/* why now */
+.layer{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;padding:30px 34px;border-radius:24px;border:1.5px solid var(--deep-line);background:var(--deep-card);margin-bottom:18px}
+.layer b{display:block;font-family:var(--display);font-size:42px;color:var(--on-deep)}
+.layer small{display:block;font-size:26px;color:var(--deep-sub);margin-top:6px}
+.layer .tag{background:rgba(246,236,220,.1);color:var(--deep-sub)}
+.layer.dim{opacity:.72;margin-inline:30px}
+.layer.g{border:2px solid var(--gold-hi);background:linear-gradient(135deg,rgba(226,181,74,.24),rgba(226,181,74,.06))}
+.layer.g small{color:#f0dcae}
+.layer.g .tag{background:var(--gold-hi);color:#1d1606}
+.rules{display:flex;flex-direction:column;gap:18px}
+.rule{padding:26px 30px}
+.rule .d{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:.1em;color:var(--gold-hi)}
+.rule b{display:block;font-family:var(--display);font-size:34px;color:var(--on-deep);margin-top:6px}
+.rule span{display:block;font-size:24px;color:var(--deep-sub);margin-top:6px;line-height:1.35}
+
+/* compare */
+.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:46px;background:var(--surface);border:1.5px solid var(--line);border-radius:26px;overflow:hidden}
+.cmp th,.cmp td{padding:22px 24px;border-bottom:1.5px solid var(--line);text-align:center;vertical-align:middle}
+.cmp tr:last-child td{border-bottom:0}
+.cmp th{font-family:var(--display);font-size:28px;color:var(--ink);line-height:1.15}
+.cmp th small{display:block;font-family:var(--sans);font-weight:400;font-size:20px;color:var(--muted);margin-top:6px}
+.cmp td:first-child,.cmp th:first-child{text-align:left;font-size:28px;font-weight:700;color:var(--ink)}
+.cmp .us{background:var(--gold-soft)}
+.cmp th.us{color:var(--gold-ink);font-size:34px}
+.y,.n,.p{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;font-size:26px;font-weight:800}
+.y{background:var(--green);color:#fff} .n{background:#eee8e9;color:#a0939a} .p{background:var(--gold-soft);color:var(--gold-ink);border:2px solid var(--gold)}
+
+/* pricing / size */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin:auto 0}
+.price{padding:40px 38px}
+.price .k{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.price .v{display:block;font-family:var(--display);font-size:80px;font-weight:800;letter-spacing:-.04em;color:var(--ink);margin-top:14px;line-height:1}
+.price .v small{font-size:28px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:6px}
+.price p{font-size:27px;line-height:1.38;color:var(--muted);margin-top:16px}
+.price.hl{background:var(--deep);border-color:var(--deep)}
+.price.hl .k,.price.hl p,.price.hl .v small{color:var(--deep-sub)} .price.hl .v{color:var(--gold-hi)}
+.econ{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.econ div{padding:24px 28px;border-radius:22px;background:var(--surface);border:1.5px solid var(--line)}
+.econ b{display:block;font-family:var(--display);font-size:46px;color:var(--ink);letter-spacing:-.03em}
+.econ span{display:block;font-size:22px;color:var(--muted);margin-top:4px}
+.tiers{display:flex;flex-direction:column;gap:22px}
+.tier{display:grid;grid-template-columns:230px 1fr auto;gap:30px;align-items:center;padding:30px 36px}
+.tier .l{font-family:var(--display);font-size:44px;font-weight:800;color:var(--on-deep)}
+.tier .l small{display:block;font-family:var(--sans);font-size:22px;font-weight:600;color:var(--deep-sub);margin-top:4px;letter-spacing:0}
+.tier .calc{font-size:25px;line-height:1.5;color:var(--deep-sub)}
+.tier .calc b{color:var(--on-deep)}
+.tier .v{font-family:var(--display);font-size:64px;font-weight:800;color:var(--gold-hi);letter-spacing:-.04em;text-align:right;line-height:1}
+.tier .v small{display:block;font-size:22px;color:var(--deep-sub);font-weight:600;letter-spacing:0;margin-top:6px}
+
+/* team */
+.team{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:50px}
+.fd{display:grid;grid-template-columns:190px 1fr;gap:34px;align-items:center;padding:36px}
+.fd img{width:190px;height:190px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 8px var(--acc-soft)}
+.fd h3{font-size:46px}
+.fd .r{display:block;font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-top:6px}
+.fd p{font-size:26px;line-height:1.4;color:var(--muted);margin-top:14px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:36px}
+.facts div{padding:32px 34px;border-radius:24px;background:var(--deep)}
+.facts b{display:block;font-family:var(--display);font-size:72px;color:var(--gold-hi);letter-spacing:-.04em;line-height:1}
+.facts span{display:block;font-size:27px;line-height:1.35;color:var(--on-deep);margin-top:12px}
+.split h2{font-size:68px}
+
+.markimg{width:84px;height:84px;filter:drop-shadow(0 14px 24px rgba(0,0,0,.45))}
+.brand .tagl{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-hi);margin-left:10px;align-self:center;padding-left:22px;border-left:2px solid rgba(246,236,220,.2)}
+.cover .wm{position:absolute;right:-140px;bottom:-180px;width:760px;opacity:.06;z-index:0}
+.ft span:first-child{display:inline-flex;align-items:center;gap:12px}
+.ft img{width:28px;height:28px}
+.pts li::before{background:var(--gold-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6.5 12.5 3.6 3.6L18 8' fill='none' stroke='%23b8871f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/24px no-repeat}
+.dark .pts li::before{background-color:rgba(226,181,74,.18)}
+
+.cv2{position:relative;z-index:1;display:grid;grid-template-columns:960px 1fr;gap:40px;align-items:center;flex:1;min-height:0}
+.cover h1{font-size:96px;line-height:1;letter-spacing:-.045em}
+.cover .sub{font-size:34px;line-height:1.35;margin-top:30px;max-width:880px}
+.cv-art2{position:relative;height:520px}
+.cv-art2 .lap{position:absolute;left:0;top:70px;width:700px;box-shadow:0 70px 120px -40px rgba(0,0,0,.85),0 0 0 1px rgba(246,236,220,.14)}
+.cv-art2 .ph{right:-30px;top:0;width:250px}
+.chain{position:relative;z-index:1;display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-top:20px;padding-top:4px}
+.chain::before{content:"";position:absolute;left:8.3%;right:8.3%;top:46px;height:3px;background:linear-gradient(90deg,rgba(226,181,74,.25),#e2b54a 20%,#e2b54a 80%,rgba(226,181,74,.25))}
+.cn{display:flex;flex-direction:column;align-items:center;gap:14px;position:relative}
+.ci{width:92px;height:92px;border-radius:50%;background:#3a1726;border:2px solid rgba(226,181,74,.55);display:grid;place-items:center;color:#f6ecdc;position:relative}
+.ci svg{width:42px;height:42px}
+.ci i{position:absolute;right:-4px;bottom:-2px;width:34px;height:34px;border-radius:50%;background:#e2b54a;color:#1d1606;font-style:normal;font-weight:800;font-size:19px;display:grid;place-items:center;box-shadow:0 0 0 4px #2a0f1a}
+.cn b{font-family:var(--display);font-size:25px;color:#f6ecdc;letter-spacing:-.01em}
+
+.p2{display:grid;grid-template-columns:1fr 760px;gap:60px;align-items:center;flex:1;min-height:0;margin-top:10px}
+.p2h{font-size:66px;line-height:1.06;margin-top:0}
+.p2h .big{display:block;font-size:150px;line-height:.9;letter-spacing:-.055em;color:var(--acc);margin-bottom:10px}
+.p2s{font-size:30px;line-height:1.42;color:var(--muted);margin-top:30px}
+.p2src{display:inline-block;margin-top:22px;font-family:var(--mono);font-size:17px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.p2g{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.q{background:var(--surface);border:1.5px solid var(--line);border-radius:24px;padding:24px 26px;box-shadow:0 24px 50px -34px rgba(42,15,26,.45)}
+.q .h{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.q .h i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;font-style:normal;font-size:19px;font-family:var(--sans)}
+.q p{font-size:28px;line-height:1.28;color:var(--ink);font-weight:700;margin-top:14px}
+.q span{display:block;margin-top:12px;font-size:23px;font-weight:700;color:var(--red)}
+.p2b{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:36px;border-radius:24px;background:var(--deep);overflow:hidden}
+.p2b div{padding:26px 34px;border-right:1px solid rgba(246,236,220,.14)}
+.p2b div:last-child{border-right:0}
+.p2b b{display:block;font-family:var(--display);font-size:34px;color:var(--gold-hi);letter-spacing:-.02em}
+.p2b span{display:block;font-size:24px;color:var(--on-deep);margin-top:6px;line-height:1.3}
+</style></head><body>
+
+<!-- 1 COVER -->
+<section class="sl cover">
+  <div class="brand"><img class="markimg" src="xelor-mark.svg" alt=""><b>XELOR</b><small class="tagl">Seed investor brief · October 2026</small></div>
+  <div class="cv2">
+    <div>
+      <h1>The trusted network behind <span>what India manufactures.</span></h1>
+      <p class="sub">Suppliers, job shops, assemblers and manufacturers, connected through records earned on every delivery.</p>
+    </div>
+    <div class="cv-art2"><div class="lap"><img src="shots/mkt-home.jpg" alt=""></div><img class="ph" src="shots/ph-gram-draft.png" alt=""></div>
+  </div>
+  <div class="chain"><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l4-9 4 6 3-4 5 7z"/></svg><i>✓</i></span><b>Raw material</b></div><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10l5 3V9l5 3V6h4v14z"/></svg><i>✓</i></span><b>Foundry</b></div><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M8 7h8l-1 6H9zM10 13v4h4v-4M7 21h10"/></svg><i>✓</i></span><b>Machining</b></div><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h11l3 3-3 3H4zM15 12h5M8 15v5"/></svg><i>✓</i></span><b>Coating</b></div><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12 4 7.5"/></svg><i>✓</i></span><b>Assembly</b></div><div class="cn"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V11l7-5 7 5v10M9 21v-6h6v6"/></svg><i>✓</i></span><b>Manufacturer</b></div></div>
+  <img class="wm" src="xelor-symbol-on-dark.svg" alt="">
+</section>
+
+<!-- 2 PROBLEM -->
+<section class="sl">
+  <div class="eb">The problem</div>
+  <div class="p2">
+    <div class="p2l">
+      <h2 class="p2h"><span class="big">1.8 crore</span> manufacturers.<br><em>No shared record<br>of who delivers.</em></h2>
+      <p class="p2s">Every order still rides on a WhatsApp promise, a phone call and gut feel. When a delivery fails, nothing is recorded, so the next order goes to the same guess.</p>
+      <span class="p2src">Manufacturing MSMEs on Udyam, July 2026</span>
+    </div>
+    <div class="p2g">
+      <div class="q"><div class="h"><i style="background:#25a35a">✉</i>WhatsApp</div><p>“Castings will reach by Friday, sir.”</p><span>Tuesday. Still waiting.</span></div>
+      <div class="q"><div class="h"><i style="background:#a13d2a">☎</i>Phone call</div><p>“Same rate as last time?”</p><span>Nobody knows last time.</span></div>
+      <div class="q"><div class="h"><i style="background:#9a5a1b">✎</i>Paper register</div><p>“60 received. 2 cracked.”</p><span>Never reaches any system.</span></div>
+      <div class="q"><div class="h"><i style="background:#2a5a86">₹</i>Paid directory</div><p>“Trusted seller” badge.</p><span>Checks identity, not delivery.</span></div>
+    </div>
+  </div>
+  <div class="p2b">
+    <div><b>Lines stop</b><span>when one late part holds up an order</span></div>
+    <div><b>Rejects surface</b><span>after the supplier is already paid</span></div>
+    <div><b>Good suppliers stay invisible</b><span>with no way to prove they deliver</span></div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>02</b></div>
+</section>
+
+<!-- 3 WHY IT MATTERS -->
+<section class="sl tint">
+  <div class="eb">The cost</div>
+  <h2>No record means no trust.<br><em>Factories pay for it every day.</em></h2>
+  <div class="stats3">
+    <div class="card"><b>12%</b><p>of Indian MSMEs use ERP software. The rest track suppliers in notebooks and chats.</p><span class="src">RIS, 2026</span></div>
+    <div class="card"><b>~2.5%</b><p>of the 8.8M sellers on IndiaMART pay to be listed. Most MSMEs are priced out of being found.</p><span class="src">IndiaMART Q1 FY27 · our arithmetic</span></div>
+    <div class="card"><b>3–4×</b><p>Each number is typed three or four times across separate systems.</p><span class="src">What we see on the shop floor</span></div>
+  </div>
+  <p class="punch">Every factory already creates the proof. <span>Nobody keeps it.</span></p>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>03</b></div>
+</section>
+
+<!-- 4 SOLUTION -->
+<section class="sl">
+  <div class="eb">The solution</div>
+  <h2>XELOR turns every order into<br><em>a supplier record you can trust.</em></h2>
+  <div class="steps">
+    <div class="card step"><span class="n">1</span><h3>Ask</h3><p>The request for quote writes itself. Suppliers reply from a link, with no login.</p></div>
+    <div class="card step"><span class="n">2</span><h3>Compare</h3><p>Quotes ranked on price, delivery date and each supplier’s track record.</p></div>
+    <div class="card step"><span class="n">3</span><h3>Decide</h3><p>A person picks the supplier. The owner approves on the phone.</p></div>
+    <div class="card step"><span class="n">4</span><h3>Record</h3><p>When goods arrive, on-time and quality results update the record.</p></div>
+  </div>
+  <div class="band"><span class="tag gold">Result</span><span>Records come from <b>real deliveries</b>, so they can’t be typed in, bought or faked.</span></div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>04</b></div>
+</section>
+
+<!-- 5 RECORD EARNED AT THE GATE -->
+<section class="sl tint">
+  <div class="split" style="grid-template-columns:640px 1fr">
+    <div>
+      <div class="eb">How the record is earned</div>
+      <h2>One scan at the gate.<br><em>The record updates.</em></h2>
+      <ul class="pts">
+        <li><span><b>On time?</b> Counted from the receipt date.</span></li>
+        <li><span><b>Quality?</b> Counted from the inspection.</span></li>
+        <li><span><b>New supplier?</b> Shows “unproven” until it delivers.</span></li>
+      </ul>
+    </div>
+    <div class="tab"><img src="shots/erp-gate.jpg" alt="Stores tablet: receipt posted and supplier record updated"></div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>05</b></div>
+</section>
+
+<!-- 6 COMPARE ON PROOF -->
+<section class="sl">
+  <div class="split" style="grid-template-columns:600px 1fr">
+    <div>
+      <div class="eb">Better decisions</div>
+      <h2>Compare suppliers on <em>proof, not promises.</em></h2>
+      <ul class="pts">
+        <li><span>Every quote shows the supplier’s real on-time and reject rates.</span></li>
+        <li><span>The ranking explains itself. <b>A person always decides.</b></span></li>
+        <li><span>The best supplier wins on proof, not just price.</span></li>
+      </ul>
+    </div>
+    <div class="lap"><img src="shots/erp-rank.jpg" alt="Ranked supplier quotes"></div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>06</b></div>
+</section>
+
+<!-- 7 XELOR MARKET (FLAGSHIP) -->
+<section class="sl tint">
+  <div class="split" style="grid-template-columns:640px 1fr">
+    <div>
+      <span class="tag acc">Flagship</span>
+      <h2 style="margin-top:24px">XELOR Market.<br><em>See the proof first.</em></h2>
+      <ul class="pts" style="gap:22px">
+        <li><span>Every seller shows an <b>earned delivery record.</b></span></li>
+        <li><span><b>Free to list,</b> or ₹249 a month for Verified.</span></li>
+        <li><span>A request goes to <b>5 sellers at most.</b> Never resold.</span></li>
+        <li><span>Find help: repair, testing, compliance, finance.</span></li>
+        <li><span>Buyers and sellers pay each other. <b>We never touch the money.</b></span></li>
+      </ul>
+    </div>
+    <div class="lap"><img src="shots/mkt-home.jpg" alt="XELOR Market"></div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>07</b></div>
+</section>
+
+<!-- 8 XELOGRAM -->
+<section class="sl">
+  <div class="split" style="grid-template-columns:1fr 640px">
+    <div style="position:relative;height:100%">
+      <div class="lap" style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:880px"><img src="shots/gram-feed.jpg" alt=""></div>
+      <img class="ph" src="shots/ph-gram-draft.png" style="right:20px;top:60px;width:330px" alt="">
+    </div>
+    <div>
+      <div class="eb">Xelogram</div>
+      <h2>Show your factory.<br><em>Win new buyers.</em></h2>
+      <ul class="pts">
+        <li><span>A verified delivery becomes a post in one tap.</span></li>
+        <li><span>Captions in Tamil, Kannada, Hindi or English.</span></li>
+        <li><span>Every post has a <b>proof badge</b> and a <b>Request quote</b> button.</span></li>
+        <li><span>Shares to WhatsApp Status, used by 97% of MSMEs.</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>08</b></div>
+</section>
+
+<!-- 9 THE ERP ENGINE -->
+<section class="sl tint">
+  <div class="split" style="grid-template-columns:600px 1fr">
+    <div>
+      <div class="eb">The engine</div>
+      <h2>The software that<br><em>builds every record.</em></h2>
+      <ul class="pts">
+        <li><span>Sales, purchase, stores, production and accounts on one record.</span></li>
+        <li><span>It drafts and follows up. <b>People approve</b> money and stock.</span></li>
+        <li><span>Works beside Tally. Sold one department at a time.</span></li>
+      </ul>
+    </div>
+    <div style="position:relative;height:100%">
+      <div class="lap" style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:960px"><img src="shots/erp-home.jpg" alt=""></div>
+      <img class="ph" src="shots/ph-owner.png" style="right:-10px;bottom:20px;width:290px" alt="">
+    </div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>09</b></div>
+</section>
+
+<!-- 10 NETWORK EFFECT -->
+<section class="sl">
+  <div class="eb">The network</div>
+  <h2>Every request <em>grows the network.</em></h2>
+  <ol class="loop">
+    <li><span class="n">01</span><b>A factory sends a request</b><span>To its usual suppliers and new ones.</span></li>
+    <li><span class="n">02</span><b>Suppliers quote from a link</b><span>No login, no app, by text or voice.</span></li>
+    <li><span class="n">03</span><b>They claim a free record</b><span>And use it with every XELOR buyer.</span></li>
+    <li><span class="n">04</span><b>Buyers check the proof</b><span>Records decide who wins the order.</span></li>
+    <li><span class="n">05</span><b>More factories join</b><span>And trade with each other directly.</span></li>
+  </ol>
+  <div class="band"><span class="tag gold">Moat</span><span>Delivery history takes years to build and <b>can’t be copied or back-filled.</b> We start dense, in one cluster.</span></div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>10</b></div>
+</section>
+
+<!-- 11 WHY NOW -->
+<section class="sl dark">
+  <div class="eb">Why now</div>
+  <h2>AI is everywhere.<br><em>Verified data isn’t.</em></h2>
+  <div class="split" style="grid-template-columns:1fr 720px;margin-top:40px;align-items:start">
+    <div>
+      <div class="layer dim"><div><b>AI models</b><small>Anyone can rent one.</small></div><span class="tag">Common</span></div>
+      <div class="layer dim" style="margin-inline:15px"><div><b>AI tools for buying</b><small>Many funded startups build these.</small></div><span class="tag">Crowded</span></div>
+      <div class="layer g"><div><b>Verified delivery data</b><small>Only comes from real work at the factory gate.</small></div><span class="tag">Rare · XELOR</span></div>
+    </div>
+    <div class="rules">
+      <div class="card rule"><span class="d">Apr 2024</span><b>45-day payment rule</b><span>Pay small suppliers late and lose the tax deduction.</span></div>
+      <div class="card rule"><span class="d">Aug 2023</span><b>E-invoicing at ₹5 crore</b><span>Every B2B invoice registered with the government.</span></div>
+      <div class="card rule"><span class="d">Sep 2026</span><b>TReDS guarantee</b><span>Lenders back small-firm invoices, with proof of delivery.</span></div>
+    </div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>11</b></div>
+</section>
+
+<!-- 12 COMPETITION -->
+<section class="sl tint">
+  <div class="eb">Competition</div>
+  <h2>Others list suppliers.<br><em>Only XELOR proves them.</em></h2>
+  <table class="cmp">
+    <thead><tr><th style="width:30%"></th><th>Directories<small>IndiaMART, JustDial</small></th><th>Marketplaces<small>Zetwerk, OfBusiness</small></th><th>SME software<small>Tally, Zoho</small></th><th>AI buying tools<small>Didero and others</small></th><th class="us">XELOR</th></tr></thead>
+    <tbody>
+      <tr><td>Record from real deliveries</td><td><span class="n">–</span></td><td><span class="p">½</span></td><td><span class="n">–</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+      <tr><td>Affordable for small MSMEs</td><td><span class="n">–</span></td><td><span class="p">½</span></td><td><span class="y">✓</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+      <tr><td>Requests never resold</td><td><span class="n">–</span></td><td><span class="y">✓</span></td><td><span class="n">–</span></td><td><span class="y">✓</span></td><td class="us"><span class="y">✓</span></td></tr>
+      <tr><td>Runs inside the factory</td><td><span class="n">–</span></td><td><span class="n">–</span></td><td><span class="y">✓</span></td><td><span class="n">–</span></td><td class="us"><span class="y">✓</span></td></tr>
+      <tr><td>No cut, no money handled</td><td><span class="y">✓</span></td><td><span class="n">–</span></td><td><span class="y">✓</span></td><td><span class="y">✓</span></td><td class="us"><span class="y">✓</span></td></tr>
+    </tbody>
+  </table>
+  <p class="note" style="margin-top:20px">½ = partly. Based on our October 2026 scan of public information.</p>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>12</b></div>
+</section>
+
+<!-- 13 BUSINESS MODEL -->
+<section class="sl">
+  <div class="eb">Business model</div>
+  <h2>Simple pricing.<br><em>Suppliers always join free.</em></h2>
+  <div class="prices">
+    <div class="card price"><span class="k">XELOR Market</span><span class="v">₹249<small>/ month</small></span><p>Verified listing. Free basic listing for every MSME.</p></div>
+    <div class="card price hl"><span class="k">Factory software</span><span class="v">₹50K<small>/ month</small></span><p>Per plant, every user included. ₹6 lakh a year.</p></div>
+    <div class="card price"><span class="k">Suppliers</span><span class="v">₹0</span><p>A free record and quotes from a link. Always.</p></div>
+  </div>
+  <div class="econ">
+    <div><b>₹20K</b><span>paid 6-week pilot</span></div>
+    <div><b>75–78%</b><span>target gross margin</span></div>
+    <div><b>~21 mo</b><span>to earn back sales cost</span></div>
+    <div><b>Later</b><span>referral fees on early payments</span></div>
+  </div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>13</b></div>
+</section>
+
+<!-- 14 MARKET SIZE -->
+<section class="sl dark">
+  <div class="eb">Market size</div>
+  <h2>A ₹7,900 Cr market,<br><em>built from the ground up.</em></h2>
+  <div class="tiers" style="margin-top:46px">
+    <div class="card tier"><span class="l">TAM<small>All of India</small></span><span class="calc"><b>1.83 Cr</b> MSMEs × ₹2,490 &nbsp;+&nbsp; <b>47,762</b> factories × ₹6 L &nbsp;+&nbsp; TReDS referrals</span><span class="v">₹7,947 Cr<small>~$900M</small></span></div>
+    <div class="card tier"><span class="l">SAM<small>Karnataka + Tamil Nadu</small></span><span class="calc"><b>7,330</b> factories × ₹6 L &nbsp;+&nbsp; <b>1.53 L</b> MSMEs in Bengaluru, Hosur, Coimbatore</span><span class="v">₹504 Cr<small>~$57M</small></span></div>
+    <div class="card tier"><span class="l">SOM<small>Year 5</small></span><span class="calc"><b>220</b> factories (3% of SAM) &nbsp;+&nbsp; <b>450</b> paid listings &nbsp;+&nbsp; referrals</span><span class="v">₹13.7 Cr<small>~$1.6M ARR</small></span></div>
+  </div>
+  <p class="note" style="margin-top:22px">Sources: Udyam (Jul 2026), Annual Survey of Industries 2023-24, TReDS data (FY26). Conservative: excludes ads and smaller factories.</p>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>14</b></div>
+</section>
+
+<!-- 15 TEAM -->
+<section class="sl">
+  <div class="eb">The team</div>
+  <h2>We grew up <em>inside this problem.</em></h2>
+  <div class="team">
+    <div class="card fd"><img src="hari.jpeg" alt="Hari Rajiv"><div><h3>Hari Rajiv</h3><span class="r">CEO · Co-founder</span><p>Siemens and Connectivity IT, a Cisco Gold Partner selling into these factories. ECE, BMSIT.</p></div></div>
+    <div class="card fd"><img src="medhansh.jpeg" alt="Medhansh Mohanram"><div><h3>Medhansh Mohanram</h3><span class="r">CTO · Co-founder</span><p>Cisco, now Connectivity IT. Owns the platform and its architecture. ECE, BMSIT.</p></div></div>
+  </div>
+  <div class="facts">
+    <div><b>21 yrs</b><span>living in Peenya, among the factories we serve</span></div>
+    <div><b>10–15</b><span>factory visits with owners and purchase teams</span></div>
+    <div><b>2</b><span>pilot factories from our own network</span></div>
+  </div>
+  <div class="band"><span class="tag gold">This round</span><span>Funds <b>15 people by month 18</b>: a product manager, seven engineers, three in delivery and two in sales.</span></div>
+  <div class="ft"><span><img src="xelor-mark.svg" alt="">XELOR · Seed investor brief</span><b>15</b></div>
+</section>
+</body></html>

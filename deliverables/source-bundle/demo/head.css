@@ -1,0 +1,69 @@
+/* Layout: sticky top bar → guided tour strip → role rail → [device stage | live screen spec]. Same shell as the KisanCred demo, XELOR maroon + stamp gold. */
+:root{
+  --bg:#f0ecec; --surface:#ffffff; --surface-2:#f8f5f5; --surface-3:#eee8e9; --line:#e2d9db; --line-2:#cdc0c4;
+  --ink:#1d1418; --body:#46383e; --muted:#76676d;
+  --acc:#7a2945; --acc-ink:#6d2340; --acc-soft:#f6e8ed; --on-acc:#ffffff;
+  --green:#1b6a48; --green-ink:#17603f; --green-soft:#e4f1ea; --on-green:#ffffff;
+  --bar:#7a2945; --on-bar:#ffffff; --bar-sub:#f0cdd8;
+  --sup-bar:#7a4a17;
+  --deep:#2a0f1a; --on-deep:#f6ecdc; --deep-sub:#c9abb7;
+  --gold:#c89a2e; --gold-ink:#86600f; --gold-soft:#f8efd9; --on-gold:#1d1606;
+  --ochre:#9a5a1b; --ochre-soft:#f7ecdd; --on-ochre:#ffffff;
+  --blue:#2a5a86; --blue-soft:#e5eef6; --on-blue:#ffffff;
+  --teal:#1d6b73; --teal-soft:#e0f0f1; --on-teal:#ffffff;
+  --red:#a13d2a; --red-soft:#f7e4de; --on-red:#ffffff;
+  --bankfill:#2a0f1a; --on-bank:#f6ecdc;
+  --bezel:#120a0d; --bezel-2:#2b2025; --bezel-txt:#b29ca6;
+  --wa-bg:#efe8e3; --wa-in:#ffffff; --wa-out:#f3e3d0; --wa-sys:#fbf1cf;
+  --map-land:#ece6e4; --map-road:#d8cfcc;
+  --stamp-blend:multiply;
+  --shadow:0 1px 2px rgba(40,18,28,.06),0 14px 36px rgba(40,18,28,.12);
+  --shadow-lg:0 40px 80px -30px rgba(42,15,26,.5);
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --sans:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --kn:var(--sans);
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.34,1.56,.64,1); --out:cubic-bezier(.16,1,.3,1);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#120c0f; --surface:#1b1418; --surface-2:#221a1e; --surface-3:#2b2126; --line:#3a2c32; --line-2:#4a3a41;
+  --ink:#f4edef; --body:#cdbfc5; --muted:#988890;
+  --acc:#e48aa5; --acc-ink:#f0a8be; --acc-soft:#33192a; --on-acc:#2a0e18;
+  --green:#5bc192; --green-ink:#7fd6ac; --green-soft:#10261c; --on-green:#06130c;
+  --bar:#4a1729; --on-bar:#fbeef2; --bar-sub:#d9b2c0;
+  --sup-bar:#4a2e10;
+  --deep:#0d0609; --on-deep:#f6ecdc; --deep-sub:#b9a0aa;
+  --gold:#e2b54a; --gold-ink:#f0c95f; --gold-soft:#342a12; --on-gold:#1d1606;
+  --ochre:#dd9650; --ochre-soft:#36240f; --on-ochre:#1a0f05;
+  --blue:#80b3e2; --blue-soft:#14263a; --on-blue:#08131f;
+  --teal:#62c4cb; --teal-soft:#10302f; --on-teal:#061819;
+  --red:#ec7d64; --red-soft:#3a1c15; --on-red:#1c0905;
+  --bankfill:#eadfe3; --on-bank:#2a0f1a;
+  --bezel:#050304; --bezel-2:#1f171b; --bezel-txt:#9c8790;
+  --wa-bg:#160f12; --wa-in:#251b20; --wa-out:#3b2814; --wa-sys:#3a3014;
+  --map-land:#211a1d; --map-road:#33282d;
+  --stamp-blend:normal;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 36px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#120c0f; --surface:#1b1418; --surface-2:#221a1e; --surface-3:#2b2126; --line:#3a2c32; --line-2:#4a3a41;
+  --ink:#f4edef; --body:#cdbfc5; --muted:#988890;
+  --acc:#e48aa5; --acc-ink:#f0a8be; --acc-soft:#33192a; --on-acc:#2a0e18;
+  --green:#5bc192; --green-ink:#7fd6ac; --green-soft:#10261c; --on-green:#06130c;
+  --bar:#4a1729; --on-bar:#fbeef2; --bar-sub:#d9b2c0;
+  --sup-bar:#4a2e10;
+  --deep:#0d0609; --on-deep:#f6ecdc; --deep-sub:#b9a0aa;
+  --gold:#e2b54a; --gold-ink:#f0c95f; --gold-soft:#342a12; --on-gold:#1d1606;
+  --ochre:#dd9650; --ochre-soft:#36240f; --on-ochre:#1a0f05;
+  --blue:#80b3e2; --blue-soft:#14263a; --on-blue:#08131f;
+  --teal:#62c4cb; --teal-soft:#10302f; --on-teal:#061819;
+  --red:#ec7d64; --red-soft:#3a1c15; --on-red:#1c0905;
+  --bankfill:#eadfe3; --on-bank:#2a0f1a;
+  --bezel:#050304; --bezel-2:#1f171b; --bezel-txt:#9c8790;
+  --wa-bg:#160f12; --wa-in:#251b20; --wa-out:#3b2814; --wa-sys:#3a3014;
+  --map-land:#211a1d; --map-road:#33282d;
+  --stamp-blend:normal;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 36px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
