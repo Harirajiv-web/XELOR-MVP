@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>WOLM · Launch roadmap: 30, 45 and 60-day plans</title>
+<link rel="stylesheet" href="archivo.css">
+<style>
+@page{size:1440px 810px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a2223;--card:#243031;--card2:#1f2829;--line:#2f3c3d;--line2:#3a4849;
+  --ink:#f6f8f7;--text:#e9eeec;--body:#c9d1ce;--muted:#8f9695;--faint:#66706e;
+  --mint:#4fb394;--mint-hi:#6fd0b0;--mint-deep:#1e3d36;--mint-mid:#2b5e50;
+  --gold:#c39549;--gold-deep:#3a3022;--li:#0a66c2;--black:#0f1415;
+  --f:'Archivo','Liberation Sans',Arial,sans-serif;
+}
+html,body{background:var(--bg)}
+body{font-family:var(--f);color:var(--text);-webkit-print-color-adjust:exact;print-color-adjust:exact;font-feature-settings:"tnum" 1}
+.s{width:1440px;height:810px;position:relative;overflow:hidden;background:var(--bg);padding:46px 72px 0;display:flex;flex-direction:column;break-after:page}
+.s::after{content:"";position:absolute;right:-60px;top:-40px;width:420px;height:900px;background:linear-gradient(115deg,transparent 46%,rgba(79,179,148,.05) 46%,rgba(79,179,148,.05) 64%,transparent 64%);pointer-events:none}
+.s::before{content:"";position:absolute;right:120px;top:-40px;width:2px;height:300px;background:linear-gradient(180deg,rgba(79,179,148,.6),transparent);transform:rotate(25deg);transform-origin:top;pointer-events:none}
+.top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.eb{font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--mint)}
+h1{margin-top:7px;font-size:35px;line-height:1.08;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+h1 em{font-style:normal;color:var(--mint)}
+.sub{margin-top:8px;font-size:15.5px;line-height:1.45;color:var(--muted);max-width:1060px}
+.sub b{color:var(--text);font-weight:600}
+.logo{height:24px;margin-top:4px;opacity:.95}
+.sf{position:absolute;left:72px;right:72px;bottom:22px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--faint);border-top:1px solid var(--line);padding-top:11px}
+.sf .pg{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.sf img{height:16px}
+.card{background:var(--card);border-radius:16px;border:1px solid rgba(255,255,255,.03)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* gantt (shared) */
+.gantt{position:relative}
+.g-axis,.g-row{display:grid;grid-template-columns:230px 1fr;align-items:center}
+.g-axis{padding-bottom:8px;border-bottom:1px solid var(--line)}
+.g-axis .ticks{position:relative;height:16px}
+.g-axis .ticks span{position:absolute;transform:translateX(-50%);font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.g-row{height:var(--rh,34px)}
+.g-row .nm{font-size:14px;font-weight:600;color:var(--text);line-height:1.15}
+.g-row .nm small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:1px}
+.g-row .tr{position:relative;height:100%}
+.g-row .tr::before{content:"";position:absolute;inset:0;background:var(--grid)}
+.bar{position:absolute;top:22%;bottom:22%;border-radius:6px;display:flex;align-items:center;padding:0 9px;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden}
+.bar.prep{background:#3a4849;color:#d5dcda}
+.bar.shoot{background:var(--gold);color:#241b0c}
+.bar.tease{background:var(--mint-mid);color:#d8f1e8}
+.bar.launch{background:var(--mint);color:#0f1f1a}
+.bar.push{background:repeating-linear-gradient(45deg,rgba(79,179,148,.16) 0 6px,rgba(79,179,148,.07) 6px 12px);border:1.5px dashed var(--mint);color:var(--mint-hi)}
+.bar.scale{background:linear-gradient(90deg,#2f8a6e,#4fb394);color:#0f1f1a}
+.bar.report{background:var(--ink);color:var(--bg)}
+.g-row.gates .nm{color:var(--gold)}
+.gate{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;color:var(--gold);white-space:nowrap}
+.gate i{width:13px;height:13px;background:var(--gold);transform:rotate(45deg);border-radius:2px;flex:none}
+.gate.tx{color:var(--gold)}.gate.tx i{display:none}
+.gate.rv{color:#9fb8ff}.gate.rv i{background:#6c8ff0;border-radius:50%;transform:none;width:11px;height:11px}
+.lline{position:absolute;top:-4px;bottom:0;width:2px;background:var(--mint);z-index:2;pointer-events:none}
+.lline span{position:absolute;top:-21px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:800;color:#0f1f1a;background:var(--mint);padding:2px 8px;border-radius:999px}
+
+/* ---------- overview ---------- */
+.ov-tl{margin-top:22px;padding:30px 24px 16px;flex:none}
+.ov-tl .g-row{--rh:52px}
+.ov-tl .g-row .nm b{display:block;font-size:17px;font-weight:800;color:var(--ink)}
+.ov-tl .g-row .nm span{display:block;font-size:12px;color:var(--muted)}
+.ov-tl .g-row.rec .nm b{color:var(--mint)}
+.ov-tl .bar{top:20%;bottom:20%;font-size:12px}
+.legend{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.legend div{display:flex;gap:8px;align-items:flex-start}
+.legend i{flex:none;width:14px;height:14px;border-radius:4px;margin-top:2px}
+.legend b{display:block;font-size:13px;color:var(--ink)}
+.legend small{display:block;font-size:11.5px;color:var(--muted);line-height:1.3;margin-top:1px}
+.cmp3{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:none}
+.pc{padding:18px 20px 16px;position:relative}
+.pc.rec{background:linear-gradient(180deg,#22403a,var(--card) 70%);box-shadow:inset 0 0 0 1.5px var(--mint)}
+.pc .badge{position:absolute;right:16px;top:16px;font-size:10px;font-weight:800;letter-spacing:.14em;color:#0f1f1a;background:var(--mint);padding:3px 9px;border-radius:999px}
+.pc .k{font-size:11.5px;font-weight:700;letter-spacing:.16em;color:var(--mint);text-transform:uppercase}
+.pc h3{margin-top:3px;font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.pc .bf{margin-top:3px;font-size:13.5px;color:var(--muted)}
+.pc .kv{margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pc .kv div{background:var(--card2);border-radius:10px;padding:8px 10px}
+.pc .kv b{display:block;font-size:20px;font-weight:800;color:var(--ink);line-height:1.05}
+.pc .kv small{display:block;margin-top:3px;font-size:11px;color:var(--muted);line-height:1.25}
+.pc .inv{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between}
+.pc .inv span{font-size:12px;color:var(--muted)}
+.pc .inv b{font-size:22px;font-weight:800;color:var(--ink)}
+.pc.rec .inv b{color:var(--mint)}
+.always{margin-top:14px;display:flex;align-items:center;gap:12px;flex:none;font-size:13px;color:var(--body)}
+.always .lbl{flex:none}
+.always span{display:inline-flex;align-items:center;gap:7px;background:var(--card);border-radius:999px;padding:6px 12px 6px 7px;white-space:nowrap}
+.always span i{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800;color:#fff}
+
+/* ---------- plan pages ---------- */
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;flex:none}
+.kp{padding:10px 14px;display:flex;gap:12px;align-items:center}
+.kp i{flex:none;width:38px;height:38px;border-radius:11px;background:var(--mint-deep);color:var(--mint);display:grid;place-items:center}
+.kp b{display:block;font-size:22px;font-weight:800;color:var(--ink);line-height:1}
+.kp small{display:block;margin-top:4px;font-size:12px;color:var(--muted);line-height:1.25}
+.kp.hl{background:linear-gradient(120deg,#2a5a4c,#22403a);box-shadow:inset 0 0 0 1px rgba(79,179,148,.5)}
+.kp.hl b{color:var(--mint-hi)}
+.pl-tl{margin-top:12px;padding:24px 22px 6px;flex:none}
+.pl-tl .g-row{--rh:24.5px}
+.pl-tl .g-row .nm{font-size:13px}
+.pl-tl .g-row .nm small{display:none}
+.pl-tl .bar{top:16%;bottom:16%}
+.pl-tl .gantt{--grid:none}
+.bottom{margin-top:12px;display:grid;grid-template-columns:1.55fr 1fr 1fr;gap:12px;flex:none}
+.bottom .card{padding:13px 16px}
+.weeks{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.wk{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:baseline}
+.wk b{font-size:12px;font-weight:800;color:var(--mint);letter-spacing:.04em;white-space:nowrap}
+.wk span{font-size:12.5px;line-height:1.35;color:var(--body)}
+.wk span strong{color:var(--ink);font-weight:700}
+.wk.ld b{color:#0f1f1a;background:var(--mint);border-radius:6px;padding:1px 5px;justify-self:start;font-size:11.5px}
+.out{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.out div{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:9px;padding:5px 8px}
+.out div b{flex:none;min-width:26px;font-size:17px;font-weight:800;color:var(--ink);text-align:right}
+.out div span{font-size:12px;color:var(--body);line-height:1.2}
+.out .tot{grid-column:span 2;background:var(--mint-deep)}
+.out .tot b{color:var(--mint-hi)}
+.rhythm{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.4}
+.ms{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.ms div{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.35;color:var(--body)}
+.ms div i{flex:none;width:22px;height:22px;border-radius:7px;background:var(--mint-deep);color:var(--mint);display:grid;place-items:center;margin-top:-1px}
+.ms div i .ico{width:12px;height:12px}
+.ms div b{color:var(--ink);font-weight:700}
+.trade{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--gold-deep);color:#e8d3ac;font-size:12.5px;line-height:1.4}
+.trade b{color:#f3e2c2}
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+ <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M9 13l2 2M14.5 4.5C18 3 21 3 21 3s0 3-1.5 6.5L13 16l-5-5z"/><circle cx="15.5" cy="8.5" r="1.5"/></symbol>
+ <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+ <symbol id="i-diamond" viewBox="0 0 24 24"><path d="M12 3 21 12 12 21 3 12z"/></symbol>
+ <symbol id="i-stack" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+ <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M6 4h12M6 9h12M9 4c6 0 6 9 0 9H6l8 7"/></symbol>
+ <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+ <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+ <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></symbol>
+ <symbol id="i-form" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></symbol>
+ <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></symbol>
+ <symbol id="i-sync" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></symbol>
+ <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></symbol>
+ <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</defs></svg>
+
+<!-- ================= PAGE 1 · OVERVIEW ================= -->
+<section class="s">
+ <div class="top">
+  <div>
+   <div class="eb">WOLM launch roadmap · the big picture</div>
+   <h1>One launch plan, <em>three speeds</em>: 30, 45 or 60 days</h1>
+   <p class="sub">Every plan follows the same five steps: <b>plan, make, tease, launch, push</b>. The difference is how much time we take to prepare, and how long we stay live to learn and grow before the plan ends.</p>
+  </div>
+  <img class="logo" src="logo_white.png" alt="Vortex Media Management">
+ </div>
+ <div class="card ov-tl">
+  <div class="gantt" id="ov"></div>
+  <div class="legend">
+   <div><i style="background:#3a4849"></i><div><b>Plan</b><small>Strategy, positioning and scripts</small></div></div>
+   <div><i style="background:var(--gold)"></i><div><b>Make</b><small>The shoot, editing, ads and lead forms</small></div></div>
+   <div><i style="background:var(--mint-mid)"></i><div><b>Tease</b><small>Warm up the audience before launch</small></div></div>
+   <div><i style="background:var(--mint)"></i><div><b>Launch</b><small>Content, LinkedIn Live demo and ads go live</small></div></div>
+   <div><i style="background:repeating-linear-gradient(45deg,rgba(79,179,148,.35) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px var(--mint)"></i><div><b>Push</b><small>Steady posting, ads and retargeting</small></div></div>
+   <div><i style="background:linear-gradient(90deg,#2f8a6e,#4fb394)"></i><div><b>Scale</b><small>Second shoot, double down on what works</small></div></div>
+  </div>
+ </div>
+ <div class="cmp3">
+  <div class="card pc">
+   <div class="k">Plan A · 30 days</div><h3>The Sprint</h3><div class="bf">Best when a date is coming up fast</div>
+   <div class="kv"><div><b>Day 18</b><small>Launch day</small></div><div><b>13 days</b><small>Live before the plan ends</small></div><div><b>123</b><small>Pieces of content</small></div></div>
+   <div class="inv"><span>Indicative investment</span><b>₹2,14,500</b></div>
+  </div>
+  <div class="card pc rec"><span class="badge">RECOMMENDED</span>
+   <div class="k">Plan B · 45 days</div><h3>The Launch</h3><div class="bf">The plan in the deck: balanced prep and push</div>
+   <div class="kv"><div><b>Day 31</b><small>Launch day</small></div><div><b>15 days</b><small>Live before the plan ends</small></div><div><b>185</b><small>Pieces of content</small></div></div>
+   <div class="inv"><span>Launch Engine package</span><b>₹3,22,500</b></div>
+  </div>
+  <div class="card pc">
+   <div class="k">Plan C · 60 days</div><h3>Launch + Scale</h3><div class="bf">Launch, then a full month to learn and grow</div>
+   <div class="kv"><div><b>Day 31</b><small>Launch day</small></div><div><b>30 days</b><small>Live before the plan ends</small></div><div><b>247</b><small>Pieces of content</small></div></div>
+   <div class="inv"><span>Indicative investment</span><b>₹4,30,500</b></div>
+  </div>
+ </div>
+ <div class="always"><span class="lbl">In every plan</span>
+  <span><i style="background:var(--li)">in</i>Founder-led LinkedIn</span>
+  <span><i style="background:linear-gradient(135deg,#f6a13a,#e2407a 55%,#8a49d6)">IG</i>4 Reels-style series</span>
+  <span><i style="background:#e2483d">▶</i>YouTube proof videos</span>
+  <span><i style="background:var(--mint);color:#0f1f1a">◎</i>Ads: LinkedIn 50 · Google 30 · Meta 20</span>
+  <span><i style="background:var(--gold);color:#241b0c">◆</i>Your approval before anything goes live</span>
+ </div>
+ <div class="sf"><span>Plan B is the 45-day Launch Engine from the deck · Plans A and C are scaled from its rate of ₹1,743 per piece · Prices exclude 18% GST and ad spend</span><span class="pg">Vortex Media Management · 01 <img src="mark_white.png" alt=""></span></div>
+</section>
+
+<!-- ================= PAGE 2 · 30 DAYS ================= -->
+<section class="s">
+ <div class="top"><div>
+  <div class="eb">Plan A · 30-day roadmap</div>
+  <h1>The Sprint: <em>live on day 18</em>, then 13 days of push</h1>
+  <p class="sub">The same steps as the full launch, done faster. Best when WOLM has a fixed date coming up, such as an event, a funding round or a first customer announcement.</p>
+ </div><img class="logo" src="logo_white.png" alt=""></div>
+ <div class="kpis">
+  <div class="card kp"><i><svg class="ico"><use href="#i-rocket"/></svg></i><div><b>Day 18</b><small>Launch day</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-clock"/></svg></i><div><b>17 + 13</b><small>Days to prepare + days live</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-diamond"/></svg></i><div><b>4</b><small>Approval checkpoints</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-stack"/></svg></i><div><b>123</b><small>Pieces of content · 6 shoot days</small></div></div>
+  <div class="card kp hl"><i><svg class="ico"><use href="#i-rupee"/></svg></i><div><b>₹2,14,500</b><small>Indicative, + GST and ad spend</small></div></div>
+ </div>
+ <div class="card pl-tl"><div class="gantt" id="g30"></div></div>
+ <div class="bottom">
+  <div class="card"><div class="lbl">Week by week</div>
+   <div class="weeks">
+    <div class="wk"><b>Days 1–7</b><span>Strategy and concepts. <strong>Positioning approved day 2</strong>, scripts approved day 5. Shoot starts day 7.</span></div>
+    <div class="wk"><b>Days 8–14</b><span>Shoot wraps. Editing, ads and lead forms built. <strong>First cuts approved day 11</strong>. Teasers start day 12.</span></div>
+    <div class="wk ld"><b>Days 15–21</b><span><strong>Go-live sign-off day 16. Launch day 18</strong>: LinkedIn Live demo, YouTube demo teardown, ads switch on.</span></div>
+    <div class="wk"><b>Days 22–30</b><span>Push: Reels, founder posts and retargeting. <strong>Ad budget review day 25</strong>. Final report day 30.</span></div>
+   </div></div>
+  <div class="card"><div class="lbl">What goes out</div>
+   <div class="out">
+    <div><b>3</b><span>YouTube long videos</span></div><div><b>18</b><span>YouTube Shorts</span></div>
+    <div><b>26</b><span>Instagram Reels</span></div><div><b>14</b><span>Instagram posts</span></div>
+    <div><b>30</b><span>Story frames</span></div><div><b>32</b><span>LinkedIn posts (16 + 16 founder)</span></div>
+    <div class="tot"><b>123</b><span>pieces of content in 30 days</span></div>
+   </div></div>
+  <div class="card"><div class="lbl">How we'll know it's working</div>
+   <div class="ms">
+    <div><i><svg class="ico"><use href="#i-eye"/></svg></i><span><b>Reels:</b> 3-second hold and completion</span></div>
+    <div><i><svg class="ico"><use href="#i-users"/></svg></i><span><b>LinkedIn:</b> engagement from sales titles</span></div>
+    <div><i><svg class="ico"><use href="#i-form"/></svg></i><span><b>Ads:</b> leads from forms, demo-page clicks</span></div>
+   </div>
+   <div class="trade"><b>Trade-off:</b> less time to test. The ad budget is reviewed after 1 week of results, not the 2 weeks we prefer.</div></div>
+ </div>
+ <div class="sf"><span>Indicative: content and price scaled from the 45-day Launch Engine (₹1,743 per piece) · To be confirmed · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 02 <img src="mark_white.png" alt=""></span></div>
+</section>
+
+<!-- ================= PAGE 3 · 45 DAYS ================= -->
+<section class="s">
+ <div class="top"><div>
+  <div class="eb">Plan B · 45-day roadmap · recommended</div>
+  <h1>The Launch: 30 days to prepare, <em>live on day 31</em></h1>
+  <p class="sub">The plan in the deck. A full month to get positioning, scripts and videos right, then two weeks of push with ads running and enough data to see what works.</p>
+ </div><img class="logo" src="logo_white.png" alt=""></div>
+ <div class="kpis">
+  <div class="card kp"><i><svg class="ico"><use href="#i-rocket"/></svg></i><div><b>Day 31</b><small>Launch day</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-clock"/></svg></i><div><b>30 + 15</b><small>Days to prepare + days live</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-diamond"/></svg></i><div><b>4</b><small>Approval checkpoints</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-stack"/></svg></i><div><b>185</b><small>Pieces of content · 9 shoot days</small></div></div>
+  <div class="card kp hl"><i><svg class="ico"><use href="#i-rupee"/></svg></i><div><b>₹3,22,500</b><small>Launch Engine, + GST and ad spend</small></div></div>
+ </div>
+ <div class="card pl-tl"><div class="gantt" id="g45"></div></div>
+ <div class="bottom">
+  <div class="card"><div class="lbl">Week by week</div>
+   <div class="weeks">
+    <div class="wk"><b>Days 1–10</b><span>Strategy, concepts and scripts. <strong>Positioning approved day 3</strong>, <strong>scripts approved day 8</strong>.</span></div>
+    <div class="wk"><b>Days 11–20</b><span>2-day shoot on days 11–12. Editing, ads and lead forms built. <strong>First cuts approved day 18</strong>.</span></div>
+    <div class="wk"><b>Days 21–30</b><span>Teasers warm up the audience. <strong>Go-live sign-off day 28</strong>.</span></div>
+    <div class="wk ld"><b>Day 31</b><span><strong>Launch:</strong> LinkedIn Live demo teardown, YouTube demo, ads switch on.</span></div>
+    <div class="wk"><b>Days 32–45</b><span>Push: 4 Reels a week, retargeting, Google Search. <strong>Budget review after 2 weeks</strong> of data.</span></div>
+   </div></div>
+  <div class="card"><div class="lbl">What goes out</div>
+   <div class="out">
+    <div><b>5</b><span>YouTube long videos</span></div><div><b>27</b><span>YouTube Shorts</span></div>
+    <div><b>39</b><span>Instagram Reels</span></div><div><b>21</b><span>Instagram posts</span></div>
+    <div><b>45</b><span>Story frames</span></div><div><b>48</b><span>LinkedIn posts (24 + 24 founder)</span></div>
+    <div class="tot"><b>185</b><span>pieces of content in 45 days</span></div>
+   </div>
+   <div class="rhythm">Weekly report · community management on Instagram and LinkedIn · two recorded founder sessions</div></div>
+  <div class="card"><div class="lbl">How we'll know it's working</div>
+   <div class="ms">
+    <div><i><svg class="ico"><use href="#i-eye"/></svg></i><span><b>Reels:</b> 3-second hold, completion, shares, saves</span></div>
+    <div><i><svg class="ico"><use href="#i-users"/></svg></i><span><b>LinkedIn:</b> sales-title engagement, ideal-customer followers, inbound messages</span></div>
+    <div><i><svg class="ico"><use href="#i-play"/></svg></i><span><b>YouTube:</b> watch time, clicks to the demo page</span></div>
+   </div>
+   <div class="trade"><b>Why we recommend it:</b> enough time to get the content right, and enough live days for a fair first read of the ads.</div></div>
+ </div>
+ <div class="sf"><span>From the deck: approvals G1 day 3 · G2 day 8 · G3 day 18 · G4 day 28 · launch day 31 · push to day 45 · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 03 <img src="mark_white.png" alt=""></span></div>
+</section>
+
+<!-- ================= PAGE 4 · 60 DAYS ================= -->
+<section class="s">
+ <div class="top"><div>
+  <div class="eb">Plan C · 60-day roadmap</div>
+  <h1>Launch + Scale: live on day 31, <em>a full month to grow</em></h1>
+  <p class="sub">The 45-day launch, plus 15 more days to act on what we learn: a second shoot based on the best-performing series, and the ad budget moved twice toward what works.</p>
+ </div><img class="logo" src="logo_white.png" alt=""></div>
+ <div class="kpis">
+  <div class="card kp"><i><svg class="ico"><use href="#i-rocket"/></svg></i><div><b>Day 31</b><small>Launch day</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-clock"/></svg></i><div><b>30 + 30</b><small>Days to prepare + days live</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-diamond"/></svg></i><div><b>5</b><small>Approval checkpoints</small></div></div>
+  <div class="card kp"><i><svg class="ico"><use href="#i-stack"/></svg></i><div><b>247</b><small>Pieces of content · 12 shoot days</small></div></div>
+  <div class="card kp hl"><i><svg class="ico"><use href="#i-rupee"/></svg></i><div><b>₹4,30,500</b><small>Indicative, + GST and ad spend</small></div></div>
+ </div>
+ <div class="card pl-tl"><div class="gantt" id="g60"></div></div>
+ <div class="bottom">
+  <div class="card"><div class="lbl">Week by week</div>
+   <div class="weeks">
+    <div class="wk"><b>Days 1–30</b><span>Same preparation as Plan B: strategy, scripts, shoot, edits, teasers. <strong>4 approvals</strong>.</span></div>
+    <div class="wk ld"><b>Day 31</b><span><strong>Launch:</strong> LinkedIn Live demo teardown, YouTube demo, ads switch on.</span></div>
+    <div class="wk"><b>Days 32–45</b><span>Push. <strong>Scale plan approved day 44</strong>: which series and ads to double down on. First budget review day 45.</span></div>
+    <div class="wk"><b>Days 46–52</b><span><strong>Second shoot days 47–48</strong>, built on what performed. New YouTube walkthroughs by job role.</span></div>
+    <div class="wk"><b>Days 53–60</b><span>Scale the winners. <strong>Second budget review day 55</strong>. Day 60: full report and next-quarter plan.</span></div>
+   </div></div>
+  <div class="card"><div class="lbl">What goes out</div>
+   <div class="out">
+    <div><b>7</b><span>YouTube long videos</span></div><div><b>36</b><span>YouTube Shorts</span></div>
+    <div><b>52</b><span>Instagram Reels</span></div><div><b>28</b><span>Instagram posts</span></div>
+    <div><b>60</b><span>Story frames</span></div><div><b>64</b><span>LinkedIn posts (32 + 32 founder)</span></div>
+    <div class="tot"><b>247</b><span>pieces of content in 60 days</span></div>
+   </div></div>
+  <div class="card"><div class="lbl">How we'll know it's working</div>
+   <div class="ms">
+    <div><i><svg class="ico"><use href="#i-chart"/></svg></i><span><b>Trends, not snapshots:</b> a full month of live data</span></div>
+    <div><i><svg class="ico"><use href="#i-form"/></svg></i><span><b>Leads and demo bookings</b> by channel, after two budget moves</span></div>
+    <div><i><svg class="ico"><use href="#i-doc"/></svg></i><span><b>Day-60 report:</b> what to keep, cut and scale next quarter</span></div>
+   </div>
+   <div class="trade"><b>Best for:</b> getting real answers on which series, channels and ads bring demos, before planning the next quarter.</div></div>
+ </div>
+ <div class="sf"><span>Indicative: content and price scaled from the 45-day Launch Engine (₹1,743 per piece) · To be confirmed · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 04 <img src="mark_white.png" alt=""></span></div>
+</section>
+
+<script>
+function gantt(el,D,rows,marks,opts){
+ opts=opts||{};
+ const pos=d=>(d-1)/D*100, wid=(a,b)=>(b-a+1)/D*100;
+ const tk=opts.ticks;
+ let grid='repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/'+(D/5)+' - 1px),rgba(255,255,255,.05) calc(100%/'+(D/5)+' - 1px),rgba(255,255,255,.05) calc(100%/'+(D/5)+'))';
+ el.style.setProperty('--grid',grid);
+ let h='<div class="g-axis"><div class="lbl">'+(opts.axis||'Days')+'</div><div class="ticks">'+tk.map(t=>'<span style="left:'+((t-.5)/D*100)+'%">'+(opts.tl?opts.tl(t):t)+'</span>').join('')+'</div></div>';
+ for(const r of rows){
+  h+='<div class="g-row'+(r.cls?' '+r.cls:'')+'"><div class="nm">'+r.name+'</div><div class="tr">';
+  for(const b of r.bars) h+='<div class="bar '+b[0]+'" style="left:'+pos(b[1])+'%;width:'+wid(b[1],b[2])+'%">'+(b[3]||'')+'</div>';
+  for(const g of (r.gates||[])) h+='<div class="gate'+(g[2]?' '+g[2]:'')+'" style="left:'+((g[1]-.5)/D*100)+'%"><i></i>'+g[0]+'</div>';
+  h+='</div></div>';
+ }
+ el.innerHTML=h;
+ // launch line(s)
+ for(const m of (marks||[])){
+  const tr=el.querySelector('.g-row .tr'); const box=el.getBoundingClientRect(), t=tr.getBoundingClientRect();
+  const x=t.left-box.left+(m[0]-1)/D*t.width;
+  const d=document.createElement('div'); d.className='lline'; d.style.left=x+'px'; d.style.top=(t.top-box.top-6)+'px';
+  d.innerHTML='<span>'+m[1]+'</span>'; el.appendChild(d);
+ }
+}
+// overview: shared 60-day axis
+gantt(document.getElementById('ov'),60,[
+ {name:'<b>30 days</b><span>Plan A · The Sprint</span>',bars:[['prep',1,6,'Plan'],['shoot',7,11,'Make'],['tease',12,17,'Tease'],['launch',18,20,'Live'],['push',21,30,'Push']]},
+ {name:'<b>45 days</b><span>Plan B · The Launch</span>',cls:'rec',bars:[['prep',1,10,'Plan'],['shoot',11,20,'Make'],['tease',21,30,'Tease'],['launch',31,35,'Launch'],['push',36,45,'Push']]},
+ {name:'<b>60 days</b><span>Plan C · Launch + Scale</span>',bars:[['prep',1,10,'Plan'],['shoot',11,20,'Make'],['tease',21,30,'Tease'],['launch',31,35,'Launch'],['push',36,45,'Push'],['scale',46,60,'Scale']]},
+],[],{ticks:[1,5,10,15,20,25,30,35,40,45,50,55,60],tl:t=>'Day '+t});
+// add per-row launch tags on overview
+(function(){
+ const el=document.getElementById('ov');
+ [[18,'Live day 18'],[31,'Live day 31'],[31,'Live day 31']].forEach((m,i)=>{
+  const tr=el.querySelectorAll('.g-row .tr')[i];
+  const d=document.createElement('div'); d.className='gate'; d.style.cssText='left:calc('+((m[0]-1)/60*100)+'% );top:-2px;transform:translate(-50%,-50%);color:var(--mint-hi);font-size:10.5px';
+  d.innerHTML='▼ '+m[1]; tr.appendChild(d);
+ });
+})();
+
+const T30=[1,5,10,15,20,25,30];
+gantt(document.getElementById('g30'),30,[
+ {name:'Strategy & concepts<small>What we say and to whom</small>',bars:[['prep',1,3,'1–3']]},
+ {name:'Scripts & shoot plan<small>Write every video</small>',bars:[['prep',4,6,'4–6']]},
+ {name:'2-day shoot<small>Film everything</small>',bars:[['shoot',7,8,'7–8']]},
+ {name:'Edit & ad setup<small>Videos, ads, lead forms</small>',bars:[['prep',7,13,'Days 7–13']]},
+ {name:'Pre-launch teasers<small>Warm up the audience</small>',bars:[['tease',12,17,'Days 12–17']]},
+ {name:'Launch<small>Everything goes live</small>',bars:[['launch',18,20,'Day 18']]},
+ {name:'Push<small>Posting, ads, retargeting</small>',bars:[['push',21,30,'Days 21–30']]},
+ {name:'Results check-ins',bars:[],gates:[['Budget review',25,'rv'],['Report',29.2,'rv']]},
+ {name:'Your approvals<small>Four checkpoints</small>',cls:'gates',bars:[],gates:[['G1 positioning',2],['G2 scripts',5],['G3 cuts',11],['G4 go-live',16]]},
+],[[18,'Launch · day 18']],{ticks:T30});
+
+gantt(document.getElementById('g45'),45,[
+ {name:'Strategy, then scripts',bars:[['prep',1,5,'Strategy 1–5'],['prep',6,10,'Scripts 6–10']]},
+ {name:'2-day shoot<small>Film everything</small>',bars:[['shoot',11,12,'11–12']]},
+ {name:'Edit & ad setup<small>Videos, ads, lead forms</small>',bars:[['prep',11,20,'Days 11–20']]},
+ {name:'Pre-launch teasers<small>Warm up the audience</small>',bars:[['tease',21,30,'Days 21–30']]},
+ {name:'Launch<small>Everything goes live</small>',bars:[['launch',31,35,'Day 31']]},
+ {name:'Push<small>Posting, ads, retargeting</small>',bars:[['push',36,45,'Days 36–45']]},
+ {name:'Results check-ins',bars:[],gates:[['Weekly reports',21,'rv'],['Budget review + report',41.2,'rv']]},
+ {name:'Your approvals<small>Four checkpoints</small>',cls:'gates',bars:[],gates:[['G1 positioning',3],['G2 scripts',8],['G3 first cuts',18],['G4 go-live',28]]},
+],[[31,'Launch · day 31']],{ticks:[1,5,10,15,20,25,30,35,40,45]});
+
+gantt(document.getElementById('g60'),60,[
+ {name:'Plan &amp; scripts<small>Strategy, concepts, scripts</small>',bars:[['prep',1,10,'Days 1–10']]},
+ {name:'Shoots, edit &amp; ad setup',bars:[['shoot',11,12,''],['prep',13,20,'Days 11–20'],['shoot',47,48,'']],gates:[['◂ 2nd shoot, days 47–48',53.5,'tx']]},
+ {name:'Pre-launch teasers<small>Warm up the audience</small>',bars:[['tease',21,30,'Days 21–30']]},
+ {name:'Launch<small>Everything goes live</small>',bars:[['launch',31,35,'Day 31']]},
+ {name:'Push<small>Posting, ads, retargeting</small>',bars:[['push',36,45,'Days 36–45']]},
+ {name:'Scale<small>Double down on winners</small>',bars:[['scale',46,60,'Days 46–60']]},
+ {name:'Results check-ins',bars:[],gates:[['Review 1',45,'rv'],['Review 2',55,'rv'],['Report',58.6,'rv']]},
+ {name:'Your approvals<small>Five checkpoints</small>',cls:'gates',bars:[],gates:[['G1',3],['G2',8],['G3',18],['G4',28],['G5 scale plan',44]]},
+],[[31,'Launch · day 31']],{ticks:[1,5,10,15,20,25,30,35,40,45,50,55,60]});
+</script>
+</body></html>

@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>WOLM · Market, gap & 45-day launch plan</title>
+<link rel="stylesheet" href="archivo.css">
+<style>
+@page{size:1440px 810px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7f6;--surface:#fff;--tint:#eef4f1;--line:#dfe7e3;--line2:#cbd7d2;
+  --ink:#16201d;--body:#36423e;--muted:#6a7672;--faint:#9aa6a2;
+  --acc:#1d8a69;--acc-ink:#15694f;--acc-hi:#3dbf95;--acc-soft:#e5f4ed;--acc-mid:#bfe2d3;
+  --gold:#b9872f;--gold-soft:#f7f0e1;--gold-line:#ecdcb9;
+  --red:#c4553f;--red-soft:#fbece8;--li:#0a66c2;--li-soft:#e7f0fa;
+  --f:'Archivo','Liberation Sans',Arial,sans-serif;
+}
+html,body{background:var(--bg)}
+body{font-family:var(--f);color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact;font-feature-settings:"tnum" 1}
+.s{width:1440px;height:810px;position:relative;overflow:hidden;background:var(--bg);padding:52px 72px 0;display:flex;flex-direction:column;break-after:page}
+.s::before{content:"";position:absolute;right:-180px;top:-260px;width:720px;height:620px;background:radial-gradient(closest-side,rgba(61,191,149,.13),transparent);pointer-events:none}
+.eb{font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+h2{margin-top:8px;font-size:40px;line-height:1.08;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+h2 em{font-style:normal;color:var(--acc)}
+.sub{margin-top:10px;font-size:18px;line-height:1.45;color:var(--muted);max-width:1000px}
+.sub b{color:var(--ink);font-weight:600}
+.sf{position:absolute;left:72px;right:72px;bottom:24px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--faint);border-top:1px solid var(--line);padding-top:12px}
+.sf .pg{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.sf img{height:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(22,32,29,.04),0 8px 24px -12px rgba(22,32,29,.08)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--acc-soft);color:var(--acc-ink)}
+.chip.g{background:var(--gold-soft);color:#7a5a1c}.chip.n{background:var(--tint);color:var(--body)}
+.ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.gl{display:flex;gap:12px;align-items:flex-start;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:14px;padding:12px 16px;font-size:13.5px;line-height:1.45;color:#5b4a2a}
+.gl .q{flex:none;width:24px;height:24px;border-radius:50%;background:#efe1c0;color:#7a5a1c;display:grid;place-items:center;font-weight:800;font-size:13px}
+.gl b{color:#3e3018}
+.pf{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;color:#fff;font-size:12px;font-weight:800}
+.pf.li{background:var(--li)}.pf.yt{background:#e2483d}.pf.ig{background:linear-gradient(135deg,#f6a13a,#e2407a 55%,#8a49d6)}.pf.mt{background:#1877f2}.pf.gg{background:#fff;border:1px solid var(--line);color:#4285f4}
+.pf svg{width:14px;height:14px}
+
+/* ---------- 1 cover ---------- */
+.cover{padding:64px 80px 0}
+.cover::before{right:-120px;top:-200px;width:980px;height:900px;background:radial-gradient(closest-side,rgba(61,191,149,.18),transparent)}
+.cv-l{position:relative;z-index:1;max-width:760px}
+.cv-l .logo{height:34px;display:block}
+.cv-l .eb{margin-top:118px}
+.cv-l h1{margin-top:14px;font-size:150px;line-height:.9;font-weight:800;letter-spacing:-.04em;color:var(--ink)}
+.cv-l .t{margin-top:20px;font-size:40px;font-weight:400;color:var(--body);letter-spacing:-.015em}
+.cv-l .p{margin-top:16px;font-size:18px;line-height:1.5;color:var(--muted);max-width:620px}
+.cv-meta{position:absolute;left:80px;bottom:56px;display:flex;gap:64px;border-top:1px solid var(--line2);padding-top:18px;width:700px}
+.cv-meta div span{display:block;font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.cv-meta div b{display:block;margin-top:6px;font-size:18px;font-weight:500;color:var(--ink)}
+.stripes{position:absolute;right:0;top:0;bottom:0;width:560px;background:linear-gradient(115deg,transparent 41%,rgba(29,138,105,.07) 41%,rgba(29,138,105,.07) 62%,transparent 62%)}
+.stripes::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 71%,rgba(61,191,149,.5) 71%,rgba(61,191,149,.5) 71.25%,transparent 71.25%)}
+.myday{position:absolute;right:96px;top:150px;width:420px;padding:0;overflow:hidden}
+.md-h{display:flex;justify-content:space-between;align-items:baseline;padding:18px 22px;border-bottom:1px solid var(--line)}
+.md-h b{font-size:19px;color:var(--ink)}.md-h span{font-size:13px;color:var(--muted)}
+.md-b{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.ev{border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.ev.on{border-color:var(--acc-hi);background:linear-gradient(180deg,#f3fbf7,#fff)}
+.ev .t1{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.ev .t1 b{color:var(--acc);font-weight:700}
+.ev .t2{margin-top:4px;font-size:17px;font-weight:700;color:var(--ink)}
+.ev .tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.ev .tags span{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--tint);color:var(--body)}
+.ev .tags .m{background:var(--acc-soft);color:var(--acc-ink)}.ev .tags .c{background:var(--gold-soft);color:#7a5a1c}
+.after{background:var(--ink);border-radius:14px;padding:13px 16px;color:#e9eeec}
+.after .lbl{color:#8f9a96;font-size:10.5px}
+.after li{list-style:none;display:flex;gap:9px;align-items:center;margin-top:7px;font-size:14px}
+.after li::before{content:"";width:16px;height:16px;flex:none;border-radius:50%;background:var(--acc-hi) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316201d' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12 4 4 8-8'/%3E%3C/svg%3E") center/11px no-repeat}
+.float{position:absolute;padding:10px 14px;font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;border-radius:12px}
+.float i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc)}
+.float i .ico{width:15px;height:15px}
+
+/* ---------- 2 summary ---------- */
+.sum{margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;flex:none}
+.sm{padding:24px 22px 22px;display:flex;flex-direction:column;min-height:400px;position:relative}
+.sm .n{width:44px;height:44px;border-radius:13px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center}
+.sm .n .ico{width:24px;height:24px}
+.sm .k{margin-top:20px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.sm h3{margin-top:6px;font-size:25px;line-height:1.2;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.sm p{margin-top:10px;font-size:16px;line-height:1.5;color:var(--body)}
+.sm .vis{margin-top:auto;padding-top:18px}
+.sm .arrow{position:absolute;right:-19px;top:46px;width:20px;height:20px;padding:3px;border-radius:50%;background:#fff;border:1px solid var(--acc-mid);color:var(--acc);z-index:2;stroke-width:2.6}
+.minibars{display:flex;flex-direction:column;gap:6px}
+.minibars div{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.minibars div span{flex:none;width:68px}
+.minibars div i{height:8px;border-radius:4px;background:var(--line2)}
+.minibars div.w i{background:var(--acc)}.minibars div.w span{color:var(--acc-ink);font-weight:700}
+.flowmini{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.flowmini span{font-size:11.5px;font-weight:600;padding:5px 8px;border-radius:8px;background:var(--acc-soft);color:var(--acc-ink)}
+.flowmini svg{width:10px;height:10px;color:var(--acc-hi)}
+.chanmini{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chanmini div{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--tint);border-radius:9px;padding:6px 8px}
+.chanmini .pf{width:20px;height:20px;border-radius:6px;font-size:10px}
+.chanmini .pf svg{width:11px;height:11px}
+.daysmini{position:relative;height:44px}
+.daysmini .bar{position:absolute;left:0;right:0;top:16px;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--line2) 0 66.6%,var(--acc-hi) 66.6% 100%)}
+.daysmini .mk{position:absolute;left:66.6%;top:0;transform:translateX(-50%);font-size:11px;font-weight:800;color:var(--acc-ink)}
+.daysmini .a{position:absolute;top:32px;font-size:11px;color:var(--muted)}
+.price-row{display:flex;align-items:baseline;gap:6px;margin-top:4px}
+.price-row b{font-size:24px;font-weight:800;color:var(--ink)}
+
+.agenda{margin-top:22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:none}
+.agenda .lbl{margin-right:8px}
+.agenda a{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 6px}
+.agenda a b{font-size:11.5px;font-weight:800;color:var(--acc-ink);background:var(--acc-soft);border-radius:999px;padding:2px 7px}
+/* ---------- 3 what wolm does ---------- */
+.wd{margin-top:32px;display:grid;grid-template-columns:1.55fr 1fr;gap:26px;flex:none}
+.moments{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;overflow:hidden}
+.mo{padding:26px 24px 24px;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.mo:last-child{border-right:0;background:linear-gradient(180deg,#f3fbf7,#fff)}
+.mo .when{display:flex;align-items:center;gap:10px}
+.mo .when i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--tint);color:var(--ink)}
+.mo:last-child .when i{background:var(--acc);color:#fff}
+.mo .when b{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mo h3{margin-top:18px;font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.015em;line-height:1.2}
+.mo p{margin-top:8px;font-size:16px;line-height:1.5;color:var(--body)}
+.mo ul{margin-top:16px;list-style:none;display:flex;flex-direction:column;gap:12px}
+.mo li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;line-height:1.4;color:var(--ink);font-weight:500}
+.mo li i{flex:none;width:22px;height:22px;border-radius:7px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;margin-top:-1px}
+.mo li i .ico{width:13px;height:13px;stroke-width:2.4}
+.mo li small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:1px}
+.wd-r{display:flex;flex-direction:column;gap:16px}
+.pos{padding:24px 26px}
+.pos .lbl{color:var(--acc)}
+.pos p{margin-top:10px;font-size:26px;line-height:1.3;font-weight:700;color:var(--ink);letter-spacing:-.015em}
+.who{padding:20px 24px}
+.who ul{margin-top:12px;list-style:none;display:flex;flex-direction:column;gap:10px}
+.who li{display:flex;gap:12px;align-items:center;font-size:16px;color:var(--ink);font-weight:500}
+.who li i{width:34px;height:34px;border-radius:10px;background:var(--tint);display:grid;place-items:center;color:var(--acc)}
+.who li small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+
+/* ---------- 4 competitors ---------- */
+.cmp{margin-top:22px;padding:6px 0 4px;overflow:hidden;flex:none}
+.cmp table{width:100%;border-collapse:collapse}
+.cmp th{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 6px 12px;vertical-align:bottom;text-align:center;line-height:1.3;border-bottom:1px solid var(--line2)}
+.cmp th:first-child{text-align:left;padding-left:24px;width:250px}
+.cmp th .ic{display:block;margin:0 auto 6px;width:30px;height:30px;border-radius:9px;background:var(--tint);color:var(--acc);display:grid;place-items:center}
+.cmp th .ic .ico{width:16px;height:16px}
+.cmp th:last-child{width:220px;text-align:left;padding-left:18px}
+.cmp td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line)}
+.cmp td:first-child{text-align:left;padding-left:24px}
+.cmp td:first-child b{display:block;font-size:16px;font-weight:700;color:var(--ink)}
+.cmp td:first-child small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.cmp tr:last-child td{border-bottom:0}
+.cmp tr.wolm td{background:linear-gradient(90deg,#e8f6ef,#f3fbf7)}
+.cmp tr.wolm td:first-child{box-shadow:inset 4px 0 0 var(--acc)}
+.cmp tr.wolm td:first-child b{color:var(--acc-ink);font-size:18px}
+.d{display:inline-block;width:20px;height:20px;border-radius:50%;vertical-align:middle}
+.d.f{background:var(--ink)}
+.d.p{background:linear-gradient(90deg,var(--ink) 50%,#fff 50%);border:2px solid var(--ink)}
+.d.x{width:14px;height:2px;border-radius:2px;background:var(--line2)}
+.d.w{background:var(--acc)}
+.d.t{border:2px dashed var(--acc);background:#fff}
+.score{display:flex;align-items:center;gap:10px;padding-left:12px!important;text-align:left!important}
+.score .bar{flex:1;height:10px;border-radius:5px;background:var(--tint);overflow:hidden;position:relative}
+.score .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--faint)}
+.wolm .score .bar i{background:var(--acc)}
+.wolm .score .bar i.tbc{background:repeating-linear-gradient(45deg,var(--acc-mid) 0 4px,#fff 4px 7px)}
+.score b{flex:none;width:44px;font-size:13px;font-weight:700;color:var(--ink);text-align:right}
+.legend{margin-top:14px;display:flex;align-items:center;gap:22px;font-size:13px;color:var(--body);flex:none}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend .d{width:16px;height:16px}.legend .d.x{width:12px}
+.legend .note{margin-left:auto;color:var(--muted);font-size:12px}
+
+/* ---------- 5 gap ---------- */
+.lane{margin-top:24px;padding:20px 24px;display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;flex:none}
+.lane + .lane{margin-top:14px}
+.lane .lt b{display:block;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.lane .lt span{display:block;margin-top:5px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.lane.today .lt b{color:var(--red)}.lane.with .lt b{color:var(--acc)}
+.steps{display:flex;align-items:stretch;gap:0}
+.st{flex:1;border-radius:14px;padding:13px 14px;position:relative}
+.today .st{background:#fbfbfa;border:1px dashed #d9c8c2}
+.with .st{background:var(--acc-soft);border:1px solid var(--acc-mid)}
+.st .si{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#fff;color:var(--muted);margin-bottom:8px}
+.with .st .si{color:var(--acc)}
+.st .si .ico{width:16px;height:16px}
+.st b{display:block;font-size:15.5px;font-weight:700;color:var(--ink)}
+.st span{display:block;margin-top:3px;font-size:12.5px;line-height:1.35;color:var(--muted)}
+.with .st span{color:var(--acc-ink)}
+.cn{flex:none;width:34px;display:grid;place-items:center}
+.today .cn{color:var(--red)}
+.today .cn b{width:22px;height:22px;border-radius:50%;background:var(--red-soft);display:grid;place-items:center;font-size:13px;font-weight:800}
+.with .cn svg{width:22px;height:22px;color:var(--acc)}
+.lost{grid-column:2;margin-top:2px;font-size:13.5px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:8px}
+.gapfoot{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px;flex:none}
+.gapfoot .card{padding:22px 26px}
+.gapfoot .card .lbl{color:var(--acc)}
+.gapfoot p{margin-top:8px;font-size:22px;line-height:1.3;font-weight:700;color:var(--ink);letter-spacing:-.015em}
+.campaign{background:linear-gradient(120deg,var(--acc) 0,#22a07a 100%)!important;border:0!important}
+.campaign .lbl{color:rgba(255,255,255,.75)!important}
+.campaign p{color:#fff!important;font-size:28px!important;font-weight:800!important}
+
+/* ---------- 6 gaps to series ---------- */
+.g2s{margin-top:28px;display:flex;flex-direction:column;gap:16px;flex:none}
+.g2s .head{display:grid;grid-template-columns:330px 46px 1fr 300px;padding:0 4px}
+.g2s .row{display:grid;grid-template-columns:330px 46px 1fr 300px;align-items:stretch}
+.gp{padding:20px 20px;display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px}
+.gp i{flex:none;width:36px;height:36px;border-radius:10px;background:var(--red-soft);color:var(--red);display:grid;place-items:center}
+.gp span{display:block;font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--red);text-transform:uppercase}
+.gp b{display:block;margin-top:3px;font-size:18px;line-height:1.3;color:var(--ink);font-weight:600}
+.g2s .ar{display:grid;place-items:center;color:var(--acc-hi)}
+.g2s .ar svg{width:24px;height:24px}
+.idea{padding:16px 22px;background:var(--surface);border:1px solid var(--acc-mid);border-radius:16px 0 0 16px;border-right:0;display:flex;flex-direction:column;justify-content:center}
+.idea b{font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.idea p{margin-top:4px;font-size:15.5px;line-height:1.4;color:var(--body)}
+.idea small{margin-top:6px;display:flex;gap:6px}
+.idea small span{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--tint);color:var(--muted)}
+.ex{border:1px solid var(--acc-mid);border-left:0;border-radius:0 16px 16px 0;background:var(--acc-soft);display:flex;align-items:center;gap:12px;padding:10px 14px;overflow:hidden}
+.ex img{width:70px;height:88px;object-fit:cover;border-radius:9px;flex:none}
+.ex .mock{flex:1;background:#fff;border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink);box-shadow:0 2px 8px -4px rgba(0,0,0,.2)}
+.ex .mock .mt{font-size:10px;color:var(--muted)}
+.ex .mock b{display:block;font-size:14.5px;margin-top:2px}
+.ex .mock .btn{margin-top:6px;display:inline-block;font-size:11px;font-weight:700;background:var(--acc);color:#fff;padding:3px 9px;border-radius:6px}
+.ex .note{width:70px;height:88px;flex:none;border-radius:9px;background:#fffdf5;border:1px solid var(--gold-line);background-image:repeating-linear-gradient(180deg,transparent 0 11px,#efe3c5 11px 12px);position:relative}
+.ex .note::after{content:"";position:absolute;right:-6px;bottom:6px;width:20px;height:20px;border-radius:50%;background:var(--acc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'%3E%3Crect x='9' y='3' width='6' height='11' rx='3'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v3'/%3E%3C/svg%3E") center/12px no-repeat}
+
+/* ---------- 7 channel journey ---------- */
+.jr{margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative;flex:none}
+.jr::before{content:"";position:absolute;left:32px;width:984px;top:31px;height:3px;background:linear-gradient(90deg,var(--acc-mid),var(--acc));border-radius:2px}
+.js{position:relative}
+.js .dot{width:64px;height:64px;border-radius:50%;background:#fff;border:3px solid var(--acc-hi);display:grid;place-items:center;color:var(--acc);margin:0 0 18px 0;position:relative;z-index:1;box-shadow:0 0 0 8px var(--bg)}
+.js:last-child .dot{background:var(--acc);color:#fff;border-color:var(--acc)}
+.js .dot .ico{width:28px;height:28px}
+.js .card{padding:22px 22px 20px;min-height:370px;display:flex;flex-direction:column}
+.js .stp{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.js h3{margin-top:5px;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.js .where{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink)}
+.js p{margin-top:12px;font-size:15.5px;line-height:1.5;color:var(--body)}
+.js .what{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.js .what span{display:block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.js .what b{display:block;margin-top:4px;font-size:15px;font-weight:700;color:var(--ink)}
+.js .what small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.dest{margin-top:16px;padding:14px 20px;display:flex;align-items:center;gap:14px;background:var(--ink);color:#e9eeec;border-radius:16px;font-size:16px;flex:none}
+.dest b{color:#fff}
+.dest i{width:34px;height:34px;border-radius:10px;background:var(--acc-hi);display:grid;place-items:center;color:var(--ink)}
+
+/* ---------- 8 linkedin ---------- */
+.lk{margin-top:30px;display:grid;grid-template-columns:470px 1fr;gap:28px;flex:none}
+.post{padding:22px 24px 14px}
+.post .ph{display:flex;align-items:center;gap:12px}
+.post .av{width:46px;height:46px;border-radius:50%;background:var(--acc);display:grid;place-items:center;color:#fff}
+.post .ph b{display:block;font-size:16px;color:var(--ink)}
+.post .ph small{display:block;font-size:12px;color:var(--muted)}
+.post .ph .fl{margin-left:auto;font-size:14px;font-weight:700;color:var(--li)}
+.post .tx{margin-top:14px;font-size:15px;line-height:1.5;color:var(--body)}
+.post .tx b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.car{margin-top:12px;display:grid;grid-template-columns:1fr 1fr 64px;gap:8px}
+.car div{border-radius:12px;height:250px;padding:14px;display:flex;flex-direction:column;justify-content:space-between}
+.car .c1{background:var(--ink);color:#fff}.car .c2{background:#2a3734;color:#fff}.car .c3{background:var(--acc-hi);align-items:center;justify-content:center}
+.car span{font-size:11px;font-weight:700;color:var(--acc-hi)}
+.car b{font-size:23px;line-height:1.1;font-weight:800}
+.car .c3 i{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--ink);font-style:normal;font-weight:800}
+.post .act{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-around;font-size:13px;font-weight:600;color:var(--muted)}
+.lk-r{display:flex;flex-direction:column;gap:30px}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.week div{border-radius:12px;padding:12px 14px;font-size:15px;font-weight:700}
+.week div span{display:block;font-size:11.5px;font-weight:600;opacity:.75;margin-bottom:4px}
+.week .fp{background:var(--acc);color:#fff}
+.week .cp{background:#fff;color:#7a5a1c;border:1.5px solid var(--gold-line)}
+.daily{margin-top:8px;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--body);background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.daily svg{color:var(--acc)}
+.mix{margin-top:10px;display:flex;height:46px;border-radius:12px;overflow:hidden}
+.mix div{display:flex;align-items:center;padding-left:12px;font-size:15px;font-weight:800;color:#fff}
+.mixl{display:flex;margin-top:6px;font-size:13px;color:var(--body)}
+.mixl div{padding-left:2px}
+.two{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+.plays{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.plays li{display:flex;gap:10px;font-size:15px;line-height:1.4;color:var(--ink)}
+.plays li i{flex:none;width:26px;height:26px;border-radius:8px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center}
+.plays li i .ico{width:14px;height:14px}
+.meas{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.meas div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.meas b{display:block;font-size:14.5px;color:var(--ink)}
+.meas small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+
+/* ---------- 9 instagram ---------- */
+.ig{margin-top:22px;display:grid;grid-template-columns:1fr 330px;gap:28px;flex:none}
+.phones{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.phone{position:relative;border-radius:26px;padding:7px;background:#121918;box-shadow:0 18px 34px -18px rgba(22,32,29,.45)}
+.phone .scr{position:relative;border-radius:20px;overflow:hidden;height:390px}
+.phone img{width:100%;height:100%;object-fit:cover;display:block}
+.phone .scr::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4) 0,transparent 22%,transparent 50%,rgba(0,0,0,.65) 100%)}
+.phone .top{position:absolute;left:12px;right:12px;top:10px;display:flex;justify-content:space-between;color:#fff;font-size:12px;font-weight:700;z-index:2}
+.phone .hook{position:absolute;left:12px;right:12px;top:34%;color:#fff;font-size:19px;line-height:1.18;font-weight:800;text-align:center;z-index:2;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.phone .brand{position:absolute;left:12px;bottom:12px;display:flex;align-items:center;gap:6px;color:#fff;font-size:12px;font-weight:700;z-index:2}
+.phone .brand i{width:20px;height:20px;border-radius:50%;background:var(--acc-hi);color:var(--ink);display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800}
+.phone .side{position:absolute;right:10px;bottom:46px;display:flex;flex-direction:column;gap:12px;z-index:2}
+.phone .side span{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.55)}
+.cap{margin-top:12px}
+.cap span{display:block;font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--acc);text-transform:uppercase}
+.cap b{display:block;margin-top:2px;font-size:16px;color:var(--ink);font-weight:800}
+.cap small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted);line-height:1.35}
+.ig-r{display:flex;flex-direction:column;gap:14px}
+.ig-r .card{padding:16px 18px}
+.rules{margin-top:10px;display:flex;flex-direction:column;gap:9px}
+.rules div{display:flex;gap:10px;align-items:center;font-size:14.5px;color:var(--ink);font-weight:600}
+.rules i{width:28px;height:28px;border-radius:8px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center}
+.rules i .ico{width:15px;height:15px}
+.rules small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.cad{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cad b{display:block;font-size:40px;line-height:1;font-weight:800;color:var(--acc)}
+.cad span{display:block;margin-top:4px;font-size:13px;line-height:1.35;color:var(--body)}
+.tags2{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tags2 div{background:var(--tint);border-radius:9px;padding:6px 9px}
+.tags2 b{display:block;font-size:13px;color:var(--ink)}
+.tags2 small{display:block;font-size:11px;color:var(--muted);line-height:1.25}
+
+/* ---------- 10 youtube ---------- */
+.ytc{margin-top:20px;padding:16px 20px 18px;flex:none}
+.yth{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.yth .av{width:40px;height:40px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:800}
+.yth b{display:block;font-size:16px;color:var(--ink)}.yth small{display:block;font-size:12px;color:var(--muted)}
+.yth .sb{margin-left:12px;font-size:13px;font-weight:700;background:var(--ink);color:#fff;padding:6px 14px;border-radius:999px}
+.yth nav{margin-left:auto;display:flex;gap:22px;font-size:13.5px;color:var(--muted)}
+.yth nav .on{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink);padding-bottom:4px}
+.vids{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.vid .th{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/9}
+.vid .th img{width:100%;height:100%;object-fit:cover;display:block}
+.vid .th::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.62),rgba(0,0,0,.15) 55%,transparent)}
+.vid .th b{position:absolute;left:12px;top:10px;z-index:1;color:#fff;font-size:21px;line-height:1.05;font-weight:800;letter-spacing:-.01em;text-transform:uppercase;max-width:70%}
+.vid .th b em{font-style:normal;color:var(--acc-hi)}
+.vid .th span{position:absolute;right:8px;bottom:8px;z-index:1;background:rgba(0,0,0,.8);color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px}
+.vid p{margin-top:8px;font-size:14px;line-height:1.35;font-weight:700;color:var(--ink)}
+.vid small{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+.yt3{margin-top:16px;display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:16px;flex:none}
+.yt3 .card{padding:16px 20px}
+.fmt{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.fmt div{display:flex;justify-content:space-between;font-size:14.5px;color:var(--ink);font-weight:600;padding-bottom:7px;border-bottom:1px dashed var(--line)}
+.fmt div:last-child{border-bottom:0;padding-bottom:0}
+.fmt span{font-weight:500;color:var(--acc-ink);font-size:13px}
+.loop{margin-top:12px;display:flex;align-items:center;gap:8px}
+.loop div{flex:1;text-align:center;border-radius:12px;padding:10px 8px;background:var(--tint)}
+.loop div b{display:block;font-size:14.5px;color:var(--ink)}
+.loop div small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+.loop div.hl{background:var(--acc);}
+.loop div.hl b,.loop div.hl small{color:#fff}
+.loop svg{width:18px;height:18px;color:var(--acc-hi);flex:none}
+
+/* ---------- 11 ads ---------- */
+.ads{margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr 300px;gap:16px;align-items:stretch;flex:none}
+.fn{padding:20px 20px 18px;display:flex;flex-direction:column;position:relative}
+.fn .top{display:flex;justify-content:space-between;align-items:center}
+.fn .num{font-size:13px;font-weight:700;letter-spacing:.16em;color:var(--acc);text-transform:uppercase}
+.fn .pfs{display:flex;gap:5px}
+.fn h3{margin-top:10px;font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.015em;line-height:1.2}
+.fn .pl{margin-top:6px;font-size:14px;line-height:1.45;color:var(--muted)}
+.fn ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.fn li{font-size:14px;line-height:1.35;color:var(--ink);display:flex;gap:8px}
+.fn li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--acc-hi);margin-top:6px}
+.fn .mockad{margin-top:auto;border-radius:12px;background:var(--tint);padding:10px;display:flex;gap:10px;align-items:center}
+.fn .mockad img{width:84px;height:56px;object-fit:cover;border-radius:8px;flex:none}
+.fn .mockad .form{flex:1}
+.fn .mockad .form span{display:block;height:9px;border-radius:3px;background:#fff;border:1px solid var(--line);margin-top:4px}
+.fn .mockad b{display:block;font-size:12.5px;color:var(--ink)}
+.fn .mockad small{display:block;font-size:10.5px;color:var(--muted)}
+.fn .mockad .btn{display:inline-block;margin-top:5px;font-size:11px;font-weight:700;color:#fff;background:var(--acc);padding:3px 9px;border-radius:6px}
+.fn .mockad .btn.blue{background:var(--li);display:block;text-align:center;padding:4px 9px;margin-top:7px}
+.fn:not(:nth-child(3))::after{content:"";position:absolute;right:-13px;top:50%;width:10px;height:10px;border-top:2.5px solid var(--acc-hi);border-right:2.5px solid var(--acc-hi);transform:translateY(-50%) rotate(45deg);z-index:2}
+.spend{padding:20px 22px;display:flex;flex-direction:column}
+.donut{margin:14px auto 0;width:170px;height:170px;border-radius:50%;background:conic-gradient(var(--li) 0 50%,#34a37f 50% 80%,#d39a3c 80% 100%);position:relative}
+.donut::after{content:"";position:absolute;inset:32px;border-radius:50%;background:#fff}
+.donut span{position:absolute;inset:0;display:grid;place-items:center;z-index:1;text-align:center;font-size:12px;color:var(--muted);line-height:1.3}
+.donut span b{display:block;font-size:20px;color:var(--ink)}
+.sp-l{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.sp-l div{display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--ink);font-weight:600}
+.sp-l div i{width:12px;height:12px;border-radius:4px}
+.sp-l div b{margin-left:auto;font-size:15px}
+.spend small{margin-top:auto;padding-top:10px;font-size:12.5px;color:var(--muted);line-height:1.4}
+.adgl{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:none}
+
+/* ---------- 12 timeline ---------- */
+.tl{margin-top:22px;padding:20px 24px 18px;flex:none}
+.gantt{position:relative}
+.g-axis,.g-row{display:grid;grid-template-columns:250px 1fr;align-items:center}
+.g-axis .ticks{display:grid;grid-template-columns:repeat(9,1fr);font-size:12.5px;font-weight:700;color:var(--muted);text-align:center;letter-spacing:.04em}
+.g-axis{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.g-row{height:40px;border-bottom:1px dashed var(--line)}
+.g-row:last-child{border-bottom:0}
+.g-row .nm{font-size:15px;font-weight:600;color:var(--ink);display:flex;flex-direction:column}
+.g-row .nm small{font-size:12px;color:var(--muted);font-weight:400}
+.g-row .tr{position:relative;height:100%;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/9 - 1px),var(--line) calc(100%/9 - 1px),var(--line) calc(100%/9))}
+.g-row .bar{position:absolute;top:9px;bottom:9px;border-radius:7px;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.bar.prep{background:#dbe5e1;color:var(--body)}
+.bar.shoot{background:#efdcb2;color:#6b4e16}
+.bar.tease{background:var(--acc-mid);color:var(--acc-ink)}
+.bar.launch{background:var(--acc);color:#fff}
+.bar.push{background:repeating-linear-gradient(45deg,var(--acc-soft) 0 6px,#d3eee2 6px 12px);border:1.5px dashed var(--acc);color:var(--acc-ink)}
+.g-row.gates .nm{color:#7a5a1c}
+.gate{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:#7a5a1c}
+.gate i{width:14px;height:14px;background:var(--gold);transform:rotate(45deg);border-radius:2px}
+.launchline{position:absolute;top:-6px;bottom:-4px;width:2px;background:var(--acc);border-radius:2px}
+.launchline span{position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:800;color:#fff;background:var(--acc);padding:2px 8px;border-radius:999px}
+.gates4{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr) 1.15fr;gap:12px;flex:none}
+.gt{padding:14px 16px}
+.gt .h{display:flex;align-items:center;gap:8px}
+.gt .h i{width:13px;height:13px;background:var(--gold);transform:rotate(45deg);border-radius:2px}
+.gt .h b{font-size:13px;font-weight:800;color:#7a5a1c;letter-spacing:.06em}
+.gt .h span{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--muted)}
+.gt p{margin-top:6px;font-size:15px;font-weight:700;color:var(--ink)}
+.gt small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted);line-height:1.35}
+.gt.ld{background:var(--acc);border:0}
+.gt.ld .h b,.gt.ld .h span,.gt.ld p,.gt.ld small{color:#fff}
+.gt.ld .h i{background:#fff;border-radius:50%;transform:none}
+
+/* ---------- 13 packages ---------- */
+.items{margin-top:18px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px;flex:none}
+.it{padding:12px 12px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.it i{width:28px;height:28px;border-radius:8px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center}
+.it i .ico{width:15px;height:15px}
+.it b{display:block;margin-top:8px;font-size:19px;font-weight:800;color:var(--ink)}
+.it span{display:block;font-size:13px;font-weight:600;color:var(--body);line-height:1.25;margin-top:2px}
+.it small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.pk{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:none}
+.pc{padding:18px 20px 16px;display:flex;flex-direction:column;position:relative}
+.pc.rec{border:2px solid var(--acc);background:linear-gradient(180deg,#eef9f4,#fff 40%)}
+.pc .badge{position:absolute;right:16px;top:16px;font-size:10.5px;font-weight:800;letter-spacing:.14em;color:#fff;background:var(--acc);padding:4px 10px;border-radius:999px}
+.pc .k{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.pc h3{margin-top:2px;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.pc .tg{font-size:13.5px;color:var(--muted)}
+.pc .pr{margin-top:10px;display:flex;align-items:baseline;gap:8px}
+.pc .pr b{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.pc.rec .pr b{color:var(--acc-ink)}
+.pc .pr span{font-size:13.5px;color:var(--muted)}
+.pc .per{font-size:12.5px;color:var(--muted);margin-top:1px}
+.pc .per b{color:var(--ink)}
+.dl{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.dl div{display:flex;align-items:baseline;gap:7px;font-size:13px;color:var(--body);line-height:1.3}
+.dl div b{flex:none;min-width:22px;font-size:15px;font-weight:800;color:var(--ink);text-align:right}
+.inc{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.inc span{font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--acc-soft);color:var(--acc-ink)}
+.inc span.off{background:var(--tint);color:var(--faint);text-decoration:line-through}
+
+/* ---------- 14 next steps ---------- */
+.ns{margin-top:44px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;flex:none}
+.ns::before{content:"";position:absolute;left:12.5%;right:12.5%;top:27px;height:3px;background:linear-gradient(90deg,var(--acc-mid),var(--acc));border-radius:2px}
+.nst{padding:0 14px;text-align:center;position:relative}
+.nst .c{width:56px;height:56px;border-radius:50%;margin:0 auto;background:#fff;border:3px solid var(--acc-hi);display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--acc);box-shadow:0 0 0 8px var(--bg);position:relative;z-index:1}
+.nst:last-child .c{background:var(--acc);border-color:var(--acc);color:#fff}
+.nst .card{margin-top:20px;padding:22px 20px;min-height:200px}
+.nst .when{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--acc);text-transform:uppercase}
+.nst h3{margin-top:6px;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.nst p{margin-top:8px;font-size:15.5px;line-height:1.5;color:var(--body)}
+.terms{margin-top:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex:none}
+.tm{padding:16px 18px;display:flex;gap:12px;align-items:flex-start}
+.tm i{flex:none;width:34px;height:34px;border-radius:10px;background:var(--gold-soft);color:var(--gold);display:grid;place-items:center}
+.tm b{display:block;font-size:16px;color:var(--ink)}
+.tm span{display:block;margin-top:3px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.closing{margin-top:28px;display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-radius:18px;background:linear-gradient(120deg,var(--acc),#22a07a);color:#fff;flex:none}
+.closing b{font-size:28px;font-weight:800;letter-spacing:-.015em}
+.closing span{font-size:15px;opacity:.9}
+</style></head><body>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute">
+ <defs>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-gap" viewBox="0 0 24 24"><path d="M4 12h5M15 12h5M9 8l3 4-3 4M15 8l-3 4 3 4"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/></symbol>
+  <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M9 13l2 2M14.5 4.5C18 3 21 3 21 3s0 3-1.5 6.5L13 16l-5-5z"/><circle cx="15.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m16 10.5 6-3.5v10l-6-3.5"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16h14M3 16v-3l2.5-5h13L21 13v3M6 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-4.5-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.5 12 20 12 20z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></symbol>
+  <symbol id="i-click" viewBox="0 0 24 24"><path d="m9 9 11 4-5 1.5L13.5 20z"/><path d="M5 3v3M3 5h3M5.5 8.5 3.5 10.5M8.5 5.5l2-2"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="m16 11 6-3v8l-6-3"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M17 4l3 3-3 3M20 7H9a5 5 0 0 0-5 5M7 20l-3-3 3-3M4 17h11a5 5 0 0 0 5-5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 15h10M7 11h6"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-form" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M17 2l3 3-3 3M3 11V9a4 4 0 0 1 4-4h13M7 22l-3-3 3-3M21 13v2a4 4 0 0 1-4 4H4"/></symbol>
+  <symbol id="i-yt" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></symbol>
+  <symbol id="i-reel" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="m11 9 3 2-3 2z"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v6M8 7v.5M12 16v-3.5a2 2 0 0 1 4 0V16M12 10v6"/></symbol>
+  <symbol id="i-car2" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M19 7v10M22 9v6"/></symbol>
+  <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M6 4h12M6 9h12M9 4c6 0 6 9 0 9H6l8 7"/></symbol>
+  <symbol id="i-sign" viewBox="0 0 24 24"><path d="M3 17c3-3 4 1 6-1s1-6 4-6 1 7 4 7 3-2 4-2M3 21h18"/></symbol>
+  <symbol id="i-percent" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><rect x="3" y="9" width="18" height="12" rx="2"/><circle cx="16" cy="15" r="1.3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-chrome" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M9 14 4.5 6.5M15 14l-4.5 7.4"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+ </defs>
+</svg>
+
+<!-- ========== 1 · COVER ========== -->
+<section class="s cover">
+ <div class="stripes"></div>
+ <div class="cv-l">
+  <img class="logo" src="logo_ink.png" alt="Vortex Media Management">
+  <div class="eb">Social media &amp; performance marketing · October 2026</div>
+  <h1>WOLM</h1>
+  <div class="t">Market, gap &amp; 45-day launch plan</div>
+  <p class="p">A simple guide to where WOLM stands in the market, the gap it fills, and exactly how we will launch it on social media and ads in 45 days.</p>
+ </div>
+ <div class="card myday">
+  <div class="md-h"><b>My Day</b><span>Thursday</span></div>
+  <div class="md-b">
+   <div class="ev on"><div class="t1"><span>10:00 · Video call</span><b>Brief ready</b></div><div class="t2">Brightline Dental Supply</div><div class="tags"><span class="m">Momentum ↑</span><span>Stage: Evaluate</span><span class="c">New CFO hired</span></div></div>
+   <div class="ev"><div class="t1"><span>14:00 · Site visit · check-in</span></div><div class="t2">Corvale Foods</div></div>
+   <div class="after"><div class="lbl">After the 10:00</div><ul><li>Summary + 4 tasks assigned</li><li>Follow-up email drafted</li><li>Salesforce updated</li></ul></div>
+  </div>
+ </div>
+ <div class="card float" style="right:470px;top:520px"><i><svg class="ico"><use href="#i-clock"/></svg></i>2 hours of admin, done for you</div>
+ <div class="card float" style="right:64px;top:640px"><i><svg class="ico"><use href="#i-rocket"/></svg></i>Launch on day 31</div>
+ <div class="cv-meta"><div><span>Prepared for</span><b>The WOLM founding team</b></div><div><span>Prepared by</span><b>Vortex Media Management</b></div></div>
+</section>
+
+<!-- ========== 2 · SUMMARY ========== -->
+<section class="s">
+ <div class="eb">The whole plan on one page</div>
+ <h2>Four things to know <em>before you read on</em></h2>
+ <p class="sub">If you only read one slide, read this one. Each card below is explained in detail on the slides that follow.</p>
+ <div class="sum">
+  <div class="card sm">
+   <div class="n"><svg class="ico"><use href="#i-search"/></svg></div>
+   <div class="k">1 · The market</div>
+   <h3>Plenty of tools, each does one piece</h3>
+   <p>Note-takers, research tools, sales trackers: teams pay for several and still do the hard work by hand.</p>
+   <div class="vis minibars">
+    <div><span>Fireflies</span><i style="width:43%"></i></div>
+    <div><span>Gong</span><i style="width:43%"></i></div>
+    <div><span>HubSpot</span><i style="width:57%"></i></div>
+    <div class="w"><span>WOLM</span><i style="width:100%"></i></div>
+   </div>
+   <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </div>
+  <div class="card sm">
+   <div class="n"><svg class="ico"><use href="#i-gap"/></svg></div>
+   <div class="k">2 · The gap</div>
+   <h3>Nobody handles the work <em style="font-style:normal;color:var(--acc)">after</em> the meeting</h3>
+   <p>WOLM does the whole job: prepares you, takes notes, splits tasks, drafts the follow-up email and updates the sales records.</p>
+   <div class="vis flowmini"><span>Brief</span><svg><use href="#i-arrow"/></svg><span>Meeting</span><svg><use href="#i-arrow"/></svg><span>Tasks</span><svg><use href="#i-arrow"/></svg><span>Email</span><svg><use href="#i-arrow"/></svg><span>CRM</span></div>
+   <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </div>
+  <div class="card sm">
+   <div class="n"><svg class="ico"><use href="#i-megaphone"/></svg></div>
+   <div class="k">3 · The plan</div>
+   <h3>Four channels, four story series</h3>
+   <p>The founder on LinkedIn, short videos on Instagram and YouTube Shorts, longer proof videos on YouTube, and ads that bring in demo bookings.</p>
+   <div class="vis chanmini">
+    <div><span class="pf li">in</span>LinkedIn</div>
+    <div><span class="pf ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/></svg></span>Instagram</div>
+    <div><span class="pf yt"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 7.5v9l7.5-4.5z"/></svg></span>YouTube</div>
+    <div><span class="pf mt" style="background:var(--acc)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></svg></span>Ads</div>
+   </div>
+   <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </div>
+  <div class="card sm">
+   <div class="n"><svg class="ico"><use href="#i-rocket"/></svg></div>
+   <div class="k">4 · The launch</div>
+   <h3>45 days, live on day 31</h3>
+   <p>30 days to plan, shoot and prepare. Launch on day 31, then two weeks of push. Three packages to choose from.</p>
+   <div class="vis">
+    <div class="daysmini"><div class="mk">Day 31</div><div class="bar"></div><div class="a" style="left:0">Day 1</div><div class="a" style="right:0">Day 45</div></div>
+    <div class="price-row"><span style="font-size:13px;color:var(--muted)">from</span><b>₹1,42,500</b><span style="font-size:13px;color:var(--muted)">+ GST</span></div>
+   </div>
+  </div>
+ </div>
+ <div class="agenda"><span class="lbl">Inside this deck</span>
+  <a><b>03</b>What WOLM is</a><a><b>04</b>Competitors</a><a><b>05</b>The gap</a><a><b>06</b>Content ideas</a><a><b>07</b>Channels</a><a><b>08–11</b>LinkedIn · Instagram · YouTube · Ads</a><a><b>12</b>45-day plan</a><a><b>13</b>Packages</a><a><b>14</b>Next steps</a>
+ </div>
+ <div class="sf"><span>WOLM · Market, gap &amp; 45-day launch plan</span><span class="pg">Vortex Media Management · 02 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 3 · WHAT WOLM DOES ========== -->
+<section class="s">
+ <div class="eb">01 · What WOLM is</div>
+ <h2>An AI assistant that does the <em>sales admin</em> for you</h2>
+ <p class="sub">Sales people spend hours after every customer meeting writing notes, sending emails and updating records. <b>WOLM does that part automatically</b>, before, during and after each meeting.</p>
+ <div class="wd">
+  <div class="card moments">
+   <div class="mo">
+    <div class="when"><i><svg class="ico"><use href="#i-doc"/></svg></i><b>Before</b></div>
+    <h3>You walk in prepared</h3>
+    <p>WOLM builds a one-page brief on the customer.</p>
+    <ul>
+     <li><i><svg class="ico"><use href="#i-check"/></svg></i><span>Company news and positioning</span></li>
+     <li><i><svg class="ico"><use href="#i-check"/></svg></i><span>Risk and deal-stage scores<small>How likely the deal is, and where it stands</small></span></li>
+    </ul>
+   </div>
+   <div class="mo">
+    <div class="when"><i><svg class="ico"><use href="#i-users"/></svg></i><b>During</b></div>
+    <h3>It listens, any way you like</h3>
+    <p>Three ways to capture the conversation:</p>
+    <ul>
+     <li><i><svg class="ico"><use href="#i-video"/></svg></i><span>A bot joins the video call</span></li>
+     <li><i><svg class="ico"><use href="#i-chrome"/></svg></i><span>A Chrome browser extension</span></li>
+     <li><i><svg class="ico"><use href="#i-photo"/></svg></i><span>A photo of your notebook or a voice note<small>For in-person meetings, or when the client says no to bots</small></span></li>
+    </ul>
+   </div>
+   <div class="mo">
+    <div class="when"><i><svg class="ico"><use href="#i-bolt"/></svg></i><b>After</b></div>
+    <h3>The work gets done</h3>
+    <p>Minutes after the meeting ends:</p>
+    <ul>
+     <li><i><svg class="ico"><use href="#i-list"/></svg></i><span>Tasks for each team member<small>Everyone knows what to do next</small></span></li>
+     <li><i><svg class="ico"><use href="#i-mail"/></svg></i><span>Follow-up email drafted<small>Ready to send in Gmail or Outlook</small></span></li>
+     <li><i><svg class="ico"><use href="#i-sync"/></svg></i><span>Sales records updated<small>Two-way sync with Salesforce</small></span></li>
+    </ul>
+   </div>
+  </div>
+  <div class="wd-r">
+   <div class="card pos"><div class="lbl">In one sentence</div><p>The AI sales assistant that turns every customer conversation into work that gets done.</p></div>
+   <div class="card who"><div class="lbl">Who it's for</div>
+    <ul>
+     <li><i><svg class="ico"><use href="#i-users"/></svg></i><span>Small B2B sales teams<small>Businesses that sell to other businesses</small></span></li>
+     <li><i><svg class="ico"><use href="#i-car"/></svg></i><span>Field sales reps<small>People who meet customers on-site, not at a desk</small></span></li>
+    </ul>
+   </div>
+   <div class="gl"><span class="q">?</span><div><b>CRM</b> (e.g. Salesforce) is the system where a sales team keeps its customer list and tracks every deal. Keeping it up to date is the chore most reps put off.</div></div>
+  </div>
+ </div>
+ <div class="sf"><span>Product scope from WOLM calls, 7 Oct 2026</span><span class="pg">Vortex Media Management · 03 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 4 · COMPETITORS ========== -->
+<section class="s">
+ <div class="eb">02 · Competitor scan</div>
+ <h2>No product covers <em>the full job</em> for small teams</h2>
+ <p class="sub">We compared 7 popular tools against the 7 jobs a sales team needs done. Most cover two or three. <b>WOLM is built to cover all of them.</b></p>
+ <div class="card cmp">
+  <table>
+   <thead><tr>
+    <th>Product · what it costs</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-list"/></svg></span>Meeting notes<br>&amp; tasks</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-search"/></svg></span>Research<br>before meetings</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-sync"/></svg></span>Updates sales<br>records (CRM)</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-mail"/></svg></span>Writes the<br>follow-up email</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-chat"/></svg></span>Live help<br>during calls*</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-car"/></svg></span>Field visit<br>check-in</th>
+    <th><span class="ic"><svg class="ico"><use href="#i-tag"/></svg></span>Priced for<br>small teams</th>
+    <th>How much of the job</th>
+   </tr></thead>
+   <tbody>
+    <tr><td><b>Fireflies</b><small>Free; $10 / $19 / $39 per user/mo</small></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td><i class="d p"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d f"></i></td><td class="score"><span class="bar"><i style="width:42.9%"></i></span><b>3 / 7</b></td></tr>
+    <tr><td><b>Fathom</b><small>Free; $15–25 per user/mo</small></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td><i class="d p"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d f"></i></td><td class="score"><span class="bar"><i style="width:42.9%"></i></span><b>3 / 7</b></td></tr>
+    <tr><td><b>Avoma</b><small>$19–39 per user/mo + $29 add-ons</small></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td class="score"><span class="bar"><i style="width:42.9%"></i></span><b>3 / 7</b></td></tr>
+    <tr><td><b>Gong</b><small>~$1.2–1.6K per user/yr + ~$5K fee</small></td><td><i class="d f"></i></td><td><i class="d p"></i></td><td><i class="d f"></i></td><td><i class="d p"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td class="score"><span class="bar"><i style="width:42.9%"></i></span><b>3 / 7</b></td></tr>
+    <tr><td><b>HubSpot + Breeze</b><small>Sales Hub tiers + ~$1 per lead</small></td><td><i class="d p"></i></td><td><i class="d f"></i></td><td><i class="d f"></i></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td class="score"><span class="bar"><i style="width:57.1%"></i></span><b>4 / 7</b></td></tr>
+    <tr><td><b>Cluely</b><small>Free; $20 / $75 per mo</small></td><td><i class="d p"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d f"></i></td><td><i class="d f"></i></td><td><i class="d x"></i></td><td><i class="d f"></i></td><td class="score"><span class="bar"><i style="width:50%"></i></span><b>3.5 / 7</b></td></tr>
+    <tr><td><b>SPOTIO</b><small>$39 / $69 / $129 per user/mo</small></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d p"></i></td><td><i class="d x"></i></td><td><i class="d x"></i></td><td><i class="d f"></i></td><td><i class="d p"></i></td><td class="score"><span class="bar"><i style="width:28.6%"></i></span><b>2 / 7</b></td></tr>
+    <tr class="wolm"><td><b>WOLM</b><small>Pricing to be confirmed</small></td><td><i class="d w"></i></td><td><i class="d w"></i></td><td><i class="d w"></i></td><td><i class="d w"></i></td><td><i class="d t"></i></td><td><i class="d w"></i></td><td><i class="d t"></i></td><td class="score"><span class="bar"><i style="width:71.4%"></i><i class="tbc" style="left:71.4%;width:28.6%"></i></span><b>5 + 2</b></td></tr>
+   </tbody>
+  </table>
+ </div>
+ <div class="legend">
+  <span><i class="d f"></i>Does it</span><span><i class="d p"></i>Partly, or only on a paid tier (counted as ½)</span><span><i class="d x"></i>Doesn't do it</span><span><i class="d t"></i>To be confirmed</span>
+  <span class="note">* Live in-call prompts and Meet / Zoom / Teams connectors: to be confirmed for launch</span>
+ </div>
+ <div class="sf"><span>Indicative, from public pricing and review pages, Oct 2026 · Sources: sonix.ai · claap.io · outdoo.ai · hubspot.com · softwarefinder.com · toolsforhumans.ai</span><span class="pg">Vortex Media Management · 04 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 5 · THE GAP ========== -->
+<section class="s">
+ <div class="eb">03 · The gap WOLM fills</div>
+ <h2>Today a deal passes through <em>five tools</em>. WOLM makes it one.</h2>
+ <p class="sub">Every time work moves from one tool to the next, someone has to retype it, and details get lost.</p>
+ <div class="card lane today">
+  <div class="lt"><b>Today</b><span>5 tools, 5 logins</span></div>
+  <div class="steps">
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-search"/></svg></div><b>Research tabs</b><span>News, filings, LinkedIn</span></div>
+   <div class="cn"><b>×</b></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-doc"/></svg></div><b>AI note-taker</b><span>Transcript + summary</span></div>
+   <div class="cn"><b>×</b></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-list"/></svg></div><b>To-do list</b><span>Retyped by hand</span></div>
+   <div class="cn"><b>×</b></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-mail"/></svg></div><b>Inbox</b><span>Follow-up written from scratch</span></div>
+   <div class="cn"><b>×</b></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-sync"/></svg></div><b>CRM</b><span>Updated "later"</span></div>
+  </div>
+  <div class="lost"><svg class="ico" style="width:16px;height:16px"><use href="#i-gap"/></svg>Context is lost at every hand-off: nothing carries over</div>
+ </div>
+ <div class="card lane with">
+  <div class="lt"><b>With WOLM</b><span>One flow, start to finish</span></div>
+  <div class="steps">
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-doc"/></svg></div><b>Account brief</b><span>Positioning, news, risk &amp; stage scores</span></div>
+   <div class="cn"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-users"/></svg></div><b>In the room</b><span>Bot, Chrome extension, photo or voice note</span></div>
+   <div class="cn"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-list"/></svg></div><b>Tasks per person</b><span>Assigned to each team member</span></div>
+   <div class="cn"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-mail"/></svg></div><b>Follow-up drafted</b><span>Ready in Gmail / Outlook</span></div>
+   <div class="cn"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="st"><div class="si"><svg class="ico"><use href="#i-sync"/></svg></div><b>Pipeline synced</b><span>Two-way Salesforce sync</span></div>
+  </div>
+ </div>
+ <div class="gapfoot">
+  <div class="card"><div class="lbl">How we'll describe WOLM</div><p>The AI sales assistant that turns every customer conversation into work that gets done.</p></div>
+  <div class="card campaign"><div class="lbl">Campaign line</div><p>You work the room.<br>Wolm works everything else.</p></div>
+ </div>
+ <div class="sf"><span>Product scope from WOLM calls, 7 Oct 2026 · Tools shown as categories, not named products</span><span class="pg">Vortex Media Management · 05 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 6 · GAPS TO IDEAS ========== -->
+<section class="s">
+ <div class="eb">04 · From gaps to content ideas</div>
+ <h2>Each gap in the market becomes <em>a content series</em></h2>
+ <p class="sub">Instead of saying "we're better", every series shows a real frustration and then how WOLM fixes it.</p>
+ <div class="g2s">
+  <div class="row">
+   <div class="gp"><i><svg class="ico"><use href="#i-doc"/></svg></i><div><span>The gap</span><b>Notes stop at the summary</b></div></div>
+   <div class="ar"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="idea"><b>The Meeting After The Meeting</b><p>Comedy sketches about the two hours of admin after a great call. Then the WOLM version.</p><small><span>Reels</span><span>Shorts</span><span>LinkedIn</span></small></div>
+   <div class="ex"><img src="ph1.jpg" alt=""><div class="mock"><div class="mt">9:40 PM</div><b>Still writing the follow-up…</b></div></div>
+  </div>
+  <div class="row">
+   <div class="gp"><i><svg class="ico"><use href="#i-tag"/></svg></i><div><span>The gap</span><b>The full workflow is priced for big companies</b></div></div>
+   <div class="ar"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="idea"><b>Stack Swap</b><p>Ads, carousels and a LinkedIn sign-up form: "List the 5 tools your team pays for. See them in one."</p><small><span>Ads</span><span>Carousels</span><span>Lead form</span></small></div>
+   <div class="ex"><div class="mock"><div class="mt">Sponsored</div><b>5 tools → 1</b><span class="btn">Try the swap</span></div></div>
+  </div>
+  <div class="row">
+   <div class="gp"><i><svg class="ico"><use href="#i-car"/></svg></i><div><span>The gap</span><b>Field reps are left out</b></div></div>
+   <div class="ar"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="idea"><b>Off The Desk</b><p>Filmed in cars, lobbies and parking lots: check in, meet the client, leave with the tasks done.</p><small><span>Reels</span><span>Shorts</span><span>YouTube</span></small></div>
+   <div class="ex"><img src="ph2.jpg" alt=""><div class="mock"><div class="mt">Site visit</div><b>✓ Checked in</b></div></div>
+  </div>
+  <div class="row">
+   <div class="gp"><i><svg class="ico"><use href="#i-video"/></svg></i><div><span>The gap</span><b>Not every client wants a bot in the call</b></div></div>
+   <div class="ar"><svg class="ico"><use href="#i-arrow"/></svg></div>
+   <div class="idea"><b>No Bot? No Problem.</b><p>A notebook photo or a voice note becomes the same summary, tasks and follow-up.</p><small><span>Reels</span><span>Shorts</span><span>LinkedIn</span></small></div>
+   <div class="ex"><div class="note"></div><div class="mock"><div class="mt">Summary</div><b>3 tasks ✓</b></div></div>
+  </div>
+ </div>
+ <div class="sf"><span>Series names are working titles · Product screens shown as designed mock-ups</span><span class="pg">Vortex Media Management · 06 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 7 · CHANNEL JOURNEY ========== -->
+<section class="s">
+ <div class="eb">05 · How the channels work together</div>
+ <h2>From a stranger scrolling <em>to a booked demo</em></h2>
+ <p class="sub">Each channel has one job. Together they take a sales leader from "never heard of WOLM" to "let's talk".</p>
+ <div class="jr">
+  <div class="js"><div class="dot"><svg class="ico"><use href="#i-eye"/></svg></div>
+   <div class="card"><div class="stp">Step 1</div><h3>Get noticed</h3>
+    <div class="where"><span class="pf ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/></svg></span><span class="pf yt"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 7.5v9l7.5-4.5z"/></svg></span>Instagram Reels + YouTube Shorts</div>
+    <p>Short, funny, relatable videos (20–45 seconds) about the pain of sales admin. Four recognisable series.</p>
+    <div class="what"><span>Every week</span><b>4 Reels + 3 Story sets</b><small>Reels also posted as YouTube Shorts</small></div></div></div>
+  <div class="js"><div class="dot"><svg class="ico"><use href="#i-users"/></svg></div>
+   <div class="card"><div class="stp">Step 2</div><h3>Build trust</h3>
+    <div class="where"><span class="pf li">in</span>LinkedIn</div>
+    <p>The founder becomes the face of WOLM, sharing honest opinions and stories where sales leaders already spend time.</p>
+    <div class="what"><span>Every week</span><b>3 founder + 2 company posts</b><small>Plus 15 minutes of commenting a day</small></div></div></div>
+  <div class="js"><div class="dot"><svg class="ico"><use href="#i-play"/></svg></div>
+   <div class="card"><div class="stp">Step 3</div><h3>Prove it works</h3>
+    <div class="where"><span class="pf yt"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 7.5v9l7.5-4.5z"/></svg></span>YouTube long videos</div>
+    <p>Buyers check YouTube before they buy. Full demos and walkthroughs show WOLM doing real work.</p>
+    <div class="what"><span>At launch</span><b>8–12 min demo teardown</b><small>Then founder talks and walkthroughs by role</small></div></div></div>
+  <div class="js"><div class="dot"><svg class="ico"><use href="#i-target"/></svg></div>
+   <div class="card"><div class="stp">Step 4</div><h3>Book a demo</h3>
+    <div class="where"><span class="pf li">in</span><span class="pf mt">f</span><span class="pf gg">G</span>Ads</div>
+    <p>Paid ads find the right people, collect their details with simple sign-up forms, and remind interested people to book.</p>
+    <div class="what"><span>From launch, day 31</span><b>LinkedIn, Google, Meta</b><small>Ad spend paid directly by WOLM</small></div></div></div>
+ </div>
+ <div class="dest"><i><svg class="ico"><use href="#i-flag"/></svg></i><span>Every post, video and ad points to one place: <b>WOLM's own demo / waitlist page.</b></span></div>
+ <div class="sf"><span>Summary of the channel plan on the next four slides</span><span class="pg">Vortex Media Management · 07 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 8 · LINKEDIN ========== -->
+<section class="s">
+ <div class="eb">06 · LinkedIn</div>
+ <h2>On LinkedIn, <em>the founder is the channel</em></h2>
+ <p class="sub">People trust people more than brands. The founder's voice leads; the company page backs it up.</p>
+ <div class="lk">
+  <div class="card post">
+   <div class="ph"><div class="av"><svg class="ico"><use href="#i-users"/></svg></div><div><b>WOLM Founder</b><small>Founder at WOLM · AI sales assistant · 1d</small></div><span class="fl">+ Follow</span></div>
+   <div class="tx"><b>Every AI tool will take your notes. That's the easy part.</b>The hard part is the two hours after the call: the tasks, the follow-up, the CRM. That's the part we're building WOLM for. ↓</div>
+   <div class="car"><div class="c1"><span>1 / 6</span><b>Notes are the easy part.</b></div><div class="c2"><span>2 / 6</span><b>Tasks. Follow-up. Pipeline.</b></div><div class="c3"><i>›</i></div></div>
+   <div class="act"><span>Like</span><span>Comment</span><span>Repost</span><span>Send</span></div>
+  </div>
+  <div class="lk-r">
+   <div>
+    <div class="lbl">A typical week</div>
+    <div class="week"><div class="fp"><span>Mon</span>Founder post</div><div class="cp"><span>Tue</span>Company page</div><div class="fp"><span>Wed</span>Founder post</div><div class="cp"><span>Thu</span>Company page</div><div class="fp"><span>Fri</span>Founder post</div></div>
+    <div class="daily"><svg class="ico" style="width:18px;height:18px"><use href="#i-clock"/></svg>Every day: 15 minutes commenting on posts by US sales leaders, to get seen by the right people</div>
+   </div>
+   <div>
+    <div class="lbl">What we'll post about</div>
+    <div class="mix"><div style="width:40%;background:var(--acc)">40%</div><div style="width:30%;background:#3aa784">30%</div><div style="width:20%;background:#d39a3c">20%</div><div style="width:10%;background:#7d8a86">10%</div></div>
+    <div class="mixl"><div style="width:40%">The problem &amp; our opinion</div><div style="width:30%">Product stories</div><div style="width:20%">Idea series</div><div style="width:10%">Proof</div></div>
+   </div>
+   <div class="two">
+    <div><div class="lbl">How we'll do it</div>
+     <ul class="plays">
+      <li><i><svg class="ico"><use href="#i-pen"/></svg></i>Vortex writes the founder's posts from two recorded conversations during the 45 days</li>
+      <li><i><svg class="ico"><use href="#i-cam"/></svg></i>LinkedIn Live demo on launch day</li>
+      <li><i><svg class="ico"><use href="#i-share"/></svg></i>The whole team reshares every founder post</li>
+     </ul></div>
+    <div><div class="lbl">How we'll know it's working</div>
+     <div class="meas">
+      <div><b>Engagement from sales titles</b><small>Likes and comments from sales leaders, not random accounts</small></div>
+      <div><b>Ideal-customer followers</b><small>New followers who match WOLM's target buyer</small></div>
+      <div><b>Profile visits &amp; inbound messages</b><small>People curious enough to look or reach out</small></div>
+     </div></div>
+   </div>
+  </div>
+ </div>
+ <div class="sf"><span>Mock-up: post copy is a draft hook · Name and photo replaced with a placeholder</span><span class="pg">Vortex Media Management · 08 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 9 · INSTAGRAM ========== -->
+<section class="s">
+ <div class="eb">07 · Instagram + YouTube Shorts</div>
+ <h2>Four short-video series, <em>recognisable in two seconds</em></h2>
+ <p class="sub">Each series has its own look and opening line, so viewers know it's WOLM before the logo appears.</p>
+ <div class="ig">
+  <div class="phones">
+   <div><div class="phone"><div class="scr"><img src="ph1.jpg" alt=""><div class="top"><span>Reels</span><span>●</span></div><div class="hook">It's 9:40 PM.<br>The meeting<br>was at 2.</div><div class="side"><span></span><span></span><span></span></div><div class="brand"><i>W</i>WOLM</div></div></div>
+    <div class="cap"><span>Series 1</span><b>The Meeting After The Meeting</b><small>The admin that eats your evening</small></div></div>
+   <div><div class="phone"><div class="scr"><img src="ph2.jpg" alt=""><div class="top"><span>Reels</span><span>●</span></div><div class="hook">Your best reps<br>aren't at their<br>desks.</div><div class="side"><span></span><span></span><span></span></div><div class="brand"><i>W</i>WOLM</div></div></div>
+    <div class="cap"><span>Series 2</span><b>Off The Desk</b><small>Sales on the road, done from the car park</small></div></div>
+   <div><div class="phone"><div class="scr"><img src="ph3.jpg" alt=""><div class="top"><span>Reels</span><span>●</span></div><div class="hook">"Can you send<br>me the case<br>study?"</div><div class="side"><span></span><span></span><span></span></div><div class="brand"><i>W</i>WOLM</div></div></div>
+    <div class="cap"><span>Series 3</span><b>Said / Done</b><small>Promised in the meeting, sent before you leave</small></div></div>
+   <div><div class="phone"><div class="scr"><img src="ph4.jpg" alt=""><div class="top"><span>Reels</span><span>●</span></div><div class="hook">Ghosted after a<br>great demo?</div><div class="side"><span></span><span></span><span></span></div><div class="brand"><i>W</i>WOLM</div></div></div>
+    <div class="cap"><span>Series 4</span><b>Left On Read</b><small>Why deals go quiet, and how not to let them</small></div></div>
+  </div>
+  <div class="ig-r">
+   <div class="card"><div class="lbl">Three rules for every video</div>
+    <div class="rules">
+     <div><i><svg class="ico"><use href="#i-bolt"/></svg></i><span>Hook in 2 seconds<small>Grab attention before the thumb scrolls on</small></span></div>
+     <div><i><svg class="ico"><use href="#i-text"/></svg></i><span>Captions on screen<small>Most people watch with the sound off</small></span></div>
+     <div><i><svg class="ico"><use href="#i-clock"/></svg></i><span>20–45 seconds long<small>Short enough to finish</small></span></div>
+    </div></div>
+   <div class="card"><div class="lbl">How often</div>
+    <div class="cad"><div><b>4</b><span>Reels a week, also posted as YouTube Shorts</span></div><div><b>3×</b><span>Stories a week, with polls</span></div></div></div>
+   <div class="card"><div class="lbl">How we'll know it's working</div>
+    <div class="tags2">
+     <div><b>3-second hold</b><small>Who keeps watching after the hook</small></div>
+     <div><b>Completion</b><small>Who watches to the end</small></div>
+     <div><b>Shares</b><small>Sent to a colleague</small></div>
+     <div><b>Saves</b><small>Kept to watch again</small></div>
+    </div></div>
+  </div>
+ </div>
+ <div class="sf"><span>Frames are casting and mood references for the launch shoot, not final footage</span><span class="pg">Vortex Media Management · 09 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 10 · YOUTUBE ========== -->
+<section class="s">
+ <div class="eb">08 · YouTube long-form</div>
+ <h2>YouTube is where buyers <em>go to check</em></h2>
+ <p class="sub">Before a company buys software, someone searches for it on YouTube. These longer videos are the proof that WOLM really works.</p>
+ <div class="card ytc">
+  <div class="yth"><div class="av">W</div><div><b>WOLM</b><small>AI sales assistant for B2B teams</small></div><span class="sb">Subscribe</span><nav><span>Home</span><span class="on">Videos</span><span>Shorts</span><span>Live</span><span>Playlists</span></nav></div>
+  <div class="vids">
+   <div class="vid"><div class="th"><img src="yt1.jpg" alt=""><b><em>3 min</em> follow-up, rebuilt</b><span>9:48</span></div><p>We rebuilt a real sales follow-up in 3 minutes</p><small>Demo teardown</small></div>
+   <div class="vid"><div class="th"><img src="yt2.jpg" alt=""><b>Notes <em>≠</em> a sales assistant</b><span>11:20</span></div><p>Note-taker vs sales assistant: what's the difference?</p><small>Use-case walkthrough</small></div>
+   <div class="vid"><div class="th"><img src="yt3.jpg" alt=""><b>Off the <em>desk</em></b><span>10:05</span></div><p>Inside a field rep's day</p><small>Use-case walkthrough</small></div>
+   <div class="vid"><div class="th"><img src="yt4.jpg" alt=""><b>Why we <em>built it</em></b><span>24:12</span></div><p>The founder on why we built WOLM</p><small>Founder conversation</small></div>
+  </div>
+ </div>
+ <div class="yt3">
+  <div class="card"><div class="lbl">Three kinds of video</div>
+   <div class="fmt"><div>Demo teardown<span>At launch · 8–12 min</span></div><div>Founder conversations<span>Ongoing</span></div><div>Use-case walkthroughs<span>One per job role</span></div></div></div>
+  <div class="card"><div class="lbl">How YouTube feeds the other channels</div>
+   <div class="loop">
+    <div><b>Short</b><small>Catches attention in seconds</small></div><svg class="ico"><use href="#i-arrow"/></svg>
+    <div><b>Long video</b><small>Every Short links to one</small></div><svg class="ico"><use href="#i-arrow"/></svg>
+    <div class="hl"><b>Reminder ads</b><small>Shown to people who watched</small></div>
+   </div></div>
+  <div class="card"><div class="lbl">How we'll know it's working</div>
+   <div class="meas"><div><b>Watch time &amp; average view length</b><small>Are people actually watching?</small></div><div><b>Clicks to the demo page</b><small>Are they taking the next step?</small></div></div></div>
+ </div>
+ <div class="sf"><span>Channel page is a mock-up · Thumbnails use casting references · Durations are targets</span><span class="pg">Vortex Media Management · 10 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 11 · ADS ========== -->
+<section class="s">
+ <div class="eb">09 · Paid ads (performance marketing)</div>
+ <h2>Ads in three steps: <em>find, capture, convert</em></h2>
+ <p class="sub">Ads start on launch day. They find the right people, collect their details, then remind the interested ones to book a demo.</p>
+ <div class="ads">
+  <div class="card fn">
+   <div class="top"><span class="num">Step 1 · Find</span><span class="pfs"><span class="pf li">in</span><span class="pf mt">f</span><span class="pf yt"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 7.5v9l7.5-4.5z"/></svg></span></span></div>
+   <h3>Reach the right sales leaders</h3>
+   <p class="pl">Pay to show our best content to people with sales job titles.</p>
+   <ul><li>Boost the founder's best LinkedIn posts</li><li>LinkedIn video ads</li><li>Instagram / Facebook Reels ads</li><li>YouTube ads before other videos</li></ul>
+   <div class="mockad"><img src="yt3.jpg" alt=""><div class="form"><small>Sponsored</small><b>Off the desk</b><span class="btn">Book a demo</span></div></div>
+  </div>
+  <div class="card fn">
+   <div class="top"><span class="num">Step 2 · Capture</span><span class="pfs"><span class="pf li">in</span><span class="pf mt">f</span></span></div>
+   <h3>Collect their details</h3>
+   <p class="pl">A sign-up form opens inside LinkedIn or Instagram, already filled in. Nothing to build; leads go straight to WOLM.</p>
+   <ul><li>LinkedIn form: "Run a Stack Swap check"</li><li>Meta (Instagram / Facebook) form</li></ul>
+   <div class="mockad"><div class="form"><small>WOLM · Sponsored</small><b>Run a Stack Swap check</b><span></span><span></span><span class="btn blue">Submit</span></div></div>
+  </div>
+  <div class="card fn">
+   <div class="top"><span class="num">Step 3 · Convert</span><span class="pfs"><span class="pf mt">f</span><span class="pf li">in</span><span class="pf gg">G</span></span></div>
+   <h3>Turn interest into demos</h3>
+   <p class="pl">Remind people who already engaged, and appear when buyers search on Google.</p>
+   <ul><li>Reminder ads with Said / Done clips</li><li>Google searches like "AI sales assistant", "AI note-taker with CRM", "Gong alternative"</li></ul>
+   <div class="mockad"><img src="ph3.jpg" alt="" style="object-position:center 35%"><div class="form"><small>Said. Done.</small><b>→ WOLM's demo page</b><span class="btn">Book a demo</span></div></div>
+  </div>
+  <div class="card spend">
+   <div class="lbl">How the ad budget is split at the start</div>
+   <div class="donut"><span><div><b>100%</b>ad budget</div></span></div>
+   <div class="sp-l">
+    <div><i style="background:var(--li)"></i>LinkedIn<b>50%</b></div>
+    <div><i style="background:#34a37f"></i>Google Search<b>30%</b></div>
+    <div><i style="background:#d39a3c"></i>Meta (Instagram, Facebook)<b>20%</b></div>
+   </div>
+   <small>Reviewed after 2 weeks of results, then moved toward what works best.</small>
+  </div>
+ </div>
+ <div class="adgl">
+  <div class="gl"><span class="q">?</span><div><b>Lead</b>: someone who has shared their details and shown interest in WOLM.</div></div>
+  <div class="gl"><span class="q">?</span><div><b>Retargeting</b>: showing ads again to people who already watched or clicked.</div></div>
+  <div class="gl"><span class="q">?</span><div><b>Ad spend</b> is paid directly by WOLM to each platform, separate from Vortex's fee.</div></div>
+ </div>
+ <div class="sf"><span>Ads point to WOLM's own demo / waitlist page · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 11 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 12 · TIMELINE ========== -->
+<section class="s">
+ <div class="eb">10 · The 45-day plan</div>
+ <h2>30 days to prepare. <em>Live on day 31.</em> Two weeks of push.</h2>
+ <p class="sub">You stay in control: nothing goes out without your approval at four checkpoints.</p>
+ <div class="card tl">
+  <div class="gantt" id="gantt45"></div>
+ </div>
+ <div class="gates4">
+  <div class="card gt"><div class="h"><i></i><b>G1</b><span>Day 3</span></div><p>Positioning</p><small>You approve how we describe WOLM</small></div>
+  <div class="card gt"><div class="h"><i></i><b>G2</b><span>Day 8</span></div><p>Scripts</p><small>You approve what each video will say</small></div>
+  <div class="card gt"><div class="h"><i></i><b>G3</b><span>Day 18</span></div><p>First cuts</p><small>You review the first edited videos</small></div>
+  <div class="card gt"><div class="h"><i></i><b>G4</b><span>Day 28</span></div><p>Go-live</p><small>Final sign-off on everything for launch</small></div>
+  <div class="card gt ld"><div class="h"><i></i><b>LAUNCH</b><span>Day 31</span></div><p>Everything goes live</p><small>Content, LinkedIn Live demo and ads. Push continues to day 45.</small></div>
+ </div>
+ <div class="sf"><span>Ads point to WOLM's own demo / waitlist page · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 12 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 13 · PACKAGES ========== -->
+<section class="s">
+ <div class="eb">11 · Deliverables &amp; investment</div>
+ <h2>Three 45-day packages. <em>Launch Engine runs the ads.</em></h2>
+ <p class="sub">Each package covers the full 45 days. Bigger packages add more content, reports, community management and paid ads.</p>
+ <div class="pk">
+  <div class="card pc">
+   <span class="k">Package 01</span><h3>Foundation</h3><span class="tg">Every channel live, steady publishing rhythm</span>
+   <div class="pr"><b>₹1,42,500</b><span>for 45 days</span></div><div class="per"><b>80</b> pieces of content · ₹1,781 each</div>
+   <div class="dl"><div><b>3</b>Shoot days</div><div><b>2</b>YouTube long videos</div><div><b>9</b>YouTube Shorts</div><div><b>18</b>Instagram Reels</div><div><b>9</b>Instagram posts &amp; carousels</div><div><b>18</b>Story frames</div><div><b>12</b>LinkedIn company posts</div><div><b>12</b>Founder LinkedIn posts</div></div>
+   <div class="inc"><span>Content calendar</span><span class="off">Reports</span><span class="off">Community</span><span class="off">Paid ads</span></div>
+  </div>
+  <div class="card pc">
+   <span class="k">Package 02</span><h3>Momentum</h3><span class="tg">Adds reporting and community management</span>
+   <div class="pr"><b>₹2,17,500</b><span>for 45 days</span></div><div class="per"><b>129</b> pieces of content · ₹1,686 each</div>
+   <div class="dl"><div><b>6</b>Shoot days</div><div><b>3</b>YouTube long videos</div><div><b>18</b>YouTube Shorts</div><div><b>27</b>Instagram Reels</div><div><b>15</b>Instagram posts &amp; carousels</div><div><b>30</b>Story frames</div><div><b>18</b>LinkedIn company posts</div><div><b>18</b>Founder LinkedIn posts</div></div>
+   <div class="inc"><span>Content calendar</span><span>Reports days 15, 30, 45</span><span>Community: IG + LinkedIn</span><span class="off">Paid ads</span></div>
+  </div>
+  <div class="card pc rec">
+   <span class="badge">RECOMMENDED</span>
+   <span class="k">Package 03</span><h3>Launch Engine</h3><span class="tg">Adds paid ads and lead forms</span>
+   <div class="pr"><b>₹3,22,500</b><span>for 45 days</span></div><div class="per"><b>185</b> pieces of content · ₹1,743 each</div>
+   <div class="dl"><div><b>9</b>Shoot days</div><div><b>5</b>YouTube long videos</div><div><b>27</b>YouTube Shorts</div><div><b>39</b>Instagram Reels</div><div><b>21</b>Instagram posts &amp; carousels</div><div><b>45</b>Story frames</div><div><b>24</b>LinkedIn company posts</div><div><b>24</b>Founder LinkedIn posts</div></div>
+   <div class="inc"><span>Content calendar</span><span>Weekly report</span><span>Community: IG + LinkedIn</span><span>Paid ads: LinkedIn, Google, Meta</span><span>Lead forms</span></div>
+  </div>
+ </div>
+ <div class="lbl" style="margin-top:16px">Need something extra? Price per item, on top of any package</div>
+ <div class="items" style="margin-top:8px">
+  <div class="it"><i><svg class="ico"><use href="#i-megaphone"/></svg></i><b>₹25,000</b><span>Video ad</span><small>One finished ad</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-yt"/></svg></i><b>₹20,000</b><span>YouTube long video</span><small>Per video</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-reel"/></svg></i><b>₹3,000</b><span>Short / Reel</span><small>Per vertical video</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-in"/></svg></i><b>₹3,000</b><span>LinkedIn video</span><small>Per vertical video</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-car2"/></svg></i><b>₹2,000</b><span>LinkedIn carousel / static</span><small>Per post</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-cam"/></svg></i><b>₹7,500</b><span>Shoot day</span><small>Additional day</small></div>
+  <div class="it"><i><svg class="ico"><use href="#i-pen"/></svg></i><b>₹1,500</b><span>Extra revision</span><small>Per asset · 1 included</small></div>
+ </div>
+ <div class="sf"><span>All prices exclusive of 18% GST · Ad spend paid directly by WOLM</span><span class="pg">Vortex Media Management · 13 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<!-- ========== 14 · NEXT STEPS ========== -->
+<section class="s">
+ <div class="eb">12 · How we get started</div>
+ <h2>Four steps <em>from yes to launch</em></h2>
+ <p class="sub">Simple terms, no long contract, and you approve every important step along the way.</p>
+ <div class="ns">
+  <div class="nst"><div class="c">1</div><div class="card"><div class="when">This week</div><h3>Pick a package</h3><p>Foundation, Momentum or Launch Engine, plus any extra items.</p></div></div>
+  <div class="nst"><div class="c">2</div><div class="card"><div class="when">On signing</div><h3>Sign &amp; pay 50%</h3><p>Half the package fee to begin. Day 1 of the 45 days starts.</p></div></div>
+  <div class="nst"><div class="c">3</div><div class="card"><div class="when">Days 1–30</div><h3>Plan, shoot, approve</h3><p>Strategy, scripts, a 2-day shoot and edits, with your sign-off at four checkpoints.</p></div></div>
+  <div class="nst"><div class="c"><svg class="ico" style="width:26px;height:26px"><use href="#i-rocket"/></svg></div><div class="card"><div class="when">Day 31</div><h3>Launch &amp; pay 50%</h3><p>Everything goes live. The second half is due on launch day. Push runs to day 45.</p></div></div>
+ </div>
+ <div class="terms">
+  <div class="card tm"><i><svg class="ico"><use href="#i-percent"/></svg></i><div><b>GST extra</b><span>All prices exclude 18% GST</span></div></div>
+  <div class="card tm"><i><svg class="ico"><use href="#i-wallet"/></svg></i><div><b>Ad spend separate</b><span>Paid directly by WOLM to LinkedIn, Google and Meta</span></div></div>
+  <div class="card tm"><i><svg class="ico"><use href="#i-pen"/></svg></i><div><b>1 revision included</b><span>On every asset; extra rounds ₹1,500</span></div></div>
+  <div class="card tm"><i><svg class="ico"><use href="#i-unlock"/></svg></i><div><b>No lock-in</b><span>No commitment after day 45</span></div></div>
+ </div>
+ <div class="closing"><div><b>You work the room. Wolm works everything else.</b></div><span>Vortex Media Management × WOLM</span></div>
+ <div class="sf"><span>50% on signing, 50% on launch day · No commitment after day 45</span><span class="pg">Vortex Media Management · 14 <img src="mark_ink.png" alt=""></span></div>
+</section>
+
+<script>
+// 45-day Gantt, built from data so bars sit exactly on their days
+(function(){
+ const D=45, el=document.getElementById('gantt45');
+ const rows=[
+  ['Strategy & concepts','What we say and to whom','prep',1,5,'Days 1–5'],
+  ['Scripts & shoot plan','Write every video','prep',6,10,'Days 6–10'],
+  ['2-day shoot','Film everything','shoot',11,12,'Days 11–12'],
+  ['Edit & ad setup','Cut videos, build ads and forms','prep',11,20,'Days 11–20'],
+  ['Pre-launch teasers','Warm up the audience','tease',21,30,'Days 21–30'],
+  ['Launch','Everything goes live','launch',31,35,'Day 31'],
+  ['Push','More content, ads optimised','push',36,45,'Days 36–45'],
+ ];
+ const ticks=['1–5','6–10','11–15','16–20','21–25','26–30','31–35','36–40','41–45'];
+ let h='<div class="g-axis"><div class="lbl">Days</div><div class="ticks">'+ticks.map(t=>'<span>'+t+'</span>').join('')+'</div></div>';
+ for(const r of rows){
+  const l=(r[3]-1)/D*100, w=(r[4]-r[3]+1)/D*100;
+  h+='<div class="g-row"><div class="nm">'+r[0]+'<small>'+r[1]+'</small></div><div class="tr"><div class="bar '+r[2]+'" style="left:'+l+'%;width:'+w+'%">'+r[5]+'</div></div></div>';
+ }
+ const gates=[['G1',3],['G2',8],['G3',18],['G4',28]];
+ h+='<div class="g-row gates"><div class="nm">Your approvals<small>Four checkpoints</small></div><div class="tr">'+gates.map(g=>'<div class="gate" style="left:'+((g[1]-.5)/D*100)+'%"><i></i>'+g[0]+'</div>').join('')+'</div></div>';
+ el.innerHTML=h;
+})();
+</script>
+</body></html>
