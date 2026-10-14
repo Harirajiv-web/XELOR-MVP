@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>WOLM · Pricing & Packages</title>
+<link rel="stylesheet" href="archivo.css">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page:#f5f7f6;--surface:#ffffff;--tint:#eef4f1;--line:#dfe7e3;--line-2:#cbd7d2;
+  --ink:#16201d;--body:#36423e;--muted:#6a7672;
+  --acc:#1d8a69;--acc-ink:#15694f;--acc-soft:#e5f4ed;--acc-hi:#3dbf95;
+  --sand:#f7f3ea;--sand-ink:#7a5e22;
+  --f:'Archivo','Liberation Sans',Arial,sans-serif;
+}
+body{font-family:var(--f);color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact;font-feature-settings:"tnum" 1}
+.page{width:210mm;height:297mm;background:var(--page);display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* header */
+.hd{background:radial-gradient(60% 140% at 100% 0%,#dff2ea 0,transparent 62%),linear-gradient(180deg,#ffffff,#f9fbfa);padding:18px 34px 14px;border-bottom:1px solid var(--line);position:relative}
+.hd::after{content:"";position:absolute;left:34px;bottom:-1px;width:64px;height:3px;border-radius:2px;background:var(--acc-hi)}
+.top{display:flex;align-items:center;justify-content:space-between}
+.top img{height:20px;display:block}
+.meta{text-align:right;font-size:9.5px;line-height:1.5;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.meta b{color:var(--ink);font-weight:700;letter-spacing:.04em}
+.eb{margin-top:13px;font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+h1{margin-top:4px;font-size:24px;line-height:1.1;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+h1 span{color:var(--acc)}
+.lede{margin-top:5px;font-size:11px;line-height:1.45;color:var(--muted)}
+.lede b{color:var(--ink);font-weight:600}
+
+.main{padding:14px 34px 0;display:flex;flex-direction:column;gap:13px}
+.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:5px}
+.sh h2{font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.sh .num{font-size:10px;font-weight:700;color:var(--acc);letter-spacing:.16em;text-transform:uppercase}
+.sh p{margin-left:auto;font-size:9.5px;color:var(--muted)}
+
+/* plans table */
+.plans{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
+col.c1{width:31%}col.c2,col.c3{width:21.5%}col.c4{width:26%}
+th,td{padding:4.4px 12px;text-align:center;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{vertical-align:top;padding:9px 10px 8px;background:var(--surface);border-bottom:1px solid var(--line-2)}
+thead th:first-child{vertical-align:bottom;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pl{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pn{display:block;margin-top:1px;font-size:13.5px;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.pt{display:block;margin-top:1px;font-size:8.5px;line-height:1.3;color:var(--muted);font-weight:500;white-space:nowrap}
+.pp{display:block;margin-top:5px;font-size:17px;white-space:nowrap;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.pp small{font-size:8.5px;font-weight:500;color:var(--muted);letter-spacing:0}
+.pa{display:block;margin-top:1px;font-size:8.5px;color:var(--muted)}
+.pa b{color:var(--body)}
+td{color:var(--body)}
+td:first-child{color:var(--ink);font-weight:500}
+td.n{font-weight:700;color:var(--ink);font-size:10.5px}
+tr.grp td{background:var(--tint);font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc-ink);padding:3.5px 12px}
+tr.tot td{font-weight:800;color:var(--ink);font-size:10.5px;background:#fafcfb}
+tr:last-child td{border-bottom:0}
+.rec{background:#f2faf6!important}
+thead th.rec{background:linear-gradient(180deg,#e6f6ef,#f2faf6)!important}
+th.rec .pp{color:var(--acc-ink)}
+.badge{display:inline-block;vertical-align:1px;margin-left:5px;font-size:6.5px;font-weight:800;letter-spacing:.14em;color:#fff;background:var(--acc);padding:2px 6px;border-radius:999px}
+.y{display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;background:var(--acc-soft);color:var(--acc);font-size:8px;font-weight:800;vertical-align:middle}
+.no{color:#b5c0bc}
+td small{display:inline;white-space:nowrap;margin-left:5px;font-size:8.5px;color:var(--muted);font-weight:500}
+
+/* video packages */
+.vgrid{display:grid;grid-template-columns:1fr 1fr 1.18fr;gap:10px}
+.vp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 13px 10px;display:flex;flex-direction:column}
+.vp.series{background:linear-gradient(160deg,#ffffff 30%,#eef8f3);border-color:#bfe2d3}
+.vp .pl{color:var(--acc)}
+.vp h3{margin-top:1px;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.vp .d{margin-top:2px;font-size:9px;line-height:1.35;color:var(--muted);min-height:24px}
+.vp .price{margin-top:5px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.vp .price b{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.vp .price s{font-size:10px;color:var(--muted)}
+.vp .price em{font-style:normal;font-size:8.5px;font-weight:700;color:var(--acc-ink);background:var(--acc-soft);padding:2px 6px;border-radius:999px}
+.vp .alt{font-size:10px;color:var(--body);margin-top:1px}
+.vp .alt b{color:var(--ink)}
+.vp ul{list-style:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.vp li{display:flex;gap:7px;font-size:9.5px;line-height:1.35;color:var(--body)}
+.vp li::before{content:"";flex:none;width:5px;height:5px;margin-top:5px;border-radius:50%;background:var(--acc-hi)}
+.vp li b{color:var(--ink)}
+.vp .per{margin-top:auto;padding-top:6px;font-size:9px;color:var(--muted)}
+
+/* rate card */
+.rates{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rt{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:7px 10px;display:flex;gap:9px;align-items:flex-start}
+.rt i{flex:none;width:24px;height:24px;border-radius:7px;background:var(--acc-soft);display:grid;place-items:center}
+.rt i svg{width:13px;height:13px;fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rt b{display:block;font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.rt span{display:block;font-size:9.5px;font-weight:600;color:var(--body);line-height:1.25;margin-top:1px}
+.rt small{display:block;font-size:8.5px;color:var(--muted);margin-top:1px}
+.rt.note{background:var(--sand);border-color:#ece3cf}
+.rt.note i{background:#efe5cd}.rt.note i svg{stroke:var(--sand-ink)}
+.rt.note b{font-size:11px}
+
+/* terms */
+.terms{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tm{border-left:2px solid var(--acc-hi);padding:2px 0 2px 9px}
+.tm b{display:block;font-size:10.5px;font-weight:700;color:var(--ink)}
+.tm span{display:block;font-size:9.5px;color:var(--muted);line-height:1.3;margin-top:1px}
+
+.ft{margin-top:auto;padding:10px 34px 12px;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--muted);letter-spacing:.04em;border-top:1px solid var(--line);background:#fff}
+.ft b{color:var(--ink);font-weight:700}
+</style></head><body>
+<div class="page">
+ <header class="hd">
+  <div class="top">
+   <img src="logo_ink.png" alt="Vortex Media Management">
+   <div class="meta">Investment proposal · October 2026<br><b>Prepared for the WOLM founding team</b></div>
+  </div>
+  <div class="eb">08 · Deliverables &amp; investment</div>
+  <h1>Pricing &amp; packages for <span>WOLM's 45-day launch</span></h1>
+  <p class="lede">Choose a <b>full 45-day plan</b>, a <b>video package</b>, or <b>individual items</b>. Every asset includes one revision round.</p>
+ </header>
+
+ <main class="main">
+  <!-- 45-day plans -->
+  <section>
+   <div class="sh"><span class="num">Part A</span><h2>45-day plans</h2><p>Monthly-style retainer for the full launch window</p></div>
+   <div class="plans">
+    <table>
+     <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+     <thead><tr>
+      <th>What's included</th>
+      <th><span class="pl">Plan 1</span><span class="pn">Foundation</span><span class="pt">Every channel live and posting</span><span class="pp">₹1,42,500 <small>/ 45 days</small></span><span class="pa"><b>80</b> assets · ₹1,781 each</span></th>
+      <th><span class="pl">Plan 2</span><span class="pn">Momentum</span><span class="pt">Adds reports and community care</span><span class="pp">₹2,17,500 <small>/ 45 days</small></span><span class="pa"><b>129</b> assets · ₹1,686 each</span></th>
+      <th class="rec"><span class="pl">Plan 3<span class="badge">RECOMMENDED</span></span><span class="pn">Launch Engine</span><span class="pt">Adds paid media and lead forms from day 31</span><span class="pp">₹3,22,500 <small>/ 45 days</small></span><span class="pa"><b>185</b> assets · ₹1,743 each</span></th>
+     </tr></thead>
+     <tbody>
+      <tr class="grp"><td colspan="4">Production</td></tr>
+      <tr><td>Shoot days</td><td class="n">3</td><td class="n">6</td><td class="n rec">9</td></tr>
+      <tr class="grp"><td colspan="4">Video</td></tr>
+      <tr><td>YouTube long-form videos</td><td class="n">2</td><td class="n">3</td><td class="n rec">5</td></tr>
+      <tr><td>YouTube Shorts <small>cut from long-form</small></td><td class="n">9</td><td class="n">18</td><td class="n rec">27</td></tr>
+      <tr><td>Instagram Reels</td><td class="n">18</td><td class="n">27</td><td class="n rec">39</td></tr>
+      <tr class="grp"><td colspan="4">Posts &amp; stories</td></tr>
+      <tr><td>Instagram posts &amp; carousels</td><td class="n">9</td><td class="n">15</td><td class="n rec">21</td></tr>
+      <tr><td>Instagram Story frames</td><td class="n">18</td><td class="n">30</td><td class="n rec">45</td></tr>
+      <tr><td>LinkedIn company posts</td><td class="n">12</td><td class="n">18</td><td class="n rec">24</td></tr>
+      <tr><td>Founder LinkedIn posts</td><td class="n">12</td><td class="n">18</td><td class="n rec">24</td></tr>
+      <tr class="tot"><td>Total assets</td><td>80</td><td>129</td><td class="rec">185</td></tr>
+      <tr class="grp"><td colspan="4">Management &amp; growth</td></tr>
+      <tr><td>Content calendar</td><td><span class="y">✓</span></td><td><span class="y">✓</span></td><td class="rec"><span class="y">✓</span></td></tr>
+      <tr><td>Performance reports</td><td class="no">—</td><td>Days 15, 30, 45</td><td class="rec">Weekly</td></tr>
+      <tr><td>Community management <small>IG + LinkedIn</small></td><td class="no">—</td><td><span class="y">✓</span></td><td class="rec"><span class="y">✓</span></td></tr>
+      <tr><td>Paid ads management <small>Google, Meta, LinkedIn</small></td><td class="no">—</td><td class="no">—</td><td class="rec"><span class="y">✓</span></td></tr>
+      <tr><td>LinkedIn + Meta lead forms</td><td class="no">—</td><td class="no">—</td><td class="rec"><span class="y">✓</span></td></tr>
+     </tbody>
+    </table>
+   </div>
+  </section>
+
+  <!-- video packages -->
+  <section>
+   <div class="sh"><span class="num">Part B</span><h2>Video packages</h2><p>Bundled from the item rates below, about 13–15% lower</p></div>
+   <div class="vgrid">
+    <div class="vp">
+     <span class="pl">Video package 1</span><h3>5-Video Pack</h3>
+     <p class="d">A quick burst of short-form content for one campaign or launch moment.</p>
+     <div class="price"><b>₹19,500</b><s>₹22,500</s><em>Save ₹3,000</em></div>
+     <ul><li><span><b>5</b> vertical videos for Reels, Shorts or LinkedIn</span></li><li><span><b>1</b> shoot day</span></li><li><span>1 revision round per video</span></li></ul>
+     <p class="per">₹3,900 per video, shoot included</p>
+    </div>
+    <div class="vp">
+     <span class="pl">Video package 2</span><h3>8-Video Pack</h3>
+     <p class="d">A month of short-form video across Instagram, YouTube and LinkedIn.</p>
+     <div class="price"><b>₹33,000</b><s>₹39,000</s><em>Save ₹6,000</em></div>
+     <ul><li><span><b>8</b> vertical videos for Reels, Shorts or LinkedIn</span></li><li><span><b>2</b> shoot days</span></li><li><span>1 revision round per video</span></li></ul>
+     <p class="per">₹4,125 per video, shoot included</p>
+    </div>
+    <div class="vp series">
+     <span class="pl">Video package 3 · Series</span><h3>WOLM Series Pack</h3>
+     <p class="d">One recurring series, such as <b>The Meeting After The Meeting</b> or <b>Stack Swap</b>.</p>
+     <div class="price"><b>₹45,000</b><s>₹53,000</s><em>6 episodes</em></div>
+     <p class="alt"><b>₹50,000</b> for 8 episodes <s style="color:var(--muted);font-size:9.5px">₹59,000</s></p>
+     <ul><li><span><b>1</b> YouTube long-form hero episode</span></li><li><span><b>6–8</b> vertical episodes for Reels, Shorts and LinkedIn</span></li><li><span><b>2</b> shoot days · consistent hook, look and captions</span></li></ul>
+     <p class="per">₹7,500 per episode (6) · ₹6,250 per episode (8)</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- rate card -->
+  <section>
+   <div class="sh"><span class="num">Part C</span><h2>Individual items</h2><p>Add to any plan or package, priced per item</p></div>
+   <div class="rates">
+    <div class="rt"><i><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 4V6L7 10zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></i><div><b>₹25,000</b><span>Video ad</span><small>One finished ad</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></svg></i><div><b>₹20,000</b><span>YouTube long-form video</span><small>Per video</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="m11 9 3 2-3 2z"/></svg></i><div><b>₹3,000</b><span>YouTube Short / Instagram Reel</span><small>Per vertical video</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v6M8 7v.5M12 16v-3.5a2 2 0 0 1 4 0V16M12 10v6"/></svg></i><div><b>₹3,000</b><span>LinkedIn video post</span><small>Per vertical video</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M19 7v10M22 9v6"/></svg></i><div><b>₹2,000</b><span>LinkedIn carousel or static</span><small>Per post or carousel</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="m16 11 6-3v8l-6-3"/></svg></i><div><b>₹7,500</b><span>Shoot day</span><small>Additional day</small></div></div>
+    <div class="rt"><i><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg></i><div><b>₹1,500</b><span>Extra revision round</span><small>Per asset · 1 round included</small></div></div>
+    <div class="rt note"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.5"/></svg></i><div><b>Ad spend not included</b><small>Paid directly by WOLM to LinkedIn, Google and Meta</small></div></div>
+   </div>
+  </section>
+
+  <!-- terms -->
+  <section>
+   <div class="sh"><span class="num">Terms</span><h2>How billing works</h2></div>
+   <div class="terms">
+    <div class="tm"><b>GST extra</b><span>All prices exclusive of 18% GST</span></div>
+    <div class="tm"><b>50% / 50%</b><span>50% on signing, 50% on launch day</span></div>
+    <div class="tm"><b>Revisions</b><span>1 round per asset; extra rounds ₹1,500</span></div>
+    <div class="tm"><b>No lock-in</b><span>No commitment after day 45</span></div>
+   </div>
+  </section>
+ </main>
+ <footer class="ft"><span><b>Vortex Media Management</b> · Pricing for WOLM</span><span>October 2026 · Valid for 30 days</span></footer>
+</div>
+</body></html>

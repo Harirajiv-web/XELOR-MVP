@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+const p = await b.newPage({viewport:{width:794,height:1123},deviceScaleFactor:2});
+await p.goto('file://'+process.cwd()+'/pricing.html'); await p.waitForTimeout(600);
+const m = await p.evaluate(()=>{const secs=[...document.querySelectorAll('main section')].map(e=>Math.round(e.getBoundingClientRect().bottom));
+ const ft=document.querySelector('.ft').getBoundingClientRect();
+ const ov=[...document.querySelectorAll('.page *')].filter(e=>e.scrollWidth>e.clientWidth+1&&getComputedStyle(e).overflow!=='hidden'&&e.clientWidth>0).map(e=>e.className||e.tagName).slice(0,10);
+ return {secs, ftTop:Math.round(ft.top), ftBot:Math.round(ft.bottom), ov}});
+console.log(JSON.stringify(m));
+await p.screenshot({path:'pricing.png'});
+await p.pdf({path:'pricing.pdf',format:'A4',printBackground:true,preferCSSPageSize:true});
+await b.close();
