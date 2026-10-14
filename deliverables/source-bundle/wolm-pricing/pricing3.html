@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>WOLM · Pricing</title>
+<link rel="stylesheet" href="archivo.css">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#ffffff;--wash:#f6f8f7;--tint:#eff4f2;--line:#dde4e1;--line2:#c4cfca;
+  --ink:#101916;--body:#37433f;--muted:#68746f;--faint:#a3aeaa;
+  --acc:#14795a;--acc-2:#1f9a73;--acc-soft:#e7f3ed;--acc-line:#b9dccb;
+  --c1:#14795a;--c2:#5aa98c;--c3:#a9d3c2;--c4:#d9ebe3;
+  --warn:#8a6a2a;--warn-soft:#f8f3e8;--warn-line:#eadfc6;
+  --f:'Archivo','Liberation Sans',Arial,sans-serif;
+}
+body{font-family:var(--f);color:var(--body);-webkit-print-color-adjust:exact;print-color-adjust:exact;font-feature-settings:"tnum" 1,"lnum" 1}
+.page{width:210mm;height:297mm;background:var(--paper);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.ico{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.num{font-weight:800;color:var(--ink)}
+
+/* header */
+.bar{height:5px;background:linear-gradient(90deg,var(--acc) 0 62%,var(--acc-2) 62% 82%,var(--c3) 82%)}
+.hd{padding:13px 32px 0}
+.top{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.top img{height:18px;display:block}
+.meta{display:flex;gap:18px;text-align:right}
+.meta div{font-size:7.6px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;line-height:1.5}
+.meta div b{display:block;font-size:9px;letter-spacing:.02em;text-transform:none;color:var(--ink);font-weight:700}
+.title{display:grid;grid-template-columns:1fr 210px;gap:24px;align-items:end;padding:12px 0 2px}
+.eb{font-size:8.6px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
+h1{margin-top:4px;font-size:25px;line-height:1.05;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+.lede{margin-top:6px;font-size:10.2px;line-height:1.5;color:var(--muted)}
+.lede b{color:var(--ink);font-weight:600}
+.keyfacts{border-left:2px solid var(--acc);padding-left:12px;display:flex;flex-direction:column;gap:4px}
+.keyfacts div{display:flex;justify-content:space-between;font-size:8.8px;color:var(--muted)}
+.keyfacts b{color:var(--ink);font-weight:700}
+.ways{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:4px;background:var(--wash)}
+.way{display:flex;gap:9px;align-items:flex-start;padding:8px 11px}
+.way+.way{border-left:1px solid var(--line)}
+.lt{flex:none;width:19px;height:19px;border-radius:3px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800}
+.way b{display:block;font-size:10.5px;color:var(--ink);font-weight:700}
+.way span{display:block;font-size:8.6px;color:var(--muted);line-height:1.35;margin-top:1px}
+.way span em{font-style:normal;color:var(--ink);font-weight:700}
+
+.main{padding:0 32px 7px;display:flex;flex-direction:column}
+section{margin-top:10px}
+.sh{display:flex;align-items:center;gap:9px;padding-bottom:5px;margin-bottom:7px;border-bottom:1.5px solid var(--ink)}
+.sh .lt{display:grid}
+.sh h2{font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.sh p{margin-left:auto;font-size:8.6px;color:var(--muted)}
+
+/* plans */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.pc{padding:11px 12px 10px;display:flex;flex-direction:column;position:relative}
+.pc+.pc{border-left:1px solid var(--line)}
+.pc.rec{background:linear-gradient(180deg,var(--acc-soft),#fff 34%);box-shadow:inset 0 3px 0 var(--acc)}
+.tab{position:absolute;right:10px;top:10px;font-size:6.6px;font-weight:800;letter-spacing:.16em;color:#fff;background:var(--acc);padding:2.5px 6px;border-radius:2px}
+.pk{font-size:7.6px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.rec .pk{color:var(--acc)}
+.pc h3{margin-top:1px;font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.tg{font-size:8.6px;color:var(--muted);line-height:1.3;min-height:22px;margin-top:1px}
+.price{margin-top:6px;display:flex;align-items:baseline;gap:4px}
+.price b{font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.rec .price b{color:var(--acc)}
+.price span{font-size:8.4px;color:var(--muted)}
+.cmpbar{margin-top:5px;height:3px;background:var(--tint)}
+.cmpbar i{display:block;height:100%;background:var(--ink)}
+.rec .cmpbar i{background:var(--acc)}
+.ppc{margin-top:4px;font-size:8.4px;color:var(--muted)}
+.ppc b{color:var(--ink)}
+.blk{margin-top:8px}
+.bt{display:flex;justify-content:space-between;align-items:baseline;font-size:7.4px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:3px;border-bottom:1px solid var(--line)}
+.bt b{font-size:9px;letter-spacing:0;color:var(--ink);text-transform:none}
+.rows div{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--body);padding:2.5px 0;border-bottom:1px solid #eef2f0}
+.rows div:last-child{border-bottom:0}
+.rows .ico{color:var(--muted)}
+.rows span{flex:1}
+.rows span small{color:var(--faint);font-size:8px}
+.rows b{font-size:10px;font-weight:800;color:var(--ink);min-width:20px;text-align:right}
+.mix{margin-top:5px;height:5px;display:flex;gap:1px}
+.mix i:nth-child(1){background:var(--c1)}.mix i:nth-child(2){background:var(--c2)}.mix i:nth-child(3){background:var(--c3)}.mix i:nth-child(4){background:#7fa898}
+.svc div{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--ink);padding:1.9px 0}
+.svc div i{flex:none;width:11px;height:11px;border-radius:2px;display:grid;place-items:center;background:var(--acc);color:#fff}
+.svc div i .ico{width:8px;height:8px;stroke-width:3.2}
+.svc div.n{color:var(--faint)}
+.svc div.n i{background:transparent;border:1px solid var(--line2);color:var(--faint)}
+.svc small{color:var(--muted);font-size:8px}
+.legend{display:flex;justify-content:flex-end;gap:12px;margin-top:5px;font-size:7.8px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{width:9px;height:5px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:9px}
+.pkg{border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.pkg th{font-weight:700;text-align:center;padding:7px 8px 6px;vertical-align:bottom;border-bottom:1px solid var(--line2);background:var(--wash)}
+.pkg th:first-child,.pkg td:first-child{text-align:left;padding-left:11px}
+.pkg th .k{display:block;font-size:7.2px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pkg th .n{display:block;font-size:11px;font-weight:800;color:var(--ink);margin-top:1px;letter-spacing:-.01em}
+.pkg th .t{display:block;font-size:7.8px;font-weight:400;color:var(--muted);margin-top:1px;line-height:1.25}
+.pkg th.hl{background:var(--acc-soft);box-shadow:inset 0 3px 0 var(--acc)}
+.pkg th.hl .k{color:var(--acc)}
+.pkg td{padding:3.5px 8px;text-align:center;border-bottom:1px solid #eef2f0;color:var(--body)}
+.pkg td.hl{background:#f5faf7}
+.pkg td.q{font-weight:800;color:var(--ink);font-size:10px}
+.pkg td.q small{font-weight:500;color:var(--faint);font-size:8px;margin-left:2px}
+.pkg td.z{color:var(--line2)}
+.pkg td .it{display:flex;align-items:center;gap:7px;color:var(--ink);font-weight:600}
+.pkg td .it .ico{color:var(--muted)}
+.pkg td.rate{color:var(--muted);text-align:right;padding-right:12px;white-space:nowrap}
+.pkg tr.cnt td{background:var(--wash);font-size:8.6px;color:var(--muted)}
+.pkg tr.cnt td.hl{background:#eef7f2}
+.pict{display:inline-flex;gap:1.5px;vertical-align:middle;margin-left:5px}
+.pict i{width:4px;height:8px;border-radius:1px}
+.pict i.a{background:var(--c1)}.pict i.y{background:var(--c2);width:9px}.pict i.r{background:var(--c3)}.pict i.l{background:#7fa898}
+.pkg tr.tot td{border-bottom:0;border-top:1.5px solid var(--ink);padding:6px 8px}
+.pkg tr.tot td b{font-size:13.5px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.pkg tr.tot td.hl b{color:var(--acc)}
+.pkg tr.tot td:first-child b{font-size:9.5px;letter-spacing:0}
+.note{margin-top:6px;display:flex;gap:8px;align-items:center;font-size:8.6px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:3px;padding:5px 10px;line-height:1.35}
+.note b{color:#4c3912}
+
+.rate2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.rate2 div.r{display:grid;grid-template-columns:14px 1fr auto auto;gap:8px;align-items:center;padding:3.5px 0;border-bottom:1px solid #eef2f0;font-size:9.2px;color:var(--ink)}
+.rate2 .ico{color:var(--muted)}
+.rate2 span.u{font-size:8px;color:var(--muted);text-align:right}
+.rate2 b{font-size:10.5px;font-weight:800;color:var(--ink);min-width:52px;text-align:right}
+.rate2 div.r.x b{font-size:8.6px;font-weight:700;color:var(--warn)}
+.rate2 div.r.x{color:var(--muted)}
+
+.pay{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.pay>div{padding:9px 13px}
+.pay>div+div{border-left:1px solid var(--line);background:var(--wash)}
+.steps{margin-top:7px;display:grid;grid-template-columns:repeat(3,1fr);position:relative}
+.steps::before{content:"";position:absolute;left:16.6%;right:16.6%;top:9px;height:1.5px;background:var(--ink)}
+.steps div{text-align:center;position:relative}
+.steps .c{width:19px;height:19px;border-radius:50%;margin:0 auto;background:#fff;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:8.5px;font-weight:800;color:var(--ink)}
+.steps div:last-child .c{background:var(--ink);color:#fff}
+.steps b{display:block;margin-top:5px;font-size:9.4px;color:var(--ink)}
+.steps span{display:block;font-size:8.2px;color:var(--muted);margin-top:1px}
+.steps em{display:inline-block;margin-top:4px;font-style:normal;font-size:8.4px;font-weight:800;color:var(--acc);border:1px solid var(--acc-line);background:var(--acc-soft);padding:1px 7px;border-radius:2px}
+.excl{margin-top:7px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.excl div{border:1px solid var(--warn-line);background:var(--warn-soft);border-radius:3px;padding:3px 7px;font-size:8px;color:var(--warn);line-height:1.3}
+.excl b{display:block;font-size:8.8px;color:#4c3912}
+.bill div{display:flex;justify-content:space-between;align-items:baseline;padding:2.6px 0;border-bottom:1px solid var(--line);font-size:9.4px;color:var(--body)}
+.bill div b{font-size:10.2px;color:var(--ink)}
+.bill div.t{border-bottom:0;border-top:1.5px solid var(--ink);margin-top:1px;padding-top:5px}
+.bill div.t span{font-weight:700;color:var(--ink)}
+.bill div.t b{font-size:14px;font-weight:800}
+.split{margin-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.split div{background:#fff;border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:2px;padding:4px 8px}
+.split span{display:block;font-size:7.8px;color:var(--muted)}
+.split b{display:block;font-size:11px;font-weight:800;color:var(--ink)}
+.fn{margin-top:5px;font-size:7.8px;color:var(--muted)}
+
+.ft{margin-top:auto;padding:7px 32px 8px;display:flex;justify-content:space-between;align-items:center;font-size:8px;color:var(--muted);border-top:1px solid var(--line);letter-spacing:.02em}
+.ft b{color:var(--ink);font-weight:700}
+.ft img{height:11px;vertical-align:-2px;margin-left:6px}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <symbol id="yt" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></symbol>
+ <symbol id="reel" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="m11 9 3 2-3 2z"/></symbol>
+ <symbol id="img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></symbol>
+ <symbol id="in" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 10v6M8 7v.5M12 16v-3.5a2 2 0 0 1 4 0V16M12 10v6"/></symbol>
+ <symbol id="cam" viewBox="0 0 24 24"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="m16 11 6-3v8l-6-3"/></symbol>
+ <symbol id="ok" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+ <symbol id="no" viewBox="0 0 24 24"><path d="M8 12h8"/></symbol>
+ <symbol id="mega" viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a4 4 0 0 1 0 6"/></symbol>
+ <symbol id="car" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M19 7v10M22 9v6"/></symbol>
+ <symbol id="pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+ <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.5"/></symbol>
+ <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><rect x="3" y="9" width="18" height="12" rx="2"/><circle cx="16" cy="15" r="1.3"/></symbol>
+</defs></svg>
+
+<div class="page">
+ <div class="bar"></div>
+ <header class="hd">
+  <div class="top">
+   <img src="logo_ink.png" alt="Vortex Media Management">
+   <div class="meta"><div>Prepared for<b>WOLM founding team</b></div><div>Document<b>Pricing &amp; packages</b></div><div>Date<b>October 2026</b></div></div>
+  </div>
+  <div class="title">
+   <div>
+    <div class="eb">Investment summary</div>
+    <h1>Pricing for WOLM's launch</h1>
+    <p class="lede">Three simple ways to work with us: <b>A</b> a full 45-day plan <b>from ₹1,42,500</b>, <b>B</b> a video package <b>from ₹36,000</b>, or <b>C</b> single items <b>from ₹1,500</b>. Every piece of content includes one round of changes.</p>
+   </div>
+   <div class="keyfacts">
+    <div><span>Currency</span><b>Indian rupees (₹)</b></div>
+    <div><span>GST</span><b>18%, added on top</b></div>
+    <div><span>Cast fees</span><b>Not included</b></div>
+    <div><span>Ad budget</span><b>Paid by WOLM</b></div>
+   </div>
+  </div>
+ </header>
+
+ <main class="main">
+  <!-- A -->
+  <section>
+   <div class="sh"><span class="lt">A</span><h2>Full 45-day plans</h2><p>We handle everything</p><div class="legend" style="margin:0 0 0 14px"><span>Bars: price · content mix</span><span><i style="background:var(--c1)"></i>Long videos</span><span><i style="background:var(--c2)"></i>Short videos</span><span><i style="background:var(--c3)"></i>Instagram</span><span><i style="background:#7fa898"></i>LinkedIn</span></div></div>
+   <div class="plans">
+    <div class="pc">
+     <span class="pk">Plan 1</span><h3>Foundation</h3><span class="tg">Every channel live, with a steady posting rhythm</span>
+     <div class="price"><b>₹1,42,500</b><span>/ 45 days</span></div>
+     <div class="cmpbar"><i style="width:44.2%"></i></div>
+     <div class="ppc"><b>₹1,781</b> per piece of content</div>
+     <div class="blk"><div class="bt">What you get<b>80 pieces</b></div>
+      <div class="rows">
+       <div><svg class="ico"><use href="#cam"/></svg><span>Days of filming</span><b>3</b></div>
+       <div><svg class="ico"><use href="#yt"/></svg><span>Long YouTube videos</span><b>2</b></div>
+       <div><svg class="ico"><use href="#reel"/></svg><span>Short videos <small>18 Reels · 9 Shorts</small></span><b>27</b></div>
+       <div><svg class="ico"><use href="#img"/></svg><span>Instagram posts &amp; stories <small>9 · 18</small></span><b>27</b></div>
+       <div><svg class="ico"><use href="#in"/></svg><span>LinkedIn posts <small>12 company · 12 founder</small></span><b>24</b></div>
+      </div>
+      <div class="mix" style="width:43.2%"><i style="flex:2"></i><i style="flex:27"></i><i style="flex:27"></i><i style="flex:24"></i></div>
+     </div>
+     <div class="blk"><div class="bt">Services</div>
+      <div class="svc">
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Content calendar</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Progress reports</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Replying to comments &amp; DMs</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Running paid ads</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Lead sign-up forms</div>
+      </div></div>
+    </div>
+    <div class="pc">
+     <span class="pk">Plan 2</span><h3>Momentum</h3><span class="tg">Adds progress reports and replying to your audience</span>
+     <div class="price"><b>₹2,17,500</b><span>/ 45 days</span></div>
+     <div class="cmpbar"><i style="width:67.4%"></i></div>
+     <div class="ppc"><b>₹1,686</b> per piece of content</div>
+     <div class="blk"><div class="bt">What you get<b>129 pieces</b></div>
+      <div class="rows">
+       <div><svg class="ico"><use href="#cam"/></svg><span>Days of filming</span><b>6</b></div>
+       <div><svg class="ico"><use href="#yt"/></svg><span>Long YouTube videos</span><b>3</b></div>
+       <div><svg class="ico"><use href="#reel"/></svg><span>Short videos <small>27 Reels · 18 Shorts</small></span><b>45</b></div>
+       <div><svg class="ico"><use href="#img"/></svg><span>Instagram posts &amp; stories <small>15 · 30</small></span><b>45</b></div>
+       <div><svg class="ico"><use href="#in"/></svg><span>LinkedIn posts <small>18 company · 18 founder</small></span><b>36</b></div>
+      </div>
+      <div class="mix" style="width:69.7%"><i style="flex:3"></i><i style="flex:45"></i><i style="flex:45"></i><i style="flex:36"></i></div>
+     </div>
+     <div class="blk"><div class="bt">Services</div>
+      <div class="svc">
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Content calendar</div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Progress reports <small>· days 15, 30, 45</small></div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Replying to comments &amp; DMs</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Running paid ads</div>
+       <div class="n"><i><svg class="ico"><use href="#no"/></svg></i>Lead sign-up forms</div>
+      </div></div>
+    </div>
+    <div class="pc rec"><span class="tab">RECOMMENDED</span>
+     <span class="pk">Plan 3</span><h3>Launch Engine</h3><span class="tg">Plan 2, plus the ads that bring in demo requests</span>
+     <div class="price"><b>₹3,22,500</b><span>/ 45 days</span></div>
+     <div class="cmpbar"><i style="width:100%"></i></div>
+     <div class="ppc"><b>₹1,743</b> per piece of content</div>
+     <div class="blk"><div class="bt">What you get<b>185 pieces</b></div>
+      <div class="rows">
+       <div><svg class="ico"><use href="#cam"/></svg><span>Days of filming</span><b>9</b></div>
+       <div><svg class="ico"><use href="#yt"/></svg><span>Long YouTube videos</span><b>5</b></div>
+       <div><svg class="ico"><use href="#reel"/></svg><span>Short videos <small>39 Reels · 27 Shorts</small></span><b>66</b></div>
+       <div><svg class="ico"><use href="#img"/></svg><span>Instagram posts &amp; stories <small>21 · 45</small></span><b>66</b></div>
+       <div><svg class="ico"><use href="#in"/></svg><span>LinkedIn posts <small>24 company · 24 founder</small></span><b>48</b></div>
+      </div>
+      <div class="mix" style="width:100%"><i style="flex:5"></i><i style="flex:66"></i><i style="flex:66"></i><i style="flex:48"></i></div>
+     </div>
+     <div class="blk"><div class="bt">Services</div>
+      <div class="svc">
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Content calendar</div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Progress reports <small>· every week</small></div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Replying to comments &amp; DMs</div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Running paid ads <small>· LinkedIn, Google, Meta</small></div>
+       <div><i><svg class="ico"><use href="#ok"/></svg></i>Lead sign-up forms</div>
+      </div></div>
+    </div>
+   </div>
+  </section>
+
+  <!-- B -->
+  <section>
+   <div class="sh"><span class="lt">B</span><h2>Video packages</h2><p>Built from the single-item prices: quantity × rate, added up</p></div>
+   <div class="pkg">
+    <table>
+     <colgroup><col style="width:24%"><col style="width:10%"><col><col><col><col></colgroup>
+     <thead><tr>
+      <th style="vertical-align:bottom"><span class="k">What's included</span></th>
+      <th style="text-align:right;padding-right:12px"><span class="k">Rate</span></th>
+      <th><span class="k">Package 1</span><span class="n">Social Video Pack</span><span class="t">Short videos for every channel</span></th>
+      <th><span class="k">Package 2</span><span class="n">YouTube Pack</span><span class="t">Long proof videos + Shorts</span></th>
+      <th><span class="k">Package 3</span><span class="n">Ad Pack</span><span class="t">Finished ads, ready to run</span></th>
+      <th class="hl"><span class="k">Package 4 · All-in-one</span><span class="n">Launch Video Pack</span><span class="t">One of everything a launch needs</span></th>
+     </tr></thead>
+     <tbody>
+      <tr><td><span class="it"><svg class="ico"><use href="#mega"/></svg>Finished video ad</span></td><td class="rate">₹25,000</td><td class="z">—</td><td class="z">—</td><td class="q">2</td><td class="q hl">1</td></tr>
+      <tr><td><span class="it"><svg class="ico"><use href="#yt"/></svg>Long YouTube video</span></td><td class="rate">₹20,000</td><td class="z">—</td><td class="q">2</td><td class="z">—</td><td class="q hl">1</td></tr>
+      <tr><td><span class="it"><svg class="ico"><use href="#reel"/></svg>Reel / YouTube Short</span></td><td class="rate">₹3,000</td><td class="q">8</td><td class="q">6</td><td class="q">4</td><td class="q hl">6</td></tr>
+      <tr><td><span class="it"><svg class="ico"><use href="#in"/></svg>LinkedIn video</span></td><td class="rate">₹3,000</td><td class="q">4</td><td class="z">—</td><td class="z">—</td><td class="q hl">4</td></tr>
+      <tr class="cnt"><td>Videos in the package</td><td></td>
+       <td>12<span class="pict"><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i></span></td>
+       <td>8<span class="pict"><i class="y"></i><i class="y"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></span></td>
+       <td>6<span class="pict"><i class="a"></i><i class="a"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></span></td>
+       <td class="hl">12<span class="pict"><i class="a"></i><i class="y"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i></span></td></tr>
+      <tr class="tot"><td><b>Package price</b></td><td></td><td><b>₹36,000</b></td><td><b>₹58,000</b></td><td><b>₹62,000</b></td><td class="hl"><b>₹75,000</b></td></tr>
+     </tbody>
+    </table>
+   </div>
+   <div class="note"><svg class="ico"><use href="#user"/></svg><span><b>Cast fees are not included.</b> Package and item prices exclude on-screen cast (actors or talent), which is billed separately. Extra filming days are ₹7,500 each.</span></div>
+  </section>
+
+  <!-- C -->
+  <section>
+   <div class="sh"><span class="lt">C</span><h2>Single items</h2><p>Buy on their own, or add to any plan or package</p></div>
+   <div class="rate2">
+    <div>
+     <div class="r"><svg class="ico"><use href="#mega"/></svg><span>Finished video ad</span><span class="u">per ad</span><b>₹25,000</b></div>
+     <div class="r"><svg class="ico"><use href="#yt"/></svg><span>Long YouTube video</span><span class="u">per video</span><b>₹20,000</b></div>
+     <div class="r"><svg class="ico"><use href="#reel"/></svg><span>Reel / YouTube Short</span><span class="u">per video</span><b>₹3,000</b></div>
+     <div class="r"><svg class="ico"><use href="#in"/></svg><span>LinkedIn video</span><span class="u">per video</span><b>₹3,000</b></div>
+     <div class="r x"><svg class="ico"><use href="#wallet"/></svg><span>Ad budget</span><span class="u">LinkedIn, Google, Meta</span><b>Paid by WOLM</b></div>
+    </div>
+    <div>
+     <div class="r"><svg class="ico"><use href="#car"/></svg><span>LinkedIn image or slide post</span><span class="u">per post</span><b>₹2,000</b></div>
+     <div class="r"><svg class="ico"><use href="#cam"/></svg><span>Extra filming day</span><span class="u">per day</span><b>₹7,500</b></div>
+     <div class="r"><svg class="ico"><use href="#pen"/></svg><span>Extra round of changes</span><span class="u">per piece · 1 included</span><b>₹1,500</b></div>
+     <div class="r x"><svg class="ico"><use href="#user"/></svg><span>Cast (actors / talent)</span><span class="u">as needed</span><b>Billed separately</b></div>
+     <div class="r x"><svg class="ico"><use href="#info"/></svg><span>GST</span><span class="u">on every price</span><b>+18%</b></div>
+    </div>
+   </div>
+  </section>
+
+  <!-- pay -->
+  <section>
+   <div class="sh"><span class="lt">₹</span><h2>How payment works</h2><p>Two payments, no long contract</p></div>
+   <div class="pay">
+    <div>
+     <div class="bt">For any 45-day plan</div>
+     <div class="steps">
+      <div><div class="c">1</div><b>On signing</b><span>Work starts on day 1</span><em>50%</em></div>
+      <div><div class="c">2</div><b>Launch day · day 31</b><span>Everything goes live</span><em>50%</em></div>
+      <div><div class="c">✓</div><b>Day 45</b><span>Plan ends</span><em>No lock-in</em></div>
+     </div>
+     <div class="excl">
+      <div><b>+18% GST</b>on every price</div>
+      <div><b>Ad budget</b>paid by WOLM directly</div>
+      <div><b>Cast fees</b>billed separately</div>
+     </div>
+    </div>
+    <div>
+     <div class="bt">Worked example · Plan 3, Launch Engine</div>
+     <div class="bill">
+      <div><span>Plan fee</span><b>₹3,22,500</b></div>
+      <div><span>GST at 18%</span><b>+ ₹58,050</b></div>
+      <div class="t"><span>Total invoice</span><b>₹3,80,550</b></div>
+     </div>
+     <div class="split"><div><span>Paid on signing</span><b>₹1,90,275</b></div><div><span>Paid on launch day</span><b>₹1,90,275</b></div></div>
+     <div class="fn">Excludes ad budget and any cast fees.</div>
+    </div>
+   </div>
+  </section>
+ </main>
+ <footer class="ft"><span><b>Vortex Media Management</b> · Pricing &amp; packages for WOLM</span><span>October 2026 · Valid for 30 days<img src="mark_ink.png" alt=""></span></footer>
+</div>
+</body></html>
