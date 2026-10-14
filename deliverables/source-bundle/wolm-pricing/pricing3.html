@@ -118,38 +118,47 @@ table{width:100%;border-collapse:collapse;font-size:9px}
 .note{margin-top:6px;display:flex;gap:8px;align-items:center;font-size:8.6px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:3px;padding:5px 10px;line-height:1.35}
 .note b{color:#4c3912}
 
-.rate2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
-.rate2 div.r{display:grid;grid-template-columns:14px 1fr auto auto;gap:8px;align-items:center;padding:3.5px 0;border-bottom:1px solid #eef2f0;font-size:9.2px;color:var(--ink)}
-.rate2 .ico{color:var(--muted)}
-.rate2 span.u{font-size:8px;color:var(--muted);text-align:right}
-.rate2 b{font-size:10.5px;font-weight:800;color:var(--ink);min-width:52px;text-align:right}
-.rate2 div.r.x b{font-size:8.6px;font-weight:700;color:var(--warn)}
-.rate2 div.r.x{color:var(--muted)}
+/* single items: uniform aligned tiles */
+.rc{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ri{padding:7px 11px 7px;display:flex;flex-direction:column;justify-content:flex-start}
+.ri:not(:nth-child(4n)){border-right:1px solid var(--line)}
+.ri:nth-child(-n+4){border-bottom:1px solid var(--line)}
+.ri .rh{display:flex;align-items:center;gap:6px;font-size:9.2px;font-weight:600;color:var(--ink);line-height:1.2}
+.ri .rh .ico{color:var(--acc)}
+.ri .rp{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px}
+.ri .rp b{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.ri .rp small{font-size:8px;color:var(--muted);text-align:right}
+.ri.ex{background:var(--warn-soft)}
+.ri.ex .rh .ico{color:var(--warn)}
+.ri.ex ul{list-style:none;margin-top:5px;display:flex;flex-direction:column;gap:1px}
+.ri.ex li{display:flex;justify-content:space-between;font-size:8px;line-height:1.25;color:var(--warn)}
+.ri.ex li b{color:#4c3912;font-weight:700}
 
-.pay{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.pay>div{padding:9px 13px}
-.pay>div+div{border-left:1px solid var(--line);background:var(--wash)}
-.steps{margin-top:7px;display:grid;grid-template-columns:repeat(3,1fr);position:relative}
-.steps::before{content:"";position:absolute;left:16.6%;right:16.6%;top:9px;height:1.5px;background:var(--ink)}
-.steps div{text-align:center;position:relative}
-.steps .c{width:19px;height:19px;border-radius:50%;margin:0 auto;background:#fff;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:8.5px;font-weight:800;color:var(--ink)}
-.steps div:last-child .c{background:var(--ink);color:#fff}
-.steps b{display:block;margin-top:5px;font-size:9.4px;color:var(--ink)}
-.steps span{display:block;font-size:8.2px;color:var(--muted);margin-top:1px}
-.steps em{display:inline-block;margin-top:4px;font-style:normal;font-size:8.4px;font-weight:800;color:var(--acc);border:1px solid var(--acc-line);background:var(--acc-soft);padding:1px 7px;border-radius:2px}
-.excl{margin-top:7px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.excl div{border:1px solid var(--warn-line);background:var(--warn-soft);border-radius:3px;padding:3px 7px;font-size:8px;color:var(--warn);line-height:1.3}
-.excl b{display:block;font-size:8.8px;color:#4c3912}
-.bill div{display:flex;justify-content:space-between;align-items:baseline;padding:2.6px 0;border-bottom:1px solid var(--line);font-size:9.4px;color:var(--body)}
-.bill div b{font-size:10.2px;color:var(--ink)}
-.bill div.t{border-bottom:0;border-top:1.5px solid var(--ink);margin-top:1px;padding-top:5px}
-.bill div.t span{font-weight:700;color:var(--ink)}
-.bill div.t b{font-size:14px;font-weight:800}
-.split{margin-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.split div{background:#fff;border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:2px;padding:4px 8px}
-.split span{display:block;font-size:7.8px;color:var(--muted)}
-.split b{display:block;font-size:11px;font-weight:800;color:var(--ink)}
-.fn{margin-top:5px;font-size:7.8px;color:var(--muted)}
+/* video ad packages */
+.ads{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ap{padding:9px 13px 9px;position:relative}
+.ap+.ap{border-left:1px solid var(--line)}
+.ap.best{background:linear-gradient(180deg,var(--acc-soft),#fff 55%);box-shadow:inset 0 3px 0 var(--acc)}
+.ap .hd2{display:flex;justify-content:space-between;align-items:flex-start}
+.ap h3{margin-top:1px;font-size:13.5px;font-weight:800;color:var(--ink);letter-spacing:-.015em}
+.ap .pics{display:flex;gap:3px;margin-top:5px;height:17px}
+.ap .pics i{width:28px;height:17px;border-radius:2px;background:var(--ink);position:relative}
+.ap.best .pics i{background:var(--acc)}
+.ap .pics i::after{content:"";position:absolute;left:11px;top:4.5px;border-left:7px solid #fff;border-top:4px solid transparent;border-bottom:4px solid transparent}
+.ap .pr{margin-top:6px;display:flex;align-items:baseline;justify-content:space-between}
+.ap .pr b{font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.ap.best .pr b{color:var(--acc)}
+.ap .pr s{font-size:9px;color:var(--faint)}
+.ap .per{margin-top:6px;display:flex;justify-content:space-between;font-size:8.6px;color:var(--muted)}
+.ap .per b{color:var(--ink);font-size:9.5px}
+.ap .pbar{margin-top:3px;height:4px;background:var(--tint)}
+.ap .pbar i{display:block;height:100%;background:var(--ink)}
+.ap.best .pbar i{background:var(--acc)}
+.ap .sv{margin-top:2px;display:inline-block;font-size:8.4px;font-weight:800;padding:2px 7px;border-radius:2px;color:var(--acc);background:var(--acc-soft);border:1px solid var(--acc-line)}
+.ap .sv.base{color:var(--muted);background:var(--wash);border-color:var(--line)}
+.adnote{margin-top:6px;font-size:8.4px;color:var(--muted);display:flex;gap:14px}
+.adnote span{display:flex;align-items:center;gap:5px}
+.adnote .ico{color:var(--acc)}
 
 .ft{margin-top:auto;padding:7px 32px 8px;display:flex;justify-content:space-between;align-items:center;font-size:8px;color:var(--muted);border-top:1px solid var(--line);letter-spacing:.02em}
 .ft b{color:var(--ink);font-weight:700}
@@ -182,7 +191,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}
    <div>
     <div class="eb">Investment summary</div>
     <h1>Pricing for WOLM's launch</h1>
-    <p class="lede">Three simple ways to work with us: <b>A</b> a full 45-day plan <b>from ₹1,42,500</b>, <b>B</b> a video package <b>from ₹36,000</b>, or <b>C</b> single items <b>from ₹1,500</b>. Every piece of content includes one round of changes.</p>
+    <p class="lede">Choose what fits: <b>A</b> a full 45-day plan <b>from ₹1,42,500</b>, <b>B</b> a video package <b>from ₹36,000</b>, <b>C</b> single items <b>from ₹1,500</b>, or <b>D</b> video ads <b>from ₹23,000</b>. Every piece of content includes one round of changes.</p>
    </div>
    <div class="keyfacts">
     <div><span>Currency</span><b>Indian rupees (₹)</b></div>
@@ -288,7 +297,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}
       <th class="hl"><span class="k">Package 4 · All-in-one</span><span class="n">Launch Video Pack</span><span class="t">One of everything a launch needs</span></th>
      </tr></thead>
      <tbody>
-      <tr><td><span class="it"><svg class="ico"><use href="#mega"/></svg>Finished video ad</span></td><td class="rate">₹25,000</td><td class="z">—</td><td class="z">—</td><td class="q">2</td><td class="q hl">1</td></tr>
+      <tr><td><span class="it"><svg class="ico"><use href="#mega"/></svg>Finished video ad</span></td><td class="rate">₹23,000</td><td class="z">—</td><td class="z">—</td><td class="q">2</td><td class="q hl">1</td></tr>
       <tr><td><span class="it"><svg class="ico"><use href="#yt"/></svg>Long YouTube video</span></td><td class="rate">₹20,000</td><td class="z">—</td><td class="q">2</td><td class="z">—</td><td class="q hl">1</td></tr>
       <tr><td><span class="it"><svg class="ico"><use href="#reel"/></svg>Reel / YouTube Short</span></td><td class="rate">₹3,000</td><td class="q">8</td><td class="q">6</td><td class="q">4</td><td class="q hl">6</td></tr>
       <tr><td><span class="it"><svg class="ico"><use href="#in"/></svg>LinkedIn video</span></td><td class="rate">₹3,000</td><td class="q">4</td><td class="z">—</td><td class="z">—</td><td class="q hl">4</td></tr>
@@ -297,7 +306,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}
        <td>8<span class="pict"><i class="y"></i><i class="y"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></span></td>
        <td>6<span class="pict"><i class="a"></i><i class="a"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></span></td>
        <td class="hl">12<span class="pict"><i class="a"></i><i class="y"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i></span></td></tr>
-      <tr class="tot"><td><b>Package price</b></td><td></td><td><b>₹36,000</b></td><td><b>₹58,000</b></td><td><b>₹62,000</b></td><td class="hl"><b>₹75,000</b></td></tr>
+      <tr class="tot"><td><b>Package price</b></td><td></td><td><b>₹36,000</b></td><td><b>₹58,000</b></td><td><b>₹58,000</b></td><td class="hl"><b>₹73,000</b></td></tr>
      </tbody>
     </table>
    </div>
@@ -307,50 +316,43 @@ table{width:100%;border-collapse:collapse;font-size:9px}
   <!-- C -->
   <section>
    <div class="sh"><span class="lt">C</span><h2>Single items</h2><p>Buy on their own, or add to any plan or package</p></div>
-   <div class="rate2">
-    <div>
-     <div class="r"><svg class="ico"><use href="#mega"/></svg><span>Finished video ad</span><span class="u">per ad</span><b>₹25,000</b></div>
-     <div class="r"><svg class="ico"><use href="#yt"/></svg><span>Long YouTube video</span><span class="u">per video</span><b>₹20,000</b></div>
-     <div class="r"><svg class="ico"><use href="#reel"/></svg><span>Reel / YouTube Short</span><span class="u">per video</span><b>₹3,000</b></div>
-     <div class="r"><svg class="ico"><use href="#in"/></svg><span>LinkedIn video</span><span class="u">per video</span><b>₹3,000</b></div>
-     <div class="r x"><svg class="ico"><use href="#wallet"/></svg><span>Ad budget</span><span class="u">LinkedIn, Google, Meta</span><b>Paid by WOLM</b></div>
-    </div>
-    <div>
-     <div class="r"><svg class="ico"><use href="#car"/></svg><span>LinkedIn image or slide post</span><span class="u">per post</span><b>₹2,000</b></div>
-     <div class="r"><svg class="ico"><use href="#cam"/></svg><span>Extra filming day</span><span class="u">per day</span><b>₹7,500</b></div>
-     <div class="r"><svg class="ico"><use href="#pen"/></svg><span>Extra round of changes</span><span class="u">per piece · 1 included</span><b>₹1,500</b></div>
-     <div class="r x"><svg class="ico"><use href="#user"/></svg><span>Cast (actors / talent)</span><span class="u">as needed</span><b>Billed separately</b></div>
-     <div class="r x"><svg class="ico"><use href="#info"/></svg><span>GST</span><span class="u">on every price</span><b>+18%</b></div>
-    </div>
+   <div class="rc">
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#mega"/></svg>Finished video ad</div><div class="rp"><b>₹23,000</b><small>per ad · packs in D</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#yt"/></svg>Long YouTube video</div><div class="rp"><b>₹20,000</b><small>per video</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#reel"/></svg>Reel / YouTube Short</div><div class="rp"><b>₹3,000</b><small>per video</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#in"/></svg>LinkedIn video</div><div class="rp"><b>₹3,000</b><small>per video</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#car"/></svg>LinkedIn image or slide post</div><div class="rp"><b>₹2,000</b><small>per post</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#cam"/></svg>Extra filming day</div><div class="rp"><b>₹7,500</b><small>per day</small></div></div>
+    <div class="ri"><div class="rh"><svg class="ico"><use href="#pen"/></svg>Extra round of changes</div><div class="rp"><b>₹1,500</b><small>per piece · 1 included</small></div></div>
+    <div class="ri ex"><div class="rh"><svg class="ico"><use href="#info"/></svg>Not included in any price</div>
+     <ul><li>GST<b>+18%</b></li><li>Ad budget<b>Paid by WOLM</b></li><li>Cast fees<b>Billed separately</b></li></ul></div>
    </div>
   </section>
 
-  <!-- pay -->
+  <!-- D -->
   <section>
-   <div class="sh"><span class="lt">₹</span><h2>How payment works</h2><p>Two payments, no long contract</p></div>
-   <div class="pay">
-    <div>
-     <div class="bt">For any 45-day plan</div>
-     <div class="steps">
-      <div><div class="c">1</div><b>On signing</b><span>Work starts on day 1</span><em>50%</em></div>
-      <div><div class="c">2</div><b>Launch day · day 31</b><span>Everything goes live</span><em>50%</em></div>
-      <div><div class="c">✓</div><b>Day 45</b><span>Plan ends</span><em>No lock-in</em></div>
-     </div>
-     <div class="excl">
-      <div><b>+18% GST</b>on every price</div>
-      <div><b>Ad budget</b>paid by WOLM directly</div>
-      <div><b>Cast fees</b>billed separately</div>
-     </div>
+   <div class="sh"><span class="lt">D</span><h2>Video ad packages</h2><p>Ready-to-run ads for LinkedIn, Google, Meta or YouTube · 1 round of changes each · cast fees and ad budget not included</p></div>
+   <div class="ads">
+    <div class="ap">
+     <div class="hd2"><div><span class="pk">Single ad</span><h3>1 video ad</h3></div><span class="sv base">Standard price</span></div>
+     <div class="pics"><i></i></div>
+     <div class="pr"><b>₹23,000</b></div>
+     <div class="per"><span>Price per ad</span><b>₹23,000</b></div>
+     <div class="pbar"><i style="width:100%"></i></div>
     </div>
-    <div>
-     <div class="bt">Worked example · Plan 3, Launch Engine</div>
-     <div class="bill">
-      <div><span>Plan fee</span><b>₹3,22,500</b></div>
-      <div><span>GST at 18%</span><b>+ ₹58,050</b></div>
-      <div class="t"><span>Total invoice</span><b>₹3,80,550</b></div>
-     </div>
-     <div class="split"><div><span>Paid on signing</span><b>₹1,90,275</b></div><div><span>Paid on launch day</span><b>₹1,90,275</b></div></div>
-     <div class="fn">Excludes ad budget and any cast fees.</div>
+    <div class="ap">
+     <div class="hd2"><div><span class="pk">Ad pack</span><h3>3 video ads</h3></div><span class="sv">Save ₹9,000</span></div>
+     <div class="pics"><i></i><i></i><i></i></div>
+     <div class="pr"><b>₹60,000</b><s>₹69,000</s></div>
+     <div class="per"><span>Price per ad</span><b>₹20,000</b></div>
+     <div class="pbar"><i style="width:87%"></i></div>
+    </div>
+    <div class="ap best">
+     <div class="hd2"><div><span class="pk" style="color:var(--acc)">Ad pack · Best value</span><h3>5 video ads</h3></div><span class="sv">Save ₹25,000</span></div>
+     <div class="pics"><i></i><i></i><i></i><i></i><i></i></div>
+     <div class="pr"><b>₹90,000</b><s>₹1,15,000</s></div>
+     <div class="per"><span>Price per ad</span><b>₹18,000</b></div>
+     <div class="pbar"><i style="width:78.3%"></i></div>
     </div>
    </div>
   </section>
